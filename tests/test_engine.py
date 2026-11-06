@@ -90,6 +90,11 @@ class TestRulesValidation(unittest.TestCase):
         self._bad(lambda r: r["board"]["districts"].update(
             {"F": r["board"]["districts"]["E"]}), "distinct")
 
+    def test_bad_turns_key_rejected(self):
+        self._bad(lambda r: r.update(
+            {"turns": {"rotate_first_player_each_round": "yes"}}),
+            "rotate_first_player_each_round")
+
 
 class TestNewGameAndObservation(unittest.TestCase):
     def test_initial_state(self):
@@ -224,6 +229,14 @@ class TestResolution(unittest.TestCase):
 
     def test_duel_tie_goes_to_defender(self):
         rules = load_baseline()
+        self._run_seeded_duels(rules, expect_attacker_on_tie=False)
+
+    def test_duel_tie_goes_to_attacker_when_configured(self):
+        rules = load_baseline()
+        rules["combat"]["tie_goes_to_defender"] = False
+        self._run_seeded_duels(rules, expect_attacker_on_tie=True)
+
+    def _run_seeded_duels(self, rules, expect_attacker_on_tie):
         seen_tie = duels = 0
         for seed in range(30):
             state = engine.new_game(rules, seed, "g")
@@ -240,9 +253,77 @@ class TestResolution(unittest.TestCase):
                 if ev["type"] == "duel" and \
                         ev["attacker_score"] == ev["defender_score"]:
                     seen_tie += 1
-                    self.assertEqual(ev["winner"], ev["defender"])
+                    expected = ev["attacker"] if expect_attacker_on_tie \
+                        else ev["defender"]
+                    self.assertEqual(ev["winner"], expected)
         self.assertGreater(duels, 20)
         self.assertGreater(seen_tie, 0, "no tie observed in 30 seeded duels")
+
+    def test_rotating_first_player_each_round(self):
+        rules = load_baseline()
+        rules["turns"] = {"rotate_first_player_each_round": True}
+        state = engine.new_game(rules, 3, "rot")
+        base = list(state["turn_order"])
+        first_round = [state["active_player"]]
+        seen = []
+        for i in range(8):
+            seen.append(state["active_player"])
+            self.assertEqual(state["round"], 1 + i // 4)
+            if i < 7:
+                action = next(a for a in engine.legal_actions(state)
+                              if a["kind"] == "move")
+                engine.apply_action(state, state["active_player"],
+                                    state["turn_id"], action["action_id"])
+        # Round 1 order equals the base order; round 2 starts one seat later.
+        self.assertEqual(seen[:4], base)
+        self.assertEqual(seen[4:], [base[1], base[2], base[3], base[0]])
+        engine.check_invariants(state)
+
+    def test_fixed_order_without_rotation(self):
+        state = engine.new_game(load_baseline(), 3, "fix")
+        base = list(state["turn_order"])
+        seen = []
+        for i in range(8):
+            seen.append(state["active_player"])
+            if i < 7:
+                action = next(a for a in engine.legal_actions(state)
+                              if a["kind"] == "move")
+                engine.apply_action(state, state["active_player"],
+                                    state["turn_id"], action["action_id"])
+        self.assertEqual(seen[:4], base)
+        self.assertEqual(seen[4:], base)
+
+    def test_final_round_order_frozen_on_win(self):
+        # Regression: the last seat of a round must be able to report as
+        # position 4 after winning (no post-win rotation of the report).
+        rules = load_baseline()
+        rules["turns"] = {"rotate_first_player_each_round": True}
+        for seed in range(1, 60):
+            state = engine.new_game(rules, seed, "w")
+            state["phase"] = 2
+            state["round"] = 1
+            for p in state["players"].values():
+                p["equipment"] = sorted(rules["equipment"])
+                p["seals"] = []
+                p["hits"] = 0
+            last = engine.current_order(state)[3]
+            state["turn_index"] = 3
+            state["active_player"] = last
+            state["players"][last]["pos"] = [2, 4]
+            state["players"][last]["seals"] = ["cellars", "peristyle"]
+            state["players"][last]["hits"] = 1
+            order_before = engine.current_order(state)
+            action = next(a for a in engine.legal_actions(state)
+                          if a["kind"] == "attack_emperor")
+            record = engine.apply_action(state, last, state["turn_id"],
+                                         action["action_id"])
+            if state["status"] == "finished":
+                self.assertEqual(state["winner"], last)
+                self.assertEqual(engine.current_order(state), order_before)
+                res = engine.result(state)
+                self.assertEqual(res["turn_order"].index(last) + 1, 4)
+                return
+        self.fail("no last-seat win in 59 seeded attacks")
 
     def test_claim_checkpoint_and_grace(self):
         rules = load_baseline()

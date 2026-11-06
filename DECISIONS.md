@@ -71,3 +71,21 @@ practical. No baseline rule values were changed.
   the only hidden data (equipment mapping, future dice) never appears in an
   observation, and the subagent is forbidden from reading `state.json`.
   Four separate seat agents remain fully supported by the same CLI.
+- **D18 Duel tie knob (V0.2).** `combat.tie_goes_to_defender` may now be
+  `false`; a tied duel then awards the attacker the win. The original V0.1
+  hard rejection is lifted because the baseline showed attacker wins of
+  only 38% (FINDINGS.md §3) and the game owner made ties-to-attacker the
+  priority-1 experiment. Guard barracks ("strictly higher") and Emperor
+  ("ties go to Emperor") contests are unchanged.
+- **D19 Rotating first player (V0.2).** Optional top-level key
+  `turns.rotate_first_player_each_round` (absent in the baseline, default
+  `false`). When true, each full round starts one seat later in the base
+  seeded order (round r starts at base position r mod 4). Level 2 restarts
+  from the base order (`round_start` reset to 0 at the transition).
+  Observations and results report the effective order of the current
+  round, so turn-position win rates measure the final round's seating.
+- **D20 Emperor-miss retreat fix.** Movement now resolves before the
+  action outcome inside `apply_action`, so the retreat to `[2,3]` after a
+  failed Emperor attack is no longer overwritten by the action
+  destination. Found by three narrative playtest agents; covered by a
+  strengthened test and a `check_invariants` rule.

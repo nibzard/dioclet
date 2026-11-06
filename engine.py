@@ -36,6 +36,8 @@ REQUIRED_KEYS = {
     "rules_version", "game_name", "players", "equipment", "board",
     "movement", "glory", "combat", "level1", "level2", "logging",
 }
+# Optional keys: absent from the baseline, defaulted when missing.
+OPTIONAL_KEYS = {"turns"}
 
 
 def rules_hash(rules):
@@ -59,7 +61,7 @@ def validate_rules(rules):
     """Reject invalid configurations with clear errors (SPEC §8)."""
     if not isinstance(rules, dict):
         raise EngineError("invalid_rules", "rules must be a JSON object")
-    unknown = set(rules) - REQUIRED_KEYS
+    unknown = set(rules) - REQUIRED_KEYS - OPTIONAL_KEYS
     _require(not unknown, f"unknown top-level keys: {sorted(unknown)}")
     missing = REQUIRED_KEYS - set(rules)
     _require(not missing, f"missing top-level keys: {sorted(missing)}")
@@ -152,8 +154,11 @@ def validate_rules(rules):
                  f"bonus for count {count} must be >= 0")
     _require(isinstance(combat["tie_goes_to_defender"], bool),
              "tie_goes_to_defender must be boolean")
-    _require(combat["tie_goes_to_defender"],
-             "V0.1 resolves duel ties for the defender only")
+
+    turns = rules.get("turns", {})
+    _require(isinstance(turns, dict), "turns must be an object")
+    _require(isinstance(turns.get("rotate_first_player_each_round", False), bool),
+             "turns.rotate_first_player_each_round must be boolean")
     for key in ("imperial_guard_bonus", "emperor_bonus", "glory_attack_bonus"):
         _require(isinstance(combat[key], int) and combat[key] >= 0,
                  f"combat.{key} must be >= 0")
@@ -259,6 +264,9 @@ def new_game(rules, seed, game_id, policies=None):
         "seed": seed,
         "rng": {name: _dump_rng(rngs[name]) for name in STREAMS},
         "turn_order": turn_order,
+        "rotate_first": rules.get("turns", {}).get(
+            "rotate_first_player_each_round", False),
+        "round_start": 0,
         "turn_index": 0,
         "turn_id": 0,
         "round": 1,
@@ -300,9 +308,18 @@ def _start_turn(state):
     _store_rng(state, "movement", rng)
     state["current_roll"] = die
     state["turn_id"] += 1
-    active = state["turn_order"][state["turn_index"]]
+    active = current_order(state)[state["turn_index"]]
     state["active_player"] = active
     state["players"][active]["turns"] += 1
+
+
+def current_order(state):
+    """Seat order for the current round (rotated if the rule is on)."""
+    order = state["turn_order"]
+    start = state.get("round_start", 0)
+    if not state.get("rotate_first"):
+        return list(order)
+    return [order[(start + i) % len(order)] for i in range(len(order))]
 
 
 # ---------------------------------------------------------------------------
@@ -484,7 +501,7 @@ def observe(state, player):
         "active_player": state["active_player"],
         "viewer": player,
         "movement_die": state["current_roll"],
-        "turn_order": list(state["turn_order"]),
+        "turn_order": current_order(state),
         "board": {
             "width": board.width, "height": board.height,
             "gates": {p: list(c) for p, c in board.gates.items()},
@@ -583,7 +600,14 @@ def apply_action(state, player, turn_id, action_id, reason=None):
         a_roll, d_roll = battle_die(), battle_die()
         a_score = a_roll + equipment_bonus(len(me["equipment"]), rules)
         d_score = d_roll + equipment_bonus(len(them["equipment"]), rules)
-        winner = player if a_score > d_score else opponent  # tie -> defender
+        if a_score > d_score:
+            winner = player
+        elif a_score < d_score:
+            winner = opponent
+        elif rules["combat"]["tie_goes_to_defender"]:
+            winner = opponent
+        else:
+            winner = player
         events.append({
             "type": "duel", "attacker": player, "defender": opponent,
             "attacker_roll": a_roll, "defender_roll": d_roll,
@@ -698,11 +722,16 @@ def apply_action(state, player, turn_id, action_id, reason=None):
 
 def _advance(state):
     """Move to the next player; handle round wrap, transitions, endings."""
+    if state["status"] != "in_progress":
+        return  # game already won this turn; keep the final round's order
     rules = state["rules"]
     state["turn_index"] += 1
     if state["turn_index"] >= len(state["turn_order"]):
         state["turn_index"] = 0
         state["round"] += 1
+        if state.get("rotate_first"):
+            state["round_start"] = (state.get("round_start", 0) + 1) % len(
+                state["turn_order"])
         if state["phase"] == 1:
             l1 = rules["level1"]
             if state["first_challenger"] is not None:
@@ -753,6 +782,7 @@ def _transition_to_level2(state):
     state["phase"] = 2
     state["round"] = 1
     state["turn_index"] = 0
+    state["round_start"] = 0  # Level 2 restarts from the base order
     _start_turn(state)
 
 
@@ -932,7 +962,7 @@ def result(state):
         "total_rounds": ((state["rounds_level1"] or 0)
                          + (state["round"] if state["phase"] == 2 else 0)),
         "policies": state.get("policies", {}),
-        "turn_order": list(state["turn_order"]),
+        "turn_order": current_order(state),
         "players": metrics,
         "high_impact_events": high_impact,
     }

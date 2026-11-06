@@ -37,15 +37,17 @@ timeouts, no phase-2 draws.
 
 | Metric | Mean | Median | p90 | p95 | Max |
 |---|---:|---:|---:|---:|---:|
-| Full-game rounds | 15.66 | 15 | 18 | 19 | 24 |
+| Full-game rounds | 15.47 | 15 | 18 | 18 | 24 |
 | Full-game turns | 60.18 | 59 | 69 | 72 | 95 |
 | Level 1 rounds | 9.11 | 9 | 9 | 10 | 11 |
-| Level 2 rounds | 6.55 | 6 | 9 | 9 | 15 |
+| Level 2 rounds | 6.36 | 6 | 8 | 9 | 15 |
 
 Games are **decisive but shorter than the 20–35 round target**
 (SPEC §13). Level 1 is stable at 9–10 rounds; Level 2 resolves in
 about 6 rounds because the two-seal entry plus two Emperor hits at a
-44.8% hit rate finishes fast.
+44.8% hit rate finishes fast. (Durations in this report come from the
+final engine, which no longer counts one phantom round after a
+last-seat win; see FINDINGS_V02.md experiment 4.)
 
 ## 2. Collected versus auto-granted equipment
 
@@ -185,7 +187,8 @@ What the counters could not capture, agreed across tables:
    65.7%; last-seat win rate 18.7% → 20.7%; auto-granted 0.43 → 0.70
    per player; median full game 15 → 14 rounds; still 1,000/1,000
    decisive. Grace removal compresses collection and slightly
-   flattens the seat skew; `grace_full_rounds: 1` is the follow-up.
+   flattens the seat skew; grace 1 was subsequently tested and is the
+   recommended compromise (see FINDINGS_V02.md).
 2. **`rules_v02_emperor3hits.json` — `emperor_hits_to_win: 3`.** The
    cleanest lever toward the 20–35 round target. Watch phase-2
    timeouts (currently zero) and whether paid attacks dominate.

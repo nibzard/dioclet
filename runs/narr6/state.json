@@ -1,0 +1,4924 @@
+{
+  "active_player": "P1",
+  "created": "2026-11-06T21:43:12Z",
+  "current_roll": 2,
+  "district_equipment": {
+    "A": "pilum",
+    "B": "scutum",
+    "C": "pugio",
+    "D": "lorica_segmentata",
+    "E": "galea",
+    "F": "gladius"
+  },
+  "end_reason": "emperor",
+  "engine_version": "0.1.0",
+  "event_seq": 57,
+  "events": [
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0032",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 1,
+      "events": [
+        {
+          "district": "C",
+          "item": "pugio",
+          "type": "district_revealed"
+        },
+        {
+          "district": "C",
+          "item": "pugio",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Vela storms district C, eyeing the barracks floor beneath it.",
+      "round": 1,
+      "turn_id": 1
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0027",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 2,
+      "events": [
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "type": "district_revealed"
+        },
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Hasta claims the far district D before the crowd arrives.",
+      "round": 1,
+      "turn_id": 2
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0012",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 3,
+      "events": [
+        {
+          "district": "A",
+          "item": "pilum",
+          "type": "district_revealed"
+        },
+        {
+          "district": "A",
+          "item": "pilum",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Stola slips into district A, the closest door to her gate.",
+      "round": 1,
+      "turn_id": 3
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0005",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 4,
+      "events": [
+        {
+          "district": "B",
+          "item": "scutum",
+          "type": "district_revealed"
+        },
+        {
+          "district": "B",
+          "item": "scutum",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Stratega steps south to open district B.",
+      "round": 1,
+      "turn_id": 4
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            4,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0007",
+      "dice_used": [
+        6
+      ],
+      "equipment_count_after": 1,
+      "event_seq": 5,
+      "events": [
+        {
+          "player": "P2",
+          "roll": 6,
+          "success": true,
+          "type": "guard_post"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P2",
+          "type": "glory_earned_guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        4,
+        1
+      ],
+      "reason": "Vela takes the guard post gamble, one roll for one Glory.",
+      "round": 2,
+      "turn_id": 5
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0004",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 6,
+      "events": [
+        {
+          "district": "E",
+          "item": "galea",
+          "type": "district_revealed"
+        },
+        {
+          "district": "E",
+          "item": "galea",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Hasta edges east and opens district E.",
+      "round": 2,
+      "turn_id": 6
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0036",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 7,
+      "events": [
+        {
+          "district": "F",
+          "item": "gladius",
+          "type": "district_revealed"
+        },
+        {
+          "district": "F",
+          "item": "gladius",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "Stola marches to district F, the last sealed door.",
+      "round": 2,
+      "turn_id": 7
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0029",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 8,
+      "events": [
+        {
+          "district": "A",
+          "item": "pilum",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Stratega grabs spare steel from district A.",
+      "round": 2,
+      "turn_id": 8
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0029",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 9,
+      "events": [
+        {
+          "district": "F",
+          "item": "gladius",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "Vela cuts to district F for the gladius.",
+      "round": 3,
+      "turn_id": 9
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0019",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 10,
+      "events": [
+        {
+          "district": "B",
+          "item": "scutum",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Hasta jogs to B for the scutum.",
+      "round": 3,
+      "turn_id": 10
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0007",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 11,
+      "events": [
+        {
+          "district": "E",
+          "item": "galea",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Stola steps next door to E for the galea.",
+      "round": 3,
+      "turn_id": 11
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0025",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 12,
+      "events": [
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Stratega takes the lorica from district D.",
+      "round": 3,
+      "turn_id": 12
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0037",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 13,
+      "events": [
+        {
+          "district": "E",
+          "item": "galea",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Vela snatches the galea from E, three pieces strong.",
+      "round": 4,
+      "turn_id": 13
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0023",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 14,
+      "events": [
+        {
+          "district": "A",
+          "item": "pilum",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Hasta picks up the pilum at A.",
+      "round": 4,
+      "turn_id": 14
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0032",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 15,
+      "events": [
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Stola takes the lorica one step away.",
+      "round": 4,
+      "turn_id": 15
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 16,
+      "events": [
+        {
+          "district": "C",
+          "item": "pugio",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Stratega crosses to C for the pugio.",
+      "round": 4,
+      "turn_id": 16
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0034",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 17,
+      "events": [
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Vela pulls the lorica from D.",
+      "round": 5,
+      "turn_id": 17
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0031",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 18,
+      "events": [
+        {
+          "district": "C",
+          "item": "pugio",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Hasta takes the pugio from C.",
+      "round": 5,
+      "turn_id": 18
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0034",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 19,
+      "events": [
+        {
+          "district": "C",
+          "item": "pugio",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Stola completes her set at the barracks, pugio in hand.",
+      "round": 5,
+      "turn_id": 19
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 20,
+      "events": [
+        {
+          "district": "F",
+          "item": "gladius",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "Stratega claims the gladius at F.",
+      "round": 5,
+      "turn_id": 20
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0019",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 21,
+      "events": [
+        {
+          "district": "B",
+          "item": "scutum",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Vela finishes her kit with the scutum at B.",
+      "round": 6,
+      "turn_id": 21
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            4,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0010",
+      "dice_used": [
+        5
+      ],
+      "equipment_count_after": 5,
+      "event_seq": 22,
+      "events": [
+        {
+          "player": "P1",
+          "roll": 5,
+          "success": true,
+          "type": "guard_post"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P1",
+          "type": "glory_earned_guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        4,
+        1
+      ],
+      "reason": "Hasta bides at the guard post, saving strength for the Emperor.",
+      "round": 6,
+      "turn_id": 22
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0029",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 23,
+      "events": [
+        {
+          "district": "B",
+          "item": "scutum",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Stola takes the last scutum at B.",
+      "round": 6,
+      "turn_id": 23
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 24,
+      "events": [
+        {
+          "district": "E",
+          "item": "galea",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Stratega seizes the galea and completes her arsenal.",
+      "round": 6,
+      "turn_id": 24
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0030",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 25,
+      "events": [
+        {
+          "district": "A",
+          "item": "pilum",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Vela runs for the last pilum at A.",
+      "round": 7,
+      "turn_id": 25
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0005",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 26,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        4,
+        2
+      ],
+      "reason": "Hasta edges along the wall toward district F.",
+      "round": 7,
+      "turn_id": 26
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "claim_checkpoint",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 27,
+      "events": [
+        {
+          "player": "P3",
+          "round": 7,
+          "type": "first_challenger"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P3",
+          "type": "glory_earned_first_challenger"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Stola reaches the checkpoint first, one step from her nose.",
+      "round": 7,
+      "turn_id": 27
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0010",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 28,
+      "events": [],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Stratega slides onto the peristyle tiles early.",
+      "round": 7,
+      "turn_id": 28
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0039",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 29,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Vela posts herself on the barracks floor before the gates open.",
+      "round": 8,
+      "turn_id": 29
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0035",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 30,
+      "events": [
+        {
+          "district": "F",
+          "item": "gladius",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "Hasta grabs the gladius at F, fully armed at last.",
+      "round": 8,
+      "turn_id": 30
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0043",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 31,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Stola waits by the cellar stairs, one step from her post.",
+      "round": 8,
+      "turn_id": 31
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0031",
+      "dice_used": [
+        5
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 32,
+      "events": [
+        {
+          "player": "P0",
+          "roll": 5,
+          "success": true,
+          "type": "guard_post"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P0",
+          "type": "glory_earned_guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        0,
+        1
+      ],
+      "reason": "Stratega earns Glory at the west post to spend at the peristyle.",
+      "round": 8,
+      "turn_id": 32
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            4,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0031",
+      "dice_used": [
+        4
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 33,
+      "events": [
+        {
+          "player": "P2",
+          "roll": 4,
+          "success": true,
+          "type": "guard_post"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P2",
+          "type": "glory_earned_guard_post"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        4,
+        1
+      ],
+      "reason": "Vela rolls the dice once more, Glory fills her purse.",
+      "round": 9,
+      "turn_id": 33
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          3
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0024",
+      "dice_used": [
+        1
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 34,
+      "events": [
+        {
+          "player": "P1",
+          "roll": 1,
+          "success": false,
+          "type": "guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        4,
+        3
+      ],
+      "reason": "Hasta banks one more Glory, hoarding strength for the throne.",
+      "round": 9,
+      "turn_id": 34
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0006",
+      "dice_used": [
+        1
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 35,
+      "events": [
+        {
+          "player": "P3",
+          "roll": 1,
+          "success": false,
+          "type": "guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        0,
+        1
+      ],
+      "reason": "Stola tries the close guard post before the horn sounds.",
+      "round": 9,
+      "turn_id": 35
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0006",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 36,
+      "events": [
+        {
+          "auto_granted": {
+            "P0": [],
+            "P1": [],
+            "P2": [],
+            "P3": []
+          },
+          "from_phase": 1,
+          "phase1_timeout": false,
+          "to_phase": 2,
+          "type": "phase_transition"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Stratega steps toward the peristyle court.",
+      "round": 9,
+      "turn_id": 36
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 37,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P2",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P2",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Vela buys her first seal with Glory, the sure thing.",
+      "round": 1,
+      "turn_id": 37
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            4,
+            2
+          ],
+          [
+            3,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0002",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 38,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        3,
+        2
+      ],
+      "reason": "Hasta starts the long walk toward the cellars.",
+      "round": 1,
+      "turn_id": 38
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 39,
+      "events": [
+        {
+          "order": 1,
+          "player": "P3",
+          "roll": 3,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Stola knocks at the nearest seal, the cellars.",
+      "round": 1,
+      "turn_id": 39
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0003",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 40,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P0",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P0",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Stratega spends her Glory at the peristyle without hesitation.",
+      "round": 1,
+      "turn_id": 40
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        6,
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 41,
+      "events": [
+        {
+          "guard_roll": 6,
+          "guard_score": 7,
+          "order": 2,
+          "player": "P2",
+          "player_roll": 6,
+          "player_score": 8,
+          "site": "guard_barracks",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 4,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Vela grins and duels the barracks guard for her second seal.",
+      "round": 2,
+      "turn_id": 41
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0004",
+      "dice_used": [
+        2,
+        5
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 42,
+      "events": [
+        {
+          "guard_roll": 5,
+          "guard_score": 6,
+          "player": "P1",
+          "player_roll": 2,
+          "player_score": 4,
+          "site": "guard_barracks",
+          "type": "seal_failed"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Hasta wrestles the barracks guard for a free seal.",
+      "round": 2,
+      "turn_id": 42
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 43,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P3",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 2,
+          "player": "P3",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Stola pays at the peristyle to stay in the race.",
+      "round": 2,
+      "turn_id": 43
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        4
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 44,
+      "events": [
+        {
+          "order": 2,
+          "player": "P0",
+          "roll": 4,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Stratega tries the cellars for her second seal.",
+      "round": 2,
+      "turn_id": 44
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0026",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 45,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Vela marches two steps shy of the imperial door.",
+      "round": 3,
+      "turn_id": 45
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        2
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 46,
+      "events": [
+        {
+          "player": "P1",
+          "roll": 2,
+          "site": "cellars",
+          "type": "seal_failed"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Hasta crosses to the cellars for the safer seal.",
+      "round": 3,
+      "turn_id": 46
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0011",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 47,
+      "events": [],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Stola creeps to the chamber door at the retreat square.",
+      "round": 3,
+      "turn_id": 47
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0011",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 48,
+      "events": [],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        1,
+        2
+      ],
+      "reason": "Stratega begins the walk to the throne room.",
+      "round": 3,
+      "turn_id": 48
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        4,
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 49,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P2",
+          "purpose": "emperor_attack",
+          "type": "glory_spent"
+        },
+        {
+          "emperor_roll": 6,
+          "emperor_score": 8,
+          "player": "P2",
+          "player_roll": 4,
+          "player_score": 8,
+          "retreat_to": [
+            2,
+            3
+          ],
+          "spend_glory": true,
+          "type": "emperor_miss"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Vela hurls herself at the Emperor, Glory blazing.",
+      "round": 4,
+      "turn_id": 49
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        5
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 50,
+      "events": [
+        {
+          "order": 1,
+          "player": "P1",
+          "roll": 5,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 4,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Hasta rattles the cellar door again.",
+      "round": 4,
+      "turn_id": 50
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        3,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 51,
+      "events": [
+        {
+          "emperor_roll": 3,
+          "emperor_score": 5,
+          "player": "P3",
+          "player_roll": 3,
+          "player_score": 5,
+          "retreat_to": [
+            2,
+            3
+          ],
+          "spend_glory": false,
+          "type": "emperor_miss"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Stola strikes the Emperor bare-handed of Glory.",
+      "round": 4,
+      "turn_id": 51
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        1,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 52,
+      "events": [
+        {
+          "emperor_roll": 3,
+          "emperor_score": 5,
+          "player": "P0",
+          "player_roll": 1,
+          "player_score": 3,
+          "retreat_to": [
+            2,
+            3
+          ],
+          "spend_glory": false,
+          "type": "emperor_miss"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Stratega gambles her blade at the throne.",
+      "round": 4,
+      "turn_id": 52
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        4,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 53,
+      "events": [
+        {
+          "emperor_roll": 3,
+          "emperor_score": 5,
+          "hits": 1,
+          "player": "P2",
+          "player_roll": 4,
+          "player_score": 6,
+          "spend_glory": false,
+          "type": "emperor_hit"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "Vela lunges again from the retreat square.",
+      "round": 5,
+      "turn_id": 53
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0003",
+      "dice_used": [
+        1,
+        4
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 54,
+      "events": [
+        {
+          "guard_roll": 4,
+          "guard_score": 5,
+          "player": "P1",
+          "player_roll": 1,
+          "player_score": 3,
+          "site": "guard_barracks",
+          "type": "seal_failed"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Hasta returns to the barracks, Glory still sealed in his purse.",
+      "round": 5,
+      "turn_id": 54
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        3,
+        2
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 55,
+      "events": [
+        {
+          "emperor_roll": 2,
+          "emperor_score": 4,
+          "hits": 1,
+          "player": "P3",
+          "player_roll": 3,
+          "player_score": 5,
+          "spend_glory": false,
+          "type": "emperor_hit"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "Stola strikes again, chase the leader.",
+      "round": 5,
+      "turn_id": 55
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        6,
+        4
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 56,
+      "events": [
+        {
+          "emperor_roll": 4,
+          "emperor_score": 6,
+          "hits": 1,
+          "player": "P0",
+          "player_roll": 6,
+          "player_score": 8,
+          "spend_glory": false,
+          "type": "emperor_hit"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "Stratega must strike now or watch the crown slip away.",
+      "round": 5,
+      "turn_id": 56
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        6,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 57,
+      "events": [
+        {
+          "emperor_roll": 3,
+          "emperor_score": 5,
+          "hits": 2,
+          "player": "P2",
+          "player_roll": 6,
+          "player_score": 8,
+          "spend_glory": false,
+          "type": "emperor_hit"
+        },
+        {
+          "player": "P2",
+          "type": "game_won"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "Vela goes for the kill, all or nothing.",
+      "round": 6,
+      "turn_id": 57
+    }
+  ],
+  "first_challenger": "P3",
+  "game_id": "narr6",
+  "phase": 2,
+  "phase1_timeout": false,
+  "phase2_timeout": false,
+  "players": {
+    "P0": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        2,
+        0
+      ],
+      "glory": 0,
+      "hits": 1,
+      "pos": [
+        2,
+        4
+      ],
+      "seals": [
+        "peristyle",
+        "cellars"
+      ],
+      "turns": 14
+    },
+    "P1": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        4,
+        2
+      ],
+      "glory": 1,
+      "hits": 0,
+      "pos": [
+        3,
+        1
+      ],
+      "seals": [
+        "cellars"
+      ],
+      "turns": 15
+    },
+    "P2": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        2,
+        4
+      ],
+      "glory": 0,
+      "hits": 2,
+      "pos": [
+        2,
+        4
+      ],
+      "seals": [
+        "peristyle",
+        "guard_barracks"
+      ],
+      "turns": 15
+    },
+    "P3": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        0,
+        2
+      ],
+      "glory": 0,
+      "hits": 1,
+      "pos": [
+        2,
+        4
+      ],
+      "seals": [
+        "cellars",
+        "peristyle"
+      ],
+      "turns": 14
+    }
+  },
+  "revealed": {
+    "A": "pilum",
+    "B": "scutum",
+    "C": "pugio",
+    "D": "lorica_segmentata",
+    "E": "galea",
+    "F": "gladius"
+  },
+  "rng": {
+    "battle": [
+      3,
+      [
+        44136848,
+        3862184995,
+        4191091910,
+        2326712842,
+        837336990,
+        1804409772,
+        900348919,
+        1996460826,
+        4075810376,
+        2405426107,
+        1052664418,
+        2598736447,
+        1933734158,
+        1159706615,
+        3191561880,
+        1818139649,
+        928789525,
+        1027333785,
+        2923556899,
+        1834370411,
+        2172078941,
+        2798064759,
+        1411257191,
+        2632596671,
+        1132119977,
+        2500567902,
+        3754030941,
+        3080205369,
+        1092871855,
+        302704430,
+        3934526477,
+        2621864760,
+        4117503290,
+        2516079148,
+        2162682436,
+        3756200300,
+        832452085,
+        2139944325,
+        3421031409,
+        3566184387,
+        2112236902,
+        455755552,
+        3554537069,
+        3880009197,
+        3178151490,
+        1063792834,
+        2254250247,
+        4255854468,
+        2949671673,
+        4277722432,
+        878626958,
+        3644261450,
+        4050831484,
+        4051651711,
+        3467427115,
+        434679552,
+        3393656255,
+        1215617215,
+        2232875554,
+        1170262973,
+        1741291599,
+        4280412886,
+        3817469240,
+        3349705076,
+        3332147873,
+        3455197341,
+        2703004646,
+        1298550591,
+        3276973860,
+        706277506,
+        1362780296,
+        1991180429,
+        1068051346,
+        214320712,
+        845912300,
+        4275709392,
+        2726421697,
+        87900278,
+        2264526537,
+        3462898582,
+        3214534043,
+        728257132,
+        3290573527,
+        1686579367,
+        1794734816,
+        3348415785,
+        1167293083,
+        888415079,
+        4252042883,
+        384750391,
+        627148286,
+        2885971104,
+        2519933846,
+        2551591586,
+        792790472,
+        1033344660,
+        3886005885,
+        3138148133,
+        2396154117,
+        800457211,
+        2185702952,
+        2887140647,
+        731516458,
+        1378871452,
+        2348213038,
+        1804411830,
+        1556178944,
+        1612128054,
+        977219188,
+        1393498907,
+        2748332343,
+        1647490070,
+        4063202246,
+        683617846,
+        2448090205,
+        167363064,
+        1764681395,
+        4210186110,
+        4048761632,
+        1265478174,
+        4048890451,
+        213126773,
+        1261975221,
+        3266514530,
+        2538860775,
+        2640987763,
+        3016495511,
+        2965891525,
+        66063009,
+        966700448,
+        1398137644,
+        1350899916,
+        964079005,
+        2447985473,
+        3310607626,
+        1821454722,
+        913786477,
+        1714194428,
+        354076487,
+        93774849,
+        8202575,
+        3172165243,
+        3307425537,
+        2576139421,
+        748948436,
+        1713051922,
+        353546324,
+        1282637151,
+        365541745,
+        3078801609,
+        3243760939,
+        12452260,
+        1841685393,
+        2662114484,
+        3692473277,
+        3333442557,
+        4080753727,
+        2640229528,
+        291626953,
+        4245133295,
+        216978978,
+        498417337,
+        3525917223,
+        2342945526,
+        3061635579,
+        2976310861,
+        2356787363,
+        3003029565,
+        377735257,
+        3170240758,
+        1945466661,
+        573907286,
+        2700187177,
+        498171641,
+        2088806706,
+        3720769455,
+        2028603270,
+        460566393,
+        4207879995,
+        896034263,
+        1855887735,
+        3390629687,
+        518639893,
+        1994566546,
+        3300579620,
+        444057745,
+        2146730698,
+        2465907945,
+        2359043171,
+        572704886,
+        4125339256,
+        3147821244,
+        3729339096,
+        1916311313,
+        2134177609,
+        4045912951,
+        3510563389,
+        1512482565,
+        2329551883,
+        3855031944,
+        1095542501,
+        794155577,
+        1125272305,
+        3142655155,
+        889692246,
+        529265795,
+        4059834991,
+        4192116013,
+        2769034894,
+        3045865762,
+        1089388347,
+        4141616530,
+        4290279524,
+        1375551038,
+        2806352764,
+        3407444066,
+        4149176545,
+        768544509,
+        1231169867,
+        104786260,
+        32902010,
+        3995385573,
+        1362817955,
+        1046584454,
+        1869338561,
+        4150850866,
+        3348241212,
+        2069001360,
+        2627959999,
+        2622459982,
+        3558374475,
+        1151382265,
+        1332948486,
+        967032886,
+        1220127151,
+        1110062748,
+        1435183604,
+        3407684742,
+        3893543933,
+        2501407423,
+        2352553503,
+        247498648,
+        3283578899,
+        698240660,
+        2132349953,
+        876063677,
+        2482081681,
+        2215806100,
+        3480302876,
+        3797589065,
+        2038853580,
+        3572692768,
+        3550500026,
+        409697861,
+        2820900442,
+        1664899197,
+        4004135068,
+        964787892,
+        303709202,
+        2484500246,
+        1032626631,
+        467277883,
+        2356221368,
+        3730984212,
+        2810884620,
+        2656206208,
+        1925332768,
+        500330870,
+        1091039967,
+        1190647058,
+        1003853929,
+        1502791034,
+        2672320513,
+        2123841354,
+        417173974,
+        3219268858,
+        1239636136,
+        528899941,
+        1274506042,
+        1995117317,
+        1681156661,
+        1009036171,
+        1887097626,
+        1286885297,
+        216501274,
+        2818501677,
+        595711279,
+        1802031353,
+        3629274941,
+        2024754019,
+        3045603028,
+        2080658935,
+        3975203954,
+        3368455762,
+        343753526,
+        2178189938,
+        4125072409,
+        3472646931,
+        686953227,
+        178000888,
+        127760891,
+        1486178541,
+        2250066504,
+        2923012471,
+        12892420,
+        2940114757,
+        1548058261,
+        1589440700,
+        3650890883,
+        671044467,
+        3961867666,
+        2535984989,
+        125377524,
+        2941491771,
+        3012837166,
+        3522513274,
+        1277886132,
+        1659560574,
+        3085815173,
+        978738075,
+        753595538,
+        1255024709,
+        2714992288,
+        1257636259,
+        979278278,
+        970518366,
+        2132371296,
+        1362002393,
+        2167383242,
+        1411267307,
+        750271063,
+        1641674325,
+        3436623283,
+        1037029189,
+        3181576616,
+        1211589213,
+        3151359145,
+        2627345495,
+        181405639,
+        1375509397,
+        2116802088,
+        2332071608,
+        49639338,
+        2261858303,
+        2760069361,
+        2554183138,
+        3542811723,
+        1903461143,
+        1149169012,
+        1148247361,
+        3417975313,
+        3887684580,
+        2269554355,
+        1335370927,
+        2336892611,
+        303315252,
+        616304044,
+        455297117,
+        516294851,
+        2595374423,
+        2595837977,
+        3006489108,
+        41486026,
+        3248833816,
+        952400975,
+        687537481,
+        3502564689,
+        1408690086,
+        3711188152,
+        262628789,
+        21518743,
+        2806224721,
+        1201760868,
+        251752909,
+        325612211,
+        3159024030,
+        3668879711,
+        3707609390,
+        1919032466,
+        3109291872,
+        1103155379,
+        1779555622,
+        1076868657,
+        1810008694,
+        166398885,
+        3262124502,
+        2744343952,
+        850198699,
+        4260798745,
+        1589379485,
+        2000718176,
+        1569136317,
+        609787484,
+        887446076,
+        1545045181,
+        1986668516,
+        3372126454,
+        3440616218,
+        2228640562,
+        3101151956,
+        3285735151,
+        3596244978,
+        3997014521,
+        140510414,
+        4098423960,
+        3853611114,
+        1046994580,
+        2081778310,
+        2878151756,
+        62070706,
+        1315234494,
+        654363949,
+        3287580048,
+        1483560826,
+        1694870613,
+        2555397445,
+        2464692999,
+        3368919309,
+        287582156,
+        3977898473,
+        3288494200,
+        825643083,
+        4234561637,
+        2333618220,
+        2590755847,
+        2553414583,
+        1715851889,
+        3661985116,
+        1619569893,
+        1371961287,
+        1461338722,
+        3232602827,
+        2262941899,
+        1362035658,
+        2041085203,
+        1066437017,
+        3966016241,
+        931332353,
+        4113256611,
+        893180473,
+        2907877894,
+        2645744154,
+        2549506226,
+        1605163611,
+        3443885757,
+        3792115701,
+        1214130920,
+        1767094019,
+        1776342188,
+        3875004763,
+        4025692375,
+        1417239387,
+        466054074,
+        634408474,
+        953351956,
+        3543335638,
+        3874019211,
+        1545709165,
+        2019102875,
+        2931531767,
+        3103445592,
+        2888685893,
+        3237862438,
+        1125998284,
+        923703419,
+        3037759984,
+        794769273,
+        2592635256,
+        1490955381,
+        4161629351,
+        237013997,
+        4291434992,
+        3444496684,
+        463747141,
+        2037937861,
+        1442515229,
+        2952917903,
+        4261602842,
+        415599883,
+        2472418145,
+        2447180895,
+        4139386644,
+        3270057092,
+        1283467830,
+        3781200853,
+        1536454404,
+        750148064,
+        4060404982,
+        3253516869,
+        1400523112,
+        3958820368,
+        1927705743,
+        1038722681,
+        282599295,
+        1000544207,
+        785777407,
+        1040824956,
+        2929948413,
+        3413764916,
+        3430908848,
+        8812317,
+        1032413941,
+        2759294522,
+        3949619960,
+        876933190,
+        399407865,
+        1930334204,
+        518839690,
+        3427124952,
+        3686183435,
+        2105442016,
+        3080739090,
+        3862868638,
+        523751682,
+        211134130,
+        2591390629,
+        2077065,
+        134548165,
+        2114980796,
+        65941385,
+        1137738065,
+        3872802563,
+        2806467822,
+        3597745710,
+        3727780704,
+        1528172486,
+        3848130087,
+        1266070634,
+        4123233026,
+        856693861,
+        1803206464,
+        230892781,
+        2445533712,
+        906812796,
+        2090602008,
+        891316643,
+        882035819,
+        58019739,
+        2514097668,
+        2367185019,
+        3707379738,
+        3908906063,
+        1709650395,
+        2975655798,
+        810166905,
+        3609026604,
+        1533353369,
+        3992091407,
+        272670852,
+        3209467043,
+        3808012551,
+        798665141,
+        485235852,
+        2397914212,
+        202090617,
+        3074802484,
+        2800202384,
+        1613690609,
+        1410759887,
+        1116903247,
+        4134966590,
+        4241987788,
+        1226600748,
+        4228814029,
+        1804063646,
+        3540490320,
+        3689369766,
+        4204362437,
+        3608202139,
+        2374756747,
+        2799182565,
+        998867372,
+        3388836569,
+        1208339729,
+        3755568612,
+        3214409165,
+        1468119514,
+        3863758873,
+        3801637969,
+        1124800748,
+        1623603941,
+        910426444,
+        1730679271,
+        3865757653,
+        2944751684,
+        3042280004,
+        1665906195,
+        2589068093,
+        2368283041,
+        3948786779,
+        93978014,
+        3937165404,
+        2982938733,
+        117977579,
+        198543,
+        1523191728,
+        3029696845,
+        4182662552,
+        2021528472,
+        3226153638,
+        3171156943,
+        1994890905,
+        2770267742,
+        1277103114,
+        1203394855,
+        4265859989,
+        1809335739,
+        3270956783,
+        653204934,
+        1790242937,
+        2702920597,
+        1189286513,
+        3595243122,
+        3970866993,
+        2676623256,
+        2028516309,
+        2634257298,
+        1709735905,
+        3590874321,
+        154907643,
+        4064984133,
+        3102777373,
+        3574863278,
+        2309893182,
+        40
+      ],
+      null
+    ],
+    "movement": [
+      3,
+      [
+        1629808971,
+        1223731521,
+        2606849670,
+        2279133984,
+        241276303,
+        1467295608,
+        1241528451,
+        254640561,
+        2067663703,
+        3068599566,
+        3641673743,
+        4203648494,
+        3332566307,
+        2838860630,
+        1719737443,
+        321116482,
+        3834242293,
+        3964498765,
+        1164855146,
+        159027408,
+        2558204066,
+        1187586925,
+        1162602491,
+        3764285582,
+        3511452557,
+        3784409653,
+        3674515068,
+        843578789,
+        3705606364,
+        296797068,
+        56151462,
+        527337988,
+        2213656821,
+        594785435,
+        243898329,
+        1518480942,
+        3483345183,
+        1586128212,
+        3609681533,
+        2272622911,
+        744625869,
+        2088820994,
+        1529419900,
+        2863874210,
+        1727997213,
+        3670805434,
+        624290032,
+        1537268017,
+        2541102867,
+        2201327880,
+        3828034201,
+        1915728161,
+        2989887016,
+        4167568414,
+        1534696304,
+        3123517299,
+        3689930767,
+        4131719030,
+        3138136292,
+        2774193670,
+        741992315,
+        1567561202,
+        2886729838,
+        404485875,
+        1577946808,
+        2190590605,
+        1981177512,
+        2731187906,
+        1676806622,
+        4272056839,
+        2696512986,
+        3457050842,
+        749724217,
+        3303342388,
+        362655927,
+        3004881603,
+        2868886846,
+        982256476,
+        827731474,
+        3169098480,
+        3074894883,
+        3175536185,
+        1780964797,
+        1559545173,
+        3402136597,
+        975928545,
+        3356389716,
+        3825774139,
+        2816720724,
+        642231180,
+        4030994530,
+        462610426,
+        3233139060,
+        518441820,
+        3468417664,
+        959404896,
+        3361743795,
+        1189029692,
+        118027007,
+        756714705,
+        2639068890,
+        1357684110,
+        2980735576,
+        1635905194,
+        691968314,
+        3598345421,
+        489042766,
+        538111780,
+        2138077781,
+        1413630093,
+        3700279944,
+        3133575299,
+        2930184590,
+        1062049036,
+        3431075088,
+        3406749348,
+        3991145387,
+        3100622238,
+        2610362007,
+        1012079757,
+        3989338630,
+        1874116050,
+        1156683182,
+        3810485515,
+        735747070,
+        2576055479,
+        406709167,
+        365383456,
+        1036266174,
+        2539749424,
+        1316416638,
+        1132473488,
+        4112985357,
+        3105231410,
+        1589769205,
+        1955519337,
+        4152479909,
+        4205796051,
+        2402177059,
+        682742290,
+        768953635,
+        1083837254,
+        365585760,
+        3561571999,
+        3140753478,
+        305618773,
+        800631173,
+        2817449795,
+        2460918935,
+        2679694585,
+        2572677731,
+        2179469790,
+        3808600743,
+        3205529993,
+        3777389087,
+        729792297,
+        8252352,
+        4060882029,
+        1733025049,
+        1169247470,
+        902349163,
+        4097092817,
+        189107617,
+        2152022330,
+        1998472433,
+        2440935905,
+        1654207290,
+        1493599659,
+        740102413,
+        1518427,
+        1157041799,
+        1717994755,
+        1779828148,
+        1588643746,
+        1287227384,
+        3312339720,
+        3893169290,
+        9152849,
+        1589112295,
+        4257765993,
+        2020000561,
+        537250683,
+        4288907217,
+        3997211100,
+        295195275,
+        3704284755,
+        1879633819,
+        1836416394,
+        433334140,
+        568368067,
+        1913293826,
+        313152179,
+        2501910764,
+        2112430966,
+        1510192366,
+        2393779333,
+        1640826790,
+        1098051217,
+        3310429274,
+        3578777567,
+        683917994,
+        3049700759,
+        2926659664,
+        3360221093,
+        3235401762,
+        1537592136,
+        2842656158,
+        410727221,
+        2697630826,
+        1986318374,
+        1454530832,
+        3508068185,
+        1951703663,
+        2642621408,
+        1784856723,
+        1481969791,
+        1505760178,
+        298678527,
+        3338310844,
+        2944078585,
+        2692758154,
+        3039660603,
+        1921093123,
+        2510540221,
+        165779689,
+        2629623422,
+        2312320337,
+        2177868793,
+        2216209353,
+        937939692,
+        45167237,
+        373129885,
+        2856105054,
+        1424669929,
+        191905677,
+        1463677863,
+        3342051459,
+        3004173244,
+        2715938970,
+        1519278346,
+        544307531,
+        4285442373,
+        4010973690,
+        2130870010,
+        1428227187,
+        2201352445,
+        3963512206,
+        1336176930,
+        2981810480,
+        1245010278,
+        938093933,
+        3883643665,
+        1593519514,
+        874340680,
+        598348739,
+        3793351877,
+        2525230054,
+        1156555586,
+        667639850,
+        3034130695,
+        2689403345,
+        2583277727,
+        1167869339,
+        1405916953,
+        3702240404,
+        3080432908,
+        798184800,
+        820889484,
+        2341578650,
+        2948297914,
+        3778727239,
+        2380710198,
+        1564192056,
+        2134935154,
+        1140254321,
+        1711328810,
+        3629574602,
+        3244180616,
+        1614003915,
+        3592053211,
+        2241507537,
+        2656206323,
+        1898159284,
+        2402859713,
+        2042693089,
+        1761802044,
+        388244870,
+        3581358093,
+        4247286723,
+        1751685138,
+        508049282,
+        3205835651,
+        2058279226,
+        1206566794,
+        2136009552,
+        3977536246,
+        175969047,
+        3968237525,
+        1469368122,
+        3261942590,
+        2890654797,
+        1307753953,
+        3565867477,
+        1912742375,
+        3218130683,
+        3279700591,
+        671994500,
+        1053150010,
+        3998358185,
+        814608127,
+        524427883,
+        1710949182,
+        3564225201,
+        2770444708,
+        794903822,
+        2390208243,
+        3898416755,
+        1614262286,
+        2402064402,
+        333249273,
+        3952845993,
+        1467761723,
+        380988285,
+        2020103510,
+        263210850,
+        2453918142,
+        3102238893,
+        3899701623,
+        3876141437,
+        306725343,
+        623376720,
+        1304949729,
+        2928581509,
+        3563438837,
+        2562678335,
+        3153710129,
+        2352596856,
+        968565129,
+        2564781328,
+        1112599922,
+        2198583850,
+        946683083,
+        813634005,
+        1197219222,
+        2023828263,
+        3267407815,
+        810814234,
+        2876574203,
+        1170288260,
+        859486734,
+        3016780452,
+        937397305,
+        1888028372,
+        168741165,
+        1979535162,
+        803090040,
+        2312110611,
+        2502089792,
+        2947894714,
+        3469532325,
+        2853354110,
+        1490300646,
+        882840767,
+        2426706687,
+        336514286,
+        3524332366,
+        3722307821,
+        2464340874,
+        3731351475,
+        3363527216,
+        2892106334,
+        1504892729,
+        1792232778,
+        3227770149,
+        3140814930,
+        2115216677,
+        185744974,
+        356424147,
+        1465605939,
+        2192256773,
+        1459090207,
+        3233223562,
+        508111294,
+        3376895247,
+        2239683979,
+        2333293004,
+        2594268032,
+        1780539423,
+        932341442,
+        1847958552,
+        4066788081,
+        801820455,
+        3504731169,
+        4245015238,
+        841625461,
+        3173083507,
+        3617979491,
+        3528570174,
+        1941967654,
+        446624945,
+        3271058440,
+        1980650718,
+        1661554687,
+        2917545021,
+        2078708126,
+        3123555635,
+        1783905479,
+        831427697,
+        60050256,
+        2848324657,
+        511821904,
+        1805554397,
+        3558749971,
+        471697234,
+        4055804996,
+        1688193331,
+        861082280,
+        3292853245,
+        243256291,
+        2185625857,
+        1508705664,
+        1367907838,
+        3921372751,
+        1229739233,
+        2322121220,
+        2744852536,
+        389310006,
+        255872352,
+        3608275180,
+        605882633,
+        2842179077,
+        1417150623,
+        350584227,
+        2037523295,
+        2228223932,
+        2219047123,
+        754159935,
+        3532314804,
+        1818526725,
+        3634550333,
+        3850563800,
+        497648740,
+        2923618307,
+        1765779573,
+        3700052177,
+        1109782360,
+        3105549549,
+        1509349887,
+        2655594945,
+        3361233231,
+        2430114371,
+        3865792567,
+        766978757,
+        253604430,
+        921219429,
+        2864136303,
+        3125713254,
+        3513089229,
+        1255605554,
+        3614933056,
+        3975637352,
+        1777311897,
+        2400024634,
+        4210943709,
+        2296055840,
+        61323978,
+        4006735901,
+        1313990725,
+        4187437212,
+        120849488,
+        2150566272,
+        3245941598,
+        1743428278,
+        3584526898,
+        3436731453,
+        551574332,
+        2228932604,
+        921667186,
+        4239872344,
+        2681623061,
+        3040655626,
+        1911667441,
+        2505506917,
+        2672003860,
+        734245307,
+        2533653982,
+        3397083009,
+        1008966091,
+        3417019527,
+        3935911416,
+        3511793487,
+        3730828390,
+        1772675114,
+        2715452596,
+        489776552,
+        3690917565,
+        4292376070,
+        1753593773,
+        1701407345,
+        3941702247,
+        1018168169,
+        154437864,
+        2448162379,
+        3306306047,
+        4154899737,
+        2493295665,
+        3587682144,
+        4062983465,
+        876068963,
+        1529624880,
+        2168947353,
+        2617623091,
+        1396879530,
+        4159530166,
+        3183473383,
+        670768028,
+        3019314923,
+        1576168663,
+        151076082,
+        808099283,
+        1591799827,
+        3009825727,
+        3032468051,
+        999077090,
+        710344112,
+        3894898024,
+        45406173,
+        4238875333,
+        686504434,
+        1829895689,
+        4028727462,
+        3061140781,
+        886475686,
+        2407455099,
+        1990668580,
+        3186348766,
+        2220411382,
+        194908958,
+        3745937763,
+        1641648742,
+        374883866,
+        460157683,
+        1194847294,
+        2003244403,
+        3494064910,
+        2497138025,
+        2943607967,
+        3832964226,
+        1321008583,
+        1936566174,
+        1298149905,
+        2347331375,
+        761114916,
+        3580227511,
+        1304126373,
+        3647197798,
+        2630032972,
+        3188715959,
+        1718557839,
+        96105632,
+        1855207420,
+        1592794539,
+        908056743,
+        3297511857,
+        1431674133,
+        4148631429,
+        3677128016,
+        3518905726,
+        1271673169,
+        1442785676,
+        2428170769,
+        1951907090,
+        55824273,
+        805700447,
+        2092675109,
+        3234582998,
+        3424833520,
+        3992247278,
+        1536574104,
+        2436937751,
+        967179167,
+        3769577737,
+        1711025515,
+        2556063161,
+        2613035075,
+        1132194121,
+        942596060,
+        3054848658,
+        24762148,
+        3011632297,
+        2548300712,
+        1266216775,
+        2456535211,
+        1733017241,
+        943858943,
+        3939783539,
+        149436604,
+        3739504954,
+        2743077819,
+        2530407751,
+        405874488,
+        2009789603,
+        2232824103,
+        2410548376,
+        238161854,
+        1491710989,
+        1450985016,
+        3872305389,
+        792234153,
+        2932043743,
+        1589878352,
+        2640754297,
+        702249796,
+        945616995,
+        3568213161,
+        207369354,
+        3198409112,
+        1626177828,
+        1803609725,
+        66201515,
+        1301338655,
+        3265993522,
+        1364949749,
+        1044330521,
+        73
+      ],
+      null
+    ],
+    "placement": [
+      3,
+      [
+        1046088294,
+        4050562012,
+        3431930640,
+        1111397942,
+        674645385,
+        3190289255,
+        2143366163,
+        2215666546,
+        1874703388,
+        565036675,
+        391379998,
+        961054509,
+        368417197,
+        2261941399,
+        573719045,
+        2400135458,
+        758979169,
+        598956492,
+        1558558815,
+        2080789778,
+        306162256,
+        852793096,
+        2630448314,
+        1526256927,
+        4150781793,
+        4162936732,
+        441162256,
+        3334029828,
+        430094181,
+        3176458775,
+        1908251816,
+        2229275619,
+        3594938759,
+        3741093145,
+        588946922,
+        2369050996,
+        1894133397,
+        2889760360,
+        2731822549,
+        2888089736,
+        3378329896,
+        3211455656,
+        2226430250,
+        1575478881,
+        2181750209,
+        1117568992,
+        3663686426,
+        2776709761,
+        4147618208,
+        1949102089,
+        190439394,
+        3919380725,
+        1382431630,
+        52397923,
+        2747426799,
+        1053406744,
+        3493232151,
+        2119780079,
+        572692301,
+        2894803040,
+        726703410,
+        1055061203,
+        2916136934,
+        71675733,
+        3123986921,
+        1573008809,
+        446730865,
+        2026586031,
+        1307743517,
+        1607993993,
+        1681629263,
+        1909952379,
+        3384575804,
+        786032041,
+        1818328924,
+        2830047137,
+        2183643232,
+        4218586241,
+        3152737566,
+        181501061,
+        2351622098,
+        3241032353,
+        2877451702,
+        1600835086,
+        2911094599,
+        2853084554,
+        1885351082,
+        2956836307,
+        2992600462,
+        1664732016,
+        2830929857,
+        404865867,
+        707794324,
+        1821506124,
+        3072149076,
+        3507488831,
+        517496166,
+        76986647,
+        576877104,
+        1540613630,
+        533391557,
+        2061329798,
+        4018206231,
+        3341340024,
+        776078799,
+        4196163373,
+        768374210,
+        30301279,
+        3851812650,
+        15389037,
+        2282192058,
+        3211679620,
+        3303750553,
+        246013358,
+        462378595,
+        3997214112,
+        347262957,
+        2113635593,
+        1119752541,
+        4164792325,
+        614694305,
+        327727414,
+        3053316470,
+        941366491,
+        103628027,
+        1924129253,
+        769768915,
+        3334055076,
+        2703983797,
+        33870599,
+        2020490768,
+        4082387346,
+        2481460653,
+        3305928701,
+        2981320798,
+        3673193760,
+        487001105,
+        333195050,
+        3935452182,
+        1636997861,
+        2018382257,
+        3370319773,
+        4070679110,
+        3779941983,
+        1267008470,
+        2403862603,
+        710773732,
+        1614780306,
+        3557645921,
+        2576996008,
+        3575641449,
+        3807310558,
+        3377153554,
+        1384529758,
+        3694496343,
+        935470660,
+        124294868,
+        3932209478,
+        1803291045,
+        259826916,
+        3671445373,
+        1810634346,
+        1431691455,
+        127850858,
+        4078338763,
+        1287340710,
+        2223779820,
+        2120591216,
+        135690085,
+        2368866624,
+        2277574112,
+        1321978892,
+        1039928431,
+        1285874906,
+        2988532399,
+        2758586584,
+        3402051297,
+        2742049501,
+        1610182479,
+        2063456257,
+        4238831196,
+        2303111843,
+        4163806043,
+        4076778457,
+        1376813690,
+        3358447445,
+        330437165,
+        1711054455,
+        2041395484,
+        4248847605,
+        910469184,
+        64901690,
+        3176900937,
+        125300733,
+        2485689077,
+        1914013583,
+        3509624859,
+        1132902483,
+        1749918193,
+        2917720168,
+        1601179617,
+        3270708452,
+        3243680855,
+        2514330159,
+        1032860320,
+        1850862668,
+        1723881101,
+        3449943348,
+        1768780839,
+        3409469594,
+        2489372246,
+        859294303,
+        1251984982,
+        3981781256,
+        3296042984,
+        813672645,
+        2252801853,
+        1223471482,
+        4219659128,
+        841837529,
+        3281822231,
+        2368163022,
+        3900392806,
+        573620148,
+        424578583,
+        4143684726,
+        2751669713,
+        2121899134,
+        2143807235,
+        1071759109,
+        2762380809,
+        2605853423,
+        2365338484,
+        3418986757,
+        3749013088,
+        3551525355,
+        3783970932,
+        95228579,
+        3388506737,
+        56583722,
+        1420354983,
+        210004453,
+        3629305578,
+        2526283199,
+        831013002,
+        3370258760,
+        2940053239,
+        4152583755,
+        1880227691,
+        2502784523,
+        1982305977,
+        3418666756,
+        1929390909,
+        3924611311,
+        1024523910,
+        3343538369,
+        578932196,
+        3276278988,
+        1617634323,
+        3023852001,
+        3916735684,
+        2352218197,
+        152950951,
+        84276582,
+        3056785258,
+        3374548239,
+        2109239540,
+        3449704288,
+        2869533294,
+        1170053134,
+        4048582400,
+        2102836619,
+        1403166145,
+        1104799763,
+        2764914089,
+        3504868256,
+        1452050915,
+        76675175,
+        3780137901,
+        754292131,
+        3105127203,
+        2558537554,
+        4258216960,
+        2070931944,
+        706235552,
+        2890281060,
+        1903231107,
+        977940138,
+        1608233373,
+        2995737649,
+        58505703,
+        1541316151,
+        3927386188,
+        682030404,
+        4236463446,
+        959814778,
+        2102484556,
+        3572685945,
+        3165453025,
+        232293810,
+        3310064669,
+        3939941240,
+        2094297291,
+        4105816105,
+        1699294649,
+        3591260492,
+        2760733828,
+        1673779362,
+        1502404427,
+        861489879,
+        3495134051,
+        3879986088,
+        3694794268,
+        699674551,
+        920909564,
+        2594442380,
+        1589491673,
+        2686539795,
+        2595604744,
+        754665948,
+        2974780814,
+        4160781207,
+        3638763223,
+        3691861425,
+        2012185969,
+        27515495,
+        2320071142,
+        771281778,
+        1862486859,
+        4093563926,
+        1551330897,
+        1733982876,
+        1075484438,
+        2177115403,
+        672693519,
+        1711734765,
+        3682431733,
+        726282278,
+        1042523587,
+        914007161,
+        3425077802,
+        924492506,
+        1976445796,
+        2554872833,
+        527901062,
+        1000917065,
+        861898862,
+        820412729,
+        3396258823,
+        1626871,
+        3254054030,
+        4216419991,
+        1492683908,
+        487563665,
+        20778846,
+        3051848169,
+        289021306,
+        687261704,
+        3954920209,
+        3070588181,
+        3506339625,
+        1423491256,
+        12867994,
+        643036919,
+        3122159191,
+        4222688300,
+        2555078814,
+        2754640404,
+        1526868533,
+        2816944088,
+        2003082515,
+        2815193840,
+        1286634920,
+        1206860080,
+        2179467388,
+        3044514857,
+        3210179819,
+        3508244844,
+        909959026,
+        3993520264,
+        3657599033,
+        1062932770,
+        2502448412,
+        647196873,
+        1700428105,
+        2746762076,
+        685055647,
+        1822190747,
+        3819405056,
+        3631536679,
+        1140952431,
+        1677889079,
+        3970233095,
+        1764092803,
+        1842055447,
+        2477968024,
+        795183970,
+        3901560265,
+        2113192929,
+        1968273946,
+        215453780,
+        4128818358,
+        1839006779,
+        109879085,
+        3700046731,
+        1741083502,
+        320473975,
+        1959650480,
+        3059633109,
+        4186752709,
+        327467039,
+        30611600,
+        4038781693,
+        1430088533,
+        1336121969,
+        765288698,
+        2536441192,
+        3275203190,
+        1707645698,
+        1760507065,
+        2327715005,
+        2109365425,
+        2854151850,
+        1000108952,
+        3964933052,
+        437592707,
+        2004111217,
+        3368421805,
+        2619854418,
+        3632832491,
+        1148645985,
+        3742340773,
+        1289721969,
+        1355461723,
+        1993898822,
+        1366973695,
+        3684590774,
+        886516817,
+        843758453,
+        3863222229,
+        3616713684,
+        116421582,
+        4050164083,
+        1220749914,
+        3432330500,
+        1294917491,
+        2601296318,
+        1009486523,
+        1315069163,
+        1028299494,
+        1568706847,
+        413473672,
+        33622593,
+        461709851,
+        3734192119,
+        3903931299,
+        3013687631,
+        2721826350,
+        2518610951,
+        1139794896,
+        3467295193,
+        2330492756,
+        3535488677,
+        3606244760,
+        3703029135,
+        2904357098,
+        1983161274,
+        1082065079,
+        633686445,
+        3595460442,
+        2375884438,
+        1296917082,
+        926908145,
+        4051522234,
+        3544684006,
+        2068299330,
+        1415346689,
+        101551584,
+        3228869210,
+        1970198270,
+        3352005839,
+        2669548564,
+        1070278781,
+        1232375776,
+        873939382,
+        3345274277,
+        2700439274,
+        3091433001,
+        1916223762,
+        2097879271,
+        916216039,
+        3424767089,
+        2754901888,
+        3390721591,
+        129664855,
+        1958764585,
+        600686039,
+        3530038629,
+        2822231053,
+        503166533,
+        3031952958,
+        3525195435,
+        1054131255,
+        3953660792,
+        3703833136,
+        1862730382,
+        3186196183,
+        1418855762,
+        2885491468,
+        2816441934,
+        554021884,
+        1843885887,
+        46220804,
+        1335995401,
+        3995635475,
+        4198227692,
+        2364992900,
+        2277939487,
+        3830433457,
+        2487980611,
+        521423204,
+        3000602899,
+        715790994,
+        677625595,
+        1410373553,
+        1609632448,
+        3421060297,
+        3567077876,
+        3787683458,
+        4047991312,
+        818453500,
+        3659699423,
+        756458086,
+        2155473861,
+        3076679176,
+        1307623900,
+        561079479,
+        3792094191,
+        497791588,
+        306570870,
+        215547528,
+        833679182,
+        342876778,
+        3106528390,
+        2180765049,
+        2650642510,
+        1392578763,
+        3201934748,
+        2329126163,
+        3696688672,
+        2065716714,
+        366718491,
+        53365708,
+        2574619237,
+        3712317007,
+        1810253399,
+        2675357206,
+        3191592320,
+        4077236045,
+        351610582,
+        987403641,
+        1989172362,
+        2854096970,
+        796263576,
+        75790542,
+        239761224,
+        212973711,
+        1414360635,
+        963282697,
+        587093448,
+        4291329035,
+        724725334,
+        1590472693,
+        695261398,
+        2073405756,
+        1423694130,
+        3307201252,
+        602004574,
+        2720594667,
+        1975900775,
+        324425847,
+        1981177467,
+        2717634369,
+        1702278872,
+        2132459766,
+        8777883,
+        186236829,
+        1898233173,
+        1697836294,
+        3740659419,
+        4274062256,
+        675119448,
+        4071674769,
+        894150163,
+        1800614968,
+        1527488596,
+        1114264598,
+        2054762743,
+        3517533000,
+        4010420073,
+        3472755062,
+        564568915,
+        1938205123,
+        1708426714,
+        2885046923,
+        3277186233,
+        3641611214,
+        431496920,
+        1177789847,
+        2544643181,
+        1366397888,
+        1940843104,
+        1834271080,
+        2765471872,
+        2636238074,
+        538470420,
+        4048608082,
+        3299078039,
+        1556750572,
+        1014161869,
+        2051465083,
+        533093125,
+        1880974821,
+        810061393,
+        16
+      ],
+      null
+    ]
+  },
+  "rotate_first": false,
+  "round": 6,
+  "round_start": 0,
+  "rounds_level1": 9,
+  "rules": {
+    "board": {
+      "checkpoint": [
+        2,
+        2
+      ],
+      "districts": {
+        "A": [
+          1,
+          1
+        ],
+        "B": [
+          2,
+          1
+        ],
+        "C": [
+          3,
+          1
+        ],
+        "D": [
+          1,
+          3
+        ],
+        "E": [
+          2,
+          3
+        ],
+        "F": [
+          3,
+          3
+        ]
+      },
+      "gates": {
+        "P0": [
+          2,
+          0
+        ],
+        "P1": [
+          4,
+          2
+        ],
+        "P2": [
+          2,
+          4
+        ],
+        "P3": [
+          0,
+          2
+        ]
+      },
+      "glory_posts": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "height": 5,
+      "level2_sites": {
+        "cellars": [
+          1,
+          1
+        ],
+        "emperor": [
+          2,
+          4
+        ],
+        "guard_barracks": [
+          3,
+          1
+        ],
+        "peristyle": [
+          2,
+          2
+        ],
+        "retreat": [
+          2,
+          3
+        ]
+      },
+      "width": 5
+    },
+    "combat": {
+      "emperor_bonus": 2,
+      "emperor_hits_to_win": 2,
+      "equipment_bonus_tiers": [
+        {
+          "bonus": 0,
+          "max_count": 2,
+          "min_count": 0
+        },
+        {
+          "bonus": 1,
+          "max_count": 5,
+          "min_count": 3
+        },
+        {
+          "bonus": 2,
+          "max_count": 6,
+          "min_count": 6
+        }
+      ],
+      "glory_attack_bonus": 2,
+      "imperial_guard_bonus": 1,
+      "tie_goes_to_defender": true
+    },
+    "equipment": [
+      "pugio",
+      "pilum",
+      "galea",
+      "scutum",
+      "gladius",
+      "lorica_segmentata"
+    ],
+    "game_name": "Diocletian's Palace: Six Treasures",
+    "glory": {
+      "cap": 2,
+      "duel_win_reward": 1,
+      "first_challenger_reward": 1,
+      "guard_post_reward": 1,
+      "guard_post_success_min_roll": 4
+    },
+    "level1": {
+      "auto_equip_at_transition": true,
+      "grace_full_rounds": 2,
+      "max_rounds": 24
+    },
+    "level2": {
+      "cellars_success_min_roll": 3,
+      "max_rounds": 24,
+      "peristyle_glory_cost": 1,
+      "peristyle_success_min_roll": 5,
+      "required_distinct_seals": 2
+    },
+    "logging": {
+      "sample_games_per_batch": 5,
+      "save_anomalous_game_logs": true,
+      "save_full_batch_logs": false
+    },
+    "movement": {
+      "allow_early_stop": true,
+      "allow_stationary_special_actions": true,
+      "die_is_max_steps": true,
+      "die_sides": 6,
+      "duel_range": 2,
+      "pass_through_players": true
+    },
+    "players": 4,
+    "rules_version": "0.1"
+  },
+  "rules_hash": "c41593ef305600347ff48397f9e005f3b59ba16399b66af183ea47ea35054cb8",
+  "seed": 4201,
+  "status": "finished",
+  "trigger_round": 7,
+  "turn_id": 58,
+  "turn_index": 1,
+  "turn_order": [
+    "P2",
+    "P1",
+    "P3",
+    "P0"
+  ],
+  "winner": "P2"
+}

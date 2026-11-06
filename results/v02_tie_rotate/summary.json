@@ -1,0 +1,333 @@
+{
+  "action_categories": {
+    "attack_emperor": {
+      "count": 6909,
+      "share": 0.115
+    },
+    "attempt_seal": {
+      "count": 12791,
+      "share": 0.2129
+    },
+    "claim_checkpoint": {
+      "count": 1000,
+      "share": 0.0166
+    },
+    "duel": {
+      "count": 4859,
+      "share": 0.0809
+    },
+    "explore": {
+      "count": 22921,
+      "share": 0.3815
+    },
+    "guard_post": {
+      "count": 5433,
+      "share": 0.0904
+    },
+    "move": {
+      "count": 6172,
+      "share": 0.1027
+    }
+  },
+  "draws": 0,
+  "duels": {
+    "attacker_win_rate": 0.5614,
+    "attacker_wins": 2728,
+    "defender_win_rate": 0.4386,
+    "defender_wins": 2131,
+    "duel_free_turn_share": 0.9191,
+    "games_with_2plus": 644,
+    "per_game_mean": 4.86,
+    "total": 4859
+  },
+  "durations": {
+    "rounds_level1": {
+      "count": 1000,
+      "max": 11,
+      "mean": 9.07,
+      "median": 9.0,
+      "min": 9,
+      "p90": 9.0,
+      "p95": 10.0
+    },
+    "rounds_level2": {
+      "count": 1000,
+      "max": 13,
+      "mean": 6.37,
+      "median": 6.0,
+      "min": 4,
+      "p90": 8.0,
+      "p95": 9.0
+    },
+    "total_rounds": {
+      "count": 1000,
+      "max": 22,
+      "mean": 15.44,
+      "median": 15.0,
+      "min": 13,
+      "p90": 18.0,
+      "p95": 18.0
+    },
+    "total_turns": {
+      "count": 1000,
+      "max": 85,
+      "mean": 60.09,
+      "median": 59.0,
+      "min": 49,
+      "p90": 69.0,
+      "p95": 72.0
+    },
+    "turns_level1": {
+      "count": 1000,
+      "max": 44,
+      "mean": 36.28,
+      "median": 36.0,
+      "min": 36,
+      "p90": 36.0,
+      "p95": 40.0
+    },
+    "turns_level2": {
+      "count": 1000,
+      "max": 49,
+      "mean": 23.8,
+      "median": 23.0,
+      "min": 13,
+      "p90": 32.0,
+      "p95": 35.0
+    }
+  },
+  "emperor": {
+    "attempts": 6909,
+    "attempts_per_player": {
+      "count": 4000,
+      "max": 9,
+      "mean": 1.73,
+      "median": 2.0,
+      "min": 0,
+      "p90": 4.0,
+      "p95": 5.0
+    },
+    "hit_rate": 0.4478,
+    "hits": 3094
+  },
+  "engine_version": "0.1.0",
+  "equipment": {
+    "auto_granted_per_player": {
+      "count": 4000,
+      "max": 6,
+      "mean": 0.27,
+      "median": 0.0,
+      "min": 0,
+      "p90": 1.0,
+      "p95": 2.0
+    },
+    "collected_per_player": {
+      "count": 4000,
+      "max": 6,
+      "mean": 5.73,
+      "median": 6.0,
+      "min": 0,
+      "p90": 6.0,
+      "p95": 6.0
+    },
+    "guard_post_attempts": 5433,
+    "guard_post_successes": 2746,
+    "players_exploring_3plus_share": 0.9765,
+    "players_with_zero_collected": 21
+  },
+  "first_challenger": {
+    "challenger_win_ci95": {
+      "hi": 0.3496,
+      "lo": 0.2918
+    },
+    "challenger_win_rate": 0.32,
+    "comeback_share_of_wins": 0.68,
+    "comeback_wins": 680,
+    "games_with_challenger": 1000
+  },
+  "games": 1000,
+  "glory": {
+    "earned_per_player": {
+      "count": 4000,
+      "max": 6,
+      "mean": 1.87,
+      "median": 2.0,
+      "min": 0,
+      "p90": 3.0,
+      "p95": 4.0
+    },
+    "spent_on_emperor": 697,
+    "spent_on_peristyle": 2481,
+    "spent_per_player": {
+      "count": 4000,
+      "max": 4,
+      "mean": 0.79,
+      "median": 1.0,
+      "min": 0,
+      "p90": 2.0,
+      "p95": 2.0
+    },
+    "wasted_at_cap_per_player": {
+      "count": 4000,
+      "max": 7,
+      "mean": 0.28,
+      "median": 0.0,
+      "min": 0,
+      "p90": 1.0,
+      "p95": 2.0
+    }
+  },
+  "phase1_timeouts": 0,
+  "phase2_timeouts": 0,
+  "seals": {
+    "attempts_per_player": {
+      "count": 4000,
+      "max": 11,
+      "mean": 3.2,
+      "median": 3.0,
+      "min": 0,
+      "p90": 5.0,
+      "p95": 6.0
+    },
+    "by_site": {
+      "cellars": {
+        "acquire_rate": 0.6723,
+        "acquired": 3588,
+        "attempts": 5337
+      },
+      "guard_barracks": {
+        "acquire_rate": 0.5798,
+        "acquired": 745,
+        "attempts": 1285
+      },
+      "peristyle": {
+        "acquire_rate": 0.5967,
+        "acquired": 3681,
+        "attempts": 6169
+      }
+    },
+    "peristyle_glory_purchases": 2481
+  },
+  "win_rate": {
+    "ci95": {
+      "hi": 1.0,
+      "lo": 0.9962
+    },
+    "rate": 1.0
+  },
+  "win_rate_by_gate": {
+    "P0": {
+      "ci95": {
+        "hi": 0.3025,
+        "lo": 0.2473
+      },
+      "games": 1000,
+      "rate": 0.274,
+      "wins": 274
+    },
+    "P1": {
+      "ci95": {
+        "hi": 0.254,
+        "lo": 0.2021
+      },
+      "games": 1000,
+      "rate": 0.227,
+      "wins": 227
+    },
+    "P2": {
+      "ci95": {
+        "hi": 0.2726,
+        "lo": 0.2194
+      },
+      "games": 1000,
+      "rate": 0.245,
+      "wins": 245
+    },
+    "P3": {
+      "ci95": {
+        "hi": 0.2819,
+        "lo": 0.228
+      },
+      "games": 1000,
+      "rate": 0.254,
+      "wins": 254
+    }
+  },
+  "win_rate_by_policy": {
+    "aggressive": {
+      "ci95": {
+        "hi": 0.1427,
+        "lo": 0.0873
+      },
+      "games": 500,
+      "rate": 0.112,
+      "wins": 56
+    },
+    "balanced": {
+      "ci95": {
+        "hi": 0.3174,
+        "lo": 0.2832
+      },
+      "games": 2750,
+      "rate": 0.3,
+      "wins": 825
+    },
+    "greedy": {
+      "ci95": {
+        "hi": 0.2563,
+        "lo": 0.184
+      },
+      "games": 500,
+      "rate": 0.218,
+      "wins": 109
+    },
+    "random": {
+      "ci95": {
+        "hi": 0.0721,
+        "lo": 0.0219
+      },
+      "games": 250,
+      "rate": 0.04,
+      "wins": 10
+    }
+  },
+  "win_rate_by_turn_position": {
+    "pos1": {
+      "ci95": {
+        "hi": 0.3393,
+        "lo": 0.2821
+      },
+      "games": 1000,
+      "rate": 0.31,
+      "wins": 310
+    },
+    "pos2": {
+      "ci95": {
+        "hi": 0.2747,
+        "lo": 0.2213
+      },
+      "games": 1000,
+      "rate": 0.247,
+      "wins": 247
+    },
+    "pos3": {
+      "ci95": {
+        "hi": 0.2664,
+        "lo": 0.2136
+      },
+      "games": 1000,
+      "rate": 0.239,
+      "wins": 239
+    },
+    "pos4": {
+      "ci95": {
+        "hi": 0.2301,
+        "lo": 0.1802
+      },
+      "games": 1000,
+      "rate": 0.204,
+      "wins": 204
+    }
+  },
+  "wins": 1000
+}

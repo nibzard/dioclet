@@ -67,6 +67,14 @@ off (`logging.save_full_batch_logs` in the rules JSON).
    `--schedule experiment`.
 4. Compare `summary.json` files; the seeds and seat schedules match,
    so differences come from the rule change.
+5. `python3 compare.py results/v01_baseline results/<name>` prints a
+   side-by-side markdown table.
+
+Existing variants (V0.2 Combat and Fairness set, reports in
+`FINDINGS.md` and `FINDINGS_V02.md`): attacker-wins-ties, Glory cap 3,
+three Emperor hits, rotating first player, grace 0/1, and the
+ties+rotation combo (`rules_v02_*.json`). Optional rule keys absent
+from the baseline: `turns.rotate_first_player_each_round`.
 
 Never edit `rules_baseline.json` mid-experiment; each variant gets its
 own file and results directory.
