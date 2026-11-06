@@ -1,0 +1,4994 @@
+{
+  "active_player": "P0",
+  "created": "2026-11-06T20:49:45Z",
+  "current_roll": 1,
+  "district_equipment": {
+    "A": "galea",
+    "B": "pugio",
+    "C": "pilum",
+    "D": "lorica_segmentata",
+    "E": "scutum",
+    "F": "gladius"
+  },
+  "end_reason": "emperor",
+  "engine_version": "0.1.0",
+  "event_seq": 53,
+  "events": [
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0008",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 1,
+      "events": [
+        {
+          "district": "A",
+          "item": "galea",
+          "type": "district_revealed"
+        },
+        {
+          "district": "A",
+          "item": "galea",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Quarta opens the north-west block first",
+      "round": 1,
+      "turn_id": 1
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0017",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 2,
+      "events": [
+        {
+          "district": "B",
+          "item": "pugio",
+          "type": "district_revealed"
+        },
+        {
+          "district": "B",
+          "item": "pugio",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Prima sweeps the north row before anyone else can",
+      "round": 1,
+      "turn_id": 2
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0032",
+      "dice_used": [
+        2
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 3,
+      "events": [
+        {
+          "player": "P1",
+          "roll": 2,
+          "success": false,
+          "type": "guard_post"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        4,
+        1
+      ],
+      "reason": "Secunda drills the east post for early Glory",
+      "round": 1,
+      "turn_id": 3
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        2,
+        1
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 4,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 0,
+          "attacker_roll": 2,
+          "attacker_score": 2,
+          "defender": "P0",
+          "defender_bonus": 0,
+          "defender_roll": 1,
+          "defender_score": 1,
+          "type": "duel",
+          "winner": "P2"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P2",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Tertia strikes at Prima the moment she is in reach",
+      "round": 1,
+      "turn_id": 4
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0032",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 5,
+      "events": [
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "type": "district_revealed"
+        },
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Quarta maps the south-west block next",
+      "round": 2,
+      "turn_id": 5
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 6,
+      "events": [
+        {
+          "district": "C",
+          "item": "pilum",
+          "type": "district_revealed"
+        },
+        {
+          "district": "C",
+          "item": "pilum",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Prima takes the north-east block while the die is hot",
+      "round": 2,
+      "turn_id": 6
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          3
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0041",
+      "dice_used": [
+        2
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 7,
+      "events": [
+        {
+          "player": "P1",
+          "roll": 2,
+          "success": false,
+          "type": "guard_post"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        4,
+        3
+      ],
+      "reason": "Secunda keeps drilling posts while the racers race",
+      "round": 2,
+      "turn_id": 7
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0015",
+      "dice_used": [
+        2,
+        5
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 8,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 0,
+          "attacker_roll": 2,
+          "attacker_score": 2,
+          "defender": "P0",
+          "defender_bonus": 0,
+          "defender_roll": 5,
+          "defender_score": 5,
+          "type": "duel",
+          "winner": "P0"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P0",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Tertia shadows Prima across the north blocks",
+      "round": 2,
+      "turn_id": 8
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0030",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 9,
+      "events": [
+        {
+          "district": "E",
+          "item": "scutum",
+          "type": "district_revealed"
+        },
+        {
+          "district": "E",
+          "item": "scutum",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Quarta pushes on into the south-middle block",
+      "round": 3,
+      "turn_id": 9
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0034",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 10,
+      "events": [
+        {
+          "district": "F",
+          "item": "gladius",
+          "type": "district_revealed"
+        },
+        {
+          "district": "F",
+          "item": "gladius",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "Prima claims the last unknown block before the map is shared",
+      "round": 3,
+      "turn_id": 10
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0037",
+      "dice_used": [
+        4
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 11,
+      "events": [
+        {
+          "player": "P1",
+          "roll": 4,
+          "success": true,
+          "type": "guard_post"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P1",
+          "type": "glory_earned_guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        4,
+        1
+      ],
+      "reason": "Secunda trusts the drill; the posts must pay eventually",
+      "round": 3,
+      "turn_id": 11
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          2
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0004",
+      "dice_used": [
+        2,
+        6
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 12,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 0,
+          "attacker_roll": 2,
+          "attacker_score": 2,
+          "defender": "P0",
+          "defender_bonus": 1,
+          "defender_roll": 6,
+          "defender_score": 7,
+          "type": "duel",
+          "winner": "P0"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P0",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        3,
+        2
+      ],
+      "reason": "Tertia hunts Prima even with a blade gap",
+      "round": 3,
+      "turn_id": 12
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0027",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 13,
+      "events": [
+        {
+          "district": "F",
+          "item": "gladius",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "Quarta lifts the gladius from the last corner block",
+      "round": 4,
+      "turn_id": 13
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0023",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 14,
+      "events": [
+        {
+          "district": "E",
+          "item": "scutum",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Prima hooks through E, D, A then straight to the junction",
+      "round": 4,
+      "turn_id": 14
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            4,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ],
+        "target": "P2"
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        5,
+        1
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 15,
+      "events": [
+        {
+          "attacker": "P1",
+          "attacker_bonus": 0,
+          "attacker_roll": 5,
+          "attacker_score": 5,
+          "defender": "P2",
+          "defender_bonus": 0,
+          "defender_roll": 1,
+          "defender_score": 1,
+          "type": "duel",
+          "winner": "P1"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P1",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Secunda takes her chance at Glory from Tertia on the way north",
+      "round": 4,
+      "turn_id": 15
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0007",
+      "dice_used": [
+        5,
+        3
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 16,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 0,
+          "attacker_roll": 5,
+          "attacker_score": 5,
+          "defender": "P0",
+          "defender_bonus": 1,
+          "defender_roll": 3,
+          "defender_score": 4,
+          "type": "duel",
+          "winner": "P2"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P2",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Tertia refuses to let Prima sprint away unguarded",
+      "round": 4,
+      "turn_id": 16
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0034",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 17,
+      "events": [
+        {
+          "district": "C",
+          "item": "pilum",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Quarta lifts the pilum and eyes the junction",
+      "round": 5,
+      "turn_id": 17
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 18,
+      "events": [
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Prima feels the clock and pulls the lorica now",
+      "round": 5,
+      "turn_id": 18
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0027",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 19,
+      "events": [
+        {
+          "district": "C",
+          "item": "pilum",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Secunda pockets the pilum under her boots while her Glory purse is full",
+      "round": 5,
+      "turn_id": 19
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0008",
+      "dice_used": [
+        1,
+        4
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 20,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 0,
+          "attacker_roll": 1,
+          "attacker_score": 1,
+          "defender": "P0",
+          "defender_bonus": 1,
+          "defender_roll": 4,
+          "defender_score": 5,
+          "type": "duel",
+          "winner": "P0"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P0",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Tertia crosses blades with Prima again, right on the lorica block",
+      "round": 5,
+      "turn_id": 20
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0031",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 21,
+      "events": [
+        {
+          "district": "B",
+          "item": "pugio",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Quarta lifts the final pugio; six of six before anyone else",
+      "round": 6,
+      "turn_id": 21
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0018",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 22,
+      "events": [
+        {
+          "district": "A",
+          "item": "galea",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Prima straps on the galea a heartbeat too late",
+      "round": 6,
+      "turn_id": 22
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0025",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 23,
+      "events": [
+        {
+          "district": "B",
+          "item": "pugio",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Secunda picks up the pugio beside the junction while her purse is full",
+      "round": 6,
+      "turn_id": 23
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0009",
+      "dice_used": [
+        1,
+        1
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 24,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 0,
+          "attacker_roll": 1,
+          "attacker_score": 1,
+          "defender": "P0",
+          "defender_bonus": 2,
+          "defender_roll": 1,
+          "defender_score": 3,
+          "type": "duel",
+          "winner": "P0"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P0",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Tertia hurls herself at the fully armed Prima",
+      "round": 6,
+      "turn_id": 24
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "claim_checkpoint",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 25,
+      "events": [
+        {
+          "player": "P3",
+          "round": 7,
+          "type": "first_challenger"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P3",
+          "type": "glory_earned_first_challenger"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Quarta plants her standard on the junction; the countdown begins",
+      "round": 7,
+      "turn_id": 25
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "target": "P2"
+      },
+      "action_id": "a0011",
+      "dice_used": [
+        1,
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 26,
+      "events": [
+        {
+          "attacker": "P0",
+          "attacker_bonus": 2,
+          "attacker_roll": 1,
+          "attacker_score": 3,
+          "defender": "P2",
+          "defender_bonus": 0,
+          "defender_roll": 6,
+          "defender_score": 6,
+          "type": "duel",
+          "winner": "P2"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P2",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Prima repays Tertia for three ambushes while the clock burns",
+      "round": 7,
+      "turn_id": 26
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "target": "P2"
+      },
+      "action_id": "a0004",
+      "dice_used": [
+        1,
+        2
+      ],
+      "equipment_count_after": 2,
+      "event_seq": 27,
+      "events": [
+        {
+          "attacker": "P1",
+          "attacker_bonus": 0,
+          "attacker_roll": 1,
+          "attacker_score": 1,
+          "defender": "P2",
+          "defender_bonus": 0,
+          "defender_roll": 2,
+          "defender_score": 2,
+          "type": "duel",
+          "winner": "P2"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P2",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Secunda squares off with Tertia; the posts have nothing left to give",
+      "round": 7,
+      "turn_id": 27
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0010",
+      "dice_used": [
+        1,
+        3
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 28,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 0,
+          "attacker_roll": 1,
+          "attacker_score": 1,
+          "defender": "P0",
+          "defender_bonus": 2,
+          "defender_roll": 3,
+          "defender_score": 5,
+          "type": "duel",
+          "winner": "P0"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P0",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Tertia spends the free rounds making Prima bleed for the sprint",
+      "round": 7,
+      "turn_id": 28
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          3
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            0,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0032",
+      "dice_used": [
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 29,
+      "events": [
+        {
+          "player": "P3",
+          "roll": 3,
+          "success": false,
+          "type": "guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        0,
+        3
+      ],
+      "reason": "Quarta banks the challenger reward into a second Glory token",
+      "round": 8,
+      "turn_id": 29
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          2
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "target": "P2"
+      },
+      "action_id": "a0014",
+      "dice_used": [
+        6,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 30,
+      "events": [
+        {
+          "attacker": "P0",
+          "attacker_bonus": 2,
+          "attacker_roll": 6,
+          "attacker_score": 8,
+          "defender": "P2",
+          "defender_bonus": 0,
+          "defender_roll": 3,
+          "defender_score": 3,
+          "type": "duel",
+          "winner": "P0"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P0",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        2
+      ],
+      "reason": "Prima drills Tertia again; dead rounds breed grudges",
+      "round": 8,
+      "turn_id": 30
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "target": "P3"
+      },
+      "action_id": "a0012",
+      "dice_used": [
+        1,
+        1
+      ],
+      "equipment_count_after": 2,
+      "event_seq": 31,
+      "events": [
+        {
+          "attacker": "P1",
+          "attacker_bonus": 0,
+          "attacker_roll": 1,
+          "attacker_score": 1,
+          "defender": "P3",
+          "defender_bonus": 2,
+          "defender_roll": 1,
+          "defender_score": 3,
+          "type": "duel",
+          "winner": "P3"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P3",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Secunda roughs up the First Challenger out of pure spite",
+      "round": 8,
+      "turn_id": 31
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0012",
+      "dice_used": [
+        1,
+        1
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 32,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 0,
+          "attacker_roll": 1,
+          "attacker_score": 1,
+          "defender": "P0",
+          "defender_bonus": 2,
+          "defender_roll": 1,
+          "defender_score": 3,
+          "type": "duel",
+          "winner": "P0"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P0",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Tertia takes one last free swing at Prima before the reset",
+      "round": 8,
+      "turn_id": 32
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 33,
+      "events": [],
+      "glory_after": 2,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        0,
+        2
+      ],
+      "reason": "Quarta circles her gate; nothing left to win in this level",
+      "round": 9,
+      "turn_id": 33
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          1
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "target": "P2"
+      },
+      "action_id": "a0003",
+      "dice_used": [
+        3,
+        4
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 34,
+      "events": [
+        {
+          "attacker": "P0",
+          "attacker_bonus": 2,
+          "attacker_roll": 3,
+          "attacker_score": 5,
+          "defender": "P2",
+          "defender_bonus": 0,
+          "defender_roll": 4,
+          "defender_score": 4,
+          "type": "duel",
+          "winner": "P0"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P0",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        0,
+        1
+      ],
+      "reason": "Prima closes the level with one last grudge swing",
+      "round": 9,
+      "turn_id": 34
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          1
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "target": "P3"
+      },
+      "action_id": "a0006",
+      "dice_used": [
+        3,
+        5
+      ],
+      "equipment_count_after": 2,
+      "event_seq": 35,
+      "events": [
+        {
+          "attacker": "P1",
+          "attacker_bonus": 0,
+          "attacker_roll": 3,
+          "attacker_score": 3,
+          "defender": "P3",
+          "defender_bonus": 2,
+          "defender_roll": 5,
+          "defender_score": 7,
+          "type": "duel",
+          "winner": "P3"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P3",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        0,
+        1
+      ],
+      "reason": "Secunda takes a final cheap shot at the challenger",
+      "round": 9,
+      "turn_id": 35
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          1
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0004",
+      "dice_used": [
+        2,
+        6
+      ],
+      "equipment_count_after": 0,
+      "event_seq": 36,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 0,
+          "attacker_roll": 2,
+          "attacker_score": 2,
+          "defender": "P0",
+          "defender_bonus": 2,
+          "defender_roll": 6,
+          "defender_score": 8,
+          "type": "duel",
+          "winner": "P0"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P0",
+          "type": "glory_earned_duel"
+        },
+        {
+          "item": "galea",
+          "player": "P1",
+          "type": "auto_equipment_granted"
+        },
+        {
+          "item": "gladius",
+          "player": "P1",
+          "type": "auto_equipment_granted"
+        },
+        {
+          "item": "lorica_segmentata",
+          "player": "P1",
+          "type": "auto_equipment_granted"
+        },
+        {
+          "item": "scutum",
+          "player": "P1",
+          "type": "auto_equipment_granted"
+        },
+        {
+          "item": "galea",
+          "player": "P2",
+          "type": "auto_equipment_granted"
+        },
+        {
+          "item": "gladius",
+          "player": "P2",
+          "type": "auto_equipment_granted"
+        },
+        {
+          "item": "lorica_segmentata",
+          "player": "P2",
+          "type": "auto_equipment_granted"
+        },
+        {
+          "item": "pilum",
+          "player": "P2",
+          "type": "auto_equipment_granted"
+        },
+        {
+          "item": "pugio",
+          "player": "P2",
+          "type": "auto_equipment_granted"
+        },
+        {
+          "item": "scutum",
+          "player": "P2",
+          "type": "auto_equipment_granted"
+        },
+        {
+          "auto_granted": {
+            "P0": [],
+            "P1": [
+              "galea",
+              "gladius",
+              "lorica_segmentata",
+              "scutum"
+            ],
+            "P2": [
+              "galea",
+              "gladius",
+              "lorica_segmentata",
+              "pilum",
+              "pugio",
+              "scutum"
+            ],
+            "P3": []
+          },
+          "from_phase": 1,
+          "phase1_timeout": false,
+          "to_phase": 2,
+          "type": "phase_transition"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        0,
+        1
+      ],
+      "reason": "Tertia hammers Prima one last time as the walls shift",
+      "round": 9,
+      "turn_id": 36
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        5
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 37,
+      "events": [
+        {
+          "order": 1,
+          "player": "P3",
+          "roll": 5,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Quarta descends into the cellars first",
+      "round": 1,
+      "turn_id": 37
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        1
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 38,
+      "events": [
+        {
+          "player": "P0",
+          "roll": 1,
+          "site": "cellars",
+          "type": "seal_failed"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Prima storms the cellars to match the challenger",
+      "round": 1,
+      "turn_id": 38
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            4,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 39,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P1",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P1",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Secunda spends her hard-ground Glory for a sure seal",
+      "round": 1,
+      "turn_id": 39
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0003",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 40,
+      "events": [],
+      "glory_after": 2,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Tertia pushes north toward the peristyle",
+      "round": 1,
+      "turn_id": 40
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 41,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P3",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 2,
+          "player": "P3",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Quarta buys the peristyle seal and turns her eyes south",
+      "round": 2,
+      "turn_id": 41
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        2
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 42,
+      "events": [
+        {
+          "player": "P0",
+          "roll": 2,
+          "site": "cellars",
+          "type": "seal_failed"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Prima forces the cellars door again",
+      "round": 2,
+      "turn_id": 42
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 43,
+      "events": [
+        {
+          "order": 2,
+          "player": "P1",
+          "roll": 6,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Secunda hunts her second seal in the cellars",
+      "round": 2,
+      "turn_id": 43
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 44,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P2",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P2",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Tertia pays Glory for the peristyle seal, blade still sheathed",
+      "round": 2,
+      "turn_id": 44
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0011",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 45,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Quarta limps south toward the Emperor chamber",
+      "round": 3,
+      "turn_id": 45
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0003",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 46,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P0",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P0",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Prima pays Glory for the peristyle; the dice have mocked her enough",
+      "round": 3,
+      "turn_id": 46
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "move",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0025",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 47,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Secunda hurries south; two seals are enough",
+      "round": 3,
+      "turn_id": 47
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0007",
+      "dice_used": [
+        6,
+        2
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 48,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 2,
+          "attacker_roll": 6,
+          "attacker_score": 8,
+          "defender": "P0",
+          "defender_bonus": 2,
+          "defender_roll": 2,
+          "defender_score": 4,
+          "type": "duel",
+          "winner": "P2"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P2",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Tertia finally corners Prima at the peristyle",
+      "round": 3,
+      "turn_id": 48
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        2,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 49,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P3",
+          "purpose": "emperor_attack",
+          "type": "glory_spent"
+        },
+        {
+          "emperor_roll": 3,
+          "emperor_score": 5,
+          "hits": 1,
+          "player": "P3",
+          "player_roll": 2,
+          "player_score": 6,
+          "spend_glory": true,
+          "type": "emperor_hit"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "Quarta storms the Emperor with her last Glory behind the blow",
+      "round": 4,
+      "turn_id": 49
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 50,
+      "events": [
+        {
+          "order": 2,
+          "player": "P0",
+          "roll": 3,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Prima forces the stubborn cellars door a third time",
+      "round": 4,
+      "turn_id": 50
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        4,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 51,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P1",
+          "purpose": "emperor_attack",
+          "type": "glory_spent"
+        },
+        {
+          "emperor_roll": 3,
+          "emperor_score": 5,
+          "hits": 1,
+          "player": "P1",
+          "player_roll": 4,
+          "player_score": 8,
+          "spend_glory": true,
+          "type": "emperor_hit"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "Secunda stakes her final Glory on the first strike",
+      "round": 4,
+      "turn_id": 51
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        4
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 52,
+      "events": [
+        {
+          "order": 2,
+          "player": "P2",
+          "roll": 4,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 5,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Tertia pries open the cellars for her second seal",
+      "round": 4,
+      "turn_id": 52
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        6,
+        5
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 53,
+      "events": [
+        {
+          "emperor_roll": 5,
+          "emperor_score": 7,
+          "hits": 2,
+          "player": "P3",
+          "player_roll": 6,
+          "player_score": 8,
+          "spend_glory": false,
+          "type": "emperor_hit"
+        },
+        {
+          "player": "P3",
+          "type": "game_won"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "Quarta strikes again without Glory to spare",
+      "round": 5,
+      "turn_id": 53
+    }
+  ],
+  "first_challenger": "P3",
+  "game_id": "narr4",
+  "phase": 2,
+  "phase1_timeout": false,
+  "phase2_timeout": false,
+  "players": {
+    "P0": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        2,
+        0
+      ],
+      "glory": 1,
+      "hits": 0,
+      "pos": [
+        1,
+        1
+      ],
+      "seals": [
+        "peristyle",
+        "cellars"
+      ],
+      "turns": 14
+    },
+    "P1": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        4,
+        2
+      ],
+      "glory": 0,
+      "hits": 1,
+      "pos": [
+        2,
+        4
+      ],
+      "seals": [
+        "peristyle",
+        "cellars"
+      ],
+      "turns": 13
+    },
+    "P2": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        2,
+        4
+      ],
+      "glory": 2,
+      "hits": 0,
+      "pos": [
+        1,
+        1
+      ],
+      "seals": [
+        "peristyle",
+        "cellars"
+      ],
+      "turns": 13
+    },
+    "P3": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        0,
+        2
+      ],
+      "glory": 0,
+      "hits": 2,
+      "pos": [
+        2,
+        4
+      ],
+      "seals": [
+        "cellars",
+        "peristyle"
+      ],
+      "turns": 14
+    }
+  },
+  "revealed": {
+    "A": "galea",
+    "B": "pugio",
+    "C": "pilum",
+    "D": "lorica_segmentata",
+    "E": "scutum",
+    "F": "gladius"
+  },
+  "rng": {
+    "battle": [
+      3,
+      [
+        584596406,
+        2480915647,
+        1221445350,
+        2497733663,
+        2687022072,
+        2224654688,
+        1670532580,
+        478441657,
+        904912918,
+        4191802240,
+        2093118830,
+        218391489,
+        2158831627,
+        60322758,
+        2012880998,
+        2310231015,
+        515305629,
+        3461019954,
+        3967805126,
+        2612439855,
+        4198828047,
+        3430685624,
+        1924924426,
+        689055998,
+        285295865,
+        2737077805,
+        1278886932,
+        689072904,
+        3794273452,
+        1841960730,
+        1055258630,
+        3179116787,
+        2673152883,
+        3889502522,
+        1171639606,
+        886239316,
+        4058047009,
+        269729827,
+        3264198453,
+        1010176166,
+        1631692442,
+        4106197806,
+        4171236984,
+        3737498318,
+        3334071571,
+        3217217726,
+        3371643512,
+        1097186933,
+        4253953748,
+        3419964413,
+        3928139295,
+        677990861,
+        1017676911,
+        689922422,
+        512641241,
+        2909019446,
+        256965106,
+        4103674493,
+        1972168531,
+        2002253937,
+        2527676523,
+        641487235,
+        3900001112,
+        732084246,
+        4113415117,
+        683139877,
+        2357194948,
+        566505015,
+        2000398260,
+        3679418138,
+        3332678762,
+        3273501881,
+        1087974533,
+        1654626392,
+        2496576066,
+        1186959468,
+        3178194573,
+        545577275,
+        1049374038,
+        2338801177,
+        1537548,
+        3238275648,
+        2683231003,
+        1190532936,
+        1781447342,
+        2036411663,
+        4063590707,
+        4229333587,
+        275686737,
+        2646840040,
+        521988868,
+        3564848911,
+        512755388,
+        2249805498,
+        1569118679,
+        3332333223,
+        561596663,
+        3148953710,
+        51928508,
+        3235311743,
+        971725720,
+        2026016922,
+        1193892675,
+        452610416,
+        3385991480,
+        4003399541,
+        1841016133,
+        2083141050,
+        4212011784,
+        2892651462,
+        2520805439,
+        1744973854,
+        2812556094,
+        2292447450,
+        3202127563,
+        141663028,
+        3851458792,
+        360612198,
+        2375032195,
+        1503698945,
+        262557873,
+        1894141644,
+        9586496,
+        2286700991,
+        24746280,
+        1097234056,
+        2899394460,
+        3486185415,
+        2899086304,
+        1077896905,
+        3823043491,
+        234626325,
+        4244182266,
+        31247620,
+        944217665,
+        1594966081,
+        2002707307,
+        3781268628,
+        2961732412,
+        3556394767,
+        973513929,
+        3471280465,
+        3000281646,
+        1189838146,
+        924045389,
+        4072705815,
+        3022852699,
+        4235716161,
+        2563856617,
+        3892413600,
+        2128590817,
+        575793567,
+        2780024289,
+        805097736,
+        3653349208,
+        1601710531,
+        2503292733,
+        3099063282,
+        2667083394,
+        157089114,
+        1502795086,
+        3806168677,
+        1626008443,
+        641023517,
+        1959314425,
+        517353349,
+        614548448,
+        808624484,
+        537072507,
+        2166173215,
+        3100690473,
+        688458922,
+        3284182791,
+        1588362477,
+        704589837,
+        1332302847,
+        3192911005,
+        3026701333,
+        2814092685,
+        2417583199,
+        3205135106,
+        3263718122,
+        3381559716,
+        631730741,
+        2879952092,
+        1137676502,
+        3339514130,
+        2372776697,
+        2946561143,
+        2443116770,
+        2861215623,
+        2333676641,
+        435264090,
+        2881287973,
+        3695120061,
+        3731183514,
+        753449729,
+        654939400,
+        2232794647,
+        3948929776,
+        1151105088,
+        2118424170,
+        1193292123,
+        892033588,
+        1176187357,
+        788760864,
+        84076960,
+        2697706310,
+        1488269683,
+        2526629974,
+        2280355253,
+        1526157465,
+        1311642139,
+        2486374193,
+        3488867802,
+        3409055361,
+        292081778,
+        4131258274,
+        2319910074,
+        3314477494,
+        3088754841,
+        308094829,
+        1314528074,
+        2245603546,
+        997144496,
+        3200314634,
+        2599108944,
+        252023108,
+        1309923711,
+        2244411539,
+        558222583,
+        145062035,
+        2300913649,
+        2893702669,
+        2863106647,
+        1636716807,
+        1137753524,
+        3938562200,
+        3361251305,
+        3531520918,
+        3306584851,
+        1296897306,
+        2167846141,
+        1955141279,
+        112535765,
+        1877283021,
+        3002785110,
+        1364590526,
+        2713152354,
+        1252810990,
+        3524198963,
+        2177564176,
+        4039618641,
+        569268324,
+        2345947092,
+        3097850595,
+        965546421,
+        1234342023,
+        2814224264,
+        3238783198,
+        1928921825,
+        470167073,
+        513710044,
+        109123255,
+        4126928242,
+        4233415484,
+        3894045299,
+        3473127793,
+        3308509066,
+        4110693366,
+        3495780976,
+        3468380090,
+        1457415931,
+        3036699517,
+        3309341199,
+        1097723951,
+        2895571435,
+        4212964898,
+        2691610816,
+        1232841506,
+        554861538,
+        518965559,
+        4231063480,
+        4293138133,
+        2206014940,
+        1530399173,
+        419842294,
+        2262448024,
+        2958509919,
+        3837240639,
+        350369014,
+        3165165142,
+        2035941577,
+        2860516260,
+        1759010156,
+        621105178,
+        199522235,
+        3655101070,
+        3018219041,
+        500966865,
+        3810539187,
+        696885631,
+        583598465,
+        2184505180,
+        1957946884,
+        716088323,
+        3944053265,
+        3322585891,
+        12139689,
+        1197412679,
+        845817415,
+        2427481892,
+        2443708558,
+        1998119771,
+        235074672,
+        4085672127,
+        1441925232,
+        2597563438,
+        105541570,
+        4191364925,
+        1249000273,
+        1899436276,
+        2618442083,
+        2679174075,
+        3271130154,
+        698951654,
+        53164189,
+        2298895038,
+        1205237669,
+        1763158057,
+        4026559328,
+        2245211993,
+        448096380,
+        2573241666,
+        604932464,
+        1868091327,
+        4237602150,
+        2920977384,
+        759771873,
+        3027405857,
+        1008645255,
+        3574437950,
+        49443206,
+        945173948,
+        3816948031,
+        1324838954,
+        345815612,
+        3699109226,
+        1160625589,
+        1606782526,
+        1262518285,
+        3494843049,
+        3879892691,
+        542698511,
+        40119914,
+        1160562187,
+        1395420225,
+        3905633722,
+        3869627512,
+        1049328743,
+        2820846528,
+        4127427339,
+        3088800719,
+        3571030624,
+        3902191024,
+        2280415105,
+        1416975500,
+        3109837028,
+        897005525,
+        2620582360,
+        823948830,
+        3721384604,
+        392313472,
+        1481891955,
+        2950291267,
+        659051985,
+        426782519,
+        1508485445,
+        774862710,
+        2095708478,
+        794939286,
+        3522358111,
+        3369730386,
+        1736545290,
+        1312803493,
+        95720315,
+        622022754,
+        315476545,
+        4044122831,
+        3813701885,
+        1491473172,
+        1143905099,
+        277037804,
+        3838119765,
+        316368907,
+        2001322939,
+        3212040171,
+        1684326779,
+        3506116163,
+        3455689832,
+        1069548651,
+        1905860385,
+        279723241,
+        458061219,
+        3850110988,
+        3270493116,
+        1345344666,
+        903823023,
+        597894237,
+        442206611,
+        2073702831,
+        1765246054,
+        3367094487,
+        2494822254,
+        2295384120,
+        45407223,
+        1687159437,
+        304098851,
+        771135006,
+        693325119,
+        2071473364,
+        4138843638,
+        801978517,
+        2948725674,
+        2057118257,
+        1838150695,
+        1165695266,
+        3397096631,
+        1283588094,
+        1606819093,
+        1334023861,
+        455713493,
+        1626229954,
+        41170439,
+        2537977677,
+        1561400577,
+        1522676486,
+        1647982115,
+        3286355963,
+        3097282473,
+        4047826802,
+        1478421397,
+        1270421050,
+        2203133848,
+        3721697629,
+        3766387436,
+        2506295530,
+        1420323834,
+        1175622947,
+        2747644838,
+        2903928043,
+        3079330815,
+        104584077,
+        3742631971,
+        2229065714,
+        2472339454,
+        4283877851,
+        2993324293,
+        2620147092,
+        363602283,
+        2074356682,
+        2537223132,
+        593297943,
+        334854956,
+        2679422735,
+        658752629,
+        1998333982,
+        3799119637,
+        2878500467,
+        2668994356,
+        2768576980,
+        1661663119,
+        1351795647,
+        2326553271,
+        1015221748,
+        1057207710,
+        4283206646,
+        2183515147,
+        3692768906,
+        925862357,
+        2345232063,
+        629328296,
+        40179034,
+        1482654558,
+        2665695439,
+        1733357883,
+        3167632414,
+        3990605150,
+        1711898935,
+        2261021730,
+        1787508717,
+        1999768450,
+        2494388200,
+        2601176763,
+        3407085974,
+        3911421288,
+        2891771659,
+        2845892078,
+        2915799115,
+        3723766036,
+        3220365894,
+        2741680962,
+        895612156,
+        4211739669,
+        3729971999,
+        405735944,
+        2428385965,
+        1515072318,
+        3003056246,
+        275621037,
+        2384148918,
+        3229924,
+        1360551561,
+        2798341037,
+        3571063902,
+        630082092,
+        1542328413,
+        845111497,
+        2330307096,
+        1488813794,
+        3003633435,
+        1666577666,
+        3486487779,
+        247061818,
+        2486780919,
+        3942215068,
+        1318449641,
+        1044803159,
+        1838506060,
+        2341429936,
+        362424711,
+        1304029565,
+        2874045043,
+        1883659881,
+        2738989639,
+        979783249,
+        4060449382,
+        1017904013,
+        267608978,
+        996419707,
+        1010329965,
+        2462029569,
+        3408093441,
+        4290934817,
+        372620537,
+        1752623726,
+        275571834,
+        1881484623,
+        3261738364,
+        143885387,
+        4139001700,
+        2618236910,
+        3362638174,
+        2674864448,
+        3753133449,
+        2823682199,
+        2037920791,
+        2214544784,
+        1512818899,
+        2462457589,
+        3220848277,
+        241789436,
+        1536884169,
+        998614726,
+        2857993148,
+        3090790085,
+        4073802166,
+        94364436,
+        722254067,
+        2374094941,
+        2027665605,
+        2689069338,
+        1002843142,
+        3429215518,
+        3434375660,
+        667636058,
+        3262360363,
+        2832814096,
+        3328270102,
+        1829721775,
+        3231337997,
+        2746664339,
+        1713121629,
+        2046227098,
+        2374088159,
+        566312361,
+        129959962,
+        1800650608,
+        1625737529,
+        3526687486,
+        3186727199,
+        1243071504,
+        3791264270,
+        4000043149,
+        2023489345,
+        335871637,
+        442958769,
+        1432617502,
+        4282953674,
+        3589628197,
+        528169480,
+        3590246427,
+        478446187,
+        158984473,
+        1609260298,
+        1070286453,
+        1939196161,
+        3892506701,
+        2398384642,
+        3005379891,
+        2686838797,
+        4216216744,
+        647888949,
+        2316217080,
+        3919126628,
+        2584250021,
+        2628812159,
+        2357071955,
+        3896540478,
+        1428078618,
+        2493178752,
+        3448438833,
+        2711285806,
+        2921318960,
+        68
+      ],
+      null
+    ],
+    "movement": [
+      3,
+      [
+        2427651807,
+        1499597645,
+        3005519217,
+        1464957001,
+        2100387430,
+        3323640662,
+        3971815108,
+        1525838097,
+        610922992,
+        4066777828,
+        1075684857,
+        2291232407,
+        1782203573,
+        2208673151,
+        613264419,
+        590735081,
+        371622697,
+        4176111625,
+        2925717761,
+        1124343757,
+        1550411190,
+        3662240675,
+        1322296718,
+        1390454567,
+        1221243214,
+        755653519,
+        345444146,
+        1078530195,
+        1675445577,
+        180100167,
+        1382931336,
+        1357553334,
+        1967562512,
+        2886674447,
+        323871954,
+        3428417694,
+        925015995,
+        1952567764,
+        4041380679,
+        2451071572,
+        2320353682,
+        1116900446,
+        2900921863,
+        3668136079,
+        1278737913,
+        3592409582,
+        9464181,
+        412655009,
+        3809170851,
+        1736347478,
+        3741418698,
+        2434829977,
+        2822431558,
+        3363705411,
+        3201476746,
+        300357690,
+        1503660037,
+        1091282311,
+        1096411897,
+        441322575,
+        1896671348,
+        404897172,
+        3078795363,
+        13506194,
+        1054098121,
+        2400624544,
+        3751616223,
+        777465334,
+        298928604,
+        2842598438,
+        3081616234,
+        1663613127,
+        1979107167,
+        234742140,
+        1332467119,
+        656649635,
+        3313134244,
+        2537357233,
+        2109730483,
+        789542721,
+        2465928020,
+        3802188083,
+        1200808862,
+        2406736997,
+        195214859,
+        4121674392,
+        4075605616,
+        1843134982,
+        1508580798,
+        2086711877,
+        210544658,
+        2841027871,
+        3309786264,
+        3398441402,
+        2460608729,
+        170515206,
+        282068031,
+        886822868,
+        2867290530,
+        2290841684,
+        1040943911,
+        1352614475,
+        3876897900,
+        1009101262,
+        2761356400,
+        1171306978,
+        1260347482,
+        2434220217,
+        3462691105,
+        4060909931,
+        1258853497,
+        2734316496,
+        2209307553,
+        4213984209,
+        713685042,
+        1046958624,
+        2631107660,
+        1726299512,
+        688871663,
+        3409817300,
+        4192153802,
+        1937761082,
+        334717089,
+        3526267671,
+        2749183078,
+        1245617602,
+        1859343496,
+        631378499,
+        119195095,
+        2142308781,
+        3309267224,
+        2010275526,
+        1641596448,
+        242799850,
+        2801764576,
+        3770935534,
+        242131642,
+        2246634398,
+        571424454,
+        4094880827,
+        3894741687,
+        1948556608,
+        1592206888,
+        1887395447,
+        1318478723,
+        2132013789,
+        2875078116,
+        2884319577,
+        4097815256,
+        2576580421,
+        3673072103,
+        2407874522,
+        3132175891,
+        1067891913,
+        3545072397,
+        1167606217,
+        4027746864,
+        2309830176,
+        608693720,
+        2479936973,
+        1875365720,
+        383721384,
+        802840823,
+        411800730,
+        3536175209,
+        1516386491,
+        2787648350,
+        600682864,
+        1109707571,
+        755078552,
+        3897823955,
+        3633529011,
+        1748131741,
+        3464607499,
+        526564315,
+        3920726317,
+        1742606513,
+        2252295110,
+        2831801425,
+        3784541032,
+        214135876,
+        1332697786,
+        982575713,
+        2433034851,
+        4189347594,
+        812778262,
+        1128651743,
+        2061911797,
+        1927988683,
+        3937883357,
+        3010996919,
+        2477817936,
+        807569856,
+        2930450090,
+        2260555152,
+        2906912163,
+        1394051398,
+        4810348,
+        2060664805,
+        987011378,
+        3469193149,
+        2049070490,
+        870418085,
+        289522361,
+        2450711781,
+        1376604068,
+        736367580,
+        2128787953,
+        738959736,
+        912909303,
+        1388642449,
+        1384746956,
+        23795123,
+        2831470690,
+        2699645256,
+        1779489472,
+        1553637709,
+        2296190001,
+        480920164,
+        800037329,
+        505367854,
+        1985902126,
+        61876194,
+        3620671334,
+        690138816,
+        1971069859,
+        2985047666,
+        3003152179,
+        10681042,
+        712633182,
+        3486953306,
+        383719777,
+        2950227146,
+        2762372254,
+        1929022414,
+        680428398,
+        1667433733,
+        3281852115,
+        3717184194,
+        2494679703,
+        3587236391,
+        875154892,
+        832990159,
+        3386721819,
+        3010972396,
+        877446805,
+        2145385449,
+        51745636,
+        3335701603,
+        3417613702,
+        3023613576,
+        142870902,
+        1284911514,
+        2273851890,
+        1516213995,
+        1820101116,
+        3063593919,
+        3218397010,
+        79769481,
+        2296910165,
+        3944239176,
+        2098114769,
+        373201839,
+        923267922,
+        2145552864,
+        370718447,
+        1834955106,
+        3600479806,
+        86079329,
+        606616646,
+        946860994,
+        3364534315,
+        3735262256,
+        3962595860,
+        1183226255,
+        627510644,
+        2892618959,
+        1496221051,
+        2497133775,
+        3900639743,
+        3960883703,
+        2860213883,
+        2570127754,
+        2260232955,
+        1560300801,
+        257333267,
+        2940700645,
+        2551445737,
+        2321172857,
+        1546625202,
+        1399536186,
+        3561757738,
+        4131806369,
+        598408810,
+        2162501058,
+        4187752617,
+        2697769272,
+        2916052488,
+        837395448,
+        2717753395,
+        2635541142,
+        837308365,
+        1020656770,
+        1916460096,
+        1947210973,
+        3772334116,
+        173374690,
+        3380897736,
+        1279036250,
+        69710014,
+        2922240987,
+        3343417153,
+        705546433,
+        3907606840,
+        2112378847,
+        1762873080,
+        1581224394,
+        2124385563,
+        1423976241,
+        2329465662,
+        4037047365,
+        307975956,
+        2196656998,
+        3414587689,
+        3466550155,
+        3057348085,
+        2011159808,
+        1904843718,
+        2940330851,
+        1844237383,
+        2156612987,
+        921118180,
+        3778138136,
+        1114923529,
+        3060838478,
+        3908935670,
+        832404485,
+        3232157463,
+        4054673763,
+        647320562,
+        1174766668,
+        3688015556,
+        2216598377,
+        4079590705,
+        256309669,
+        4245238462,
+        1747761869,
+        1877064071,
+        3824240441,
+        3460995058,
+        4114219364,
+        1772981877,
+        4230333882,
+        3318210370,
+        1505486222,
+        1172231772,
+        1486039093,
+        873916469,
+        1515273628,
+        1671052394,
+        3053388370,
+        4048090049,
+        4006937658,
+        2676870471,
+        3409846108,
+        110628075,
+        3191988267,
+        3253714600,
+        2222864849,
+        1851370680,
+        3754892081,
+        3887943731,
+        4089866431,
+        669751680,
+        1302315649,
+        276273297,
+        3206141077,
+        2539046094,
+        4239754015,
+        3539500543,
+        2165145385,
+        3282925928,
+        86920507,
+        2164657950,
+        3687044230,
+        3963025696,
+        802676450,
+        2618608581,
+        2830234906,
+        2308164825,
+        3363362753,
+        16261487,
+        3131227447,
+        719940167,
+        3538806358,
+        2367225034,
+        2309340559,
+        528225931,
+        478411920,
+        1562855300,
+        141018027,
+        303358933,
+        1440002828,
+        3179546356,
+        3633699643,
+        2314883370,
+        2444653949,
+        2526163625,
+        1082866810,
+        3815946209,
+        3397905654,
+        2152371136,
+        1780685411,
+        2193647469,
+        2343685538,
+        424868427,
+        2843465660,
+        1163067133,
+        965015347,
+        572724979,
+        3582964375,
+        1871374132,
+        1663225890,
+        3841293671,
+        3908631924,
+        390931903,
+        2220145553,
+        4186855463,
+        3989891654,
+        571506756,
+        1031393178,
+        3702197244,
+        1616056667,
+        3578561764,
+        3741439069,
+        2970545090,
+        1453531261,
+        501225644,
+        3034635064,
+        1427882561,
+        4278509199,
+        2882975062,
+        69034365,
+        4133301428,
+        3595048721,
+        2954678469,
+        4235007677,
+        3036912058,
+        3166367184,
+        163541877,
+        2342903368,
+        1622371922,
+        3007915299,
+        894012508,
+        3809037106,
+        1350761700,
+        3321871769,
+        806436440,
+        326065956,
+        1766095441,
+        3492309461,
+        1253535184,
+        750270599,
+        1825161504,
+        3701937567,
+        949906958,
+        1893534759,
+        4036405083,
+        4010918437,
+        151507112,
+        1317470826,
+        1990472934,
+        387045332,
+        153941495,
+        2202877204,
+        3330196088,
+        2914632789,
+        3447500212,
+        3617885315,
+        4092495701,
+        1822181871,
+        2787366800,
+        4197809159,
+        862530633,
+        2424591482,
+        3843749171,
+        2691610832,
+        3573877204,
+        470667729,
+        531035763,
+        3717152764,
+        3797048448,
+        3132746979,
+        718340907,
+        2488279509,
+        2701565371,
+        2421940395,
+        2717757786,
+        3725734098,
+        251274909,
+        2679910364,
+        488228280,
+        13273436,
+        1296861050,
+        1095325314,
+        2526821519,
+        1590553270,
+        128887881,
+        1418026540,
+        3478242396,
+        1017561360,
+        432735281,
+        3166463255,
+        686733254,
+        359718771,
+        930786441,
+        3454638142,
+        2723674926,
+        3700747492,
+        2676586876,
+        4085618252,
+        4129392391,
+        2274944826,
+        305346521,
+        3499257846,
+        3222402939,
+        3220234362,
+        1598326752,
+        1014759954,
+        1230534983,
+        1645764677,
+        3373358805,
+        1995643415,
+        2913679411,
+        3042117949,
+        2610067831,
+        2147836264,
+        3740216830,
+        866040941,
+        3440903264,
+        3596095073,
+        957544035,
+        256166660,
+        1711588970,
+        1585161635,
+        503240932,
+        1451942900,
+        2673662116,
+        449407593,
+        12115012,
+        2968278304,
+        2177686515,
+        1977993313,
+        505312786,
+        621281151,
+        774871943,
+        3026228192,
+        3558090362,
+        2717869895,
+        1893456901,
+        2773891186,
+        1841404642,
+        2479146015,
+        757307979,
+        362727120,
+        1635334601,
+        3815611844,
+        2126083918,
+        726282437,
+        4227774391,
+        3279491340,
+        2777053605,
+        277287243,
+        2295389985,
+        3122628546,
+        3713243871,
+        513934,
+        1611154470,
+        3558646791,
+        600095909,
+        3478020257,
+        1331462466,
+        2564488689,
+        1517239689,
+        70402698,
+        763165467,
+        4292072,
+        2034617621,
+        2192105870,
+        24466341,
+        4238370589,
+        501959705,
+        2161652239,
+        1668909723,
+        2807130827,
+        13464294,
+        3867351010,
+        3697908939,
+        3650353834,
+        3698102861,
+        3556714985,
+        2572954846,
+        389870796,
+        1358623676,
+        410207771,
+        283253527,
+        2304155708,
+        3390322596,
+        3545837048,
+        2253002049,
+        1667499145,
+        2355525760,
+        2850070588,
+        2361376000,
+        1920852224,
+        550112351,
+        3777147337,
+        1535040218,
+        1327607860,
+        533177230,
+        1459075773,
+        372420129,
+        3782570476,
+        1492422207,
+        77
+      ],
+      null
+    ],
+    "placement": [
+      3,
+      [
+        1097852138,
+        929451289,
+        3947558724,
+        180923674,
+        3719767556,
+        3883205457,
+        1033751538,
+        2705018336,
+        2464453924,
+        927553251,
+        4268170100,
+        2186122504,
+        2596064967,
+        3561211421,
+        172039385,
+        1134409590,
+        891870284,
+        3646953644,
+        735648281,
+        1446350319,
+        2565300061,
+        2724406639,
+        1351613315,
+        3252143865,
+        1536967790,
+        789423827,
+        4257874845,
+        446946769,
+        3686468025,
+        3603494480,
+        1403136213,
+        2634588865,
+        2590724569,
+        1919821752,
+        1192229822,
+        738057203,
+        3857498624,
+        1322091245,
+        4204297925,
+        2014269880,
+        1942281296,
+        3292897403,
+        301074467,
+        3414370952,
+        633452986,
+        2239396180,
+        610714619,
+        2511917949,
+        2642791495,
+        140016004,
+        170233034,
+        604214746,
+        1797055440,
+        765378755,
+        519888079,
+        4273703064,
+        2926732761,
+        3021496329,
+        94112894,
+        1557538035,
+        3620676777,
+        1940901148,
+        3237794106,
+        3508255561,
+        2276296554,
+        4093322673,
+        1841476515,
+        1189775799,
+        218045264,
+        1216264008,
+        568976062,
+        1682756890,
+        757715098,
+        152722543,
+        4012949205,
+        996806306,
+        3917106996,
+        239152441,
+        513365390,
+        2695293156,
+        3792156811,
+        3118800185,
+        2700296711,
+        2600204868,
+        2292592341,
+        2652140988,
+        1461526604,
+        243315518,
+        2137098247,
+        278583332,
+        1704706597,
+        2649821148,
+        3323492982,
+        2125031602,
+        192560575,
+        1590318979,
+        4092406628,
+        2618355385,
+        2837287473,
+        1779507972,
+        4078167007,
+        3313155599,
+        407080605,
+        1101765647,
+        869926512,
+        683427672,
+        1274323361,
+        2547994541,
+        3709084640,
+        316571540,
+        1917044542,
+        1907233902,
+        451091930,
+        445819950,
+        2518755374,
+        1315179281,
+        2316343686,
+        3742775028,
+        1463179133,
+        588465841,
+        537164861,
+        248389890,
+        2419660025,
+        1473716361,
+        4176996142,
+        122202677,
+        1337439357,
+        700859595,
+        924094243,
+        2316644665,
+        3493269713,
+        2534350389,
+        1618668803,
+        70612677,
+        419228875,
+        107188427,
+        1542115434,
+        3276652357,
+        3320697707,
+        2820381451,
+        1269884198,
+        799336070,
+        3719378520,
+        4162121336,
+        4233997544,
+        863941948,
+        2554283668,
+        1811729208,
+        1385043479,
+        1436625960,
+        3922587960,
+        2201534527,
+        1117794278,
+        3835011914,
+        2500050040,
+        1550124336,
+        2806755525,
+        4144790921,
+        3259981991,
+        119678953,
+        3518204580,
+        2492491908,
+        1243108535,
+        3071364479,
+        328450817,
+        3351363966,
+        1143079779,
+        2031580341,
+        4136409276,
+        3926661676,
+        220364319,
+        3843381036,
+        2898539794,
+        1212977875,
+        2535817605,
+        889289436,
+        3856548229,
+        1364419109,
+        3528256685,
+        2685169371,
+        497685307,
+        1663312309,
+        614228110,
+        4210170097,
+        542889712,
+        1237476720,
+        792660485,
+        276342731,
+        493180599,
+        4038978733,
+        1290659352,
+        3997371141,
+        2444361073,
+        2114532430,
+        1833869215,
+        2726550210,
+        3792005449,
+        1626494582,
+        277297849,
+        2112598668,
+        4214795564,
+        1772439251,
+        142894215,
+        3230567959,
+        2040408977,
+        2988961949,
+        1823259164,
+        3710461165,
+        1272809546,
+        1162411658,
+        2409691451,
+        967661815,
+        1736705516,
+        1017767493,
+        3688089693,
+        311856600,
+        403343975,
+        217208969,
+        762169642,
+        729469902,
+        3307424872,
+        3378222782,
+        70916641,
+        2814324488,
+        3384313463,
+        1403390658,
+        342763241,
+        4045929838,
+        2578861845,
+        86162595,
+        2200194748,
+        4001579838,
+        249468564,
+        782289912,
+        272747514,
+        17916989,
+        1156350951,
+        1814722364,
+        3969280047,
+        1025534537,
+        1692563527,
+        650228650,
+        3303427689,
+        2116132235,
+        3093375628,
+        2314925016,
+        2086678964,
+        2364449523,
+        1707508840,
+        3177923973,
+        2263856907,
+        4277099140,
+        359373419,
+        3075102900,
+        137573085,
+        3895935748,
+        510524695,
+        109204984,
+        2918240997,
+        1973574123,
+        3031983468,
+        1539682300,
+        3979707760,
+        4173177030,
+        3989280058,
+        3005956200,
+        1871944978,
+        1263716923,
+        540959649,
+        3516810990,
+        3398136980,
+        759417840,
+        1419589998,
+        3299143995,
+        102137070,
+        3228548562,
+        3935045690,
+        74053193,
+        3493074938,
+        2234283265,
+        3259293311,
+        3909614586,
+        1319297733,
+        3635515614,
+        661885504,
+        3604872079,
+        3703810821,
+        1241410359,
+        2204932691,
+        954363642,
+        2091184973,
+        4181897624,
+        3864797752,
+        1814832875,
+        175216186,
+        1564494788,
+        792913784,
+        622522518,
+        2063340440,
+        893120773,
+        258312129,
+        3922883191,
+        2521038809,
+        2383701166,
+        3005846382,
+        334047955,
+        3960347304,
+        3854376803,
+        1162344058,
+        446451951,
+        839235592,
+        376660277,
+        2244075513,
+        1462328115,
+        4171642837,
+        560612930,
+        255372391,
+        2377682773,
+        3411982353,
+        3414578304,
+        3910808963,
+        742763258,
+        3469215873,
+        1687152818,
+        3164664116,
+        866669975,
+        109798134,
+        539269483,
+        1668149475,
+        768573423,
+        4246048547,
+        1651983371,
+        250126312,
+        745861206,
+        2475768188,
+        2859454822,
+        900500012,
+        6891946,
+        3571135007,
+        2508355814,
+        2032883700,
+        2641901230,
+        3453041160,
+        2265639887,
+        485485504,
+        3297062581,
+        2597348166,
+        554083485,
+        2737496446,
+        2287922604,
+        3012438673,
+        2465402769,
+        2244501133,
+        1566633606,
+        3022284437,
+        2094246652,
+        2694099485,
+        1425283038,
+        919070680,
+        3745573110,
+        1582853057,
+        4080869691,
+        1420472123,
+        2815411424,
+        3110028816,
+        2916984618,
+        4268406736,
+        1105902162,
+        580725853,
+        2723549208,
+        3954619307,
+        2851692060,
+        557508255,
+        4076169829,
+        2826579546,
+        1156287073,
+        3413435634,
+        1254164754,
+        1124331390,
+        741120866,
+        4162719542,
+        3076981876,
+        2739261656,
+        2211007139,
+        2462275951,
+        167643578,
+        3120917684,
+        1541494996,
+        2590345538,
+        2191782533,
+        700880891,
+        2352005149,
+        734321788,
+        3188036096,
+        2589016196,
+        2303506223,
+        1627282825,
+        3220950457,
+        1613302958,
+        1320324290,
+        722157744,
+        2053977578,
+        798163023,
+        2877069365,
+        1163103935,
+        4253766695,
+        3992349966,
+        876393791,
+        3664588680,
+        2045549961,
+        1819338922,
+        2750505826,
+        876037833,
+        343428252,
+        484346597,
+        581263296,
+        605232670,
+        2158726406,
+        4206642299,
+        1918873911,
+        2351970343,
+        422629437,
+        1411320646,
+        3313855264,
+        4103024462,
+        3854696656,
+        357344356,
+        2136557083,
+        338409990,
+        4037302328,
+        3369795452,
+        1551451421,
+        1786439948,
+        3510282562,
+        671080877,
+        3869195463,
+        354459861,
+        2542837707,
+        3800220040,
+        691786166,
+        3584959979,
+        3202578668,
+        2536954917,
+        3279812961,
+        827993115,
+        2282605013,
+        2485535546,
+        1264693977,
+        1056987009,
+        3263237783,
+        1986521830,
+        4215083810,
+        18241350,
+        1274203559,
+        1804365648,
+        1123403165,
+        2473779389,
+        4195913353,
+        2970036036,
+        3399929286,
+        274506508,
+        1026156373,
+        1753991987,
+        3619520565,
+        2384042943,
+        3180337742,
+        2955077082,
+        1369676604,
+        3928984533,
+        2725986350,
+        1929161036,
+        3349528885,
+        772389910,
+        320180169,
+        2189793066,
+        72712662,
+        3771082182,
+        2735479302,
+        232985854,
+        3267085228,
+        3345225685,
+        1561347600,
+        1002807300,
+        2185695199,
+        3758052745,
+        3854028936,
+        1059140382,
+        838513108,
+        3191778714,
+        2869140312,
+        2741207608,
+        3014355146,
+        3439263163,
+        741389341,
+        1692612961,
+        2890224176,
+        260745506,
+        2190016550,
+        2632020510,
+        803728528,
+        2311417012,
+        3608328800,
+        553404946,
+        1949927889,
+        479578517,
+        3900451926,
+        2333569070,
+        3609721874,
+        3081111426,
+        746174018,
+        1311621635,
+        3991905363,
+        2285185531,
+        1164896606,
+        1813980362,
+        3192137371,
+        1897237381,
+        458574959,
+        115189644,
+        542804668,
+        3230472701,
+        766078296,
+        2985303419,
+        3057041003,
+        787175301,
+        1939804625,
+        939914218,
+        940293711,
+        2942245874,
+        2995799225,
+        1730792015,
+        745069600,
+        1657537032,
+        3342587500,
+        1331147399,
+        3753246911,
+        1234158906,
+        3904003715,
+        950235353,
+        2934123555,
+        98712908,
+        1163320145,
+        1190459279,
+        1557016758,
+        3252027903,
+        457925099,
+        915267601,
+        4017134200,
+        1206903734,
+        2530000873,
+        2488081347,
+        2843313874,
+        149122868,
+        1297849177,
+        2546566265,
+        2196917405,
+        3818838959,
+        1291077156,
+        2340644594,
+        2493004461,
+        484702181,
+        1156708492,
+        4191992081,
+        36637861,
+        2977003083,
+        716490631,
+        864034908,
+        2862705823,
+        3696205101,
+        2490364915,
+        784476620,
+        809612110,
+        2098154226,
+        576258126,
+        4001239842,
+        272595058,
+        3590352501,
+        4254479056,
+        3343996227,
+        1066077471,
+        679862452,
+        2348772401,
+        995855192,
+        594902869,
+        1464852192,
+        1184381252,
+        393855917,
+        955223671,
+        2005948377,
+        2198061528,
+        1717559622,
+        622233450,
+        2881834676,
+        3812226618,
+        954834610,
+        623118884,
+        3724045034,
+        3378720667,
+        126000291,
+        4251311935,
+        3809560959,
+        3539952298,
+        1431356671,
+        3063309624,
+        1634692024,
+        1805734282,
+        3930993096,
+        1611124688,
+        2684046422,
+        1724579762,
+        428908036,
+        2155033849,
+        3153350212,
+        79746264,
+        3108441341,
+        929030079,
+        2965904752,
+        3667936915,
+        1932547456,
+        3377960130,
+        1015171377,
+        2141618512,
+        3700868834,
+        4829180,
+        15
+      ],
+      null
+    ]
+  },
+  "round": 5,
+  "rounds_level1": 9,
+  "rules": {
+    "board": {
+      "checkpoint": [
+        2,
+        2
+      ],
+      "districts": {
+        "A": [
+          1,
+          1
+        ],
+        "B": [
+          2,
+          1
+        ],
+        "C": [
+          3,
+          1
+        ],
+        "D": [
+          1,
+          3
+        ],
+        "E": [
+          2,
+          3
+        ],
+        "F": [
+          3,
+          3
+        ]
+      },
+      "gates": {
+        "P0": [
+          2,
+          0
+        ],
+        "P1": [
+          4,
+          2
+        ],
+        "P2": [
+          2,
+          4
+        ],
+        "P3": [
+          0,
+          2
+        ]
+      },
+      "glory_posts": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "height": 5,
+      "level2_sites": {
+        "cellars": [
+          1,
+          1
+        ],
+        "emperor": [
+          2,
+          4
+        ],
+        "guard_barracks": [
+          3,
+          1
+        ],
+        "peristyle": [
+          2,
+          2
+        ],
+        "retreat": [
+          2,
+          3
+        ]
+      },
+      "width": 5
+    },
+    "combat": {
+      "emperor_bonus": 2,
+      "emperor_hits_to_win": 2,
+      "equipment_bonus_tiers": [
+        {
+          "bonus": 0,
+          "max_count": 2,
+          "min_count": 0
+        },
+        {
+          "bonus": 1,
+          "max_count": 5,
+          "min_count": 3
+        },
+        {
+          "bonus": 2,
+          "max_count": 6,
+          "min_count": 6
+        }
+      ],
+      "glory_attack_bonus": 2,
+      "imperial_guard_bonus": 1,
+      "tie_goes_to_defender": true
+    },
+    "equipment": [
+      "pugio",
+      "pilum",
+      "galea",
+      "scutum",
+      "gladius",
+      "lorica_segmentata"
+    ],
+    "game_name": "Diocletian's Palace: Six Treasures",
+    "glory": {
+      "cap": 2,
+      "duel_win_reward": 1,
+      "first_challenger_reward": 1,
+      "guard_post_reward": 1,
+      "guard_post_success_min_roll": 4
+    },
+    "level1": {
+      "auto_equip_at_transition": true,
+      "grace_full_rounds": 2,
+      "max_rounds": 24
+    },
+    "level2": {
+      "cellars_success_min_roll": 3,
+      "max_rounds": 24,
+      "peristyle_glory_cost": 1,
+      "peristyle_success_min_roll": 5,
+      "required_distinct_seals": 2
+    },
+    "logging": {
+      "sample_games_per_batch": 5,
+      "save_anomalous_game_logs": true,
+      "save_full_batch_logs": false
+    },
+    "movement": {
+      "allow_early_stop": true,
+      "allow_stationary_special_actions": true,
+      "die_is_max_steps": true,
+      "die_sides": 6,
+      "duel_range": 2,
+      "pass_through_players": true
+    },
+    "players": 4,
+    "rules_version": "0.1"
+  },
+  "rules_hash": "c41593ef305600347ff48397f9e005f3b59ba16399b66af183ea47ea35054cb8",
+  "seed": 4104,
+  "status": "finished",
+  "trigger_round": 7,
+  "turn_id": 54,
+  "turn_index": 1,
+  "turn_order": [
+    "P3",
+    "P0",
+    "P1",
+    "P2"
+  ],
+  "winner": "P3"
+}

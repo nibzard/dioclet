@@ -1,0 +1,161 @@
+{
+  "board": {
+    "checkpoint": [
+      2,
+      2
+    ],
+    "districts": {
+      "A": [
+        1,
+        1
+      ],
+      "B": [
+        2,
+        1
+      ],
+      "C": [
+        3,
+        1
+      ],
+      "D": [
+        1,
+        3
+      ],
+      "E": [
+        2,
+        3
+      ],
+      "F": [
+        3,
+        3
+      ]
+    },
+    "gates": {
+      "P0": [
+        2,
+        0
+      ],
+      "P1": [
+        4,
+        2
+      ],
+      "P2": [
+        2,
+        4
+      ],
+      "P3": [
+        0,
+        2
+      ]
+    },
+    "glory_posts": [
+      [
+        0,
+        1
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        4,
+        3
+      ]
+    ],
+    "height": 5,
+    "level2_sites": {
+      "cellars": [
+        1,
+        1
+      ],
+      "emperor": [
+        2,
+        4
+      ],
+      "guard_barracks": [
+        3,
+        1
+      ],
+      "peristyle": [
+        2,
+        2
+      ],
+      "retreat": [
+        2,
+        3
+      ]
+    },
+    "width": 5
+  },
+  "combat": {
+    "emperor_bonus": 2,
+    "emperor_hits_to_win": 2,
+    "equipment_bonus_tiers": [
+      {
+        "bonus": 0,
+        "max_count": 2,
+        "min_count": 0
+      },
+      {
+        "bonus": 1,
+        "max_count": 5,
+        "min_count": 3
+      },
+      {
+        "bonus": 2,
+        "max_count": 6,
+        "min_count": 6
+      }
+    ],
+    "glory_attack_bonus": 2,
+    "imperial_guard_bonus": 1,
+    "tie_goes_to_defender": true
+  },
+  "equipment": [
+    "pugio",
+    "pilum",
+    "galea",
+    "scutum",
+    "gladius",
+    "lorica_segmentata"
+  ],
+  "game_name": "Diocletian's Palace: Six Treasures",
+  "glory": {
+    "cap": 2,
+    "duel_win_reward": 1,
+    "first_challenger_reward": 1,
+    "guard_post_reward": 1,
+    "guard_post_success_min_roll": 4
+  },
+  "level1": {
+    "auto_equip_at_transition": true,
+    "grace_full_rounds": 2,
+    "max_rounds": 24
+  },
+  "level2": {
+    "cellars_success_min_roll": 3,
+    "max_rounds": 24,
+    "peristyle_glory_cost": 1,
+    "peristyle_success_min_roll": 5,
+    "required_distinct_seals": 2
+  },
+  "logging": {
+    "sample_games_per_batch": 5,
+    "save_anomalous_game_logs": true,
+    "save_full_batch_logs": false
+  },
+  "movement": {
+    "allow_early_stop": true,
+    "allow_stationary_special_actions": true,
+    "die_is_max_steps": true,
+    "die_sides": 6,
+    "duel_range": 2,
+    "pass_through_players": true
+  },
+  "players": 4,
+  "rules_version": "0.1"
+}

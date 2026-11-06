@@ -1,0 +1,333 @@
+{
+  "action_categories": {
+    "attack_emperor": {
+      "count": 45,
+      "share": 0.0733
+    },
+    "attempt_seal": {
+      "count": 114,
+      "share": 0.1857
+    },
+    "claim_checkpoint": {
+      "count": 10,
+      "share": 0.0163
+    },
+    "duel": {
+      "count": 129,
+      "share": 0.2101
+    },
+    "explore": {
+      "count": 194,
+      "share": 0.316
+    },
+    "guard_post": {
+      "count": 23,
+      "share": 0.0375
+    },
+    "move": {
+      "count": 99,
+      "share": 0.1612
+    }
+  },
+  "draws": 0,
+  "duels": {
+    "attacker_win_rate": 0.3798,
+    "attacker_wins": 49,
+    "defender_win_rate": 0.6202,
+    "defender_wins": 80,
+    "duel_free_turn_share": 0.7899,
+    "games_with_2plus": 10,
+    "per_game_mean": 12.9,
+    "total": 129
+  },
+  "durations": {
+    "rounds_level1": {
+      "count": 10,
+      "max": 10,
+      "mean": 9.3,
+      "median": 9.0,
+      "min": 9,
+      "p90": 10.0,
+      "p95": 10.0
+    },
+    "rounds_level2": {
+      "count": 10,
+      "max": 11,
+      "mean": 6.7,
+      "median": 6.5,
+      "min": 5,
+      "p90": 7.4,
+      "p95": 9.2
+    },
+    "total_rounds": {
+      "count": 10,
+      "max": 20,
+      "mean": 16,
+      "median": 16.0,
+      "min": 14,
+      "p90": 17.3,
+      "p95": 18.65
+    },
+    "total_turns": {
+      "count": 10,
+      "max": 76,
+      "mean": 61.4,
+      "median": 61.5,
+      "min": 53,
+      "p90": 65.2,
+      "p95": 70.6
+    },
+    "turns_level1": {
+      "count": 10,
+      "max": 40,
+      "mean": 37.2,
+      "median": 36.0,
+      "min": 36,
+      "p90": 40.0,
+      "p95": 40.0
+    },
+    "turns_level2": {
+      "count": 10,
+      "max": 40,
+      "mean": 24.2,
+      "median": 23.5,
+      "min": 17,
+      "p90": 27.4,
+      "p95": 33.7
+    }
+  },
+  "emperor": {
+    "attempts": 45,
+    "attempts_per_player": {
+      "count": 40,
+      "max": 5,
+      "mean": 1.12,
+      "median": 0.0,
+      "min": 0,
+      "p90": 3.1,
+      "p95": 4.0
+    },
+    "hit_rate": 0.5556,
+    "hits": 25
+  },
+  "engine_version": "0.1.0",
+  "equipment": {
+    "auto_granted_per_player": {
+      "count": 40,
+      "max": 6,
+      "mean": 1.15,
+      "median": 0.0,
+      "min": 0,
+      "p90": 3.1,
+      "p95": 6.0
+    },
+    "collected_per_player": {
+      "count": 40,
+      "max": 6,
+      "mean": 4.85,
+      "median": 6.0,
+      "min": 0,
+      "p90": 6.0,
+      "p95": 6.0
+    },
+    "guard_post_attempts": 23,
+    "guard_post_successes": 13,
+    "players_exploring_3plus_share": 0.9,
+    "players_with_zero_collected": 3
+  },
+  "first_challenger": {
+    "challenger_win_ci95": {
+      "hi": 0.6032,
+      "lo": 0.1078
+    },
+    "challenger_win_rate": 0.3,
+    "comeback_share_of_wins": 0.7,
+    "comeback_wins": 7,
+    "games_with_challenger": 10
+  },
+  "games": 10,
+  "glory": {
+    "earned_per_player": {
+      "count": 40,
+      "max": 5,
+      "mean": 2.5,
+      "median": 2.0,
+      "min": 1,
+      "p90": 4.0,
+      "p95": 4.0
+    },
+    "spent_on_emperor": 18,
+    "spent_on_peristyle": 26,
+    "spent_per_player": {
+      "count": 40,
+      "max": 4,
+      "mean": 1.1,
+      "median": 1.0,
+      "min": 0,
+      "p90": 3.0,
+      "p95": 3.0
+    },
+    "wasted_at_cap_per_player": {
+      "count": 40,
+      "max": 8,
+      "mean": 1.3,
+      "median": 0.0,
+      "min": 0,
+      "p90": 4.1,
+      "p95": 5.05
+    }
+  },
+  "phase1_timeouts": 0,
+  "phase2_timeouts": 0,
+  "seals": {
+    "attempts_per_player": {
+      "count": 40,
+      "max": 6,
+      "mean": 2.85,
+      "median": 3.0,
+      "min": 1,
+      "p90": 5.0,
+      "p95": 5.05
+    },
+    "by_site": {
+      "cellars": {
+        "acquire_rate": 0.7647,
+        "acquired": 26,
+        "attempts": 34
+      },
+      "guard_barracks": {
+        "acquire_rate": 0.65,
+        "acquired": 13,
+        "attempts": 20
+      },
+      "peristyle": {
+        "acquire_rate": 0.6167,
+        "acquired": 37,
+        "attempts": 60
+      }
+    },
+    "peristyle_glory_purchases": 26
+  },
+  "win_rate": {
+    "ci95": {
+      "hi": 1.0,
+      "lo": 0.7225
+    },
+    "rate": 1.0
+  },
+  "win_rate_by_gate": {
+    "P0": {
+      "ci95": {
+        "hi": 0.9821,
+        "lo": 0.5958
+      },
+      "games": 10,
+      "rate": 0.9,
+      "wins": 9
+    },
+    "P1": {
+      "ci95": {
+        "hi": 0.2775,
+        "lo": 0.0
+      },
+      "games": 10,
+      "rate": 0.0,
+      "wins": 0
+    },
+    "P2": {
+      "ci95": {
+        "hi": 0.4042,
+        "lo": 0.0179
+      },
+      "games": 10,
+      "rate": 0.1,
+      "wins": 1
+    },
+    "P3": {
+      "ci95": {
+        "hi": 0.2775,
+        "lo": 0.0
+      },
+      "games": 10,
+      "rate": 0.0,
+      "wins": 0
+    }
+  },
+  "win_rate_by_policy": {
+    "aggressive": {
+      "ci95": {
+        "hi": 0.4042,
+        "lo": 0.0179
+      },
+      "games": 10,
+      "rate": 0.1,
+      "wins": 1
+    },
+    "balanced": {
+      "ci95": {
+        "hi": 0.9821,
+        "lo": 0.5958
+      },
+      "games": 10,
+      "rate": 0.9,
+      "wins": 9
+    },
+    "greedy": {
+      "ci95": {
+        "hi": 0.2775,
+        "lo": 0.0
+      },
+      "games": 10,
+      "rate": 0.0,
+      "wins": 0
+    },
+    "random": {
+      "ci95": {
+        "hi": 0.2775,
+        "lo": 0.0
+      },
+      "games": 10,
+      "rate": 0.0,
+      "wins": 0
+    }
+  },
+  "win_rate_by_turn_position": {
+    "pos1": {
+      "ci95": {
+        "hi": 0.5098,
+        "lo": 0.0567
+      },
+      "games": 10,
+      "rate": 0.2,
+      "wins": 2
+    },
+    "pos2": {
+      "ci95": {
+        "hi": 0.6032,
+        "lo": 0.1078
+      },
+      "games": 10,
+      "rate": 0.3,
+      "wins": 3
+    },
+    "pos3": {
+      "ci95": {
+        "hi": 0.5098,
+        "lo": 0.0567
+      },
+      "games": 10,
+      "rate": 0.2,
+      "wins": 2
+    },
+    "pos4": {
+      "ci95": {
+        "hi": 0.6032,
+        "lo": 0.1078
+      },
+      "games": 10,
+      "rate": 0.3,
+      "wins": 3
+    }
+  },
+  "wins": 10
+}
