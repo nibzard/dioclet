@@ -1,13 +1,15 @@
 """Board graph, shortest paths, and site lookups.
 
-The V0.1 board is a 5x5 orthogonal grid. Coordinates are [x, y] with
-x, y in 0..4; y=0 is the north row. Neighbor tie-break order is
-north, east, south, west so paths and searches are deterministic.
+The board is an orthogonal grid. Coordinates are [x, y]; y=0 is the
+north row. Neighbor tie-break order is north, east, south, west so
+paths and searches are deterministic. An optional `board.blocked`
+list removes cells from the graph (building interiors on the V0.6
+real-board map); movement, duels, and paths use street cells only.
 """
 
 from collections import deque
 
-ENGINE_VERSION = "0.1.0"
+ENGINE_VERSION = "0.1.1"
 
 # Direction order for tie-breaks: north, east, south, west.
 DIRECTIONS = ((0, -1), (1, 0), (0, 1), (-1, 0))
@@ -40,6 +42,7 @@ class Board:
         self.seal_site_at = {cell: name for name, cell in self.seal_sites.items()}
         self.emperor = self.level2_sites["emperor"]
         self.retreat = self.level2_sites["retreat"]
+        self.blocked = {tuple(c) for c in board.get("blocked", [])}
 
     def in_bounds(self, cell):
         return 0 <= cell[0] < self.width and 0 <= cell[1] < self.height
@@ -49,7 +52,7 @@ class Board:
         result = []
         for dx, dy in DIRECTIONS:
             nxt = (cell[0] + dx, cell[1] + dy)
-            if self.in_bounds(nxt):
+            if self.in_bounds(nxt) and nxt not in self.blocked:
                 result.append(nxt)
         return result
 

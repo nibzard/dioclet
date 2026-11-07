@@ -123,3 +123,61 @@ practical. No baseline rule values were changed.
   cap; `budget.calls` counts requests actually sent. Live variance
   note: openai SDK 2.21.0 lacks `client.decisions`; 3.46.0 is the
   first version verified to support it.
+- **D26 Real-board district entries (V0.6).** Designer confirmation
+  2026-11-07: the pale blue circles are the entry spaces into the six
+  neighborhood blocks; a player stops on the entry to take the card.
+  Decision: one entry per neighborhood, placed on the adjacent street:
+  A `[0,3]`, B `[9,3]`, C `[18,3]`, D `[0,9]`, E `[9,9]`, F `[18,9]`.
+  Block interiors are removed from the movement graph through the new
+  optional `board.blocked` list; validation rejects a blocked special
+  cell and any site unreachable from gate P0.
+- **D27 Real-board checkpoint placement (V0.6).** The printed purple
+  circle sits at the right-hand internal intersection, three spaces
+  east of the board midline and closer to the east gate. The measured
+  gate fairness (±3%) rests on a central placement, so the simulation
+  adds the historical north-south cardo (the real palace's central
+  street) as street column x=9 and places the checkpoint and Peristyle
+  at the center crossing `[9,6]`. Recommendation to the designer: add
+  the cardo lane, or at minimum move the purple circle three spaces
+  west onto the midline. The rectangle keeps a residual asymmetry
+  (north/south gates 6 spaces from the checkpoint, east/west 9);
+  the batch measures whether it matters.
+- **D28 Real-board Level 2 and guard posts (V0.6).** Designer
+  confirmation: Level 2 has no map yet; historically the cellars
+  mirrored the palace level and the Emperor's quarters were in the
+  palace's southern half. Decision: keep the tested same-cell mapping:
+  Cellars at district A `[0,3]`, Barracks at C `[18,3]`, Peristyle at
+  the checkpoint `[9,6]`, Emperor chamber at the south gate `[9,12]`
+  (P2's gate, as in every prior version), retreat one step north
+  `[9,11]`. Guard posts: four, on the west and east edges near the
+  corners `[0,2]`, `[18,2]`, `[0,10]`, `[18,10]`, matching the V0.1
+  placement class (side edges, between corner and gate).
+- **D29 Real-board pacing measurement (V0.6).** `rules_v06_realboard.json`
+  changes exactly one knob versus `rules_v03_base.json`: the board
+  graph (107 street spaces versus 25). The movement die (d6), duel
+  range (2), and both phase round caps (24) stay at their tested
+  values so the first measurement is clean. The V0.5 Level 1 cap of 16
+  rounds is not carried over: it was derived from small-board pacing
+  and will be re-derived from the new round distribution. Tuning (die
+  size, ranges, caps) happens only after this baseline reports.
+- **D30 Movement dice count (V0.6, user proposal 2026-11-07).** The
+  movement roll sums `movement.dice_count` dice of `die_sides`
+  (default 1; validation requires an integer >= 1). Two six-sided
+  dice for movement is the tested real-board setting: average 7
+  steps keeps the city phase finishable. Challenge, duel, and
+  Emperor rolls always use a single die of `die_sides`, so all
+  combat probabilities are unchanged. `replay --verify` now ignores
+  the `engine_version` field when comparing results; it is run
+  metadata, not game content (caught after the 0.1.0 -> 0.1.1 bump,
+  which had falsely failed verification of older runs).
+- **D31 Real-board content placement (V0.6, measured).** Content
+  placement is a fairness lever as strong as any rule knob; both
+  placements inherited from the physical description broke a gate:
+  all six entries on the west/east streets gave those gates 44% each
+  (north/south 6-12%), and both roll-seal sites on the north street
+  gave north 32% (first-challenger rates were equal, so the skew
+  lives in Level 2 travel). Adopted placement: Level 1 entries on
+  the north street (2), south street (2), and cardo (2) - measured
+  first-challenger rates 181/152/175/152 per gate; Level 2 seal
+  sites in a triangle (cellars northwest `[3,0]`, barracks southeast
+  `[15,12]`, peristyle center `[9,6]`), emperor at the south gate.
