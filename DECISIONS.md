@@ -111,3 +111,15 @@ practical. No baseline rule values were changed.
   rotating first player. V0.3 variants flip exactly one duel-consequence
   knob on top of it. Bot policies stay frozen across all experiments so
   rule effects are not confounded with strategy changes.
+- **D25 V0.4 Decisions player boundaries.** The OpenAI Decisions policy
+  receives only `engine.observe` output plus a projection and features
+  computed from it and the public rules file; hidden state never
+  reaches a request (sentinel-tested). One legal action takes no API
+  call (the choice API needs ≥2 options). Candidate shortlists keep
+  every mandatory action and distinct duel target, group ordinary
+  moves, and escalate the cap rather than dropping wins. Provider
+  metadata lives in `decisions.jsonl`, never in engine state. In the
+  decision counters, `attempted` includes the turn blocked by a budget
+  cap; `budget.calls` counts requests actually sent. Live variance
+  note: openai SDK 2.21.0 lacks `client.decisions`; 3.46.0 is the
+  first version verified to support it.

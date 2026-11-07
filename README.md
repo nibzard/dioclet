@@ -11,6 +11,7 @@ with repeatable batches before any physical playtesting.
 - `FINDINGS.md` — V0.1 baseline experiment (1,000 games)
 - `FINDINGS_V02.md` — combat and fairness experiments
 - `FINDINGS_V03.md` — duel consequence experiments
+- `FINDINGS_V04.md` — OpenAI Decisions player intelligence
 
 ## Where the design stands
 
@@ -109,12 +110,52 @@ Optional rule keys absent from the baseline:
 Never edit `rules_baseline.json` mid-experiment; each variant gets its
 own file and results directory.
 
+## AI-turn policies (V0.4, optional)
+
+An observation-only OpenAI Decisions player, a deterministic
+`tactical` benchmark bot, and mock/playback providers for offline
+work. The `openai` package is optional; live calls require
+`OPENAI_API_KEY` and an explicit budget:
+
+```bash
+pip install -r requirements-decisions.txt
+
+# Offline mock game (no network, no key)
+python3 sim.py ai-auto --rules rules_v03_base.json --seed 4400 \
+  --players decisions,decisions,decisions,decisions \
+  --provider mock --out runs/v04_mock_4400
+
+# Mixed policies: one Decisions seat vs local bots
+python3 sim.py ai-auto --rules rules_v03_base.json --seed 4402 \
+  --players decisions,tactical,balanced,greedy \
+  --provider live --live-decisions \
+  --max-decisions-calls 100 --max-cost-usd 0.50 --out runs/v04_mix_4402
+
+# Offline replay never contacts the API
+python3 sim.py replay --run runs/v04_mix_4402 --verify
+```
+
+Provider decisions, probabilities, confidence, latency, tokens, and
+estimated costs are logged to `decisions.jsonl` in the run directory.
+Budget exhaustion stops the game cleanly as `incomplete.json`.
+Details and measured results: `FINDINGS_V04.md`; configuration:
+`decisions_config.json`.
+
 ## Modules
 
 - `sim.py` — CLI entry point
 - `engine.py` — state machine, legal actions, resolution, events
 - `board.py` — grid graph, deterministic shortest paths, site lookups
 - `policies.py` — `random`, `greedy`, `aggressive`, `balanced` bots
+- `tactical_policy.py` — frozen deterministic benchmark bot (V0.4)
+- `candidate_actions.py` — public observation projection and
+  candidate shortlists (V0.4)
+- `decisions_policy.py` — mock/playback/live OpenAI Decisions
+  providers (V0.4, optional `openai` package)
+- `ai_driver.py` — single-writer AI game driver with budgets
 - `report.py` — batch runner, CSV, summary statistics
+- `compare.py` — side-by-side markdown table across batch summaries
+- `decisions_config.json`, `requirements-decisions.txt` — V0.4 config
+  and optional dependency pin
 - `tests/` — engine invariants, resolution tests, policy unit tests,
-  bounded exhaustive checks
+  bounded exhaustive checks, V0.4 offline provider and driver tests

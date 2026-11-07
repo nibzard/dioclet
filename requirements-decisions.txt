@@ -1,0 +1,6 @@
+# Optional: only the live OpenAI Decisions provider needs this package.
+# The engine, bots, tests, and mock/playback providers are standard
+# library only and work with `openai` uninstalled.
+# 3.46.0 is the first installed version verified to expose
+# client.decisions.create (2.21.0 does not).
+openai>=3.46,<4

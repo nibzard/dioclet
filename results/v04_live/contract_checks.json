@@ -1,0 +1,248 @@
+[
+  {
+    "candidates": 16,
+    "chosen": "a0013",
+    "chosen_description": "Move to district A (unrevealed) and explore it.",
+    "chosen_kind": "explore",
+    "fixture": "opening",
+    "legal_actions": 31,
+    "metadata": {
+      "confidence": 0.25,
+      "error": null,
+      "estimated_cost_usd": 0.000113,
+      "latency_ms": 2344.9,
+      "model": "gpt-6-luna",
+      "probabilities": [
+        {
+          "probability": 0.02,
+          "value": "a0001"
+        },
+        {
+          "probability": 0.01,
+          "value": "a0002"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0009"
+        },
+        {
+          "probability": 0.3,
+          "value": "a0013"
+        },
+        {
+          "probability": 0.12,
+          "value": "a0014"
+        },
+        {
+          "probability": 0.19,
+          "value": "a0015"
+        },
+        {
+          "probability": 0.04,
+          "value": "a0016"
+        },
+        {
+          "probability": 0.04,
+          "value": "a0017"
+        },
+        {
+          "probability": 0.01,
+          "value": "a0019"
+        },
+        {
+          "probability": 0.01,
+          "value": "a0022"
+        },
+        {
+          "probability": 0.01,
+          "value": "a0023"
+        },
+        {
+          "probability": 0.05,
+          "value": "a0024"
+        },
+        {
+          "probability": 0.06,
+          "value": "a0025"
+        },
+        {
+          "probability": 0.06,
+          "value": "a0026"
+        },
+        {
+          "probability": 0.03,
+          "value": "a0028"
+        },
+        {
+          "probability": 0.05,
+          "value": "a0029"
+        }
+      ],
+      "probability_flags": [],
+      "provider": "live",
+      "request_id": null,
+      "usage": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0,
+        "input_tokens": 1126,
+        "output_tokens": 0,
+        "total_tokens": 1126
+      }
+    },
+    "phase": 1,
+    "reason": "openai_decisions_choice",
+    "turn_id": 1
+  },
+  {
+    "candidates": 7,
+    "chosen": "a0008",
+    "chosen_description": "Move to [3, 2] (1 step(s); now 1 from the current goal).",
+    "chosen_kind": "move",
+    "fixture": "mid_level1",
+    "legal_actions": 9,
+    "metadata": {
+      "confidence": 0.26,
+      "error": null,
+      "estimated_cost_usd": 9.3e-05,
+      "latency_ms": 2198.2,
+      "model": "gpt-6-luna",
+      "probabilities": [
+        {
+          "probability": 0.12,
+          "value": "a0001"
+        },
+        {
+          "probability": 0.09,
+          "value": "a0002"
+        },
+        {
+          "probability": 0.18,
+          "value": "a0004"
+        },
+        {
+          "probability": 0.1,
+          "value": "a0005"
+        },
+        {
+          "probability": 0.08,
+          "value": "a0006"
+        },
+        {
+          "probability": 0.06,
+          "value": "a0007"
+        },
+        {
+          "probability": 0.37,
+          "value": "a0008"
+        }
+      ],
+      "probability_flags": [],
+      "provider": "live",
+      "request_id": null,
+      "usage": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0,
+        "input_tokens": 929,
+        "output_tokens": 0,
+        "total_tokens": 929
+      }
+    },
+    "phase": 1,
+    "reason": "openai_decisions_choice",
+    "turn_id": 21
+  },
+  {
+    "candidates": 16,
+    "chosen": "a0002",
+    "chosen_description": "Attack the Emperor, spending 1 Glory for +2; exact hit chance 72% (wins the game on a hit).",
+    "chosen_kind": "attack_emperor",
+    "fixture": "level2_endgame",
+    "legal_actions": 43,
+    "metadata": {
+      "confidence": 0.91,
+      "error": null,
+      "estimated_cost_usd": 0.000117,
+      "latency_ms": 261.7,
+      "model": "gpt-6-luna",
+      "probabilities": [
+        {
+          "probability": 0.06,
+          "value": "a0001"
+        },
+        {
+          "probability": 0.92,
+          "value": "a0002"
+        },
+        {
+          "probability": 0.02,
+          "value": "a0003"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0010"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0011"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0013"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0027"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0028"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0031"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0032"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0035"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0036"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0039"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0040"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0041"
+        },
+        {
+          "probability": 0.0,
+          "value": "a0043"
+        }
+      ],
+      "probability_flags": [],
+      "provider": "live",
+      "request_id": null,
+      "usage": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0,
+        "input_tokens": 1168,
+        "output_tokens": 0,
+        "total_tokens": 1168
+      }
+    },
+    "phase": 2,
+    "reason": "openai_decisions_choice",
+    "turn_id": 1
+  }
+]

@@ -10,6 +10,14 @@ import time
 
 import engine
 import policies
+import tactical_policy
+
+
+def _act(name, obs, rules, rng):
+    """Dispatch a policy action, including the V0.4 tactical bot."""
+    if name == "tactical":
+        return tactical_policy.choose(obs, rules)
+    return policies.act(name, obs, rng)
 
 
 # ---------------------------------------------------------------------------
@@ -28,8 +36,8 @@ def play_game(rules, seed, game_id, policies_map, check=True):
                         + rules["level2"]["max_rounds"]) + 8:
             raise RuntimeError(f"game {game_id} exceeded its turn limit")
         obs = engine.observe(state, state["active_player"])
-        action_id, reason = policies.act(
-            policies_map[state["active_player"]], obs, prng)
+        action_id, reason = _act(
+            policies_map[state["active_player"]], obs, rules, prng)
         engine.apply_action(state, state["active_player"], obs["turn_id"],
                             action_id, reason)
     if check:
