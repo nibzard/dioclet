@@ -209,6 +209,8 @@ def cmd_replay(args):
     state = engine.new_game(rules, meta["seed"], meta["game_id"],
                             meta.get("policies") or None)
     for record in logged:
+        if record["action"]["kind"] == "skip_turn":
+            continue  # engine regenerates skip records automatically
         engine.apply_action(state, record["player"], record["turn_id"],
                             record["action_id"], record.get("reason"))
 

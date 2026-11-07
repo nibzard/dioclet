@@ -143,6 +143,10 @@ def validate_rules(rules):
              "guard_post_success_min_roll must be within the die")
 
     combat = rules["combat"]
+    for flag in ("duel_glory_theft", "duel_displacement", "duel_lost_turn"):
+        if flag in combat:
+            _require(isinstance(combat[flag], bool),
+                     f"combat.{flag} must be boolean")
     tiers = combat["equipment_bonus_tiers"]
     covered = {}
     for tier in tiers:
@@ -254,6 +258,7 @@ def new_game(rules, seed, game_id, policies=None):
             "seals": [],
             "hits": 0,
             "turns": 0,
+            "skip_next_turn": False,
         }
 
     state = {
@@ -471,6 +476,7 @@ def observe(state, player):
             "seals": sorted(pdata["seals"]),
             "emperor_hits": pdata["hits"],
             "turns": pdata["turns"],
+            "skip_next_turn": bool(pdata.get("skip_next_turn")),
         }
     progress = {
         "first_challenger": state["first_challenger"],
@@ -608,14 +614,42 @@ def apply_action(state, player, turn_id, action_id, reason=None):
             winner = opponent
         else:
             winner = player
-        events.append({
+        loser = opponent if winner == player else player
+        duel_event = {
             "type": "duel", "attacker": player, "defender": opponent,
             "attacker_roll": a_roll, "defender_roll": d_roll,
             "attacker_bonus": a_score - a_roll, "defender_bonus": d_score - d_roll,
             "attacker_score": a_score, "defender_score": d_score,
             "winner": winner,
-        })
-        grant_glory(winner, rules["glory"]["duel_win_reward"], "glory_earned_duel")
+        }
+        events.append(duel_event)
+        winner_data = state["players"][winner]
+        loser_data = state["players"][loser]
+        if rules["combat"].get("duel_glory_theft"):
+            # D21: the winner's reward comes from the loser, not the bank.
+            paid = min(1, loser_data["glory"])
+            if paid:
+                loser_data["glory"] -= paid
+                room = rules["glory"]["cap"] - winner_data["glory"]
+                kept = max(0, min(paid, room))
+                winner_data["glory"] += kept
+                events.append({"type": "glory_stolen", "winner": winner,
+                               "loser": loser, "amount": paid,
+                               "kept_by_winner": kept,
+                               "wasted_at_cap": paid - kept})
+        else:
+            grant_glory(winner, rules["glory"]["duel_win_reward"],
+                        "glory_earned_duel")
+        if rules["combat"].get("duel_displacement"):
+            # D22: the loser is moved to the retreat node.
+            from_cell = list(loser_data["pos"])
+            loser_data["pos"] = list(board.retreat)
+            events.append({"type": "duel_displacement", "loser": loser,
+                           "from": from_cell, "to": list(board.retreat)})
+        if rules["combat"].get("duel_lost_turn"):
+            # D23: the loser forfeits their next turn.
+            loser_data["skip_next_turn"] = True
+            events.append({"type": "turn_loss_scheduled", "loser": loser})
 
     elif kind == "claim_checkpoint":
         state["first_challenger"] = player
@@ -721,37 +755,62 @@ def apply_action(state, player, turn_id, action_id, reason=None):
 
 
 def _advance(state):
-    """Move to the next player; handle round wrap, transitions, endings."""
+    """Move to the next player; handle skips, wraps, transitions, endings."""
     if state["status"] != "in_progress":
         return  # game already won this turn; keep the final round's order
     rules = state["rules"]
-    state["turn_index"] += 1
-    if state["turn_index"] >= len(state["turn_order"]):
-        state["turn_index"] = 0
-        state["round"] += 1
-        if state.get("rotate_first"):
-            state["round_start"] = (state.get("round_start", 0) + 1) % len(
-                state["turn_order"])
-        if state["phase"] == 1:
-            l1 = rules["level1"]
-            if state["first_challenger"] is not None:
-                end = min(state["trigger_round"] + l1["grace_full_rounds"],
-                          l1["max_rounds"])  # D4
-            else:
-                end = l1["max_rounds"]
-            if state["round"] > end:
-                _transition_to_level2(state)
+    while True:
+        state["turn_index"] += 1
+        if state["turn_index"] >= len(state["turn_order"]):
+            state["turn_index"] = 0
+            state["round"] += 1
+            if state.get("rotate_first"):
+                state["round_start"] = (state.get("round_start", 0) + 1) % len(
+                    state["turn_order"])
+            if state["phase"] == 1:
+                l1 = rules["level1"]
+                if state["first_challenger"] is not None:
+                    end = min(state["trigger_round"] + l1["grace_full_rounds"],
+                              l1["max_rounds"])  # D4
+                else:
+                    end = l1["max_rounds"]
+                if state["round"] > end:
+                    _transition_to_level2(state)
+                    return
+            elif state["round"] > rules["level2"]["max_rounds"]:
+                state["status"] = "finished"
+                state["winner"] = None
+                state["end_reason"] = "phase2_timeout"
+                state["phase2_timeout"] = True
+                state["current_roll"] = None
+                state["round"] = rules["level2"]["max_rounds"]  # completed
+                state["events"][-1]["events"].append({
+                    "type": "game_draw", "reason": "phase2_timeout"})
                 return
-        elif state["round"] > rules["level2"]["max_rounds"]:
-            state["status"] = "finished"
-            state["winner"] = None
-            state["end_reason"] = "phase2_timeout"
-            state["phase2_timeout"] = True
-            state["current_roll"] = None
-            state["round"] = rules["level2"]["max_rounds"]  # completed rounds
-            state["events"][-1]["events"].append({
-                "type": "game_draw", "reason": "phase2_timeout"})
-            return
+        active = current_order(state)[state["turn_index"]]
+        if state["players"][active].get("skip_next_turn"):  # D23
+            state["players"][active]["skip_next_turn"] = False
+            state["players"][active]["turns"] += 1
+            state["turn_id"] += 1
+            state["event_seq"] += 1
+            state["events"].append({
+                "event_seq": state["event_seq"],
+                "turn_id": state["turn_id"],
+                "round": state["round"],
+                "phase": state["phase"],
+                "player": active,
+                "movement_die": None,
+                "action_id": None,
+                "action": {"kind": "skip_turn"},
+                "dice_used": [],
+                "events": [{"type": "turn_skipped", "player": active}],
+                "position_after": list(state["players"][active]["pos"]),
+                "glory_after": state["players"][active]["glory"],
+                "equipment_count_after": len(
+                    state["players"][active]["equipment"]),
+            })
+            continue
+        break
     _start_turn(state)
 
 
@@ -870,6 +929,9 @@ def result(state):
             "guard_post_attempts": 0, "guard_post_successes": 0,
             "duels_initiated": 0, "duels_won_attacker": 0,
             "duels_won_defender": 0, "duels_defended": 0,
+            "glory_stolen": 0, "glory_lost_theft": 0,
+            "times_displaced": 0, "turns_skipped": 0,
+            "chamber_evictions": 0,
             "seals": [], "seal_attempts": 0,
             "seal_attempts_by_site": {"cellars": 0, "guard_barracks": 0,
                                       "peristyle": 0},
@@ -881,6 +943,10 @@ def result(state):
         pid = record["player"]
         m = metrics[pid]
         kind = record["action"]["kind"]
+        last_duel_winner = None
+        for ev in record["events"]:
+            if ev["type"] == "duel":
+                last_duel_winner = ev["winner"]
         if kind == "explore":
             m["explores"] += 1
             m["districts_explored"].add(tuple(record["action"]["destination"]))
@@ -916,6 +982,16 @@ def result(state):
                     m["duels_won_attacker"] += 1
                 else:
                     defender["duels_won_defender"] += 1
+            elif t == "glory_stolen":
+                metrics[ev["winner"]]["glory_stolen"] += ev["kept_by_winner"]
+                metrics[ev["loser"]]["glory_lost_theft"] += ev["amount"]
+            elif t == "duel_displacement":
+                metrics[ev["loser"]]["times_displaced"] += 1
+                if (ev["from"] == [board.emperor[0], board.emperor[1]]
+                        and last_duel_winner):
+                    metrics[last_duel_winner]["chamber_evictions"] += 1
+            elif t == "turn_skipped":
+                metrics[ev["player"]]["turns_skipped"] += 1
             elif t == "seal_acquired":
                 tm["seals"].append(ev["site"])
                 tm["seal_attempts_by_site"][ev["site"]] += 1
@@ -930,7 +1006,7 @@ def result(state):
         for ev in record["events"]:
             if ev["type"] in ("first_challenger", "duel", "seal_acquired",
                               "emperor_hit", "emperor_miss", "phase_transition",
-                              "game_won", "game_draw"):
+                              "duel_displacement", "game_won", "game_draw"):
                 high_impact.append({"turn_id": record["turn_id"],
                                     "round": record["round"],
                                     "phase": record["phase"],
@@ -996,8 +1072,9 @@ def check_invariants(state):
             assert w["hits"] == rules["combat"]["emperor_hits_to_win"], \
                 "winner without enough emperor hits"
     for record in state["events"]:
-        path = record["action"]["path"]
-        assert len(path) - 1 <= record["movement_die"], "moved beyond the die"
+        path = record["action"].get("path")
+        if path is not None:
+            assert len(path) - 1 <= record["movement_die"], "moved beyond the die"
         kinds = [ev["type"] for ev in record["events"]]
         if "emperor_miss" in kinds:
             assert record["position_after"] == [board.retreat[0],

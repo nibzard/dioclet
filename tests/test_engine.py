@@ -259,6 +259,105 @@ class TestResolution(unittest.TestCase):
         self.assertGreater(duels, 20)
         self.assertGreater(seen_tie, 0, "no tie observed in 30 seeded duels")
 
+    def test_duel_glory_theft_transfers(self):
+        rules = load_baseline()
+        rules["combat"]["duel_glory_theft"] = True
+        rules["combat"]["tie_goes_to_defender"] = True
+        transferred = 0
+        for seed in range(30):
+            state = engine.new_game(rules, seed, "t")
+            me = state["players"][state["active_player"]]
+            other = next(p for p in state["players"]
+                         if p != state["active_player"])
+            me["pos"] = [2, 2]
+            state["players"][other]["pos"] = [2, 1]
+            state["players"][other]["glory"] = 1
+            me["glory"] = 0
+            state["current_roll"] = 3
+            record = self._apply(state, "duel", destination=[2, 1],
+                                 target=other)
+            for ev in record["events"]:
+                if ev["type"] == "glory_stolen":
+                    transferred += 1
+                    loser = state["players"][ev["loser"]]
+                    winner = state["players"][ev["winner"]]
+                    self.assertEqual(loser["glory"], 0)   # paid
+                    self.assertEqual(winner["glory"], 1)  # received, no bank
+        self.assertGreater(transferred, 0, "no theft in 30 duels")
+
+    def test_duel_theft_empty_victim_pays_nothing(self):
+        rules = load_baseline()
+        rules["combat"]["duel_glory_theft"] = True
+        state = engine.new_game(rules, 1, "t")
+        me = state["players"][state["active_player"]]
+        other = next(p for p in state["players"]
+                     if p != state["active_player"])
+        me["pos"] = [2, 2]
+        state["players"][other]["pos"] = [2, 1]
+        state["current_roll"] = 3
+        record = self._apply(state, "duel", destination=[2, 1], target=other)
+        types = [e["type"] for e in record["events"]]
+        self.assertNotIn("glory_stolen", types)
+        self.assertEqual(state["players"][other]["glory"], 0)
+        self.assertEqual(state["players"][record["player"]]["glory"], 0)
+
+    def test_duel_displacement_moves_loser_to_retreat(self):
+        rules = load_baseline()
+        rules["combat"]["duel_displacement"] = True
+        displaced = 0
+        for seed in range(30):
+            state = engine.new_game(rules, seed, "d")
+            me = state["players"][state["active_player"]]
+            other = next(p for p in state["players"]
+                         if p != state["active_player"])
+            me["pos"] = [2, 2]
+            state["players"][other]["pos"] = [2, 1]
+            state["current_roll"] = 3
+            record = self._apply(state, "duel", destination=[2, 1],
+                                 target=other)
+            for ev in record["events"]:
+                if ev["type"] == "duel_displacement":
+                    displaced += 1
+                    self.assertEqual(
+                        state["players"][ev["loser"]]["pos"], [2, 3])
+        self.assertGreater(displaced, 0, "no displacement in 30 duels")
+
+    def test_duel_lost_turn_skips_next_turn(self):
+        rules = load_baseline()
+        rules["combat"]["duel_lost_turn"] = True
+        state = engine.new_game(rules, 1, "s")
+        me = state["players"][state["active_player"]]
+        other = next(p for p in state["players"]
+                     if p != state["active_player"])
+        me["pos"] = [2, 2]
+        state["players"][other]["pos"] = [2, 1]
+        state["current_roll"] = 3
+        record = self._apply(state, "duel", destination=[2, 1], target=other)
+        scheduled = any(e["type"] == "turn_loss_scheduled"
+                        for e in record["events"])
+        if not scheduled:
+            self.skipTest("loser was not the defender in this seed")
+        already = [r for r in state["events"]
+                   if r["action"]["kind"] == "skip_turn"]
+        if not already:
+            self.assertTrue(state["players"][other]["skip_next_turn"])
+        skip_records = already
+        guard = 0
+        while not skip_records and state["status"] == "in_progress":
+            guard += 1
+            self.assertLess(guard, 20)
+            action = engine.legal_actions(state)[0]
+            engine.apply_action(state, state["active_player"],
+                                state["turn_id"], action["action_id"])
+            skip_records = [r for r in state["events"]
+                            if r["action"]["kind"] == "skip_turn"]
+        self.assertEqual(len(skip_records), 1)
+        self.assertEqual(skip_records[0]["player"], other)
+        # The skipped turn consumes no die and no choice.
+        self.assertIsNone(skip_records[0]["movement_die"])
+        self.assertEqual(skip_records[0]["dice_used"], [])
+        engine.check_invariants(state)
+
     def test_rotating_first_player_each_round(self):
         rules = load_baseline()
         rules["turns"] = {"rotate_first_player_each_round": True}

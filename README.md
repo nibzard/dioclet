@@ -7,7 +7,29 @@ with repeatable batches before any physical playtesting.
 - `SPEC.md` — the implemented specification (V0.1 proposal)
 - `rules_baseline.json` — canonical, editable rule set
 - `DECISIONS.md` — recorded interpretations of every ambiguous rule
-- `FINDINGS.md` — results of the 1,000-game baseline experiment
+  (D1–D24)
+- `FINDINGS.md` — V0.1 baseline experiment (1,000 games)
+- `FINDINGS_V02.md` — combat and fairness experiments
+- `FINDINGS_V03.md` — duel consequence experiments
+
+## Where the design stands
+
+Measured on 1,000-game batches with the same seeds and policy
+rotation (baseline → adopted package → candidate):
+
+- **Adopted for V0.3** (`rules_v03_base.json`): attacker wins duel
+  ties, one grace round, rotating first player. Aggressive seats 11%,
+  comebacks 70%, challenger edge down to 30%, median 14 rounds.
+- **Candidate from V0.3**: the duel lost turn
+  (`rules_v03_lostturn.json`) — aggressive 14%, no timeouts, one
+  round longer.
+- **Rejected so far**: Glory cap 3 (more fights, no strategy shift),
+  Glory theft (zero-sum economy crowns the pacifist: aggressive 0%,
+  greedy 36%), retreat-node displacement (drops victims on the
+  chamber doorstep; falsified by playtest `runs/narr8`).
+- **Open questions**: the residual turn-order gap (28/21), `balanced`
+  dominance (~30%), and displacement geometry (try the loser's own
+  gate next).
 
 ## Install and test
 
@@ -70,11 +92,19 @@ off (`logging.save_full_batch_logs` in the rules JSON).
 5. `python3 compare.py results/v01_baseline results/<name>` prints a
    side-by-side markdown table.
 
-Existing variants (V0.2 Combat and Fairness set, reports in
-`FINDINGS.md` and `FINDINGS_V02.md`): attacker-wins-ties, Glory cap 3,
-three Emperor hits, rotating first player, grace 0/1, and the
-ties+rotation combo (`rules_v02_*.json`). Optional rule keys absent
-from the baseline: `turns.rotate_first_player_each_round`.
+Existing variants (reports in `FINDINGS.md`, `FINDINGS_V02.md`, and
+`FINDINGS_V03.md`):
+
+- V0.2 Combat and Fairness (`rules_v02_*.json`): attacker-wins-ties,
+  Glory cap 3, three Emperor hits, rotating first player, grace 0/1,
+  and the ties+rotation combo.
+- V0.3 duel consequences (`rules_v03_*.json`), on top of the adopted
+  V0.2 package: duel Glory theft, duel displacement to the retreat
+  node, and the duel lost turn.
+
+Optional rule keys absent from the baseline:
+`turns.rotate_first_player_each_round`, `combat.duel_glory_theft`,
+`combat.duel_displacement`, `combat.duel_lost_turn`.
 
 Never edit `rules_baseline.json` mid-experiment; each variant gets its
 own file and results directory.

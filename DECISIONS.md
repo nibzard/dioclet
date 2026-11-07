@@ -89,3 +89,25 @@ practical. No baseline rule values were changed.
   failed Emperor attack is no longer overwritten by the action
   destination. Found by three narrative playtest agents; covered by a
   strengthened test and a `check_invariants` rule.
+- **D21 Duel Glory theft (V0.3).** Optional `combat.duel_glory_theft`
+  (default false). When true, the winner's duel reward comes from the
+  loser, not the bank: the loser pays 1 Glory (floor 0) and the winner
+  keeps it subject to the cap; any overflow is logged as wasted. A duel
+  against a Glory-empty loser pays nothing at all. The standard
+  `glory.duel_win_reward` bank payment is replaced, not added.
+- **D22 Duel displacement (V0.3).** Optional `combat.duel_displacement`
+  (default false). When true, the duel loser's pawn is moved to the
+  retreat node `[2,3]` regardless of level. This is the tested "blocking
+  move": it can evict a player from the Emperor chamber.
+- **D23 Duel lost turn (V0.3).** Optional `combat.duel_lost_turn`
+  (default false). When true, the loser forfeits their next turn. The
+  skip is processed in `_advance` before the turn starts: no movement die
+  is rolled, a `skip_turn` record is appended, and the turn counts as the
+  player's turn for the round. The pending skip is public information in
+  observations; `skip_turn` records are regenerated (not applied) during
+  replay.
+- **D24 V0.3 experiment base.** `rules_v03_base.json` is the adopted
+  V0.2 package: attacker-wins-duel-ties, `grace_full_rounds: 1`,
+  rotating first player. V0.3 variants flip exactly one duel-consequence
+  knob on top of it. Bot policies stay frozen across all experiments so
+  rule effects are not confounded with strategy changes.

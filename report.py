@@ -130,6 +130,11 @@ def game_row(res):
         row[prefix + "duels_won_att"] = m["duels_won_attacker"]
         row[prefix + "duels_won_def"] = m["duels_won_defender"]
         row[prefix + "duels_defended"] = m["duels_defended"]
+        row[prefix + "glory_stolen"] = m["glory_stolen"]
+        row[prefix + "glory_lost_theft"] = m["glory_lost_theft"]
+        row[prefix + "displaced"] = m["times_displaced"]
+        row[prefix + "turns_skipped"] = m["turns_skipped"]
+        row[prefix + "chamber_evictions"] = m["chamber_evictions"]
         row[prefix + "seals"] = "|".join(m["seals"])
         row[prefix + "seal_tries"] = m["seal_attempts"]
         for site in ("cellars", "guard_barracks", "peristyle"):
@@ -250,6 +255,11 @@ def summarize(rows, state_action_counts=None):
         }
     emperor_tries = sum(player_cols("emperor_tries"))
     emperor_hits = sum(player_cols("emperor_hits"))
+    stolen = sum(player_cols("glory_stolen"))
+    lost_theft = sum(player_cols("glory_lost_theft"))
+    displaced = sum(player_cols("displaced"))
+    skipped = sum(player_cols("turns_skipped"))
+    evictions = sum(player_cols("chamber_evictions"))
 
     summary = {
         "games": n,
@@ -302,6 +312,15 @@ def summarize(rows, state_action_counts=None):
             if duel_total else None,
             "duel_free_turn_share": round(1 - duel_total / total_turns, 4)
             if total_turns else None,
+        },
+        "duel_consequences": {
+            "glory_stolen": stolen,
+            "glory_lost_to_theft": lost_theft,
+            "displacements": displaced,
+            "displacements_per_game": round(displaced / n, 2) if n else 0,
+            "chamber_evictions": evictions,
+            "turns_skipped": skipped,
+            "turns_skipped_per_game": round(skipped / n, 2) if n else 0,
         },
         "glory": {
             "earned_per_player": duration_stats(player_cols("glory_earned")),

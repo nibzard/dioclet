@@ -1,0 +1,4753 @@
+{
+  "active_player": "P3",
+  "created": "2026-11-07T00:58:08Z",
+  "current_roll": 6,
+  "district_equipment": {
+    "A": "galea",
+    "B": "pilum",
+    "C": "gladius",
+    "D": "lorica_segmentata",
+    "E": "pugio",
+    "F": "scutum"
+  },
+  "end_reason": "emperor",
+  "engine_version": "0.1.0",
+  "event_seq": 50,
+  "events": [
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0031",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 1,
+      "events": [
+        {
+          "district": "E",
+          "item": "pugio",
+          "type": "district_revealed"
+        },
+        {
+          "district": "E",
+          "item": "pugio",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Ictus takes the near district before anyone else breathes.",
+      "round": 1,
+      "turn_id": 1
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0017",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 2,
+      "events": [
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "type": "district_revealed"
+        },
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Aquila maps the west side while the others crowd the middle.",
+      "round": 1,
+      "turn_id": 2
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0011",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 3,
+      "events": [
+        {
+          "district": "F",
+          "item": "scutum",
+          "type": "district_revealed"
+        },
+        {
+          "district": "F",
+          "item": "scutum",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "Velox runs the rim where no guard can catch him.",
+      "round": 1,
+      "turn_id": 3
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0002",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 4,
+      "events": [
+        {
+          "district": "B",
+          "item": "pilum",
+          "type": "district_revealed"
+        },
+        {
+          "district": "B",
+          "item": "pilum",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Custos learns the ground before he holds it.",
+      "round": 1,
+      "turn_id": 4
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          3
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            0,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0038",
+      "dice_used": [
+        5
+      ],
+      "equipment_count_after": 1,
+      "event_seq": 5,
+      "events": [
+        {
+          "player": "P3",
+          "roll": 5,
+          "success": true,
+          "type": "guard_post"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P3",
+          "type": "glory_earned_guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        0,
+        3
+      ],
+      "reason": "Aquila takes the western post; coin now, steel later.",
+      "round": 2,
+      "turn_id": 5
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0036",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 6,
+      "events": [
+        {
+          "district": "C",
+          "item": "gladius",
+          "type": "district_revealed"
+        },
+        {
+          "district": "C",
+          "item": "gladius",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Velox doubles his kit while the others argue over posts.",
+      "round": 2,
+      "turn_id": 6
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0023",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 7,
+      "events": [
+        {
+          "district": "A",
+          "item": "galea",
+          "type": "district_revealed"
+        },
+        {
+          "district": "A",
+          "item": "galea",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Custos stockpiles arms; the door can wait its guard.",
+      "round": 2,
+      "turn_id": 7
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0006",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 8,
+      "events": [
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Ictus snaps up the western cache one step from his boots.",
+      "round": 2,
+      "turn_id": 8
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0026",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 9,
+      "events": [
+        {
+          "district": "B",
+          "item": "pilum",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Velox keeps moving; every stop is one more piece.",
+      "round": 3,
+      "turn_id": 9
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0016",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 10,
+      "events": [
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Custos walks the south road toward the door he means to hold.",
+      "round": 3,
+      "turn_id": 10
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0028",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 11,
+      "events": [
+        {
+          "district": "A",
+          "item": "galea",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Ictus breaks north; the blade work comes later.",
+      "round": 3,
+      "turn_id": 11
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0037",
+      "dice_used": [
+        6
+      ],
+      "equipment_count_after": 1,
+      "event_seq": 12,
+      "events": [
+        {
+          "player": "P3",
+          "roll": 6,
+          "success": true,
+          "type": "guard_post"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P3",
+          "type": "glory_earned_guard_post"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        0,
+        1
+      ],
+      "reason": "Aquila fills his purse; two coins buy the peristyle.",
+      "round": 3,
+      "turn_id": 12
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0031",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 13,
+      "events": [
+        {
+          "district": "E",
+          "item": "pugio",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Custos takes the pugio at the threshold he will defend.",
+      "round": 4,
+      "turn_id": 13
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0018",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 14,
+      "events": [
+        {
+          "district": "B",
+          "item": "pilum",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Ictus takes the pilum from under Velox's nose.",
+      "round": 4,
+      "turn_id": 14
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0003",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 15,
+      "events": [
+        {
+          "district": "A",
+          "item": "galea",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Aquila pockets a helmet on his way past.",
+      "round": 4,
+      "turn_id": 15
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 16,
+      "events": [
+        {
+          "district": "A",
+          "item": "galea",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Velox sweeps the north wall clean before heading south.",
+      "round": 4,
+      "turn_id": 16
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0032",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 17,
+      "events": [
+        {
+          "district": "C",
+          "item": "gladius",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Ictus races Custos for the last two caches.",
+      "round": 5,
+      "turn_id": 17
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 18,
+      "events": [
+        {
+          "district": "B",
+          "item": "pilum",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "Aquila trades purse-work for steel now that coin is full.",
+      "round": 5,
+      "turn_id": 18
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0011",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 19,
+      "events": [],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        1,
+        2
+      ],
+      "reason": "A slow step south, but Velox keeps clear of every blade.",
+      "round": 5,
+      "turn_id": 19
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0026",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 20,
+      "events": [
+        {
+          "district": "F",
+          "item": "scutum",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "Custos snatches the scutum before Ictus clears the corner.",
+      "round": 5,
+      "turn_id": 20
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 21,
+      "events": [
+        {
+          "district": "C",
+          "item": "gladius",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Aquila takes the gladius; one coin of steel at a time.",
+      "round": 6,
+      "turn_id": 21
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0034",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 22,
+      "events": [
+        {
+          "district": "D",
+          "item": "lorica_segmentata",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Velox sidles down the west lane, far from the brawlers.",
+      "round": 6,
+      "turn_id": 22
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0022",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 23,
+      "events": [
+        {
+          "district": "C",
+          "item": "gladius",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Custos completes his kit; the door will have its keeper.",
+      "round": 6,
+      "turn_id": 23
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0026",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 24,
+      "events": [
+        {
+          "district": "F",
+          "item": "scutum",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "Ictus fills his belt just behind the guard.",
+      "round": 6,
+      "turn_id": 24
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0011",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 25,
+      "events": [
+        {
+          "district": "E",
+          "item": "pugio",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Velox completes the set and eyes the checkpoint.",
+      "round": 7,
+      "turn_id": 25
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "claim_checkpoint",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 26,
+      "events": [
+        {
+          "player": "P0",
+          "round": 7,
+          "type": "first_challenger"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P0",
+          "type": "glory_earned_first_challenger"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Custos strikes the gong; the countdown to the vault begins.",
+      "round": 7,
+      "turn_id": 26
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "target": "P1"
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        5,
+        4
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 27,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 2,
+          "attacker_roll": 5,
+          "attacker_score": 7,
+          "defender": "P1",
+          "defender_bonus": 2,
+          "defender_roll": 4,
+          "defender_score": 6,
+          "type": "duel",
+          "winner": "P2"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P2",
+          "type": "glory_earned_duel"
+        },
+        {
+          "from": [
+            2,
+            3
+          ],
+          "loser": "P1",
+          "to": [
+            2,
+            3
+          ],
+          "type": "duel_displacement"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Ictus shoves the runner while the walk back costs nothing.",
+      "round": 7,
+      "turn_id": 27
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0016",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 28,
+      "events": [
+        {
+          "district": "F",
+          "item": "scutum",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "Aquila pockets the last shield; the vault resets the board anyway.",
+      "round": 7,
+      "turn_id": 28
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ],
+        "target": "P3"
+      },
+      "action_id": "a0014",
+      "dice_used": [
+        4,
+        2
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 29,
+      "events": [
+        {
+          "attacker": "P0",
+          "attacker_bonus": 2,
+          "attacker_roll": 4,
+          "attacker_score": 6,
+          "defender": "P3",
+          "defender_bonus": 1,
+          "defender_roll": 2,
+          "defender_score": 3,
+          "type": "duel",
+          "winner": "P0"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P0",
+          "type": "glory_earned_duel"
+        },
+        {
+          "from": [
+            3,
+            3
+          ],
+          "loser": "P3",
+          "to": [
+            2,
+            3
+          ],
+          "type": "duel_displacement"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Custos tolls the eagle before the doors even open.",
+      "round": 8,
+      "turn_id": 29
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "target": "P1"
+      },
+      "action_id": "a0008",
+      "dice_used": [
+        6,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 30,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 2,
+          "attacker_roll": 6,
+          "attacker_score": 8,
+          "defender": "P1",
+          "defender_bonus": 2,
+          "defender_roll": 3,
+          "defender_score": 5,
+          "type": "duel",
+          "winner": "P2"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P2",
+          "type": "glory_earned_duel"
+        },
+        {
+          "from": [
+            2,
+            3
+          ],
+          "loser": "P1",
+          "to": [
+            2,
+            3
+          ],
+          "type": "duel_displacement"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Ictus mugs the runner once more; the board forgets, the purse remembers.",
+      "round": 8,
+      "turn_id": 30
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 31,
+      "events": [
+        {
+          "district": "E",
+          "item": "pugio",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Aquila pockets the dagger under everyone's boots.",
+      "round": 8,
+      "turn_id": 31
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "target": "P2"
+      },
+      "action_id": "a0011",
+      "dice_used": [
+        2,
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 32,
+      "events": [
+        {
+          "attacker": "P1",
+          "attacker_bonus": 2,
+          "attacker_roll": 2,
+          "attacker_score": 4,
+          "defender": "P2",
+          "defender_bonus": 2,
+          "defender_roll": 6,
+          "defender_score": 8,
+          "type": "duel",
+          "winner": "P2"
+        },
+        {
+          "glory_awarded": 0,
+          "glory_wasted_at_cap": 1,
+          "player": "P2",
+          "type": "glory_earned_duel"
+        },
+        {
+          "from": [
+            1,
+            3
+          ],
+          "loser": "P1",
+          "to": [
+            2,
+            3
+          ],
+          "type": "duel_displacement"
+        },
+        {
+          "auto_granted": {
+            "P0": [],
+            "P1": [],
+            "P2": [],
+            "P3": []
+          },
+          "from_phase": 1,
+          "phase1_timeout": false,
+          "to_phase": 2,
+          "type": "phase_transition"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Twice kicked, Velox pays back the one kicker in reach.",
+      "round": 8,
+      "turn_id": 32
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0002",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 33,
+      "events": [],
+      "glory_after": 2,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Ictus steps out of the empty throne room toward the seals.",
+      "round": 1,
+      "turn_id": 33
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0003",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 34,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P3",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P3",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Aquila buys his first seal outright; coin beats dice.",
+      "round": 1,
+      "turn_id": 34
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        2,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 35,
+      "events": [
+        {
+          "guard_roll": 3,
+          "guard_score": 4,
+          "player": "P1",
+          "player_roll": 2,
+          "player_score": 4,
+          "site": "guard_barracks",
+          "type": "seal_failed"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Velox tests the barracks guard before anyone can bar the way.",
+      "round": 1,
+      "turn_id": 35
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0003",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 36,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P0",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P0",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "The guard pays his toll at the peristyle like everyone else.",
+      "round": 1,
+      "turn_id": 36
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        4
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 37,
+      "events": [
+        {
+          "order": 2,
+          "player": "P3",
+          "roll": 4,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Aquila rolls the cellars dice for his second seal.",
+      "round": 2,
+      "turn_id": 37
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0003",
+      "dice_used": [
+        4,
+        2
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 38,
+      "events": [
+        {
+          "guard_roll": 2,
+          "guard_score": 3,
+          "order": 1,
+          "player": "P1",
+          "player_roll": 4,
+          "player_score": 6,
+          "site": "guard_barracks",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "Velox squares up to the barracks guard again.",
+      "round": 2,
+      "turn_id": 38
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 39,
+      "events": [
+        {
+          "order": 2,
+          "player": "P0",
+          "roll": 3,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "A kick would carry the eagle to the door; Custos takes cellars instead.",
+      "round": 2,
+      "turn_id": 39
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 40,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P2",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P2",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "Ictus pays for the peristyle and keeps his blade money.",
+      "round": 2,
+      "turn_id": 40
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        4
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 41,
+      "events": [
+        {
+          "order": 2,
+          "player": "P1",
+          "roll": 4,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Velox ducks into the cellars for his second stamp.",
+      "round": 3,
+      "turn_id": 41
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        3,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 42,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P0",
+          "purpose": "emperor_attack",
+          "type": "glory_spent"
+        },
+        {
+          "emperor_roll": 3,
+          "emperor_score": 5,
+          "hits": 1,
+          "player": "P0",
+          "player_roll": 3,
+          "player_score": 7,
+          "spend_glory": true,
+          "type": "emperor_hit"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "The guard spends his coin on the Emperor himself.",
+      "round": 3,
+      "turn_id": 42
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0007",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 43,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "No profit in kicking a man one step from his door; Ictus hunts the cellars.",
+      "round": 3,
+      "turn_id": 43
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0010",
+      "dice_used": [
+        3,
+        1
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 44,
+      "events": [
+        {
+          "attacker": "P3",
+          "attacker_bonus": 2,
+          "attacker_roll": 3,
+          "attacker_score": 5,
+          "defender": "P0",
+          "defender_bonus": 2,
+          "defender_roll": 1,
+          "defender_score": 3,
+          "type": "duel",
+          "winner": "P3"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P3",
+          "type": "glory_earned_duel"
+        },
+        {
+          "from": [
+            2,
+            4
+          ],
+          "loser": "P0",
+          "to": [
+            2,
+            3
+          ],
+          "type": "duel_displacement"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Aquila provokes the guard: a win pays coin, a loss pays distance.",
+      "round": 3,
+      "turn_id": 44
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        2,
+        5
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 45,
+      "events": [
+        {
+          "emperor_roll": 5,
+          "emperor_score": 7,
+          "player": "P0",
+          "player_roll": 2,
+          "player_score": 4,
+          "retreat_to": [
+            2,
+            3
+          ],
+          "spend_glory": false,
+          "type": "emperor_miss"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Kicked from his own door, Custos kicks the Emperor instead.",
+      "round": 4,
+      "turn_id": 45
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 46,
+      "events": [
+        {
+          "order": 2,
+          "player": "P2",
+          "roll": 6,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "Ictus rolls the cellars; one stamp from the throne.",
+      "round": 4,
+      "turn_id": 46
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        3,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 47,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P3",
+          "purpose": "emperor_attack",
+          "type": "glory_spent"
+        },
+        {
+          "emperor_roll": 3,
+          "emperor_score": 5,
+          "hits": 1,
+          "player": "P3",
+          "player_roll": 3,
+          "player_score": 7,
+          "spend_glory": true,
+          "type": "emperor_hit"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "Aquila buys his swing; the vault answers in coin.",
+      "round": 4,
+      "turn_id": 47
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "target": "P3"
+      },
+      "action_id": "a0011",
+      "dice_used": [
+        6,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 48,
+      "events": [
+        {
+          "attacker": "P1",
+          "attacker_bonus": 2,
+          "attacker_roll": 6,
+          "attacker_score": 8,
+          "defender": "P3",
+          "defender_bonus": 2,
+          "defender_roll": 3,
+          "defender_score": 5,
+          "type": "duel",
+          "winner": "P1"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P1",
+          "type": "glory_earned_duel"
+        },
+        {
+          "from": [
+            2,
+            4
+          ],
+          "loser": "P3",
+          "to": [
+            2,
+            3
+          ],
+          "type": "duel_displacement"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "Velox learns the trick: even a lost kick lands him at the door.",
+      "round": 4,
+      "turn_id": 48
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          2
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "target": "P1"
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        5,
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 49,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 2,
+          "attacker_roll": 5,
+          "attacker_score": 7,
+          "defender": "P1",
+          "defender_bonus": 2,
+          "defender_roll": 6,
+          "defender_score": 8,
+          "type": "duel",
+          "winner": "P1"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P1",
+          "type": "glory_earned_duel"
+        },
+        {
+          "from": [
+            1,
+            2
+          ],
+          "loser": "P2",
+          "to": [
+            2,
+            3
+          ],
+          "type": "duel_displacement"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "Ictus bets on the fight: coin if he wins, the doorstep if he loses.",
+      "round": 5,
+      "turn_id": 49
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        1,
+        1
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 50,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P3",
+          "purpose": "emperor_attack",
+          "type": "glory_spent"
+        },
+        {
+          "emperor_roll": 1,
+          "emperor_score": 3,
+          "hits": 2,
+          "player": "P3",
+          "player_roll": 1,
+          "player_score": 5,
+          "spend_glory": true,
+          "type": "emperor_hit"
+        },
+        {
+          "player": "P3",
+          "type": "game_won"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "Aquila spends his last coin for the killing blow.",
+      "round": 5,
+      "turn_id": 50
+    }
+  ],
+  "first_challenger": "P0",
+  "game_id": "narr8",
+  "phase": 2,
+  "phase1_timeout": false,
+  "phase2_timeout": false,
+  "players": {
+    "P0": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        2,
+        0
+      ],
+      "glory": 0,
+      "hits": 1,
+      "pos": [
+        2,
+        3
+      ],
+      "seals": [
+        "peristyle",
+        "cellars"
+      ],
+      "skip_next_turn": false,
+      "turns": 12
+    },
+    "P1": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        4,
+        2
+      ],
+      "glory": 2,
+      "hits": 0,
+      "pos": [
+        1,
+        3
+      ],
+      "seals": [
+        "guard_barracks",
+        "cellars"
+      ],
+      "skip_next_turn": false,
+      "turns": 12
+    },
+    "P2": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        2,
+        4
+      ],
+      "glory": 1,
+      "hits": 0,
+      "pos": [
+        2,
+        3
+      ],
+      "seals": [
+        "peristyle",
+        "cellars"
+      ],
+      "skip_next_turn": false,
+      "turns": 13
+    },
+    "P3": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        0,
+        2
+      ],
+      "glory": 0,
+      "hits": 2,
+      "pos": [
+        2,
+        4
+      ],
+      "seals": [
+        "peristyle",
+        "cellars"
+      ],
+      "skip_next_turn": false,
+      "turns": 13
+    }
+  },
+  "revealed": {
+    "A": "galea",
+    "B": "pilum",
+    "C": "gladius",
+    "D": "lorica_segmentata",
+    "E": "pugio",
+    "F": "scutum"
+  },
+  "rng": {
+    "battle": [
+      3,
+      [
+        2919874771,
+        3022056866,
+        4195853508,
+        2634032628,
+        3432486139,
+        222589583,
+        3038013703,
+        318992575,
+        2808474025,
+        1571850032,
+        4060461577,
+        836251762,
+        338090418,
+        2172246957,
+        4066122092,
+        4022323294,
+        1029981777,
+        435931037,
+        2280138851,
+        1894052728,
+        1739579753,
+        2538745681,
+        2886157731,
+        2336473036,
+        2087237837,
+        2146015768,
+        2482041655,
+        3968444853,
+        2211428864,
+        3746672515,
+        2422156956,
+        2932784679,
+        3495222312,
+        838618965,
+        2952398793,
+        566603889,
+        1517228635,
+        1010570256,
+        3257280025,
+        3473041650,
+        13549550,
+        47516206,
+        1970170186,
+        2229139263,
+        3074510908,
+        208775520,
+        1762037470,
+        2370016793,
+        2395675684,
+        3754101635,
+        1352851198,
+        3004460222,
+        3422264307,
+        4278508116,
+        151898603,
+        1232981240,
+        179436382,
+        3271696865,
+        2485651758,
+        775031332,
+        453439914,
+        3741889286,
+        3621205367,
+        2806894270,
+        3834653280,
+        560011612,
+        2406344827,
+        1898825670,
+        487333985,
+        3712560003,
+        2856504354,
+        1478531429,
+        2694322620,
+        389940871,
+        3918624061,
+        2276154739,
+        1889494627,
+        2787332719,
+        4181238733,
+        2515622551,
+        896459333,
+        3872268651,
+        1702537395,
+        3533007809,
+        2541636706,
+        422619317,
+        3897205555,
+        2149319650,
+        724941895,
+        1702412052,
+        620917949,
+        3649315198,
+        4185152584,
+        2554052011,
+        4262964253,
+        563498442,
+        2697735749,
+        868335610,
+        2673216357,
+        2914145075,
+        1864064761,
+        3360501627,
+        3972613787,
+        4089190007,
+        1952549511,
+        1397929391,
+        2153781709,
+        3486479320,
+        1466013547,
+        2487297596,
+        2642012103,
+        1945988454,
+        1901134447,
+        1090537569,
+        2481564989,
+        2999081147,
+        2443034010,
+        1787323471,
+        161416872,
+        2086621840,
+        348709877,
+        2405828304,
+        3139527608,
+        1375538815,
+        780883522,
+        1606463963,
+        1342446879,
+        1319133753,
+        1237579060,
+        2244928878,
+        60151766,
+        4123046918,
+        2796948309,
+        3222902781,
+        529934169,
+        4212346247,
+        2418910916,
+        1214527296,
+        780492656,
+        3377102126,
+        3857339492,
+        3692562328,
+        706588007,
+        3079786905,
+        669371283,
+        2710258955,
+        3084415660,
+        3491463674,
+        4242367044,
+        80453028,
+        1747949602,
+        3924533897,
+        3132752620,
+        2425978090,
+        960982329,
+        284730398,
+        1073657506,
+        2846495900,
+        1432262178,
+        3328571388,
+        1422384225,
+        740017291,
+        1404217943,
+        111827585,
+        705253662,
+        2116058246,
+        1528154135,
+        454978422,
+        1872442043,
+        60055402,
+        243410893,
+        132865401,
+        1717333766,
+        301656165,
+        664189006,
+        3414575326,
+        2458282292,
+        4258299227,
+        3988900120,
+        1792891502,
+        3408032975,
+        3435273134,
+        4152663134,
+        3791934306,
+        1440743185,
+        3723098457,
+        3481497759,
+        2222655509,
+        4287285697,
+        3283116649,
+        3041690245,
+        341901039,
+        1596794435,
+        3721840761,
+        3703339599,
+        1943407243,
+        1428016796,
+        3177163389,
+        130862352,
+        1399495194,
+        1252099801,
+        239059598,
+        2679252552,
+        3257387678,
+        50862065,
+        3821877186,
+        2994090273,
+        790256108,
+        3268706275,
+        2001712408,
+        1866970481,
+        3555741525,
+        3279361734,
+        1353491414,
+        2132430349,
+        2299355726,
+        1760220049,
+        2006853532,
+        3692243534,
+        499692597,
+        3207363805,
+        3623998916,
+        696658366,
+        3221821013,
+        781702442,
+        4204773995,
+        4268793694,
+        1942439546,
+        731976921,
+        2083181266,
+        3149710169,
+        71909210,
+        2435287490,
+        1692597934,
+        2392717080,
+        2773351709,
+        1014153429,
+        1837889531,
+        2472822795,
+        1903766052,
+        2175260520,
+        284234122,
+        1733996383,
+        1672173570,
+        259403653,
+        3887981953,
+        3004187821,
+        3860335101,
+        2106389435,
+        1271109026,
+        1862923212,
+        2838511188,
+        1576739452,
+        16319075,
+        1046150733,
+        1687719225,
+        1975838688,
+        1786857178,
+        3972210672,
+        3733899441,
+        26691055,
+        3787151914,
+        489843424,
+        834037888,
+        1699039477,
+        2937679852,
+        2994267595,
+        744207307,
+        1723236273,
+        39943134,
+        1854674764,
+        2537704175,
+        2388009822,
+        3469663136,
+        4189996259,
+        1701970185,
+        1079083422,
+        3063312205,
+        1853321298,
+        1528457274,
+        2669024111,
+        837333827,
+        1372996787,
+        2327910960,
+        884695322,
+        1125553194,
+        4117083271,
+        6124626,
+        3287353320,
+        1043949720,
+        3475442605,
+        3740332215,
+        2627182501,
+        3489156888,
+        3920275147,
+        2868941541,
+        370062856,
+        2697177123,
+        205446441,
+        3529354651,
+        2885392210,
+        2443136683,
+        230559152,
+        88354799,
+        3584712175,
+        1970612030,
+        834448872,
+        807533096,
+        2421728845,
+        3654055306,
+        1548816554,
+        880740642,
+        778291969,
+        2203879222,
+        815807995,
+        905497716,
+        969492705,
+        2176204430,
+        222692402,
+        3692820431,
+        3171953528,
+        826736917,
+        1399586760,
+        3357633404,
+        3973961354,
+        927980267,
+        582244134,
+        1785181779,
+        4126775194,
+        40110249,
+        1654093421,
+        2453863649,
+        373229796,
+        2317346637,
+        2443502141,
+        2991077597,
+        4286074572,
+        2064200024,
+        1318000205,
+        3750976230,
+        2452712183,
+        3032563474,
+        1727376537,
+        763644937,
+        826959232,
+        1981661281,
+        3699446052,
+        3459068684,
+        2145098931,
+        3011049131,
+        1791907368,
+        1232746550,
+        3301684114,
+        1180473159,
+        2177116050,
+        4026706707,
+        2227014429,
+        889603383,
+        783916791,
+        2817395982,
+        1178574176,
+        3457121953,
+        2273787300,
+        1489556151,
+        4185953615,
+        2767283506,
+        2224548894,
+        967691968,
+        4234879361,
+        1786701458,
+        3592265659,
+        1454269243,
+        2693108943,
+        2431746596,
+        1885681109,
+        2842239132,
+        3841723874,
+        3653621308,
+        780001458,
+        3390235586,
+        2165031412,
+        2757594231,
+        193903743,
+        4205146730,
+        1251529484,
+        2513915637,
+        3881899805,
+        2958774109,
+        1287339773,
+        2021874133,
+        2758168579,
+        40029293,
+        871303223,
+        4279730895,
+        3168216523,
+        3940538136,
+        749939174,
+        4270742748,
+        4157083563,
+        1307820655,
+        4219519018,
+        4214555013,
+        4040757781,
+        1697906885,
+        2596233089,
+        2314598606,
+        4266617418,
+        25810190,
+        1891916223,
+        2474127782,
+        540862315,
+        3951997774,
+        939993089,
+        2559255594,
+        2396639724,
+        2693328628,
+        429912163,
+        1611682468,
+        2550590874,
+        4175981233,
+        4135708,
+        1931505849,
+        1449726679,
+        3061738321,
+        3853978572,
+        1231837831,
+        2021524916,
+        2584085610,
+        3518775106,
+        3583766385,
+        1945798132,
+        1923776653,
+        1901836062,
+        937010290,
+        3956899167,
+        2134296417,
+        2542201149,
+        1149464672,
+        2306036280,
+        478100754,
+        3610244284,
+        3735052392,
+        235449650,
+        541684111,
+        3391710016,
+        1373487979,
+        3382377329,
+        4249260784,
+        2152168332,
+        2302210663,
+        735617405,
+        1907713266,
+        1100314296,
+        2576221882,
+        3307204055,
+        3861297282,
+        200190957,
+        2083716129,
+        3355991034,
+        108804368,
+        189758076,
+        2559350967,
+        1269296408,
+        145970237,
+        2219771643,
+        2992489682,
+        2702128228,
+        4234966696,
+        3994361211,
+        367936308,
+        3378829559,
+        3103166438,
+        554513658,
+        1363888402,
+        1061958007,
+        131847225,
+        1076201324,
+        29886700,
+        119419370,
+        3482659108,
+        2963907798,
+        3432887911,
+        2099338822,
+        2108735536,
+        4246893271,
+        1145932714,
+        2382255113,
+        48123826,
+        3875159158,
+        4089117730,
+        1007074098,
+        237675500,
+        1621163656,
+        446677910,
+        1874970040,
+        3328225351,
+        4074520474,
+        591834537,
+        1042183877,
+        691857056,
+        3676267702,
+        4113336878,
+        1041075556,
+        2044207964,
+        26331900,
+        1321636508,
+        2231133218,
+        827395545,
+        1534310483,
+        1362643505,
+        513051170,
+        4048267755,
+        615527639,
+        2921842417,
+        1841995432,
+        621351393,
+        1516237993,
+        3649149521,
+        3796174224,
+        3899227982,
+        3287967081,
+        1845534702,
+        497068477,
+        191351475,
+        1616311700,
+        4249088808,
+        4024939376,
+        3962135976,
+        361835661,
+        2553991439,
+        3215889255,
+        4025072620,
+        3059963378,
+        2868190562,
+        1749834484,
+        534938628,
+        787254286,
+        3274027518,
+        3470122967,
+        4025120275,
+        3108795961,
+        2796317555,
+        331923090,
+        862561186,
+        3718945938,
+        1506411704,
+        3760845572,
+        1105098598,
+        1484266047,
+        3975955137,
+        1572467503,
+        3645223631,
+        3191615754,
+        962979839,
+        3673686819,
+        2217324235,
+        3178546361,
+        988425232,
+        3682496361,
+        2510170905,
+        4001453567,
+        1940018001,
+        2532479998,
+        1747837443,
+        2601802470,
+        1939902250,
+        3247392037,
+        2025260106,
+        84385478,
+        1800629749,
+        237927978,
+        3882219874,
+        1434761641,
+        648133273,
+        3691912831,
+        2351910956,
+        1253436022,
+        3799650248,
+        167517137,
+        1617379975,
+        3893066543,
+        1912420045,
+        1718533698,
+        1623283160,
+        2815675788,
+        2320179816,
+        536389568,
+        1959443204,
+        2804018112,
+        251467625,
+        34384096,
+        1418508172,
+        2644548998,
+        1683810130,
+        4089770785,
+        440641098,
+        1843098927,
+        592706070,
+        10330776,
+        3427992353,
+        1219005009,
+        985055080,
+        2537122017,
+        2743476501,
+        4160408713,
+        26772721,
+        449519319,
+        339314801,
+        1187255210,
+        3210848404,
+        1751907940,
+        1915505281,
+        2372628615,
+        4073405339,
+        2223918675,
+        1053158427,
+        1262653194,
+        3066273081,
+        1980537674,
+        2260942331,
+        230489130,
+        1234942221,
+        721832766,
+        2730457424,
+        46
+      ],
+      null
+    ],
+    "movement": [
+      3,
+      [
+        2822724695,
+        1622544394,
+        60502138,
+        3355900731,
+        1133643797,
+        1231447511,
+        2543535079,
+        4013479643,
+        741892401,
+        4101651529,
+        3764980169,
+        2581112659,
+        879150249,
+        207821744,
+        62998516,
+        1128480308,
+        2460675946,
+        4281883101,
+        4065877352,
+        932607402,
+        1581396328,
+        4117890918,
+        626361645,
+        1524438187,
+        2343857525,
+        2715023264,
+        4168338753,
+        796430652,
+        1844880473,
+        1099447327,
+        2589630326,
+        3460261823,
+        945932615,
+        3017599592,
+        2264917851,
+        407466508,
+        1275262576,
+        2739281150,
+        1542759661,
+        2139032797,
+        1995409893,
+        2180859107,
+        1366340796,
+        2813592615,
+        2749470384,
+        111710880,
+        650632441,
+        2304856594,
+        2028053566,
+        874464600,
+        2807591167,
+        4182114424,
+        141032436,
+        527072530,
+        883076865,
+        3984739005,
+        4271994349,
+        1831083555,
+        1949150097,
+        680206972,
+        4131531838,
+        567858035,
+        586291677,
+        836878402,
+        2490566418,
+        1391502585,
+        338811972,
+        2786626994,
+        3376733594,
+        2592592524,
+        2645514930,
+        4191690227,
+        3825714338,
+        1956936472,
+        2358313047,
+        671148097,
+        2504601424,
+        940774779,
+        1620672101,
+        1329609946,
+        2965605828,
+        2851998643,
+        2040025365,
+        3986936650,
+        4156275157,
+        2458295037,
+        1713083689,
+        1584364295,
+        2900978000,
+        2101783785,
+        2005266750,
+        2085955894,
+        256925240,
+        2582443844,
+        105311701,
+        4053606766,
+        673316474,
+        544092617,
+        1240118399,
+        3797885159,
+        1426845239,
+        4059351808,
+        3826347546,
+        109576737,
+        2996530366,
+        1589945240,
+        1842379595,
+        3072382391,
+        880940676,
+        3672415591,
+        3192943407,
+        1139942768,
+        1906984499,
+        3506159827,
+        1499785223,
+        1746869539,
+        2649214998,
+        2727744991,
+        3034701407,
+        2666478814,
+        2588715149,
+        946929420,
+        2671275278,
+        2463260110,
+        610201827,
+        4000268135,
+        3645491867,
+        1275513634,
+        1961631111,
+        3679669709,
+        267817080,
+        3023061034,
+        2083928628,
+        3994127125,
+        2214908931,
+        3113566943,
+        3969677965,
+        1238952523,
+        877605003,
+        1942712461,
+        822567276,
+        2913013409,
+        121776367,
+        303202819,
+        50338749,
+        1253134618,
+        1404236384,
+        3084577660,
+        3984273336,
+        2797608978,
+        3681233838,
+        2498642381,
+        4171544910,
+        2265369590,
+        1642811790,
+        3527608878,
+        191179752,
+        2991138629,
+        194005411,
+        2809700532,
+        2045551137,
+        574566255,
+        4049176803,
+        1317168711,
+        1254308744,
+        3159905389,
+        2836424726,
+        330876801,
+        1978239888,
+        464537452,
+        1873354793,
+        105982162,
+        1037888065,
+        297861085,
+        3759340790,
+        3223232747,
+        2408576438,
+        1578113369,
+        4218658123,
+        3812457848,
+        1615244192,
+        1377977080,
+        1688732032,
+        3432310253,
+        1538024215,
+        1424579403,
+        3895022914,
+        3924037672,
+        2320025792,
+        306831418,
+        2531050585,
+        845450183,
+        2062249946,
+        1087702166,
+        3357657970,
+        910994795,
+        1706081635,
+        2887499359,
+        3484999329,
+        3625837140,
+        1049814909,
+        749094900,
+        3326645955,
+        2425283370,
+        1591881441,
+        4265457586,
+        680139199,
+        4047578990,
+        309608767,
+        78638245,
+        2878328538,
+        101860341,
+        2000984411,
+        3543327192,
+        2943018755,
+        1823800364,
+        3881488284,
+        4108623676,
+        4198178903,
+        1566977948,
+        156022358,
+        1841860829,
+        3176616445,
+        2995768543,
+        972072872,
+        2850914880,
+        3377765445,
+        283295529,
+        294917925,
+        1339844158,
+        707839657,
+        3237597398,
+        4045902585,
+        912788301,
+        3416917426,
+        2527746338,
+        3450775578,
+        1904906754,
+        3261013479,
+        2520524421,
+        2326638910,
+        2181381933,
+        4121471232,
+        316115697,
+        3653022768,
+        3919256220,
+        2891987691,
+        1307244776,
+        76783353,
+        3580263379,
+        3064905010,
+        4250732138,
+        2813455583,
+        2567319156,
+        750817868,
+        3688939189,
+        1651874160,
+        3581458681,
+        361281262,
+        3588518225,
+        1861963581,
+        1561034663,
+        688194146,
+        3297054945,
+        611461351,
+        2881917447,
+        2540033610,
+        3947776900,
+        4099088207,
+        470409278,
+        3363477222,
+        2432941940,
+        1042559671,
+        316736644,
+        1268693540,
+        2645480792,
+        3582498449,
+        4186609087,
+        4238438643,
+        3595470256,
+        1848239524,
+        226424579,
+        3452859899,
+        3225288800,
+        2341670600,
+        2648068033,
+        636918955,
+        178578765,
+        1809236705,
+        977829910,
+        3431625,
+        2220510798,
+        1381070158,
+        903050403,
+        3605940501,
+        3183868013,
+        571215738,
+        3549116085,
+        616904764,
+        341498944,
+        1601188547,
+        1257888199,
+        139292547,
+        972164138,
+        2187652356,
+        3041352274,
+        2064240765,
+        1502372312,
+        2780172200,
+        2948141907,
+        2448171407,
+        1697750127,
+        1254676066,
+        1012703446,
+        3709463820,
+        3179871358,
+        4008169136,
+        1869191836,
+        3066089295,
+        3969532298,
+        3340304993,
+        3743609117,
+        1243561862,
+        4144943993,
+        1075015973,
+        3814357986,
+        2096129118,
+        2014776067,
+        3168748302,
+        2011069472,
+        1322334061,
+        4121798458,
+        3353468970,
+        3290055025,
+        801310951,
+        446809521,
+        2090908634,
+        3455535656,
+        3694969799,
+        793981812,
+        2247891480,
+        1886906740,
+        4119326217,
+        2844659330,
+        3710349331,
+        2957852790,
+        1000642516,
+        2982352337,
+        2945651549,
+        2315119514,
+        4215425292,
+        3450211245,
+        3720432038,
+        1756804176,
+        874851538,
+        725535612,
+        3167973837,
+        2542034727,
+        2378471263,
+        294141407,
+        3238144328,
+        3745392005,
+        2975682901,
+        1478653195,
+        2636603031,
+        4007458379,
+        573904960,
+        2798351493,
+        2573259319,
+        1566277475,
+        2757454999,
+        3649788302,
+        3697800014,
+        4238696895,
+        977999910,
+        1712957273,
+        1668402068,
+        736699721,
+        807659719,
+        688292763,
+        2110742475,
+        958859386,
+        1416729642,
+        1582119857,
+        728879730,
+        3316777553,
+        3078402567,
+        1145957801,
+        1096151792,
+        178328479,
+        4146157955,
+        2083457312,
+        2724799671,
+        3477870343,
+        1711869520,
+        2650255214,
+        3168747917,
+        3906848338,
+        2509636705,
+        379893339,
+        2442727494,
+        2165080875,
+        2348481138,
+        1864511386,
+        124391115,
+        2691890224,
+        2607529265,
+        729669450,
+        1317641335,
+        2205880011,
+        1546192150,
+        2390257920,
+        964004419,
+        138867253,
+        384604309,
+        1576793028,
+        3752850585,
+        4189696418,
+        3465886142,
+        74595305,
+        3322583463,
+        3467106730,
+        1534814633,
+        887961242,
+        2021385696,
+        1995921080,
+        231521242,
+        2094043804,
+        3282212850,
+        1973384597,
+        1609666324,
+        2473742982,
+        703103990,
+        126141416,
+        1244158345,
+        344189366,
+        838179480,
+        4169982527,
+        2111909726,
+        1360753212,
+        3770473422,
+        2834471460,
+        2452461277,
+        2715809964,
+        373154619,
+        3345247530,
+        1348085398,
+        174348286,
+        3653204936,
+        2427082074,
+        3361413277,
+        88052089,
+        441926130,
+        1909381740,
+        764261727,
+        3844160872,
+        4036700029,
+        402917333,
+        1773648300,
+        3838009612,
+        1652042527,
+        3115221329,
+        1969190796,
+        1908755158,
+        1526348174,
+        2357350401,
+        79876749,
+        92050850,
+        2030180408,
+        564220289,
+        2780494352,
+        1506002655,
+        1360140589,
+        2017184171,
+        4086277157,
+        3801170735,
+        1952762965,
+        2126343719,
+        324082294,
+        2635974203,
+        2971377551,
+        3508847425,
+        3805167940,
+        2672868351,
+        603166890,
+        136202606,
+        106790568,
+        3656251300,
+        366721334,
+        789936250,
+        2854713356,
+        3775412154,
+        2619382570,
+        1054287856,
+        1651767017,
+        3469574864,
+        1928502412,
+        3141204228,
+        3717855662,
+        1203686976,
+        1444173641,
+        307166005,
+        3354066906,
+        995209439,
+        2765646793,
+        3758993657,
+        1174087993,
+        434926735,
+        4157385115,
+        775000051,
+        1195760863,
+        3186126873,
+        461589822,
+        1321958372,
+        2218812477,
+        2352425654,
+        2468159724,
+        2668601841,
+        2460179419,
+        3251365289,
+        2837674631,
+        4123350692,
+        1548833227,
+        3028478251,
+        2915076039,
+        1105007372,
+        3257521017,
+        1840249652,
+        2616617306,
+        3237214591,
+        1410454070,
+        1961486297,
+        2015089567,
+        3432386075,
+        1038926992,
+        705602504,
+        1138912862,
+        3542281147,
+        297349820,
+        1792394925,
+        1471787475,
+        3018692416,
+        2870500020,
+        3413504464,
+        1548796447,
+        2143144862,
+        3200205462,
+        1122296753,
+        1113294986,
+        3926574185,
+        2576456248,
+        2391673950,
+        1960082645,
+        2497939324,
+        167522079,
+        668539928,
+        2620661361,
+        2387156075,
+        2680726297,
+        3688685626,
+        4166474580,
+        1643535396,
+        3737917854,
+        2944119055,
+        1672597892,
+        3856210552,
+        380030887,
+        2294014086,
+        2767309862,
+        610683148,
+        1794612642,
+        1425813871,
+        2576806768,
+        2580575356,
+        1600709497,
+        3877723475,
+        3433336295,
+        4071005954,
+        3551909171,
+        1724684387,
+        3836491160,
+        2806735382,
+        4192100944,
+        4080704857,
+        717819149,
+        3250453801,
+        3218770612,
+        1573460948,
+        2805371576,
+        2936075413,
+        3750540481,
+        306705463,
+        2368403703,
+        1599488773,
+        2934103735,
+        3589250586,
+        3293831323,
+        1227455865,
+        3357631560,
+        2152146494,
+        943666822,
+        1540920555,
+        3342658954,
+        2981748696,
+        1901316796,
+        2067926916,
+        1552932927,
+        1800606170,
+        1281460931,
+        3338790893,
+        3165165679,
+        3753540855,
+        3507751497,
+        1489484090,
+        3486844410,
+        2742320010,
+        3849223314,
+        3933524216,
+        791361829,
+        626953890,
+        705758075,
+        373475338,
+        1384631315,
+        835215225,
+        67
+      ],
+      null
+    ],
+    "placement": [
+      3,
+      [
+        555923718,
+        726076690,
+        1259720692,
+        3564698912,
+        50173687,
+        827506558,
+        3574377645,
+        2962984412,
+        196563345,
+        2281829880,
+        2790216334,
+        3469468194,
+        1985971321,
+        1469545185,
+        180656910,
+        1565038443,
+        1132097073,
+        1107680860,
+        2148814408,
+        2292047258,
+        2350300339,
+        3808548776,
+        1095836395,
+        3286929644,
+        1097428491,
+        2890580743,
+        2728403716,
+        1086169946,
+        527574898,
+        2313513887,
+        2066130092,
+        2370323352,
+        3168395321,
+        2782582920,
+        1918215024,
+        2511534150,
+        1260855205,
+        3944047267,
+        625966733,
+        2855558477,
+        1418658926,
+        1901594296,
+        4266261289,
+        2271271944,
+        3062814650,
+        569063736,
+        210797874,
+        266901483,
+        1889764168,
+        2727309822,
+        2881235494,
+        1937874639,
+        2085416824,
+        2331750622,
+        3647214154,
+        2481873870,
+        3335234330,
+        706141946,
+        2338816166,
+        3529214101,
+        2630460876,
+        1974050305,
+        438292591,
+        168661041,
+        3986988325,
+        98565346,
+        1308621549,
+        1841867471,
+        874551726,
+        2573851823,
+        643780081,
+        3830466128,
+        1242849540,
+        293183328,
+        4059832216,
+        40031212,
+        473421424,
+        2209028709,
+        671247866,
+        2036283873,
+        704396857,
+        101018942,
+        1853705619,
+        416863632,
+        1069921685,
+        2125726437,
+        2597046177,
+        3278147038,
+        1938161866,
+        278174757,
+        4023994765,
+        3231881352,
+        1870392855,
+        3833677824,
+        970929418,
+        2181611472,
+        337948303,
+        2204830045,
+        3084656290,
+        1308838559,
+        4222631762,
+        3045784712,
+        1626540781,
+        4236576988,
+        3080884867,
+        18906400,
+        3519334721,
+        2142706924,
+        3753918536,
+        3146995230,
+        4162282420,
+        4024095097,
+        3926281218,
+        1015945375,
+        45136001,
+        2053224862,
+        2034438514,
+        1213134718,
+        268648655,
+        4275163763,
+        1164096535,
+        2450252432,
+        275247679,
+        1486113462,
+        2132990840,
+        2351456984,
+        3319834851,
+        893323472,
+        2139087681,
+        1712449607,
+        3801752795,
+        4085194643,
+        4233165400,
+        2381760465,
+        52873350,
+        3180153012,
+        2085078564,
+        195127962,
+        685356286,
+        4068678942,
+        2079256838,
+        1213695246,
+        3696033834,
+        1530730571,
+        3688382340,
+        2074311199,
+        25543163,
+        1128246515,
+        1735687001,
+        3119764199,
+        1172457528,
+        863317715,
+        2591295586,
+        4162035106,
+        2066573412,
+        732985043,
+        2865467804,
+        1943900331,
+        566426922,
+        152541905,
+        1291280949,
+        2922800804,
+        1708249689,
+        4293669061,
+        731570073,
+        1630436388,
+        2339710560,
+        531400408,
+        3460993727,
+        910726219,
+        2084098938,
+        1516827599,
+        3815904731,
+        4189165273,
+        2269500877,
+        2141847899,
+        3027653390,
+        1312924119,
+        737007589,
+        70310752,
+        1630819211,
+        3809441683,
+        3434355600,
+        1307232080,
+        2847065444,
+        3711725318,
+        2176798167,
+        4028272309,
+        2532533080,
+        3565967424,
+        2098102895,
+        492626832,
+        952094259,
+        4282828321,
+        3701412038,
+        4123411109,
+        3684484704,
+        2398286828,
+        2628016055,
+        1377763709,
+        88869457,
+        3312396536,
+        2810004785,
+        1576104335,
+        3674945492,
+        1536115884,
+        3345185882,
+        149013774,
+        1738387117,
+        829616570,
+        3685000023,
+        2157350219,
+        1799954912,
+        2553371904,
+        3801411475,
+        3472512578,
+        1344041676,
+        232483079,
+        3050508453,
+        1425933169,
+        2815659063,
+        777358211,
+        1511252352,
+        1888905997,
+        3982493823,
+        3229003363,
+        3199768004,
+        3521067748,
+        4110965476,
+        3557901585,
+        3731638599,
+        900632169,
+        3483757876,
+        3107961660,
+        390147112,
+        39931659,
+        2674300950,
+        1077838939,
+        1281549196,
+        875537844,
+        4000675102,
+        884271947,
+        3673490400,
+        1152207163,
+        709532290,
+        2078304379,
+        2946333419,
+        2202571173,
+        4116963767,
+        4224648725,
+        4083154086,
+        1792019045,
+        2765348632,
+        3235996092,
+        1008302162,
+        135894302,
+        4064124695,
+        3377154784,
+        3093012444,
+        1633394307,
+        1279999867,
+        1356740661,
+        1457454341,
+        2617703470,
+        556264805,
+        353922831,
+        1813041745,
+        2465212052,
+        3032457485,
+        2017988707,
+        891507788,
+        1893874104,
+        2862268043,
+        1056220455,
+        234880372,
+        2201145867,
+        3448539934,
+        3870736263,
+        3868560655,
+        3647403651,
+        163994748,
+        3833147114,
+        602763059,
+        1957815574,
+        304806552,
+        3215305265,
+        3054148497,
+        1000193756,
+        3225505613,
+        113616600,
+        3253894533,
+        3237711595,
+        1807450452,
+        671445831,
+        2818396703,
+        876521306,
+        3783368895,
+        4196315286,
+        2315834649,
+        4229078984,
+        1312159727,
+        43324477,
+        801771727,
+        2843648628,
+        3509962842,
+        4138095666,
+        2451406419,
+        462295484,
+        2739832052,
+        1705454,
+        1644036924,
+        3637819623,
+        4134030909,
+        2990802662,
+        321969800,
+        1868507511,
+        1241016425,
+        457235910,
+        2251048614,
+        1839481024,
+        3074036154,
+        855180306,
+        1067237296,
+        1045284878,
+        2410863971,
+        3564931389,
+        4174851735,
+        144531358,
+        3380913989,
+        2539090835,
+        34132384,
+        2018524552,
+        1189398548,
+        2408608580,
+        612593681,
+        2761306323,
+        3257226386,
+        2852963132,
+        2301543290,
+        2260505821,
+        818920023,
+        3467855193,
+        2161883858,
+        1163268137,
+        3090933093,
+        3831609272,
+        358764148,
+        3471071552,
+        943071085,
+        1029361202,
+        1606467592,
+        459710526,
+        3184599895,
+        1048710997,
+        3299627089,
+        2647568702,
+        2250824741,
+        2936616981,
+        2552416183,
+        4113663768,
+        1504283735,
+        518202681,
+        30417689,
+        2809011529,
+        348306384,
+        2828496265,
+        1647544101,
+        929634708,
+        1796219089,
+        2251474571,
+        1447828499,
+        286344581,
+        3545777249,
+        3350900355,
+        3325720960,
+        3220036574,
+        1941908625,
+        2403599804,
+        815545253,
+        4102578467,
+        4265421145,
+        606537307,
+        1460739510,
+        1507460117,
+        2575559849,
+        3146425665,
+        141808840,
+        1282837609,
+        1998018405,
+        3129971147,
+        1476288452,
+        309936038,
+        518097600,
+        456480352,
+        32035656,
+        3612051733,
+        118407317,
+        1849330486,
+        2720060939,
+        997730616,
+        2928485266,
+        1924291496,
+        3599138321,
+        1393294018,
+        1736154276,
+        3041604391,
+        1712995721,
+        3003475335,
+        564390416,
+        600089028,
+        1135404620,
+        4159486281,
+        1182154202,
+        1690784133,
+        3486294639,
+        2296830370,
+        1089439005,
+        3470163157,
+        3787110143,
+        499576899,
+        736240773,
+        1780209852,
+        3213738549,
+        2254269215,
+        1353529942,
+        4154673043,
+        2373978085,
+        2826769592,
+        2360789380,
+        2467577403,
+        406302972,
+        1148807244,
+        1410041418,
+        1642504492,
+        4235808331,
+        1530684910,
+        1883472832,
+        2168555524,
+        61795574,
+        1811771749,
+        1832698696,
+        484188367,
+        1469990665,
+        1231724405,
+        1937909200,
+        1994395241,
+        3644040771,
+        2947463538,
+        3677608275,
+        4228053580,
+        1572419859,
+        2124400416,
+        4179193483,
+        4029780572,
+        2291025436,
+        1598779604,
+        3480723859,
+        1650976163,
+        4270955633,
+        1727480154,
+        14677268,
+        3151473684,
+        3244320924,
+        2038602938,
+        3459126154,
+        2985087672,
+        1490850018,
+        1156966169,
+        4104919780,
+        282954942,
+        1098357431,
+        1148434798,
+        929793468,
+        3875258606,
+        3482938749,
+        3600400407,
+        2372813991,
+        130704636,
+        654796094,
+        755497417,
+        1283351931,
+        3752397623,
+        2133667576,
+        152278432,
+        3231282820,
+        4278717378,
+        3359321580,
+        3073650337,
+        175446294,
+        1548762015,
+        2129458019,
+        33382956,
+        723624894,
+        2993690388,
+        799667824,
+        3658295072,
+        1438176395,
+        586776658,
+        3025409925,
+        1893475023,
+        26853664,
+        311438198,
+        3006710177,
+        2961333501,
+        3314947110,
+        1674271651,
+        316338406,
+        2103531326,
+        3595022832,
+        1696809395,
+        1863355349,
+        1223577051,
+        1804396102,
+        4253795021,
+        570137336,
+        1037026734,
+        515357257,
+        562312149,
+        1460081179,
+        768777131,
+        46635832,
+        2262517864,
+        1320241852,
+        953366994,
+        3056217599,
+        1250349328,
+        1248615528,
+        543963597,
+        2376695014,
+        3808634435,
+        2701031990,
+        2954397508,
+        2502971768,
+        3398444947,
+        3943739736,
+        3181134007,
+        1764125386,
+        1915094205,
+        3678553732,
+        3390779955,
+        1902372593,
+        210925907,
+        3381996979,
+        512266119,
+        59910643,
+        3436113582,
+        3336254005,
+        2024707394,
+        4197451526,
+        4282683321,
+        2742661765,
+        3778833989,
+        2325295407,
+        2679463496,
+        1088595185,
+        861512072,
+        2522330027,
+        3163322565,
+        2922880922,
+        2631069917,
+        3431534074,
+        889691309,
+        1449223449,
+        971509480,
+        3669186952,
+        3921742415,
+        1829172664,
+        4066692810,
+        2833172756,
+        2672256682,
+        2902814694,
+        1129318363,
+        2863613233,
+        2669213634,
+        875797638,
+        2925561092,
+        3717778406,
+        2343538040,
+        2462631762,
+        3115582676,
+        1532249840,
+        3723844805,
+        2062896194,
+        4004157340,
+        4017094279,
+        829645816,
+        2565945057,
+        383229964,
+        2945291824,
+        2413923154,
+        1389631467,
+        3336135630,
+        2658702325,
+        3152376811,
+        2979487462,
+        1128921694,
+        3372914716,
+        327079318,
+        4246238809,
+        3212275941,
+        789123757,
+        2488180879,
+        3967167425,
+        3690613083,
+        1603300106,
+        2736496538,
+        3240738630,
+        1954757334,
+        1271015892,
+        2506620103,
+        265205911,
+        1144785120,
+        1878534191,
+        245848326,
+        1409064634,
+        1222204465,
+        3439094747,
+        3896697036,
+        202124340,
+        567458858,
+        2210157242,
+        2234776728,
+        307807053,
+        1470077974,
+        21
+      ],
+      null
+    ]
+  },
+  "rotate_first": true,
+  "round": 5,
+  "round_start": 0,
+  "rounds_level1": 8,
+  "rules": {
+    "board": {
+      "checkpoint": [
+        2,
+        2
+      ],
+      "districts": {
+        "A": [
+          1,
+          1
+        ],
+        "B": [
+          2,
+          1
+        ],
+        "C": [
+          3,
+          1
+        ],
+        "D": [
+          1,
+          3
+        ],
+        "E": [
+          2,
+          3
+        ],
+        "F": [
+          3,
+          3
+        ]
+      },
+      "gates": {
+        "P0": [
+          2,
+          0
+        ],
+        "P1": [
+          4,
+          2
+        ],
+        "P2": [
+          2,
+          4
+        ],
+        "P3": [
+          0,
+          2
+        ]
+      },
+      "glory_posts": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "height": 5,
+      "level2_sites": {
+        "cellars": [
+          1,
+          1
+        ],
+        "emperor": [
+          2,
+          4
+        ],
+        "guard_barracks": [
+          3,
+          1
+        ],
+        "peristyle": [
+          2,
+          2
+        ],
+        "retreat": [
+          2,
+          3
+        ]
+      },
+      "width": 5
+    },
+    "combat": {
+      "duel_displacement": true,
+      "emperor_bonus": 2,
+      "emperor_hits_to_win": 2,
+      "equipment_bonus_tiers": [
+        {
+          "bonus": 0,
+          "max_count": 2,
+          "min_count": 0
+        },
+        {
+          "bonus": 1,
+          "max_count": 5,
+          "min_count": 3
+        },
+        {
+          "bonus": 2,
+          "max_count": 6,
+          "min_count": 6
+        }
+      ],
+      "glory_attack_bonus": 2,
+      "imperial_guard_bonus": 1,
+      "tie_goes_to_defender": false
+    },
+    "equipment": [
+      "pugio",
+      "pilum",
+      "galea",
+      "scutum",
+      "gladius",
+      "lorica_segmentata"
+    ],
+    "game_name": "Diocletian's Palace: Six Treasures",
+    "glory": {
+      "cap": 2,
+      "duel_win_reward": 1,
+      "first_challenger_reward": 1,
+      "guard_post_reward": 1,
+      "guard_post_success_min_roll": 4
+    },
+    "level1": {
+      "auto_equip_at_transition": true,
+      "grace_full_rounds": 1,
+      "max_rounds": 24
+    },
+    "level2": {
+      "cellars_success_min_roll": 3,
+      "max_rounds": 24,
+      "peristyle_glory_cost": 1,
+      "peristyle_success_min_roll": 5,
+      "required_distinct_seals": 2
+    },
+    "logging": {
+      "sample_games_per_batch": 5,
+      "save_anomalous_game_logs": true,
+      "save_full_batch_logs": false
+    },
+    "movement": {
+      "allow_early_stop": true,
+      "allow_stationary_special_actions": true,
+      "die_is_max_steps": true,
+      "die_sides": 6,
+      "duel_range": 2,
+      "pass_through_players": true
+    },
+    "players": 4,
+    "rules_version": "0.1",
+    "turns": {
+      "rotate_first_player_each_round": true
+    }
+  },
+  "rules_hash": "12a496f516dc0ccd73afb091ca77ccef32d1a19cffd369bc701728bb7beed137",
+  "seed": 4301,
+  "status": "finished",
+  "trigger_round": 7,
+  "turn_id": 50,
+  "turn_index": 1,
+  "turn_order": [
+    "P2",
+    "P3",
+    "P1",
+    "P0"
+  ],
+  "winner": "P3"
+}
