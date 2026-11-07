@@ -2,51 +2,64 @@
 <html lang="en"><head><meta charset="utf-8">
 <title>Diocletian's Palace — playtest pack</title>
 <style>
-  :root {{ --ink:#2a2119; --paper:#fffdf6; --line:#e2d5bc; --purple:#5a3d6b;
-           --gold:#b8860b; --green:#5f7a4a; --red:#a03d2e; }}
-  * {{ box-sizing: border-box; }}
-  body {{ margin:0; font:13.5px/1.5 Georgia, serif; color:var(--ink);
-         background:#d8cdb4; }}
-  .page {{ width:210mm; min-height:296mm; margin:8px auto; padding:14mm 12mm;
-           background:var(--paper); box-shadow:0 1px 6px #0003; }}
-  h1 {{ margin:2mm 0 1mm; font-size:26px; color:var(--purple); }}
-  h2 {{ margin:6mm 0 2mm; font-size:18px; color:var(--purple);
-        border-bottom:2px solid var(--gold); padding-bottom:1mm; }}
-  h3 {{ margin:4mm 0 1mm; font-size:14.5px; color:#5a3d6b; }}
-  p, li {{ margin:1.5mm 0; }}
-  ol, ul {{ padding-left:6mm; }}
-  table {{ border-collapse:collapse; width:100%; margin:2mm 0; font-size:12.5px; }}
-  th, td {{ border:1px solid var(--line); padding:1.5mm 2mm; text-align:left; }}
-  th {{ background:#f3ead2; }}
-  .board svg {{ width:100%; height:auto; }}
-  .legend {{ display:flex; flex-wrap:wrap; gap:3mm; font-size:11.5px; margin:2mm 0; }}
-  .legend span {{ white-space:nowrap; }}
-  .dot {{ display:inline-block; width:10px; height:10px; border-radius:50%;
-          margin-right:1.5mm; vertical-align:-1px; border:1px solid #3a2d20; }}
-  .tokrow {{ display:flex; flex-wrap:wrap; gap:3mm; margin:3mm 0; }}
-  .tok {{ width:22mm; height:22mm; border-radius:50%; display:flex;
+  :root { --ink:#2a2119; --paper:#fffdf6; --line:#e2d5bc; --purple:#5a3d6b;
+           --gold:#b8860b; --green:#5f7a4a; --red:#a03d2e; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:13.5px/1.5 Georgia, serif; color:var(--ink);
+         background:#d8cdb4; }
+  .page { width:210mm; min-height:296mm; margin:8px auto; padding:14mm 12mm;
+           background:var(--paper); box-shadow:0 1px 6px #0003; }
+  h1 { margin:2mm 0 1mm; font-size:26px; color:var(--purple); }
+  h2 { margin:6mm 0 2mm; font-size:18px; color:var(--purple);
+        border-bottom:2px solid var(--gold); padding-bottom:1mm; }
+  h3 { margin:4mm 0 1mm; font-size:14.5px; color:#5a3d6b; }
+  p, li { margin:1.5mm 0; }
+  ol, ul { padding-left:6mm; }
+  table { border-collapse:collapse; width:100%; margin:2mm 0; font-size:12.5px; }
+  th, td { border:1px solid var(--line); padding:1.5mm 2mm; text-align:left; }
+  th { background:#f3ead2; }
+  .board svg { width:100%; height:auto; }
+  .legend { display:flex; flex-wrap:wrap; gap:3mm; font-size:11.5px; margin:2mm 0; }
+  .legend span { white-space:nowrap; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
+          margin-right:1.5mm; vertical-align:-1px; border:1px solid #3a2d20; }
+  .tokrow { display:flex; flex-wrap:wrap; gap:3mm; margin:3mm 0; }
+  .tok { width:22mm; height:22mm; border-radius:50%; display:flex;
           align-items:center; justify-content:center; text-align:center;
-          font:600 11px Verdana, sans-serif; border:2px dashed #7a6a4d; }}
-  .tok.glory {{ background:#f3e6b8; color:#7a5c0e; }}
-  .tok.pawn {{ border-style:solid; color:#fffdf6; font-size:15px; }}
-  .pawn.p0 {{ background:#5a3d6b; }} .pawn.p1 {{ background:#b0532f; }}
-  .pawn.p2 {{ background:#5f7a4a; }} .pawn.p3 {{ background:#3f6f9e; }}
-  .tok.seal {{ border-radius:4mm; background:#efe4cf; }}
-  .tok.hit {{ background:#f4ddd6; color:#7c2d1f; border-radius:2mm; }}
-  .eqgrid {{ display:grid; grid-template-columns:repeat(3, 54mm); gap:4mm; }}
-  .eqcard {{ border:2px solid var(--purple); border-radius:3mm; height:74mm;
-             padding:4mm; background:#fbf6ea; }}
-  .eqname {{ font-size:16px; font-weight:bold; color:var(--purple); }}
-  .eqflavor {{ margin-top:2mm; font-style:italic; color:#6f6252; }}
-  .eqfoot {{ margin-top:52mm; font-size:10px; color:#8a795a;
-             text-align:center; letter-spacing:1px; }}
-  .script li {{ margin:2.5mm 0; }}
-  .formline {{ border-bottom:1px solid var(--line); height:8mm; margin:3mm 0; }}
-  .small {{ font-size:11px; color:#6f6252; }}
-  @media print {{
-    body {{ background:#fff; }}
-    .page {{ margin:0; box-shadow:none; page-break-after:always; }}
-  }}
+          font:600 11px Verdana, sans-serif; border:2px dashed #7a6a4d; }
+  .tok.glory { background:#f3e6b8; color:#7a5c0e; }
+  .tok.pawn { border-style:solid; color:#fffdf6; font-size:9px;
+             width:7mm; height:7mm; }
+  .pawn.p0 { background:#5a3d6b; } .pawn.p1 { background:#b0532f; }
+  .pawn.p2 { background:#5f7a4a; } .pawn.p3 { background:#3f6f9e; }
+  .tok.seal { border-radius:4mm; background:#efe4cf; }
+  .tok.hit { background:#f4ddd6; color:#7c2d1f; border-radius:2mm; }
+  .eqgrid { display:grid; grid-template-columns:repeat(3, 54mm); gap:4mm; }
+  .eqcard { border:2px solid var(--purple); border-radius:3mm; height:74mm;
+             padding:4mm; background:#fbf6ea; }
+  .eqname { font-size:16px; font-weight:bold; color:var(--purple); }
+  .eqflavor { margin-top:2mm; font-style:italic; color:#6f6252; }
+  .eqfoot { margin-top:52mm; font-size:10px; color:#8a795a;
+             text-align:center; letter-spacing:1px; }
+  .script li { margin:2.5mm 0; }
+  .trkgrid { display:grid; grid-template-columns:1fr 1fr; gap:5mm; }
+  .tracker { border:2px solid var(--purple); border-radius:3mm;
+              padding:3mm; page-break-inside:avoid; }
+  .tracker h3 { margin:1mm 0 2mm; }
+  .trkcol { display:inline-block; vertical-align:top; width:48%;
+             font-size:11.5px; margin:1mm 0; }
+  .eqline { margin:1.2mm 0; }
+  .box { display:inline-block; width:4mm; height:4mm;
+          border:1.5px solid var(--ink); border-radius:1mm;
+          vertical-align:-0.5mm; }
+  .formline { border-bottom:1px solid var(--line); height:8mm; margin:3mm 0; }
+  .small { font-size:11px; color:#6f6252; }
+  @page boardpage { size: A4 landscape; }
+  .page.board { page: boardpage; }
+  @media print {
+    body { background:#fff; }
+    .page { margin:0; box-shadow:none; page-break-after:always; }
+  }
 </style></head><body>
 
 <div class="page">
@@ -55,18 +68,22 @@
   tabletop testing. Print these pages at 100% scale. You need, besides
   this pack: <b>two ordinary six-sided dice for movement</b> and
   <b>one six-sided die for fights and trials</b>. Cut out the cards and
-  tokens on the later pages.</p>
+  tokens on the later pages. Any small object
+  (coin, meeple, button) works better than paper pawns if you have
+  one per player.</p>
   <h2>What is in the pack</h2>
   <ol>
-    <li>The board (all 107 street spaces).</li>
-    <li>Six treasure cards.</li>
+    <li>The board (all 107 street spaces; its page prints landscape,
+    and A3 paper makes the pieces comfortable).</li>
+    <li>Six treasure location cards.</li>
     <li>Tokens: Glory, seals, Emperor hits, pawns.</li>
+    <li>Four equipment tracker sheets.</li>
     <li>The rules (two pages).</li>
     <li>One-page quick reference.</li>
     <li>Five-minute teaching script.</li>
     <li>Feedback form.</li>
   </ol>
-  <p class="small">Rules version: V0.6.1 real board, 2d6 movement.
+  <p class="small">Rules version: V0.6.2 real board, 2d6 movement.
   Level 2 site placements on this board are the design team's current
   tested choice, not final artwork.</p>
 </div>
@@ -362,6 +379,10 @@
 <div class="page">
   <h2>Treasure cards (cut out)</h2>
   <div class="eqgrid"><div class="eqcard"><div class="eqname">pugio</div><div class="eqflavor">A short dagger, easy to carry.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">pilum</div><div class="eqflavor">A throwing javelin.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">galea</div><div class="eqflavor">A legionary helmet.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">scutum</div><div class="eqflavor">A tall curved shield.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">gladius</div><div class="eqflavor">The Roman short sword.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">lorica segmentata</div><div class="eqflavor">Banded plate armor.</div><div class="eqfoot">Treasure of the city</div></div></div>
+  <p class="small">These six cards are <b>location cards</b>: put one
+  face down on each blue entry space. When a card is revealed it stays
+  on its space. Players mark what they own on their tracker sheet
+  (next page), not on the cards.</p>
   <h2>Tokens (cut out)</h2>
   <div class="tokrow"><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div></div><div class="tokrow"><div class="tok pawn p0">N</div><div class="tok pawn p1">E</div><div class="tok pawn p2">S</div><div class="tok pawn p3">W</div></div><div class="tokrow"><div class="tok seal cellars">Cellars</div><div class="tok seal cellars">Cellars</div><div class="tok seal cellars">Cellars</div><div class="tok seal cellars">Cellars</div><div class="tok seal barracks">Barracks</div><div class="tok seal barracks">Barracks</div><div class="tok seal barracks">Barracks</div><div class="tok seal barracks">Barracks</div><div class="tok seal peristyle">Peristyle</div><div class="tok seal peristyle">Peristyle</div><div class="tok seal peristyle">Peristyle</div><div class="tok seal peristyle">Peristyle</div></div><div class="tokrow"><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div></div>
   <p class="small">Glory: each player may hold at most 2. Seals: you
@@ -386,6 +407,9 @@
     <li><b>Do one thing</b> where you stand (or just end your move):
     take a treasure card, stand a guard post, duel a rival, or later
     claim a seal or strike the Emperor.</li>
+    <li class="small">Guard posts and duels always need a move of at
+    least one space first. You cannot use either of them twice from
+    the same spot without moving away and coming back.</li>
   </ol>
   <h3>The city (first half)</h3>
   <ul>
@@ -459,6 +483,7 @@
   <table>
     <tr><th>Remember</th></tr>
     <tr><td>Treasure: stop on the blue entry space.<br>
+    Guard posts and duels need a move first.<br>
     Two different seals before the Emperor.<br>
     Miss the Emperor: step back one space to the retreat hall.<br>
     Two hits wins.</td></tr>
@@ -493,6 +518,8 @@
   <p class="small">Read the quick reference aloud once, then start.
   Answer the rest as it comes up.</p>
 </div>
+
+<div class="page"><h2>Equipment trackers (one per player)</h2><div class="trkgrid"><div class="tracker"><h3>Player 1: ______________</h3><div class="trkcol"><b>Equipment</b><div class="eqline"><span class="box"></span> pugio</div><br><div class="eqline"><span class="box"></span> pilum</div><br><div class="eqline"><span class="box"></span> galea</div><br><div class="eqline"><span class="box"></span> scutum</div><br><div class="eqline"><span class="box"></span> gladius</div><br><div class="eqline"><span class="box"></span> lorica segmentata</div></div><div class="trkcol"><b>Glory (max 2)</b><div class="eqline"><span class="box"></span> <span class="box"></span></div><b>Seals (2 different)</b><div class="eqline">Cellars <span class="box"></span> · Barracks <span class="box"></span> · Peristyle <span class="box"></span></div><b>Emperor hits</b><div class="eqline"><span class="box"></span> <span class="box"></span></div></div></div><div class="tracker"><h3>Player 2: ______________</h3><div class="trkcol"><b>Equipment</b><div class="eqline"><span class="box"></span> pugio</div><br><div class="eqline"><span class="box"></span> pilum</div><br><div class="eqline"><span class="box"></span> galea</div><br><div class="eqline"><span class="box"></span> scutum</div><br><div class="eqline"><span class="box"></span> gladius</div><br><div class="eqline"><span class="box"></span> lorica segmentata</div></div><div class="trkcol"><b>Glory (max 2)</b><div class="eqline"><span class="box"></span> <span class="box"></span></div><b>Seals (2 different)</b><div class="eqline">Cellars <span class="box"></span> · Barracks <span class="box"></span> · Peristyle <span class="box"></span></div><b>Emperor hits</b><div class="eqline"><span class="box"></span> <span class="box"></span></div></div></div><div class="tracker"><h3>Player 3: ______________</h3><div class="trkcol"><b>Equipment</b><div class="eqline"><span class="box"></span> pugio</div><br><div class="eqline"><span class="box"></span> pilum</div><br><div class="eqline"><span class="box"></span> galea</div><br><div class="eqline"><span class="box"></span> scutum</div><br><div class="eqline"><span class="box"></span> gladius</div><br><div class="eqline"><span class="box"></span> lorica segmentata</div></div><div class="trkcol"><b>Glory (max 2)</b><div class="eqline"><span class="box"></span> <span class="box"></span></div><b>Seals (2 different)</b><div class="eqline">Cellars <span class="box"></span> · Barracks <span class="box"></span> · Peristyle <span class="box"></span></div><b>Emperor hits</b><div class="eqline"><span class="box"></span> <span class="box"></span></div></div></div><div class="tracker"><h3>Player 4: ______________</h3><div class="trkcol"><b>Equipment</b><div class="eqline"><span class="box"></span> pugio</div><br><div class="eqline"><span class="box"></span> pilum</div><br><div class="eqline"><span class="box"></span> galea</div><br><div class="eqline"><span class="box"></span> scutum</div><br><div class="eqline"><span class="box"></span> gladius</div><br><div class="eqline"><span class="box"></span> lorica segmentata</div></div><div class="trkcol"><b>Glory (max 2)</b><div class="eqline"><span class="box"></span> <span class="box"></span></div><b>Seals (2 different)</b><div class="eqline">Cellars <span class="box"></span> · Barracks <span class="box"></span> · Peristyle <span class="box"></span></div><b>Emperor hits</b><div class="eqline"><span class="box"></span> <span class="box"></span></div></div></div></div></div>
 
 <div class="page">
   <h2>Playtest feedback form</h2>
