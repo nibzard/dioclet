@@ -245,3 +245,105 @@ def act(policy_name, obs, rng):
         raise ValueError(f"unknown policy {policy_name!r}; "
                          f"expected one of {sorted(POLICIES)}") from None
     return func(obs, rng)
+
+
+# ---------------------------------------------------------------------------
+# V0.6.1 experimental variant (DECISIONS D32). The four policies above are
+# frozen (D24). This variant exists only to test the hypothesis that the
+# gate skew on the real board comes from northwest coordinate tie-breaking:
+# it is `balanced` with every coordinate tie-break reversed to prefer the
+# southeast. Registered separately, reported separately, never mixed into
+# historical experiments.
+# ---------------------------------------------------------------------------
+
+BALANCED_SE_VERSION = "balanced-se-v061.1"
+
+
+def _dest_key_se(action):
+    return (-action["destination"][0], -action["destination"][1])
+
+
+def _nearest_se(actions):
+    return min(actions, key=lambda a: (_path_len(a), _dest_key_se(a)))
+
+
+def _best_move_toward_se(actions, target):
+    moves = _by_kind(actions, "move")
+    if not moves:
+        return None
+    return min(moves, key=lambda a: (_manhattan(a["destination"], target),
+                                     _dest_key_se(a)))
+
+
+def _level1_explore_target_se(obs):
+    board = obs["board"]
+    revealed = obs["revealed_districts"]
+    mine = set(_me(obs)["equipment"])
+    known = [list(cell) for name, cell in board["districts"].items()
+             if name in revealed and revealed[name] not in mine]
+    unknown = [list(cell) for name, cell in board["districts"].items()
+               if name not in revealed]
+    me_pos = _me(obs)["position"]
+    for pool in (known, unknown):
+        if pool:
+            return min(pool, key=lambda c: (_manhattan(me_pos, c), -c[0], -c[1]))
+    return None
+
+
+def _level2_target_se(obs):
+    board = obs["board"]
+    me = _me(obs)
+    lacking = [list(cell) for name, cell in board["seal_sites"].items()
+               if name not in me["seals"]]
+    me_pos = me["position"]
+    if lacking and len(me["seals"]) < obs["progress"]["seals_required"]:
+        return min(lacking, key=lambda c: (_manhattan(me_pos, c), -c[0], -c[1]))
+    return list(board["emperor"])
+
+
+def policy_balanced_se(obs, rng=None):
+    """Mirror of policy_balanced with southeast tie-breaking (D32)."""
+    actions = obs["legal_actions"]
+    me = _me(obs)
+    if obs["phase"] == 1:
+        if _by_kind(actions, "claim_checkpoint"):
+            return _by_kind(actions, "claim_checkpoint")[0]["action_id"], \
+                "trigger the Level 2 transition now"
+        certain = [a for a in _by_kind(actions, "explore")]
+        if certain:
+            best = min(certain, key=lambda a: (_path_len(a), _dest_key_se(a)))
+            return best["action_id"], "collect the nearest district"
+        posts = _by_kind(actions, "guard_post")
+        if posts and me["glory"] < obs["glory_cap"]:
+            return _nearest_se(posts)["action_id"], "earn Glory at a guard post"
+        duel = _pick_duel(obs, actions, max_target_bonus=me["equipment_bonus"])
+        if duel:
+            return duel["action_id"], f"duel {duel['target']} while Glory is useful"
+        target = _level1_explore_target_se(obs)
+        if target is None:
+            posts_cells = obs["board"]["glory_posts"]
+            target = max(posts_cells, key=lambda c: c[0] + c[1])
+        move = _best_move_toward_se(actions, list(target))
+        return move["action_id"], "move toward the next objective"
+    if _by_kind(actions, "attack_emperor"):
+        at_cap = me["glory"] >= obs["glory_cap"]
+        action = _prefer_spend(actions, "attack_emperor", at_cap)
+        return action["action_id"], \
+            f"attack the Emperor{' with Glory' if at_cap else ''}"
+    seals = _by_kind(actions, "attempt_seal")
+    if seals:
+        if any(s.get("spend_glory") for s in seals) and \
+                me["glory"] >= obs["glory_cap"]:
+            action = _prefer_spend(seals, "attempt_seal", True)
+        else:
+            action = min(seals, key=lambda a: (_path_len(a), _dest_key_se(a)))
+        return action["action_id"], "claim the nearest missing seal"
+    if me["glory"] == 0:
+        duel = _pick_duel(obs, actions)
+        if duel:
+            return duel["action_id"], "refuel on Glory through a duel"
+    move = _best_move_toward_se(actions, _level2_target_se(obs))
+    return move["action_id"], "move toward the next objective"
+
+
+POLICIES["balanced_se"] = policy_balanced_se
