@@ -199,6 +199,16 @@ CSS, 7 mm pawns with a landscape board page, four equipment tracker
 sheets, an explicit move-first rule for guard posts and duels, and
 real policy dispatch in `tools/mirror_batch.py`.
 
+## Play it in the browser
+
+A playable web version of the validated board lives in `web/`: plain
+HTML, CSS, and JavaScript, no build step. Hot-seat humans and the four
+ported bot policies play the measured ruleset on the 107-space board.
+The board definition is generated from `rules_v06_realboard_p3.json`
+(`python3 tools/make_web_board.py`), never hand-copied. Logic tests:
+`node tools/test_web_engine.mjs`. Deployed to Cloudflare via
+`npx wrangler deploy` (see `wrangler.jsonc`).
+
 ## V0.5 experiments (run)
 
 Three rule experiments, each with a bot baseline and a live AI
