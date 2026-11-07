@@ -1,0 +1,395 @@
+#!/usr/bin/env python3
+"""Generate the printable V0.6.1 playtest pack (playtest/playtest-pack.html).
+
+Reads rules_v06_realboard_p3.json and renders: the board (all 107
+street spaces and the six building blocks), equipment cards, token
+sheets, the player rulebook, a quick-reference sheet, a five-minute
+teaching script, and a feedback form. Print with a browser at 100%
+scale; every section is one page.
+"""
+
+import json
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import engine  # noqa: E402
+from board import Board  # noqa: E402
+
+RULES_FILE = "rules_v06_realboard_p3.json"
+OUT_FILE = "playtest/playtest-pack.html"
+
+CELL = 44
+PAD = 34
+
+
+def board_svg(rules):
+    b = Board(rules)
+    w = PAD * 2 + b.width * CELL
+    h = PAD * 2 + b.height * CELL
+
+    def cx(x):
+        return PAD + x * CELL + CELL / 2
+
+    def cy(y):
+        return PAD + y * CELL + CELL / 2
+
+    parts = [f'<svg viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Game board">']
+    parts.append(f'<rect width="{w}" height="{h}" fill="#f6efe2"/>')
+    parts.append(f'<rect x="10" y="10" width="{w-20}" height="{h-20}" rx="14" '
+                 f'fill="none" stroke="#9c8a64" stroke-width="5"/>')
+    # building blocks
+    for x in range(b.width):
+        for y in range(b.height):
+            if (x, y) in b.blocked:
+                px, py = PAD + x * CELL, PAD + y * CELL
+                parts.append(
+                    f'<rect x="{px+2}" y="{py+2}" width="{CELL-4}" height="{CELL-4}" '
+                    f'rx="5" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>')
+    # street circles
+    for x in range(b.width):
+        for y in range(b.height):
+            if (x, y) not in b.blocked:
+                parts.append(
+                    f'<circle cx="{cx(x)}" cy="{cy(y)}" r="13" fill="#fffdf6" '
+                    f'stroke="#b7a77f" stroke-width="2"/>')
+    # specials
+    def chip(x, y, fill, text, tsize=15, ring="#00000022"):
+        return (f'<circle cx="{cx(x)}" cy="{cy(y)}" r="16.5" fill="{fill}" '
+                f'stroke="#3a2d20" stroke-width="2.5"/>' +
+                f'<text x="{cx(x)}" y="{cy(y)+tsize/2-1}" text-anchor="middle" '
+                f'font-family="Georgia, serif" font-size="{tsize}" font-weight="bold" '
+                f'fill="#fffdf6">{text}</text>')
+    s = []
+    for pid, (x, y) in b.gates.items():
+        side = {"P0": "N", "P1": "E", "P2": "S", "P3": "W"}[pid]
+        s.append(chip(x, y, "#5a3d6b", side))
+    for name, (x, y) in b.districts.items():
+        s.append(chip(x, y, "#3f6f9e", name, 16))
+    s.append(chip(*b.checkpoint, "#c9972b", "X", 16))
+    for (x, y) in b.glory_posts:
+        s.append(chip(x, y, "#5f7a4a", "*", 18))
+    s.append(chip(*b.emperor, "#a03d2e", "E", 15))
+    s.append(chip(*b.retreat, "#4a6b7a", "r", 15))
+    parts.extend(s)
+    # level 2 overlay badges (c cellars, b barracks, p peristyle)
+    for label, site in (("c", "cellars"), ("b", "guard_barracks"),
+                        ("p", "peristyle")):
+        x, y = b.seal_sites[site]
+        bx, by = cx(x) + 14, cy(y) - 15
+        parts.append(
+            f'<circle cx="{bx}" cy="{by}" r="8" fill="#fffdf6" stroke="#3a2d20" '
+            f'stroke-width="1.5"/><text x="{bx}" y="{by+4}" text-anchor="middle" '
+            f'font-family="Verdana, sans-serif" font-size="10" fill="#3a2d20">'
+            f'{label}</text>')
+    # compass
+    parts.append(
+        f'<text x="{w/2}" y="{PAD-12}" text-anchor="middle" '
+        f'font-family="Georgia, serif" font-size="13" fill="#7a6a4d">N O R T H</text>')
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def token_sheet():
+    glory = "".join(
+        f'<div class="tok glory">Glory</div>' for _ in range(12))
+    pawns = "".join(
+        f'<div class="tok pawn p{i}">{n}</div>'
+        for i, n in enumerate(("N", "E", "S", "W")))
+    seals = "".join(
+        f'<div class="tok seal {k}">{label}</div>'
+        for k, label in (("cellars", "Cellars"), ("barracks", "Barracks"),
+                         ("peristyle", "Peristyle")) for _ in range(4))
+    hits = "".join('<div class="tok hit">Hit</div>' for _ in range(10))
+    return (f'<div class="tokrow">{glory}</div><div class="tokrow">{pawns}</div>'
+            f'<div class="tokrow">{seals}</div><div class="tokrow">{hits}</div>')
+
+
+def equipment_cards(rules):
+    names = rules["equipment"]
+    flavor = {
+        "pugio": "A short dagger, easy to carry.",
+        "pilum": "A throwing javelin.",
+        "galea": "A legionary helmet.",
+        "scutum": "A tall curved shield.",
+        "gladius": "The Roman short sword.",
+        "lorica_segmentata": "Banded plate armor.",
+    }
+    cards = "".join(
+        f'<div class="eqcard"><div class="eqname">{n.replace("_", " ")}</div>'
+        f'<div class="eqflavor">{flavor.get(n, "")}</div>'
+        f'<div class="eqfoot">Treasure of the city</div></div>'
+        for n in names)
+    return f'<div class="eqgrid">{cards}</div>'
+
+
+HTML = """<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Diocletian's Palace — playtest pack</title>
+<style>
+  :root {{ --ink:#2a2119; --paper:#fffdf6; --line:#e2d5bc; --purple:#5a3d6b;
+           --gold:#b8860b; --green:#5f7a4a; --red:#a03d2e; }}
+  * {{ box-sizing: border-box; }}
+  body {{ margin:0; font:13.5px/1.5 Georgia, serif; color:var(--ink);
+         background:#d8cdb4; }}
+  .page {{ width:210mm; min-height:296mm; margin:8px auto; padding:14mm 12mm;
+           background:var(--paper); box-shadow:0 1px 6px #0003; }}
+  h1 {{ margin:2mm 0 1mm; font-size:26px; color:var(--purple); }}
+  h2 {{ margin:6mm 0 2mm; font-size:18px; color:var(--purple);
+        border-bottom:2px solid var(--gold); padding-bottom:1mm; }}
+  h3 {{ margin:4mm 0 1mm; font-size:14.5px; color:#5a3d6b; }}
+  p, li {{ margin:1.5mm 0; }}
+  ol, ul {{ padding-left:6mm; }}
+  table {{ border-collapse:collapse; width:100%; margin:2mm 0; font-size:12.5px; }}
+  th, td {{ border:1px solid var(--line); padding:1.5mm 2mm; text-align:left; }}
+  th {{ background:#f3ead2; }}
+  .board svg {{ width:100%; height:auto; }}
+  .legend {{ display:flex; flex-wrap:wrap; gap:3mm; font-size:11.5px; margin:2mm 0; }}
+  .legend span {{ white-space:nowrap; }}
+  .dot {{ display:inline-block; width:10px; height:10px; border-radius:50%;
+          margin-right:1.5mm; vertical-align:-1px; border:1px solid #3a2d20; }}
+  .tokrow {{ display:flex; flex-wrap:wrap; gap:3mm; margin:3mm 0; }}
+  .tok {{ width:22mm; height:22mm; border-radius:50%; display:flex;
+          align-items:center; justify-content:center; text-align:center;
+          font:600 11px Verdana, sans-serif; border:2px dashed #7a6a4d; }}
+  .tok.glory {{ background:#f3e6b8; color:#7a5c0e; }}
+  .tok.pawn {{ border-style:solid; color:#fffdf6; font-size:15px; }}
+  .pawn.p0 {{ background:#5a3d6b; }} .pawn.p1 {{ background:#b0532f; }}
+  .pawn.p2 {{ background:#5f7a4a; }} .pawn.p3 {{ background:#3f6f9e; }}
+  .tok.seal {{ border-radius:4mm; background:#efe4cf; }}
+  .tok.hit {{ background:#f4ddd6; color:#7c2d1f; border-radius:2mm; }}
+  .eqgrid {{ display:grid; grid-template-columns:repeat(3, 54mm); gap:4mm; }}
+  .eqcard {{ border:2px solid var(--purple); border-radius:3mm; height:74mm;
+             padding:4mm; background:#fbf6ea; }}
+  .eqname {{ font-size:16px; font-weight:bold; color:var(--purple); }}
+  .eqflavor {{ margin-top:2mm; font-style:italic; color:#6f6252; }}
+  .eqfoot {{ margin-top:52mm; font-size:10px; color:#8a795a;
+             text-align:center; letter-spacing:1px; }}
+  .script li {{ margin:2.5mm 0; }}
+  .formline {{ border-bottom:1px solid var(--line); height:8mm; margin:3mm 0; }}
+  .small {{ font-size:11px; color:#6f6252; }}
+  @media print {{
+    body {{ background:#fff; }}
+    .page {{ margin:0; box-shadow:none; page-break-after:always; }}
+  }}
+</style></head><body>
+
+<div class="page">
+  <h1>Diocletian's Palace</h1>
+  <p><b>Print-and-play playtest pack.</b> Unofficial prototype for
+  tabletop testing. Print these pages at 100% scale. You need, besides
+  this pack: <b>two ordinary six-sided dice for movement</b> and
+  <b>one six-sided die for fights and trials</b>. Cut out the cards and
+  tokens on the later pages.</p>
+  <h2>What is in the pack</h2>
+  <ol>
+    <li>The board (all 107 street spaces).</li>
+    <li>Six treasure cards.</li>
+    <li>Tokens: Glory, seals, Emperor hits, pawns.</li>
+    <li>The rules (two pages).</li>
+    <li>One-page quick reference.</li>
+    <li>Five-minute teaching script.</li>
+    <li>Feedback form.</li>
+  </ol>
+  <p class="small">Rules version: V0.6.1 real board, 2d6 movement.
+  Level 2 site placements on this board are the design team's current
+  tested choice, not final artwork.</p>
+</div>
+
+<div class="page board">
+  <h2>The board</h2>
+  __BOARD__
+  <div class="legend">
+    <span><span class="dot" style="background:#5a3d6b"></span>gate and start</span>
+    <span><span class="dot" style="background:#3f6f9e"></span>treasure entry (stop here to take the card)</span>
+    <span><span class="dot" style="background:#c9972b"></span>checkpoint (Peristyle in the palace)</span>
+    <span><span class="dot" style="background:#5f7a4a"></span>guard post (Glory)</span>
+    <span><span class="dot" style="background:#a03d2e"></span>Emperor</span>
+    <span><span class="dot" style="background:#4a6b7a"></span>retreat hall</span>
+  </div>
+  <p class="small">Small white circles with letters are the palace
+  trials: <b>c</b> Cellars, <b>b</b> Barracks, <b>p</b> Peristyle.
+  They share the entry spaces of the matching city blocks. Red squares
+  are building blocks: nobody walks there.</p>
+</div>
+
+<div class="page">
+  <h2>Treasure cards (cut out)</h2>
+  __CARDS__
+  <h2>Tokens (cut out)</h2>
+  __TOKENS__
+  <p class="small">Glory: each player may hold at most 2. Seals: you
+  need two different ones. Hits: mark your strikes on the Emperor.</p>
+</div>
+
+<div class="page">
+  <h2>The rules</h2>
+  <h3>Goal</h3>
+  <p>Be the first to land <b>two hits</b> on the Emperor.</p>
+  <h3>Setup</h3>
+  <p>Each player picks a gate (all four are equal). Put your pawn on
+  it. Shuffle the six treasure cards face down, one on each blue entry
+  space. Choose a starting player; the start moves one seat clockwise
+  every round.</p>
+  <h3>Your turn</h3>
+  <ol>
+    <li><b>Roll both movement dice.</b> The sum is your <i>maximum</i>
+    steps, not an exact count.</li>
+    <li><b>Move</b> along the street circles, orthogonally, up to your
+    roll. You may stop early. You may pass through other pawns.</li>
+    <li><b>Do one thing</b> where you stand (or just end your move):
+    take a treasure card, stand a guard post, duel a rival, or later
+    claim a seal or strike the Emperor.</li>
+  </ol>
+  <h3>The city (first half)</h3>
+  <ul>
+    <li><b>Blue entry spaces:</b> end your move there and take that
+    block's treasure card. Every card can be taken by every player
+    once. Treasure is never stolen or lost.</li>
+    <li><b>Guard posts</b> (green *): end your move there and roll one
+    die: <b>4, 5 or 6 earns 1 Glory</b>.</li>
+    <li><b>Duels:</b> end your move within two street spaces of a
+    rival to challenge them. Each of you rolls one die and adds a gear
+    bonus (below). Higher total wins, <b>ties to the attacker</b>. The
+    winner takes 1 Glory. Nothing else changes hands.</li>
+    <li><b>Gear bonus:</b> 0-2 cards +0, 3-5 cards +1, all 6 cards +2.</li>
+    <li><b>Glory:</b> hold at most 2. Beyond that it is lost.</li>
+  </ul>
+  <h3>The gate</h3>
+  <p>The first player who owns all six treasures and reaches the gold
+  checkpoint takes 1 Glory and opens the gate. Finish that round, then
+  one more full round in the city. Then everyone missing cards gets
+  them for free, all pawns return to their gates, and the palace
+  begins. If nobody opens the gate by the end of round 24, it opens
+  anyway.</p>
+  <h3>The palace (second half)</h3>
+  <p>You need <b>two different seals</b> before the Emperor will face
+  you. Duels still work exactly as in the city.</p>
+  <table>
+    <tr><th>Seal</th><th>How to earn it</th></tr>
+    <tr><td>Cellars (c)</td><td>Roll one die: <b>3 or more</b>.</td></tr>
+    <tr><td>Barracks (b)</td><td>You roll die + gear bonus, the guard
+    rolls die +1. <b>Beat the guard.</b></td></tr>
+    <tr><td>Peristyle (p)</td><td>Roll one die: <b>5 or 6</b>. Or pay
+    <b>1 Glory</b>, no roll.</td></tr>
+  </table>
+  <h3>The Emperor</h3>
+  <ol>
+    <li>Stand in his chamber (red E) and strike: you roll die + gear
+    bonus, he rolls die +2. <b>Score higher to hit.</b></li>
+    <li>You may <b>declare a powered strike before rolling: pay 1
+    Glory for +2</b>, paid even on a miss.</li>
+    <li><b>Hit:</b> mark it, stay, strike again next turn.
+    <b>Miss:</b> step back to the retreat hall. Nothing else is lost.</li>
+    <li><b>First to two hits wins.</b></li>
+  </ol>
+  <p class="small">Everything is public: positions, cards, Glory,
+  seals, hits. Only the face-down treasures and the next roll are
+  hidden.</p>
+</div>
+
+<div class="page">
+  <h2>Quick reference (keep this on the table)</h2>
+  <table>
+    <tr><th>Your turn in one line</th></tr>
+    <tr><td>Roll 2 dice, move up to the sum, do one thing.</td></tr>
+  </table>
+  <table>
+    <tr><th>Rolls</th><th>What you roll</th></tr>
+    <tr><td>Movement</td><td>Two dice, summed (move up to the total)</td></tr>
+    <tr><td>Guard post</td><td>One die: 4+ earns Glory</td></tr>
+    <tr><td>Duel</td><td>One die each side + gear bonus, ties to attacker</td></tr>
+    <tr><td>Cellars / Peristyle</td><td>One die: 3+ / 5-6 (Peristyle: pay 1 Glory instead)</td></tr>
+    <tr><td>Barracks</td><td>You die + bonus vs guard die +1</td></tr>
+    <tr><td>Emperor</td><td>You die + bonus vs Emperor die +2; pay 1 Glory for +2 first if you want</td></tr>
+  </table>
+  <table>
+    <tr><th>Gear bonus</th><th>Glory</th></tr>
+    <tr><td>0-2 cards: +0<br>3-5 cards: +1<br>6 cards: +2</td>
+        <td>Cap 2 per player.<br>Earned: guard post, duel win, first
+        through the gate.<br>Spent: Peristyle seal (1), powered
+        Emperor strike (1).</td></tr>
+  </table>
+  <table>
+    <tr><th>Remember</th></tr>
+    <tr><td>Treasure: stop on the blue entry space.<br>
+    Two different seals before the Emperor.<br>
+    Miss the Emperor: step back one space to the retreat hall.<br>
+    Two hits wins.</td></tr>
+  </table>
+</div>
+
+<div class="page script">
+  <h2>Five-minute teaching script</h2>
+  <ol>
+    <li><b>Point at the board.</b> "This is a Roman palace. You enter
+    through your gate. The streets are the circles; the red blocks are
+    buildings, you never walk there."</li>
+    <li><b>The race.</b> "Two halves. First, grab gear in the city.
+    Then the gate opens and everyone races to hit the Emperor twice."</li>
+    <li><b>Show a turn.</b> "Roll both dice, move up to the total,
+    then do one thing. That's a whole turn."</li>
+    <li><b>Show the three city things.</b> Stop on a blue space, take
+    that treasure. Stop on a green star, roll 4+ for Glory. End next
+    to a rival, duel: one die each plus your gear bonus, winner takes
+    a Glory.</li>
+    <li><b>Glory.</b> "You can hold two. It buys exactly two things:
+    the safe seal, or +2 on an Emperor strike."</li>
+    <li><b>The gate.</b> "First player with all six treasures opens
+    it; everyone else gets their missing cards free, so nobody is left
+    behind."</li>
+    <li><b>The palace.</b> "Two different seals, then into the
+    chamber: beat his die by yours plus bonus. A miss only steps you
+    back one space. Two hits and the game is yours."</li>
+    <li><b>Start.</b> "Highest roll of one die moves first, and the
+    start rotates every round."</li>
+  </ol>
+  <p class="small">Read the quick reference aloud once, then start.
+  Answer the rest as it comes up.</p>
+</div>
+
+<div class="page">
+  <h2>Playtest feedback form</h2>
+  <p>Date: ________ Group: <span class="small">(family / kids 6-9 /
+  adult gamers / older adults)</span> ________ Players: ___ ages: ____________</p>
+  <ol>
+    <li>Minutes to explain the rules: ______</li>
+    <li>Total play duration (minutes): ______</li>
+    <li>Rules questions during play (count): ______
+      <div class="formline"></div>
+      <div class="small">What was asked most?</div><div class="formline"></div></li>
+    <li>Confusing spaces or moves:
+      <div class="formline"></div><div class="formline"></div></li>
+    <li>Did waiting between turns become boring? When?
+      <div class="formline"></div></li>
+    <li>Did players understand earning and spending Glory? yes / partly / no</li>
+    <li>Did collecting treasure feel worthwhile? yes / partly / no</li>
+    <li>Did trailing players stay interested? yes / partly / no</li>
+    <li>Was the Emperor fight exciting? yes / partly / no</li>
+    <li>Do you want to play again? yes / maybe / no</li>
+    <li>One thing to change:
+      <div class="formline"></div><div class="formline"></div></li>
+  </ol>
+  <p class="small">For the design team: record only what happened.
+  Predictions belong in the notes column, not in the recorded
+  observations.</p>
+</div>
+
+</body></html>
+"""
+
+
+def main():
+    rules = engine.load_rules(RULES_FILE)
+    html = (HTML.replace("__BOARD__", board_svg(rules))
+                 .replace("__CARDS__", equipment_cards(rules))
+                 .replace("__TOKENS__", token_sheet()))
+    os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
+    with open(OUT_FILE, "w", encoding="utf-8") as fh:
+        fh.write(html)
+    print(f"wrote {OUT_FILE} ({len(html)//1024} KB)")
+
+
+if __name__ == "__main__":
+    main()

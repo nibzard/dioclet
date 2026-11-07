@@ -1,0 +1,34 @@
+{
+  "tournament_id": "v061_realboard_ai",
+  "rules": "rules_v06_realboard_p3.json",
+  "provider": "live",
+  "model": "gpt-6-luna",
+  "decisions_config": "decisions_config.json",
+  "schedules": [
+    {
+      "type": "mirror",
+      "policy": "decisions",
+      "games": 16,
+      "seed_base": 8101,
+      "prefix": "ra"
+    },
+    {
+      "type": "rotation",
+      "policies": [
+        "decisions",
+        "tactical",
+        "balanced",
+        "greedy"
+      ],
+      "games": 16,
+      "seed_base": 8201,
+      "prefix": "rb"
+    }
+  ],
+  "budget": {
+    "aggregate_max_cost_usd": 0.75,
+    "per_game_max_calls": 400,
+    "per_game_max_cost_usd": 0.05,
+    "per_game_wall_clock_seconds": 1800
+  }
+}

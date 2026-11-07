@@ -184,6 +184,18 @@ complete 64-game log set ships as the release artifact
 `v041-tournament-logs` (2.5 MB, offline re-analyzable with
 `analyze_v041.py`).
 
+## V0.6.1: real board validation (print-and-play ready)
+
+The designer's physical board is encoded (107 street spaces), 2d6
+movement is measured in, and a print-and-play pack exists:
+`playtest/playtest-pack.html` (board, cards, tokens, rulebook, quick
+reference, teaching script, feedback form) plus
+`playtest/protocol.md` for human sessions. Validation, fairness
+probes, pacing, and the Level 1 cap analysis: `FINDINGS_V061.md`,
+`BOARD_VALIDATION_V061.md`, `PLAYABILITY_SCORECARD_V061.md`. The
+live AI confirmation is configured but awaits spending
+authorization.
+
 ## V0.5 experiments (run)
 
 Three rule experiments, each with a bot baseline and a live AI

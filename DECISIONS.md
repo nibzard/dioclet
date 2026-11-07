@@ -149,7 +149,11 @@ practical. No baseline rule values were changed.
   Cellars at district A `[0,3]`, Barracks at C `[18,3]`, Peristyle at
   the checkpoint `[9,6]`, Emperor chamber at the south gate `[9,12]`
   (P2's gate, as in every prior version), retreat one step north
-  `[9,11]`. Guard posts: four, on the west and east edges near the
+  `[9,11]`. (These coordinates were superseded by D31 after the
+  placement measurements; the same-cell principle stands: Cellars
+  shares its street cell with entry A, Barracks with entry F,
+  Peristyle with the checkpoint, Emperor with the south gate.)
+  Guard posts: four, on the west and east edges near the
   corners `[0,2]`, `[18,2]`, `[0,10]`, `[18,10]`, matching the V0.1
   placement class (side edges, between corner and gate).
 - **D29 Real-board pacing measurement (V0.6).** `rules_v06_realboard.json`
@@ -181,3 +185,15 @@ practical. No baseline rule values were changed.
   first-challenger rates 181/152/175/152 per gate; Level 2 seal
   sites in a triangle (cellars northwest `[3,0]`, barracks southeast
   `[15,12]`, peristyle center `[9,6]`), emperor at the south gate.
+- **D32 V0.6.1 fairness probes.** Two additions, both additive: (a)
+  `balanced_se` (`balanced-se-v061.1`), a copy of the frozen
+  `balanced` policy with every coordinate tie-break reversed to the
+  southeast, registered as its own policy name; historical policies
+  are untouched and never mixed with it. (b) `tools/mirror_batch.py`,
+  a runner for mirror batches with policies that need the rules
+  object (tactical). Purpose: separate board fairness from
+  frozen-bot tie-breaking. Result: random x4 splits gates evenly
+  (23/24/22/23), tactical x4 and the mixed schedule skew northwest
+  (33/13/17/37), and balanced_se flips the skew (P3 40 to 19, P1 13
+  to 24 in the balanced mirror class). The gate skew on the real
+  board is a bot tie-break artifact, not geometry.
