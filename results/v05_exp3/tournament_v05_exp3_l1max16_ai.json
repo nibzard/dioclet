@@ -1,0 +1,35 @@
+{
+  "budget": {
+    "aggregate_max_cost_usd": 1.6,
+    "per_game_max_calls": 120,
+    "per_game_max_cost_usd": 0.05,
+    "per_game_wall_clock_seconds": 900
+  },
+  "decisions_config": "decisions_config.json",
+  "model": "gpt-6-luna",
+  "provider": "live",
+  "rules": "rules_v05_l1max16.json",
+  "schedules": [
+    {
+      "games": 16,
+      "policies": [
+        "decisions",
+        "tactical",
+        "balanced",
+        "greedy"
+      ],
+      "prefix": "e3r",
+      "seed_base": 6501,
+      "type": "rotation"
+    },
+    {
+      "a": "decisions",
+      "b": "tactical",
+      "games": 16,
+      "prefix": "e3p",
+      "seed_base": 6601,
+      "type": "pairs"
+    }
+  ],
+  "tournament_id": "v05_exp3_l1max16_ai"
+}

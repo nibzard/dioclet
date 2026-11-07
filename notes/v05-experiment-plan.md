@@ -1,6 +1,10 @@
 # V0.5 experiment plan
 
-Research date: 2026-11-07. Status: proposed. Owner: design agent.
+Research date: 2026-11-07. Status: run and analyzed (see
+`FINDINGS_V05.md`). Owner: design agent. Outcomes, in one line each:
+exp1 lost turn — fires but aims nowhere, do not adopt; exp2 Peristyle
+cost 2 — a wall, not a tension, reject; exp3 Level 1 cap 16 — inert
+insurance, adopt as a guardrail.
 
 Sources:
 
