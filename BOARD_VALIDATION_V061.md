@@ -6,6 +6,13 @@ Branch `feature/v061-realboard-validation`. Rules under audit:
 from the rules file, not transcribed by hand (regression-tested in
 `tests/test_realboard.py` and `tests/test_board_v061.py`).
 
+> **Superseded by V0.7 (2026-11-07).** The cardo was removed after
+> the designer's correction: the physical board has six blocks, one
+> card per block, and the simulated central street split the middle
+> column into four strips (D33). This file stays as the V0.6 audit.
+> The adopted board is `rules_v07_6blocks.json`; the V0.7 section
+> at the end records the current facts.
+
 ## Provenance: what is confirmed and what is chosen
 
 | Element | Source |
@@ -109,9 +116,56 @@ Properties worth noting:
    cardo) because the described placement handed those gates 44% win
    share each (D31).
 2. The cardo does not appear on the printed board as described; it
-   is added here for symmetry and history (D27). Recommendation to
-   the designer stands: add the lane or accept the measured skew.
+   was added here for symmetry and history (D27). The designer
+   resolved the open recommendation on 2026-11-07: no cardo, the
+   six-block structure governs (D33; see the V0.7 section).
 3. Level 2 sites are our placement, not the designer's; Level 2 has
    no artwork yet.
 4. Start circles outside the gates are modeled as the gate cells
    themselves; functionally identical.
+
+## V0.7: the six-block board (current, 2026-11-07)
+
+Rules: `rules_v07_6blocks.json`. The cardo (street column x=9) is
+removed. Streets are the perimeter, two internal vertical streets
+(x=6, x=12), and one central east-west street (y=6): 150 blocked
+cells form six 5x5 blocks, 97 street spaces. One block, one card:
+entries A `[3,0]`, B `[7,0]`, C `[15,0]` on the north street, D
+`[3,12]`, E `[11,12]`, F `[15,12]` on the south street. B and E are
+a 180-degree rotation pair in front of the middle blocks; the
+retreat hall is `[10,12]`, one step east of the Emperor, because
+`[9,11]` now sits inside a block. Everything else is unchanged from
+the V0.6 audit above (gates, checkpoint `[9,6]`, glory posts, seal
+triangle, 2d6 movement).
+
+```
+        x=0        6         12        18
+y=0     · · A · · · B · n · · · C · · ·      n,e,s,w = gates
+y=1..5  · ##### · ##### · ##### ·           A-F = card entries
+y=2     * ##### · ##### · ##### *           X = checkpoint
+y=6     w · · · · · · · X · · · · · · · e   * = guard posts
+y=7..11 · ##### · ##### · ##### ·           # = building block
+y=10    * ##### · ##### · ##### *
+y=12    · · D · · · · · s · E · · · F · ·
+```
+
+Distances from each gate (BFS on the street graph):
+
+| From | Checkpoint | Card tour sum | Cellars | Barracks | Peristyle | Best two seals | Emperor |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| P0 north | 12 | 66 | 6 | 18 | 12 | 18 | 18 |
+| P1 east | 9 | 90 | 21 | 9 | 9 | 18 | 15 |
+| P2 south | 12 | 66 | 18 | 6 | 12 | 18 | 0 |
+| P3 west | 9 | 90 | 9 | 21 | 9 | 18 | 15 |
+
+The tension is explicit and symmetric: north and south gates hold
+the shorter card tour, east and west gates the shorter checkpoint
+walk, and the cheapest two-seal tour costs the same from every
+gate. Measured consequences (1000 games, seeds 1000-1999): Level 1
+timeouts 129 (V0.6: 162), median 24 total rounds, 5.70 collected,
+70% comebacks, first challenger 199/245/215/212 by gate, balanced_se
+mirror 25.1/22.1/25.2/27.6, random x4 mirror 211/178/204/208 wins
+with 199 draws (V0.6 random was 23/24/22/23: the same even band).
+Regression tests:
+`tests/test_board_v061.py` (counts, six 5x5 blocks, distances,
+tour sums, reachability).

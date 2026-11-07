@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diocletian's Palace: play the board</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Diocletian's Palace</h1>
+  <p id="turnline">The city awaits.</p>
+  <button id="rulesbtn" class="ghost">How to play</button>
+</header>
+<main>
+  <div id="boardwrap">
+    <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="legend">
+      <span><i class="sw gate"></i>gate</span>
+      <span><i class="sw entry"></i>treasure entry</span>
+      <span><i class="sw cp"></i>checkpoint / Peristyle</span>
+      <span><i class="sw post"></i>guard post</span>
+      <span><i class="sw emp"></i>Emperor</span>
+      <span><i class="sw ret"></i>retreat</span>
+      <span><i class="sw hl"></i>you can go here</span>
+    </div>
+  </div>
+  <aside>
+    <div id="players"></div>
+    <div id="dicebox">
+      <div id="dicelabel">movement</div>
+      <div id="dice"></div>
+    </div>
+    <div id="actionbox"></div>
+    <div id="logbox"><h3>Chronicle</h3><div id="log"></div></div>
+  </aside>
+</main>
+<div id="rules" class="overlay hidden">
+  <div class="panel rulespanel">
+    <button id="rulesclose" class="ghost close">✕ Close</button>
+    <div id="rulesbody"></div>
+  </div>
+</div>
+<div id="setup" class="overlay">
+  <div class="panel">
+    <h2>Set the table</h2>
+    <p class="muted">Four seats, any mix of people and bots. Everything
+    on the board is public; only the face-down treasures are hidden
+    until someone takes one.</p>
+    <div id="seats"></div>
+    <label>Game seed <input id="seed" type="number" value="2026"></label>
+    <div class="row">
+      <button id="startbtn" class="primary">Enter the city</button>
+      <button id="watchbtn">Watch four bots</button>
+    </div>
+    <p class="muted small">The measured V0.7 real board: six blocks,
+    one card each, 2d6 movement, one die for fights, two seals, two
+    hits. Tap <b>How to play</b> any time for the full
+    rulebook.</p>
+  </div>
+</div>
+<div id="gameover" class="overlay hidden">
+  <div class="panel">
+    <h2 id="overline"></h2>
+    <p id="oversub" class="muted"></p>
+    <div class="row">
+      <button id="againbtn" class="primary">Play again</button>
+      <button id="setupbtn">Change players</button>
+    </div>
+  </div>
+</div>
+<script src="rules.js"></script>
+<script src="board-data.js"></script>
+<script src="engine.js"></script>
+<script src="bots.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

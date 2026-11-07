@@ -159,3 +159,16 @@ python3 sim.py tournament --config tournaments/v061_realboard_ai.json \
   --out results/v061_ai --dry-run                 # live run needs authorization
 python3 tools/make_print_pack.py                  # regenerates the pack
 ```
+
+## 11. V0.7 addendum: the six-block board
+
+After this report was written the designer corrected the encoding
+(D33): the point of the layout is six blocks, one card per block,
+and the simulated cardo split the middle column into four strips.
+V0.7 removes the cardo (97 street spaces, entries B and E moved to
+the north and south streets, retreat one step east of the Emperor).
+Every conclusion above survives, and two improve: city timeouts drop
+from 162 to 129 per 1000 games, so the round-24 cap has more headroom,
+and gate balance holds (balanced_se mirror 25.1/22.1/25.2/27.6; the
+frozen-schedule skew stays the D32 tie-break artifact). The
+recommended table ruleset is now `rules_v07_6blocks.json`.

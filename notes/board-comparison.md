@@ -150,3 +150,32 @@ Findings so far:
    On 25 spaces these ties were harmless; on 107 they snowball.
    Reasoning players and humans do not share this bias; an AI
    tournament on p3 (about $0.09) would confirm.
+
+## V0.7 measured results: the six-block correction (2026-11-07)
+
+The designer corrected the encoding: the board has six blocks and
+one card per block; the point of the layout. The V0.6 cardo (D27)
+split the middle column into four strips and left entries B and E
+on a street that does not exist on the physical board. V0.7
+(`rules_v07_6blocks.json`) removes the cardo and moves B to the
+north street `[7,0]`, E to the south street `[11,12]`, and the
+retreat hall to `[10,12]`. Same 1000-game protocol as the table
+above, seeds 1000-1999:
+
+| Arm | L1 timeouts | Median rounds | Collected | Auto | Duels | Gate wins P0/P1/P2/P3 | Comebacks |
+|---|---:|---:|---:|---:|---:|---|---:|
+| six blocks, 2d6 (v07) | 129 | 24 | 5.70 | 0.30 | 6.5 | 37/15/26/22 | 70% |
+| eight blocks, 2d6 (p3) | 162 | 26 | 5.71 | 0.29 | 8.1 | 31/16/21/32 | 68% |
+
+- Pacing improves: fewer timeouts and two rounds faster at the
+  median, with identical collection and comeback rates.
+- The frozen-schedule gate split stays skewed northwest-plus; the
+  balanced_se mirror on the six-block board reads
+  25.1/22.1/25.2/27.6 and first challenger 199/245/215/212, so the
+  geometry is even and the skew is the D32 tie-break artifact. The
+  random x4 mirror agrees: 211/178/204/208 wins, 199 draws, the
+  same band as the V0.6 random result (23/24/22/23).
+- The board's tension is now explicit and symmetric: north/south
+  gates hold the shorter card tour (distance sum 66 versus 90),
+  east/west gates the shorter checkpoint walk (9 versus 12), and
+  the cheapest two-seal tour costs 18 from every gate.

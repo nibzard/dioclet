@@ -197,3 +197,30 @@ practical. No baseline rule values were changed.
   (33/13/17/37), and balanced_se flips the skew (P3 40 to 19, P1 13
   to 24 in the balanced mirror class). The gate skew on the real
   board is a bot tie-break artifact, not geometry.
+- **D33 Six-block board (V0.7, designer correction 2026-11-07).**
+  The designer overruled D27's cardo recommendation: the physical
+  board has six blocks, one card per block, and that structure is
+  the design. The simulated cardo split the middle column into four
+  strips that held no card of their own. `rules_v07_6blocks.json`
+  removes the cardo: streets are the perimeter, two internal
+  verticals (x=6, x=12), and one central east-west street (y=6);
+  150 blocked cells form six 5x5 blocks; 97 street spaces. Gates,
+  checkpoint `[9,6]` (now mid-span of the central street, touching
+  both middle blocks), glory posts, 2d6 movement, caps, and the seal
+  triangle are unchanged from D30/D31. Entries B and E move off the
+  removed street: B `[7,0]` on the north street in front of the
+  middle-top block, E `[11,12]` on the south street in front of the
+  middle-bottom block, a 180-degree rotation pair; the retreat hall
+  moves one step east of the Emperor to `[10,12]` because `[9,11]`
+  is now inside a block. Measured (1000 games, seeds 1000-1999,
+  SPEC 13 schedule): Level 1 timeouts 129 (V0.6 p3: 162), median 24
+  total rounds, 5.70 treasures collected, 70% comebacks. The
+  structural tension is symmetric: north/south gates hold the
+  shorter card tour (sum 66 versus 90), east/west gates the shorter
+  checkpoint walk (9 versus 12), and the cheapest two-seal tour
+  costs 18 from every gate. First challenger by gate
+  199/245/215/212; balanced_se mirror win rates 25.1/22.1/25.2/27.6;
+  random x4 mirror 211/178/204/208 wins with 199 draws in 1000
+  games. The frozen-schedule
+  gate split (37/15/26/22) matches the known northwest tie-break
+  artifact of D32, not a geometry flaw.
