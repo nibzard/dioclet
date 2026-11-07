@@ -13,6 +13,8 @@ with repeatable batches before any physical playtesting.
 - `FINDINGS_V03.md` — duel consequence experiments
 - `FINDINGS_V04.md` — OpenAI Decisions player intelligence
 - `FINDINGS_V041.md` — AI tournament and decision analysis
+- `notes/v05-experiment-plan.md` — V0.5 experiment plan (three rule
+  experiments under Decisions play; live runs pending authorization)
 
 ## Where the design stands
 
@@ -103,6 +105,8 @@ Existing variants (reports in `FINDINGS.md`, `FINDINGS_V02.md`, and
 - V0.3 duel consequences (`rules_v03_*.json`), on top of the adopted
   V0.2 package: duel Glory theft, duel displacement to the retreat
   node, and the duel lost turn.
+- V0.5 proposals (`rules_v05_*.json`), each one knob on the V0.3 base:
+  Peristyle seal cost 2 Glory, Level 1 capped at 16 rounds.
 
 Optional rule keys absent from the baseline:
 `turns.rotate_first_player_each_round`, `combat.duel_glory_theft`,
@@ -171,6 +175,23 @@ six games cited in the findings under `results/v041/games/`; the
 complete 64-game log set ships as the release artifact
 `v041-tournament-logs` (2.5 MB, offline re-analyzable with
 `analyze_v041.py`).
+
+## V0.5 experiments (in preparation)
+
+Three rule experiments, each with a bot baseline and a live AI
+tournament: the duel lost turn, Peristyle seal cost 2, and Level 1
+capped at 16 rounds. Plan and predictions:
+`notes/v05-experiment-plan.md`. Bot baselines are done
+(`results/v05_peristyle2_bots`, `results/v05_l1max16_bots`; the
+lost-turn baseline is `results/v03_lostturn`). Live tournaments are
+configured but not run — they start only with an authorized budget:
+
+```bash
+python3 sim.py tournament --config tournaments/v05_exp1_lostturn_ai.json \
+  --out results/v05_exp1 --dry-run      # estimate first
+python3 sim.py tournament --config tournaments/v05_exp1_lostturn_ai.json \
+  --out results/v05_exp1 --live-decisions
+```
 
 ## Modules
 
