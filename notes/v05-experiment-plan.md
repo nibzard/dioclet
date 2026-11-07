@@ -131,19 +131,21 @@ often, and duels rise from 4.57 to 5.61 per game.
   planning player treat cost 2 as tension (seal versus strike versus
   save) or as a wall (arrive Glory-empty and stall, as in `tb202`)?
 
-## Budget request (pending authorization)
+## Budget request (authorized)
 
-| Experiment | Games | Estimated calls | Estimated cost | Hard cap |
+**Authorized by the user on 2026-11-07: $5.00 total hard cap.**
+Operational guards: $1.60 per experiment (worst case $4.80 total,
+under the authorization), $0.05 and 120 calls per game.
+
+| Experiment | Games | Estimated calls | Estimated cost | Guard cap |
 |---|---:|---:|---:|---:|
-| 1 lost turn | 32 | 768 | $0.086 | $0.40 |
-| 2 Peristyle cost 2 | 32 | 768 | $0.086 | $0.40 |
-| 3 Level 1 cap 16 | 32 | 768 | $0.086 | $0.40 |
-| **Total** | 96 | 2,304 | **$0.26** | $1.20 |
+| 1 lost turn | 32 | 768 | $0.086 | $1.60 |
+| 2 Peristyle cost 2 | 32 | 768 | $0.086 | $1.60 |
+| 3 Level 1 cap 16 | 32 | 768 | $0.086 | $1.60 |
+| **Total** | 96 | 2,304 | **$0.26** | $4.80 |
 
 Estimates use measured V0.4.1 rates (about 1,122 input tokens and
-$0.000112 per call). They are not a billing guarantee. Live play
-starts only after the user names a cap. No live games have been run
-for V0.5 at the time of this note.
+$0.000112 per call). They are not a billing guarantee.
 
 ## Commands (ready to run)
 
