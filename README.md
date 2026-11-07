@@ -147,6 +147,15 @@ Details and measured results: `FINDINGS_V04.md`; configuration:
 - `engine.py` — state machine, legal actions, resolution, events
 - `board.py` — grid graph, deterministic shortest paths, site lookups
 - `policies.py` — `random`, `greedy`, `aggressive`, `balanced` bots
+- `tactical_policy.py` — frozen deterministic benchmark bot (V0.4)
+- `candidate_actions.py` — public observation projection and
+  candidate shortlists (V0.4)
+- `decisions_policy.py` — mock/playback/live OpenAI Decisions
+  providers (V0.4, optional `openai` package)
+- `ai_driver.py` — single-writer AI game driver with budgets
 - `report.py` — batch runner, CSV, summary statistics
+- `compare.py` — side-by-side markdown table across batch summaries
+- `decisions_config.json`, `requirements-decisions.txt` — V0.4 config
+  and optional dependency pin
 - `tests/` — engine invariants, resolution tests, policy unit tests,
-  bounded exhaustive checks
+  bounded exhaustive checks, V0.4 offline provider and driver tests
