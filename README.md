@@ -194,7 +194,10 @@ reference, teaching script, feedback form) plus
 probes, pacing, and the Level 1 cap analysis: `FINDINGS_V061.md`,
 `BOARD_VALIDATION_V061.md`, `PLAYABILITY_SCORECARD_V061.md`. The
 live AI confirmation is configured but awaits spending
-authorization.
+authorization. V0.6.2 fixed the pack after review: unescaped print
+CSS, 7 mm pawns with a landscape board page, four equipment tracker
+sheets, an explicit move-first rule for guard posts and duels, and
+real policy dispatch in `tools/mirror_batch.py`.
 
 ## V0.5 experiments (run)
 

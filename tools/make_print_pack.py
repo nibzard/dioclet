@@ -91,6 +91,26 @@ def board_svg(rules):
     return "\n".join(parts)
 
 
+def tracker_sheets(rules):
+    names = "<br>".join(
+        f'<div class="eqline"><span class="box"></span> {n.replace("_", " ")}</div>'
+        for n in rules["equipment"])
+    def one(i):
+        return (f'<div class="tracker"><h3>Player {i}: ______________</h3>'
+                f'<div class="trkcol"><b>Equipment</b>{names}</div>'
+                f'<div class="trkcol"><b>Glory (max 2)</b>'
+                f'<div class="eqline"><span class="box"></span> <span class="box"></span></div>'
+                f'<b>Seals (2 different)</b>'
+                f'<div class="eqline">Cellars <span class="box"></span> · '
+                f'Barracks <span class="box"></span> · Peristyle <span class="box"></span></div>'
+                f'<b>Emperor hits</b>'
+                f'<div class="eqline"><span class="box"></span> <span class="box"></span></div>'
+                f'</div></div>')
+    return ("<div class=\"page\"><h2>Equipment trackers (one per player)</h2>"
+            "<div class=\"trkgrid\">" + one(1) + one(2) + one(3) + one(4)
+            + "</div></div>")
+
+
 def token_sheet():
     glory = "".join(
         f'<div class="tok glory">Glory</div>' for _ in range(12))
@@ -154,7 +174,8 @@ HTML = """<!DOCTYPE html>
           align-items:center; justify-content:center; text-align:center;
           font:600 11px Verdana, sans-serif; border:2px dashed #7a6a4d; }}
   .tok.glory {{ background:#f3e6b8; color:#7a5c0e; }}
-  .tok.pawn {{ border-style:solid; color:#fffdf6; font-size:15px; }}
+  .tok.pawn {{ border-style:solid; color:#fffdf6; font-size:9px;
+             width:7mm; height:7mm; }}
   .pawn.p0 {{ background:#5a3d6b; }} .pawn.p1 {{ background:#b0532f; }}
   .pawn.p2 {{ background:#5f7a4a; }} .pawn.p3 {{ background:#3f6f9e; }}
   .tok.seal {{ border-radius:4mm; background:#efe4cf; }}
@@ -167,8 +188,20 @@ HTML = """<!DOCTYPE html>
   .eqfoot {{ margin-top:52mm; font-size:10px; color:#8a795a;
              text-align:center; letter-spacing:1px; }}
   .script li {{ margin:2.5mm 0; }}
+  .trkgrid {{ display:grid; grid-template-columns:1fr 1fr; gap:5mm; }}
+  .tracker {{ border:2px solid var(--purple); border-radius:3mm;
+              padding:3mm; page-break-inside:avoid; }}
+  .tracker h3 {{ margin:1mm 0 2mm; }}
+  .trkcol {{ display:inline-block; vertical-align:top; width:48%;
+             font-size:11.5px; margin:1mm 0; }}
+  .eqline {{ margin:1.2mm 0; }}
+  .box {{ display:inline-block; width:4mm; height:4mm;
+          border:1.5px solid var(--ink); border-radius:1mm;
+          vertical-align:-0.5mm; }}
   .formline {{ border-bottom:1px solid var(--line); height:8mm; margin:3mm 0; }}
   .small {{ font-size:11px; color:#6f6252; }}
+  @page boardpage {{ size: A4 landscape; }}
+  .page.board {{ page: boardpage; }}
   @media print {{
     body {{ background:#fff; }}
     .page {{ margin:0; box-shadow:none; page-break-after:always; }}
@@ -181,18 +214,22 @@ HTML = """<!DOCTYPE html>
   tabletop testing. Print these pages at 100% scale. You need, besides
   this pack: <b>two ordinary six-sided dice for movement</b> and
   <b>one six-sided die for fights and trials</b>. Cut out the cards and
-  tokens on the later pages.</p>
+  tokens on the later pages. Any small object
+  (coin, meeple, button) works better than paper pawns if you have
+  one per player.</p>
   <h2>What is in the pack</h2>
   <ol>
-    <li>The board (all 107 street spaces).</li>
-    <li>Six treasure cards.</li>
+    <li>The board (all 107 street spaces; its page prints landscape,
+    and A3 paper makes the pieces comfortable).</li>
+    <li>Six treasure location cards.</li>
     <li>Tokens: Glory, seals, Emperor hits, pawns.</li>
+    <li>Four equipment tracker sheets.</li>
     <li>The rules (two pages).</li>
     <li>One-page quick reference.</li>
     <li>Five-minute teaching script.</li>
     <li>Feedback form.</li>
   </ol>
-  <p class="small">Rules version: V0.6.1 real board, 2d6 movement.
+  <p class="small">Rules version: V0.6.2 real board, 2d6 movement.
   Level 2 site placements on this board are the design team's current
   tested choice, not final artwork.</p>
 </div>
@@ -217,6 +254,10 @@ HTML = """<!DOCTYPE html>
 <div class="page">
   <h2>Treasure cards (cut out)</h2>
   __CARDS__
+  <p class="small">These six cards are <b>location cards</b>: put one
+  face down on each blue entry space. When a card is revealed it stays
+  on its space. Players mark what they own on their tracker sheet
+  (next page), not on the cards.</p>
   <h2>Tokens (cut out)</h2>
   __TOKENS__
   <p class="small">Glory: each player may hold at most 2. Seals: you
@@ -241,6 +282,9 @@ HTML = """<!DOCTYPE html>
     <li><b>Do one thing</b> where you stand (or just end your move):
     take a treasure card, stand a guard post, duel a rival, or later
     claim a seal or strike the Emperor.</li>
+    <li class="small">Guard posts and duels always need a move of at
+    least one space first. You cannot use either of them twice from
+    the same spot without moving away and coming back.</li>
   </ol>
   <h3>The city (first half)</h3>
   <ul>
@@ -314,6 +358,7 @@ HTML = """<!DOCTYPE html>
   <table>
     <tr><th>Remember</th></tr>
     <tr><td>Treasure: stop on the blue entry space.<br>
+    Guard posts and duels need a move first.<br>
     Two different seals before the Emperor.<br>
     Miss the Emperor: step back one space to the retreat hall.<br>
     Two hits wins.</td></tr>
@@ -348,6 +393,8 @@ HTML = """<!DOCTYPE html>
   <p class="small">Read the quick reference aloud once, then start.
   Answer the rest as it comes up.</p>
 </div>
+
+__TRACKERS__
 
 <div class="page">
   <h2>Playtest feedback form</h2>
@@ -384,9 +431,14 @@ def main():
     rules = engine.load_rules(RULES_FILE)
     html = (HTML.replace("__BOARD__", board_svg(rules))
                  .replace("__CARDS__", equipment_cards(rules))
-                 .replace("__TOKENS__", token_sheet()))
-    os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
-    with open(OUT_FILE, "w", encoding="utf-8") as fh:
+                 .replace("__TOKENS__", token_sheet())
+                 .replace("__TRACKERS__", tracker_sheets(rules)))
+    # The template doubles CSS braces; the placeholders above are plain
+    # string replacement, so unescape them for the final document.
+    html = html.replace("{{", "{").replace("}}", "}")
+    out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else OUT_FILE
+    os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
+    with open(out, "w", encoding="utf-8") as fh:
         fh.write(html)
     print(f"wrote {OUT_FILE} ({len(html)//1024} KB)")
 
