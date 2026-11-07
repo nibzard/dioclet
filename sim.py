@@ -248,6 +248,19 @@ def cmd_ai_auto(args):
     _print_json({k: v for k, v in summary.items() if k != "result"})
 
 
+def cmd_tournament(args):
+    import tournament
+    try:
+        result = tournament.run_tournament(
+            args.config, args.out, live=args.live_decisions,
+            resume=args.resume, dry=args.dry_run)
+    except (ValueError, OSError) as exc:
+        _fail("invalid_tournament", str(exc))
+    except SystemExit as exc:
+        _fail("live_not_enabled", str(exc))
+    _print_json(result)
+
+
 def cmd_replay(args):
     run = os.path.abspath(args.run)
     with open(os.path.join(run, "rules.snapshot.json"), "r",
@@ -367,6 +380,15 @@ def main(argv=None):
     p.add_argument("--timeout-minutes", type=float, default=0.0)
     p.add_argument("--resume", action="store_true")
     p.set_defaults(func=cmd_ai_auto)
+
+    p = sub.add_parser("tournament", help="run a tournament from a JSON "
+                                          "config (V0.4.1)")
+    p.add_argument("--config", required=True)
+    p.add_argument("--out", required=True, help="e.g. results/v041")
+    p.add_argument("--live-decisions", action="store_true")
+    p.add_argument("--resume", action="store_true")
+    p.add_argument("--dry-run", action="store_true")
+    p.set_defaults(func=cmd_tournament)
 
     p = sub.add_parser("replay", help="replay a run and optionally verify")
     p.add_argument("--run", required=True)
