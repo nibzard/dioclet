@@ -57,6 +57,20 @@ check("rulebook has 10 sections",
 document.getElementById("rulesclose").click();
 check("close button hides overlay", overlay.classList.contains("hidden"));
 
+// --- dialog access from setup --------------------------------------
+const setupRules = document.getElementById("setup-rulesbtn");
+setupRules.focus();
+setupRules.click();
+check("rulebook opens from setup", !overlay.classList.contains("hidden"));
+check("rulebook receives focus", document.activeElement === overlay);
+document.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape" }));
+check("Escape returns focus to setup", document.activeElement === setupRules);
+check("setup remains open", !document.getElementById("setup").classList.contains("hidden"));
+
+const districtLabels = () => [...document.querySelectorAll('[id^="district-"]')];
+check("six hidden district cards", districtLabels().length === 6 &&
+  districtLabels().every(n => n.textContent === "Hidden treasure"));
+
 // --- start a game ---------------------------------------------------
 document.getElementById("seed").value = "2026";
 document.getElementById("startbtn").click();
@@ -65,6 +79,11 @@ check("setup overlay hidden after start",
   document.getElementById("setup").classList.contains("hidden"));
 check("97 street circles", document.querySelectorAll(".cell").length === 97);
 check("4 pawns placed", document.querySelectorAll(".pawn").length === 4);
+const zoom = document.getElementById("zoom-board");
+zoom.click();
+check("board zoom reports its enlarged state", document.getElementById("boardwrap").classList.contains("is-zoomed") && zoom.getAttribute("aria-pressed") === "true");
+zoom.click();
+check("board returns to overview", !document.getElementById("boardwrap").classList.contains("is-zoomed"));
 
 // --- click-through and tooltips ------------------------------------
 const chips = [...document.querySelectorAll("svg circle")].filter(
@@ -75,18 +94,18 @@ check("all special chips pass clicks through",
 check("pawns pass clicks through",
   [...document.querySelectorAll(".pawn")].every(p =>
     p.getAttribute("pointer-events") === "none"));
-const gateCell = document.querySelector('[data-k="9,0"]');
+const gateCell = document.querySelector(`[data-k="${window.DIOCLET_BOARD.gates.P0.join(",")}"]`);
 check("gate cell has a tooltip",
   gateCell.querySelector("title")?.textContent.includes("Gate"));
-const cpCell = document.querySelector('[data-k="9,6"]');
+const cpCell = document.querySelector(`[data-k="${window.DIOCLET_BOARD.checkpoint.join(",")}"]`);
 check("checkpoint cell has a tooltip",
   cpCell.querySelector("title")?.textContent.includes("Checkpoint"));
-const entryCell = document.querySelector('[data-k="3,0"]');
+const entryCell = document.querySelector(`[data-k="${window.DIOCLET_BOARD.districts.A.join(",")}"]`);
 check("entry A cell has a tooltip",
   entryCell.querySelector("title")?.textContent.includes("Treasure entry"));
 
 // --- play a full game as seat P0 (human) ----------------------------
-let sawHint = false, guard = 0;
+let sawHint = false, guard = 0, usedKeyboard = false;
 while (document.getElementById("gameover")
          .classList.contains("hidden") && guard < 900) {
   guard++;
@@ -97,7 +116,13 @@ while (document.getElementById("gameover")
     // Click the first reachable cell that has actions.
     const cell = document.querySelector(".cell.reachable");
     if (!cell) break;
-    cell.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    if (!usedKeyboard) {
+      check("available moves support keyboard access", cell.getAttribute("tabindex") === "0" && cell.getAttribute("role") === "button");
+      cell.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      usedKeyboard = true;
+    } else {
+      cell.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    }
     await sleep(20);
     // If a choice menu appeared, take the first button.
     const btn = document.querySelector("#actionbox button.choice");
@@ -115,5 +140,16 @@ const overline = document.getElementById("overline").textContent;
 check("game-over declares an outcome",
   overline.includes("rules the palace") || overline.includes("draw"));
 
+check("keyboard move completes", usedKeyboard);
+check("collected treasure appears in its district", districtLabels().some(n => n.textContent !== "Hidden treasure"));
+document.getElementById("againbtn").click();
+check("replay hides all treasure cards", districtLabels().every(n => n.textContent === "Hidden treasure"));
+// Resetting the table also restores every pawn to its gate.
+const board = window.DIOCLET_BOARD;
+check("replay restores pawn positions", Object.entries(board.gates).every(([id, [x, y]]) =>
+  document.getElementById("pawn-" + id).getAttribute("transform") === `translate(${36 + x * 44 + 22},${36 + y * 44 + 22})`));
+
 if (failures) { console.error(failures + " failures"); process.exit(1); }
 console.log("all UI smoke tests pass");
+
+dom.window.close();

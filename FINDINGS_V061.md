@@ -171,4 +171,6 @@ Every conclusion above survives, and two improve: city timeouts drop
 from 162 to 129 per 1000 games, so the round-24 cap has more headroom,
 and gate balance holds (balanced_se mirror 25.1/22.1/25.2/27.6; the
 frozen-schedule skew stays the D32 tie-break artifact). The
-recommended table ruleset is now `rules_v07_6blocks.json`.
+recommended table ruleset is now `rules_v07_6blocks.json`, then
+`rules_v071_realgates.json` after the same-day gate correction
+(timeouts 121, median 23 rounds, all fairness probes even).

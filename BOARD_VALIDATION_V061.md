@@ -169,3 +169,18 @@ with 199 draws (V0.6 random was 23/24/22/23: the same even band).
 Regression tests:
 `tests/test_board_v061.py` (counts, six 5x5 blocks, distances,
 tour sums, reachability).
+
+### V0.7.1 correction: doors on the streets
+
+Designer correction (2026-11-07, D34): gates must open onto streets,
+as in the real palace. North gate `[12,0]` tops the east vertical
+street; south gate `[6,12]` foots the west vertical street (a
+180-degree rotation pair); the Emperor keeps the south gate and the
+retreat hall is one step north, `[6,11]`. Distances per gate:
+checkpoint 9/9/9/9, card tour 66/90/66/90, cheapest two seals
+18 everywhere. Measured: Level 1 timeouts 121 per 1,000 (V0.7:
+129), median 23 rounds, 70% comebacks, first challenger
+240/223/221/195, balanced_se mirror 24.2/28.2/25.5/22.1, random x4
+19.9/21.9/19.1/22.4. Tests: `tests/test_board_v061.py` (gates on
+street columns, all gates 9 from the checkpoint, Emperor and
+retreat placement).

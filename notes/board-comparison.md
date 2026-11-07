@@ -179,3 +179,24 @@ above, seeds 1000-1999:
   gates hold the shorter card tour (distance sum 66 versus 90),
   east/west gates the shorter checkpoint walk (9 versus 12), and
   the cheapest two-seal tour costs 18 from every gate.
+
+## V0.7.1: the doors move onto the streets (2026-11-07)
+
+Second designer correction: the north and south doors open onto
+vertical streets, as in the real palace. North gate to the top of
+the east vertical street `[12,0]`, south gate (Emperor and retreat
+with it) to the foot of the west vertical street `[6,12]`, retreat
+one step north `[6,11]`. Same protocol, seeds 1000-1999:
+
+| Arm | L1 timeouts | Median | Collected | Comebacks | Gate wins P0/P1/P2/P3 |
+|---|---:|---:|---:|---:|---|
+| v071 scheduled | 121 | 23 | 5.66 | 70% | 29.5/19.6/20.9/30.0 |
+| v071 balanced_se x4 | n/a | n/a | n/a | n/a | 24.2/28.2/25.5/22.1 |
+| v071 random x4 | n/a | n/a | n/a | n/a | 19.9/21.9/19.1/22.4 (167 draws) |
+
+- Every gate is now exactly 9 spaces from the checkpoint; the
+  card-tour sums (66 north/south, 90 east/west) and the two-seal
+  tour (18 everywhere) carry over unchanged.
+- Both fairness probes sit in the same even band as V0.7; the
+  frozen-schedule spread tightened from 37/15/26/22 to
+  29.5/19.6/20.9/30.

@@ -224,3 +224,24 @@ practical. No baseline rule values were changed.
   games. The frozen-schedule
   gate split (37/15/26/22) matches the known northwest tie-break
   artifact of D32, not a geometry flaw.
+- **D34 Gates on the streets (V0.7.1, designer correction
+  2026-11-07).** The north and south doors must open onto a vertical
+  street, as in the real palace; the V0.7 placement faced the middle
+  of a block wall. `rules_v071_realgates.json` moves the north gate
+  to `[12,0]`, the top of the east vertical street, and the south
+  gate to `[6,12]`, the foot of the west vertical street, a
+  180-degree rotation pair (the mirror twin would measure the same).
+  The Emperor keeps the south gate `[6,12]`; the retreat hall is one
+  step north on the street, `[6,11]` (restoring the original
+  step-north intent from D28). East and west gates were already on
+  the east-west street and are unchanged. Side effect: the board
+  gained symmetry. Every gate is now exactly 9 spaces from the
+  checkpoint (V0.7: 12/12/9/9), the card-tour tension keeps its
+  balance (north/south sum 66, east/west 90), and the cheapest
+  two-seal tour stays 18 from every gate. Measured (1000 games,
+  seeds 1000-1999, SPEC 13 schedule): Level 1 timeouts 121 (V0.7:
+  129), median 23 total rounds (15 city, 8 palace), 5.66 collected,
+  70% comebacks, first challenger 240/223/221/195, balanced_se
+  mirror 24.2/28.2/25.5/22.1, random x4 mirror 19.9/21.9/19.1/22.4
+  with 167 draws. The frozen-schedule gate split tightened to
+  29.5/19.6/20.9/30 and remains the D32 tie-break artifact.

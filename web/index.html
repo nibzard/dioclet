@@ -3,64 +3,95 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Diocletian's Palace: play the board</title>
+<meta name="theme-color" content="#203d35">
+<meta name="description" content="Enter Diocletian’s Palace. Collect six treasures, earn your seals, and challenge the Emperor in a four-player strategy board game.">
+<title>Diocletian's Palace · Six treasures</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <h1>Diocletian's Palace</h1>
-  <p id="turnline">The city awaits.</p>
-  <button id="rulesbtn" class="ghost">How to play</button>
+<header class="site-header">
+  <a class="brand" href="./" aria-label="Diocletian’s Palace home">
+    <span class="brand-mark" aria-hidden="true">D</span>
+    <span><span class="eyebrow">Six treasures · A game of strategy</span><h1>Diocletian’s Palace</h1></span>
+  </a>
+  <button id="rulesbtn" class="ghost"><span aria-hidden="true">▤</span> How to play</button>
 </header>
+<div class="table-heading">
+  <div><span class="eyebrow">The game table</span><p id="turnline" role="status">The city awaits. Take your place at the gates.</p></div>
+  <ol class="journey" aria-label="Your path to the throne">
+    <li class="current" id="city-step"><span>01</span> Collect treasures</li>
+    <li id="palace-step"><span>02</span> Earn two seals</li>
+    <li id="emperor-step"><span>03</span> Defeat the Emperor</li>
+  </ol>
+</div>
 <main>
-  <div id="boardwrap">
-    <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
-    <div class="legend">
-      <span><i class="sw gate"></i>gate</span>
-      <span><i class="sw entry"></i>treasure entry</span>
-      <span><i class="sw cp"></i>checkpoint / Peristyle</span>
-      <span><i class="sw post"></i>guard post</span>
+  <section id="boardwrap" aria-label="Game board">
+    <div class="board-heading"><h2>The palace grounds</h2><div class="board-tools"><span id="phase-label" class="phase-label">City · Level I</span><button id="zoom-board" class="zoom-button" aria-pressed="false" aria-label="Enlarge the board" title="Enlarge the board">＋</button></div></div>
+    <div class="board-viewport" tabindex="0" aria-label="Board view. Scroll to explore when enlarged."><svg id="board" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Palace board. Select a highlighted street space to move."></svg></div>
+    <div class="legend" aria-label="Board key">
+      <span><i class="sw gate"></i>Gate</span>
+      <span><i class="sw entry"></i>Treasure</span>
+      <span><i class="sw cp"></i>Peristyle</span>
+      <span><i class="sw post"></i>Guard post</span>
       <span><i class="sw emp"></i>Emperor</span>
-      <span><i class="sw ret"></i>retreat</span>
-      <span><i class="sw hl"></i>you can go here</span>
+      <span><i class="sw ret"></i>Retreat</span>
+      <span><i class="sw hl"></i>Available move</span>
     </div>
-  </div>
-  <aside>
-    <div id="players"></div>
+    <p class="board-note"><span aria-hidden="true">✧</span> Six blocks. Six treasures. One throne.</p>
+  </section>
+  <aside aria-label="Players and turn controls">
+    <section class="players-section" aria-labelledby="players-heading">
+      <div class="section-heading"><h2 id="players-heading">At the gates</h2><span>4 players</span></div>
+      <div id="players"><p class="empty-state">Your rivals await. Set the table to begin.</p></div>
+    </section>
     <div id="dicebox">
-      <div id="dicelabel">movement</div>
-      <div id="dice"></div>
+      <div id="dicelabel">Movement roll</div>
+      <div id="dice"><span class="muted small">Your journey starts at the gate.</span></div>
     </div>
-    <div id="actionbox"></div>
-    <div id="logbox"><h3>Chronicle</h3><div id="log"></div></div>
+    <div id="actionbox" aria-live="polite"></div>
+    <section id="logbox" aria-labelledby="log-heading"><div class="section-heading"><h2 id="log-heading">Chronicle</h2><span class="live-dot">Live</span></div><div id="log" tabindex="0" aria-label="Game chronicle"><p class="empty-state">Every great story starts with a first move.</p></div></section>
   </aside>
 </main>
-<div id="rules" class="overlay hidden">
+<footer class="site-footer"><span>Diocletian’s Palace <span aria-hidden="true">/</span> Six treasures</span><span>Split, 305 AD · Board edition 0.7.1</span></footer>
+<div id="rules" class="overlay hidden" role="dialog" aria-modal="true" aria-label="How to play" tabindex="-1">
   <div class="panel rulespanel">
     <button id="rulesclose" class="ghost close">✕ Close</button>
     <div id="rulesbody"></div>
   </div>
 </div>
-<div id="setup" class="overlay">
-  <div class="panel">
-    <h2>Set the table</h2>
-    <p class="muted">Four seats, any mix of people and bots. Everything
-    on the board is public; only the face-down treasures are hidden
-    until someone takes one.</p>
-    <div id="seats"></div>
-    <label>Game seed <input id="seed" type="number" value="2026"></label>
-    <div class="row">
-      <button id="startbtn" class="primary">Enter the city</button>
-      <button id="watchbtn">Watch four bots</button>
+<div id="setup" class="overlay" role="dialog" aria-modal="true" aria-labelledby="setup-title" tabindex="-1">
+  <div class="panel setup-panel">
+    <div class="setup-intro">
+      <span class="eyebrow">Welcome to ancient Split</span>
+      <h2>A city of treasures.<br> A throne to claim.</h2>
+      <p>Walk the streets of the palace. Gather your equipment. Be the first to defeat the Emperor.</p>
+      <svg class="palace-art" viewBox="0 0 320 200" fill="none" aria-hidden="true">
+        <path d="M25 168h270M38 164V78h244v86M31 78l129-51 129 51H31Z"/>
+        <path d="M48 72l112-44 112 44M53 164V89h214v75M60 97h200M60 151h200"/>
+        <path d="M75 151v-40m-5 0h10m-10 40h10m25 0v-40m-5 0h10m-10 40h10m100 0v-40m-5 0h10m-10 40h10m25 0v-40m-5 0h10m-10 40h10"/>
+        <path d="M136 164v-39a24 24 0 0 1 48 0v39m-40 0v-39a16 16 0 0 1 32 0v39M25 175h270M18 182h284"/>
+        <path d="M20 164V60h18m244 0h18v104M15 60V48h28v12m234 0V48h28v12M155 51h10m-5-5v10"/>
+        <circle cx="160" cy="69" r="8"/><path d="M65 197h190M103 190h114"/>
+      </svg>
+      <div class="intro-facts"><span><b>4</b> players</span><span><b>6</b> treasures</span><span><b>1</b> Emperor</span></div>
     </div>
-    <p class="muted small">The measured V0.7 real board: six blocks,
-    one card each, 2d6 movement, one die for fights, two seals, two
-    hits. Tap <b>How to play</b> any time for the full
-    rulebook.</p>
+    <div class="setup-form">
+      <span class="eyebrow">Your story starts here</span>
+      <h2 id="setup-title">Set the table</h2>
+      <p class="muted setup-description">Play together on this device, face the bots, or watch the rivals compete.</p>
+      <div id="seats"></div>
+      <div class="seed-row"><label for="seed">Game seed</label><input id="seed" type="number" value="2026" aria-describedby="seed-help"><span id="seed-help">Same seed, same starting city.</span></div>
+      <div class="row setup-actions">
+        <button id="startbtn" class="primary">Enter the city <span aria-hidden="true">→</span></button>
+        <button id="watchbtn">Watch four bots</button>
+      </div>
+      <p class="setup-help">New to the palace? <button id="setup-rulesbtn" class="text-button">Read how to play <span aria-hidden="true">↗</span></button></p>
+    </div>
   </div>
 </div>
-<div id="gameover" class="overlay hidden">
-  <div class="panel">
+<div id="gameover" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="overline" tabindex="-1">
+  <div class="panel end-panel">
+    <span class="eyebrow">The chronicle is written</span>
     <h2 id="overline"></h2>
     <p id="oversub" class="muted"></p>
     <div class="row">

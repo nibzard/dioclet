@@ -214,6 +214,18 @@ over unchanged. Measured against the V0.6 board: fewer city timeouts
 and even gates under both the balanced-se mirror and first-challenger
 probe (`DECISIONS.md` D33, `notes/board-comparison.md`).
 
+## V0.7.1: gates on the streets
+
+Second designer correction (2026-11-07): the north and south doors
+must open onto a vertical street, as in the real palace, not face a
+block wall. `rules_v071_realgates.json` moves the north gate to the
+top of the east vertical street and the south gate (with the Emperor
+and his retreat hall) to the foot of the west vertical street, a
+180-degree rotation pair. The correction improved the board's
+symmetry as a side effect: every gate is now exactly 9 spaces from
+the checkpoint, and the cheapest two-seal tour still costs 18 from
+every gate.
+
 ## Play it in the browser
 
 A playable web version of the validated board lives in `web/`: plain
@@ -221,7 +233,7 @@ HTML, CSS, and JavaScript, no build step. Hot-seat humans and the four
 ported bot policies play the measured ruleset on the six-block,
 97-space board. The full rulebook ships with the site behind the
 **How to play** button. The board definition is generated from
-`rules_v07_6blocks.json` (`python3 tools/make_web_board.py`),
+`rules_v071_realgates.json` (`python3 tools/make_web_board.py`),
 never hand-copied. Logic tests: `node tools/test_web_engine.mjs`.
 UI smoke test (jsdom, plays a full game by clicking):
 `node tools/test_web_ui.mjs`. Deployed to Cloudflare via

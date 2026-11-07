@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate the printable V0.6.1 playtest pack (playtest/playtest-pack.html).
 
-Reads rules_v07_6blocks.json and renders: the board (all 97
+Reads rules_v071_realgates.json and renders: the board (all 97
 street spaces and the six building blocks), equipment cards, token
 sheets, the player rulebook, a quick-reference sheet, a five-minute
 teaching script, and a feedback form. Print with a browser at 100%
@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import engine  # noqa: E402
 from board import Board  # noqa: E402
 
-RULES_FILE = "rules_v07_6blocks.json"
+RULES_FILE = "rules_v071_realgates.json"
 OUT_FILE = "playtest/playtest-pack.html"
 
 CELL = 44
@@ -229,7 +229,8 @@ HTML = """<!DOCTYPE html>
     <li>Five-minute teaching script.</li>
     <li>Feedback form.</li>
   </ol>
-  <p class="small">Rules version: V0.7 six-block real board, 2d6 movement.
+  <p class="small">Rules version: V0.7.1 real board, six blocks and
+  street gates, 2d6 movement.
   Level 2 site placements on this board are the design team's current
   tested choice, not final artwork.</p>
 </div>

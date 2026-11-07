@@ -1,8 +1,9 @@
 """Board regression tests: six-block board facts and balanced_se.
 
-The adopted board is rules_v07_6blocks.json (V0.7, 2026-11-07): the
-designer's six blocks, one card per block, streets on the perimeter,
-two internal vertical streets, and one central east-west street."""
+The adopted board is rules_v071_realgates.json (V0.7.1, 2026-11-07):
+the designer's six blocks, one card per block, streets on the
+perimeter, two internal vertical streets, one central east-west
+street, and every gate opening onto a street."""
 
 import os
 import sys
@@ -17,7 +18,7 @@ import policies  # noqa: E402
 
 def load_board_rules():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return engine.load_rules(os.path.join(root, "rules_v07_6blocks.json"))
+    return engine.load_rules(os.path.join(root, "rules_v071_realgates.json"))
 
 
 class TestBoardFactsV07(unittest.TestCase):
@@ -72,13 +73,30 @@ class TestBoardFactsV07(unittest.TestCase):
         self.assertEqual(b.distance(b.emperor, b.retreat), 1)
 
     def test_checkpoint_distances(self):
-        # No cardo: north and south gates detour around the middle
-        # blocks; east and west gates ride the central street.
+        # Gates on the vertical streets (V0.7.1): every gate is
+        # exactly 9 from the checkpoint.
         b = board.Board(load_board_rules())
-        self.assertEqual(b.distance(b.gates["P0"], b.checkpoint), 12)
-        self.assertEqual(b.distance(b.gates["P2"], b.checkpoint), 12)
-        self.assertEqual(b.distance(b.gates["P1"], b.checkpoint), 9)
-        self.assertEqual(b.distance(b.gates["P3"], b.checkpoint), 9)
+        for gate in b.gates.values():
+            self.assertEqual(b.distance(gate, b.checkpoint), 9)
+
+    def test_gates_open_onto_streets(self):
+        # As in the real palace: the north and south doors stand on
+        # the internal vertical streets, the east and west doors on
+        # the central east-west street. No gate faces a block wall.
+        b = board.Board(load_board_rules())
+        self.assertEqual(b.gates["P0"], (12, 0))
+        self.assertEqual(b.gates["P2"], (6, 12))
+        self.assertIn(b.gates["P0"][0], (6, 12))
+        self.assertIn(b.gates["P2"][0], (6, 12))
+        for p in ("P1", "P3"):
+            self.assertEqual(b.gates[p][1], 6)
+        for gate in b.gates.values():
+            self.assertNotIn(gate, b.blocked)
+        # The Emperor keeps the south gate; the retreat hall is one
+        # step north on the same street.
+        self.assertEqual(b.emperor, b.gates["P2"])
+        self.assertEqual(b.retreat, (6, 11))
+        self.assertEqual(b.distance(b.emperor, b.retreat), 1)
 
     def test_entry_travel_sums_balance(self):
         # The structural tension: north and south gates sit closer to
