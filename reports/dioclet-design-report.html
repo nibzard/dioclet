@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Diocletian's Palace — Game Design Report</title>
+<title>Diocletian's Palace: Game Design Report</title>
 <style>
   :root {
     --paper: #f6efe2;
@@ -115,7 +115,7 @@
 
 <header class="hero">
   <h1>Diocletian's Palace</h1>
-  <p class="sub">Game design report — five test cycles on a four-player,
+  <p class="sub">Game design report: five test cycles on a four-player,
   two-level board game of treasures, Glory, and one final duel with the Emperor.</p>
   <div class="stats">
     <div class="stat"><b>15,000+</b>simulated games</div>
@@ -133,24 +133,24 @@
   <p class="lead">Four players enter a ruined Roman palace through four
   gates. Each wants the same thing: gear up in the abandoned city,
   then race through the palace halls to be the first to strike down
-  the Emperor — twice.</p>
+  the Emperor, twice.</p>
   <div class="cols">
     <div>
-      <p><b>Level 1 — the city.</b> Six districts hide one treasure
+      <p><b>Level 1, the city.</b> Six districts hide one treasure
       each. You roll and move, reveal districts, and take their
       treasure: a dagger, a shield, a sword… A full kit of six makes
       you deadlier in every fight. Along the way you can duel rivals
       within reach, or stand a guard post turn for guaranteed Glory
       if you roll well.</p>
       <p><b>The checkpoint.</b> The first fully equipped player opens
-      the gate to Level 2. Anyone missing gear gets the rest for free
-      — nobody is left in the city. The first player through earns a
+      the gate to Level 2. Anyone missing gear gets the rest for free,
+      so nobody is left in the city. The first player through earns a
       bonus Glory.</p>
-      <p><b>Level 2 — the palace.</b> You need two different seals
+      <p><b>Level 2, the palace.</b> You need two different seals
       before the Emperor will face you: roll for the Cellars, fight
       the guards at the Barracks, or simply buy the Peristyle seal
       with Glory. Then it is two clean hits on the Emperor to win.
-      A miss throws you back a step; a duel won pays Glory — and
+      A miss throws you back a step; a duel won pays Glory, and
       Glory buys power.</p>
     </div>
     <div>
@@ -269,7 +269,7 @@
         <text x="145" y="42" text-anchor="middle" font-size="13" letter-spacing="1.5" fill="#7a5c2e">LEVEL 1 · THE CITY</text>
         <text x="145" y="64" text-anchor="middle" font-size="11.5" fill="#5c4a30">explore districts, collect up to 6 treasures,</text>
         <text x="145" y="80" text-anchor="middle" font-size="11.5" fill="#5c4a30">duel rivals for Glory, stand guard posts;</text>
-        <text x="145" y="96" text-anchor="middle" font-size="11.5" fill="#5c4a30">a full kit opens the checkpoint (8–9 rounds)</text>
+        <text x="145" y="96" text-anchor="middle" font-size="11.5" fill="#5c4a30">a full kit opens the checkpoint (8-9 rounds)</text>
 
         <rect x="325" y="14" width="270" height="100" rx="12" fill="#f3ead2" stroke="#c9972b" stroke-width="2"/>
         <text x="460" y="42" text-anchor="middle" font-size="13" letter-spacing="1.5" fill="#8a6508">THE CHECKPOINT</text>
@@ -281,14 +281,14 @@
         <text x="775" y="42" text-anchor="middle" font-size="13" letter-spacing="1.5" fill="#5a3d6b">LEVEL 2 · THE PALACE</text>
         <text x="775" y="64" text-anchor="middle" font-size="11.5" fill="#4a3157">claim 2 different seals (roll, fight, or buy),</text>
         <text x="775" y="80" text-anchor="middle" font-size="11.5" fill="#4a3157">then land 2 hits on the Emperor;</text>
-        <text x="775" y="96" text-anchor="middle" font-size="11.5" fill="#4a3157">1 Glory = +2 strength on a strike (≈5–6 rounds)</text>
+        <text x="775" y="96" text-anchor="middle" font-size="11.5" fill="#4a3157">1 Glory = +2 strength on a strike (≈5-6 rounds)</text>
 
         <line x1="282" y1="64" x2="322" y2="64" stroke="#a58a54" stroke-width="3" marker-end="url(#ar)"/>
         <line x1="597" y1="64" x2="637" y2="64" stroke="#a58a54" stroke-width="3" marker-end="url(#ar)"/>
       </g>
     </svg>
-    <figcaption>A full game runs about 14 rounds — half city, half
-    palace — and always ends with a winner.</figcaption>
+    <figcaption>A full game runs about 14 rounds, half city and
+    half palace, and always ends with a winner.</figcaption>
   </figure>
 </section>
 
@@ -297,7 +297,7 @@
   <h2><span class="kick">The engine room</span>Glory: one currency, real tension</h2>
   <p class="lead">The best thing the game has is its economy. Glory is
   scarce (you can hold only 2), easy to lose (spend it or waste it at
-  the cap), and it buys exactly two things — both worth winning for.</p>
+  the cap), and it buys exactly two things, both worth winning for.</p>
   <figure>
     <svg viewBox="0 0 920 250" role="img" aria-label="Glory economy diagram: three sources feed a bank capped at two; two sinks buy a seal or an emperor strike; overflow is lost.">
       <defs>
@@ -326,10 +326,10 @@
         <!-- sinks -->
         <g>
           <rect x="665" y="40" width="240" height="62" rx="10" fill="#e9dde9" stroke="#5a3d6b" stroke-width="1.5"/>
-          <text x="785" y="64" text-anchor="middle" font-size="12" fill="#5a3d6b">Peristyle seal — pay 1</text>
+          <text x="785" y="64" text-anchor="middle" font-size="12" fill="#5a3d6b">Peristyle seal: pay 1</text>
           <text x="785" y="84" text-anchor="middle" font-size="11" fill="#6d5380">a guaranteed seal, no roll</text>
           <rect x="665" y="148" width="240" height="62" rx="10" fill="#f4ddd6" stroke="#a03d2e" stroke-width="1.5"/>
-          <text x="785" y="172" text-anchor="middle" font-size="12" fill="#7c2d1f">Emperor strike — pay 1</text>
+          <text x="785" y="172" text-anchor="middle" font-size="12" fill="#7c2d1f">Emperor strike: pay 1</text>
           <text x="785" y="192" text-anchor="middle" font-size="11" fill="#96503f">+2 strength on the killing blow</text>
         </g>
         <!-- arrows -->
@@ -346,13 +346,13 @@
     <figcaption>Every close game we observed turned on this choice:
     bank Glory, buy the safe seal, or spend it on the Emperor. The AI
     players were markedly more certain about their choices in the
-    palace than in the city — the decisions there simply matter more.</figcaption>
+    palace than in the city. The decisions there simply matter more.</figcaption>
   </figure>
 </section>
 
 <!-- ============================================================ 3 -->
 <section>
-  <h2><span class="kick">Method</span>How we tested — in plain words</h2>
+  <h2><span class="kick">Method</span>How we tested, in plain words</h2>
   <p>Every rule change went through the same discipline, so results
   are comparable across the whole project:</p>
   <ol>
@@ -365,12 +365,12 @@
     racer…) to catch what counters miss: how rules <i>feel</i>.</li>
     <li><b>AI players last.</b> Language-model players that reason
     over the same public information a human sees. 160 games against
-    a strong scripted benchmark — for a total cost of 54 cents.</li>
+    a strong scripted benchmark, for a total cost of 54 cents.</li>
     <li><b>One knob at a time.</b> Each variant changed exactly one
     rule. Adopted changes became the new base for the next test.</li>
   </ol>
   <p class="muted">Every game in every batch can be replayed move by
-  move and reproduces exactly — the numbers below are verifiable, not
+  move and reproduces exactly. The numbers below are verifiable, not
   estimated.</p>
 </section>
 
@@ -404,7 +404,7 @@
         </g>
         <g>
           <circle cx="605" cy="84" r="11" fill="#5f7a4a"/>
-          <text x="605" y="48" font-size="13" font-weight="bold" fill="#5f7a4a">V0.4–V0.4.1</text>
+          <text x="605" y="48" font-size="13" font-weight="bold" fill="#5f7a4a">V0.4-V0.4.1</text>
           <text x="605" y="30" font-size="11" fill="#6f6252">AI players</text>
           <text x="605" y="118" font-size="10.5" fill="#6f6252">64 live games: hidden strategies</text>
           <text x="605" y="132" font-size="10.5" fill="#6f6252">found, two blind spots found</text>
@@ -428,16 +428,16 @@
       <tr><td>One grace round at the checkpoint</td><td>Half the catch-up gear of no grace, most of the fairness gain</td><td><span class="chip yes">Adopted</span></td></tr>
       <tr><td>Rotating first player</td><td>Early-rush wins fell 39% → 33%; comebacks rose to 67%</td><td><span class="chip yes">Adopted</span></td></tr>
       <tr><td>Level 1 capped at 16 rounds</td><td>Never touched a normal game (typical city phase: 8 rounds); ends only the rare 20-round stall</td><td><span class="chip mid">Adopted as guardrail</span></td></tr>
-      <tr><td>Glory cap raised to 3</td><td>More fights, zero more winning — the bank just got easier to ignore</td><td><span class="chip no">Rejected</span></td></tr>
-      <tr><td>Three Emperor hits to win</td><td>Longer games (17 rounds), but nothing better — length was never the problem</td><td><span class="chip no">Rejected</span></td></tr>
+      <tr><td>Glory cap raised to 3</td><td>More fights, zero more winning, and the bank just got easier to ignore</td><td><span class="chip no">Rejected</span></td></tr>
+      <tr><td>Three Emperor hits to win</td><td>Longer games (17 rounds), but nothing else improved; length was never the problem</td><td><span class="chip no">Rejected</span></td></tr>
       <tr><td>Duel winner steals Glory</td><td>Backfired spectacularly: fighters won 0 of 500 games; pacifists feasted on the chaos</td><td><span class="chip no">Rejected</span></td></tr>
-      <tr><td>Loser pushed to the retreat hall</td><td>A teleport: the retreat hall sits at the Emperor's doorstep — victims gained ground</td><td><span class="chip no">Rejected</span></td></tr>
+      <tr><td>Loser pushed to the retreat hall</td><td>A teleport: the retreat hall sits at the Emperor's doorstep, so victims gained ground</td><td><span class="chip no">Rejected</span></td></tr>
       <tr><td>Duel loser skips a turn</td><td>Worked under scripts (fighters 14%), but under AI play nobody aimed it at leaders and catch-up gear rose 32%</td><td><span class="chip no">Rejected after AI test</span></td></tr>
       <tr><td>Peristyle seal costs 2 Glory</td><td>Poorer players were simply locked out; buyers bought at the same instant as before</td><td><span class="chip no">Rejected</span></td></tr>
     </tbody>
   </table>
   <p class="muted">Each verdict rests on 1,000 scripted games, role-play
-  evidence, or 32 AI games — whatever the question needed. Nothing was
+  evidence, or 32 AI games, depending on the question. Nothing was
   adopted on theory alone.</p>
 </section>
 
@@ -448,13 +448,13 @@
     <thead><tr><th>Health check (current rules)</th><th class="num">Result</th><th>Why it matters</th></tr></thead>
     <tbody>
       <tr><td>Games that reach a winner</td><td class="num"><b>100%</b></td><td>Zero draws or stalls in 15,000+ games</td></tr>
-      <tr><td>Typical game length</td><td class="num"><b>14 rounds</b></td><td>A comfortable 30–45 minutes at the table</td></tr>
+      <tr><td>Typical game length</td><td class="num"><b>14 rounds</b></td><td>A comfortable 30-45 minutes at the table</td></tr>
       <tr><td>Wins by a player who was behind</td><td class="num"><b>70%</b></td><td>Early leads do not decide the game</td></tr>
-      <tr><td>Early-rush advantage</td><td class="num"><b>30%</b></td><td>Down from 39% — first through the gate wins under a third of games</td></tr>
+      <tr><td>Early-rush advantage</td><td class="num"><b>30%</b></td><td>Down from 39%: first through the gate now wins under a third of games</td></tr>
       <tr><td>Treasures collected per player</td><td class="num"><b>5.6 / 6</b></td><td>The city phase is a real quest, not a formality</td></tr>
       <tr><td>Players needing catch-up gear</td><td class="num"><b>0.4 items</b></td><td>The safety net exists but rarely fires for engaged players</td></tr>
       <tr><td>Four gates fairness</td><td class="num"><b>±3%</b></td><td>No gate is better or worse than chance</td></tr>
-      <tr><td>Duel attacker win rate</td><td class="num"><b>56%</b></td><td>Fights are slightly favorable to the bold — as they should feel</td></tr>
+      <tr><td>Duel attacker win rate</td><td class="num"><b>56%</b></td><td>Fights are slightly favorable to the bold, as they should feel</td></tr>
     </tbody>
   </table>
 
@@ -495,8 +495,8 @@
             <rect x="250" y="8" width="14" height="4" fill="#b0532f"/><text x="270" y="15" fill="#7c3517">early-rush wins</text>
           </g>
         </svg>
-        <figcaption>Both fairness fixes worked, and they did not
-        soften the game — they made trailing players win more.</figcaption>
+        <figcaption>Both fairness fixes worked, and the game did not
+        get softer. Trailing players simply won more.</figcaption>
       </figure>
     </div>
     <div>
@@ -533,7 +533,7 @@
         </svg>
         <figcaption>Win share of the all-fighter play style. Fair ties
         helped; the lost turn helped scripts only; stealing Glory
-        collapsed it to zero. Fighting is still a losing lifestyle —
+        collapsed it to zero. Fighting is still a losing lifestyle:
         the game's one open design problem.</figcaption>
       </figure>
     </div>
@@ -552,22 +552,22 @@
 <!-- ============================================================ 6 -->
 <section>
   <h2><span class="kick">Findings · part 2</span>What the AI players revealed</h2>
-  <p class="lead">Reasoning players — given exactly the information a
-  human sees — found strategies the scripts never tried, and walked
+  <p class="lead">Reasoning players, given exactly the information a
+  human sees, found strategies the scripts never tried, and walked
   past an obvious one.</p>
   <table>
     <thead><tr><th style="width:34%">Question</th><th>Answer from 160 AI games</th></tr></thead>
     <tbody>
-      <tr><td>Are they strong?</td><td>On par with our best scripted benchmark. In 64 direct head-to-head games the script's seats won 39 to the model's 25 — a lean, but not yet a proven gap.</td></tr>
-      <tr><td>New strategies?</td><td><b>Two.</b> The <i>Glory engine</i>: skip collecting almost entirely, win duels for Glory, and let the free catch-up gear finish your kit — then out-spend everyone at the Emperor. And <i>seal-market timing</i>: buy the guaranteed seal early, roll only for the cheap ones.</td></tr>
-      <tr><td>Blind spots?</td><td><b>One glaring:</b> guard posts — the board's only reliable Glory source — were used about once per 176 player-games. Players who ignored Glory lost locked-out and hoarding: one in five losers died holding unspent Glory.</td></tr>
+      <tr><td>Are they strong?</td><td>On par with our best scripted benchmark. In 64 direct head-to-head games the script's seats won 39 to the model's 25: a lean, but not yet a proven gap.</td></tr>
+      <tr><td>New strategies?</td><td><b>Two.</b> The <i>Glory engine</i>: skip collecting almost entirely, win duels for Glory, and let the free catch-up gear finish your kit, then out-spend everyone at the Emperor. And <i>seal-market timing</i>: buy the guaranteed seal early, roll only for the cheap ones.</td></tr>
+      <tr><td>Blind spots?</td><td><b>One glaring:</b> guard posts (the board's only reliable Glory source) were used about once per 176 player-games. Players who ignored Glory lost locked-out and hoarding: one in five losers died holding unspent Glory.</td></tr>
       <tr><td>Discipline?</td><td>Flawless execution: a winning Emperor strike was taken 100% of the time (168 of 168 chances), with zero illegal moves across every game.</td></tr>
     </tbody>
   </table>
   <div class="callout">
     <b>What this means for the design.</b> The Glory engine works only
     because the free catch-up gear subsidizes it. That is a feature
-    today (a legitimate second strategy) — but if human players copy
+    today (a legitimate second strategy), but if human players copy
     it, the city phase stops mattering. The fix under consideration:
     make the checkpoint require, for example, four of six treasures.
   </div>
@@ -577,13 +577,12 @@
 <section>
   <h2><span class="kick">Findings · part 3</span>The one problem left</h2>
   <div class="callout red">
-    <b>You cannot slow a leader.</b> A duel pays only its winner — so
+    <b>You cannot slow a leader.</b> A duel pays only its winner, so
     attacking the player about to win <i>risks handing them Glory</i>.
     Every qualitative table refused to do it; the AI players refused
     too, even in games where a rival sat one hit from victory. Three
-    separate test cycles converged on the same root cause: the problem
-    is not what a duel <i>costs</i> the loser, it is what it <i>pays</i>
-    the winner.
+    separate test cycles converged on the same root cause: what a duel <i>pays</i> the winner matters more
+    than what it <i>costs</i> the loser.
   </div>
   <p>Tested and failed: making the loser skip a turn (scripts liked
   it, reasoning players simply refused to aim it at leaders), stealing
@@ -592,7 +591,7 @@
   <p>The evidence now points at <b>duel value</b>: paying a bounty
   when you beat a player who holds an Emperor hit, or paying Glory
   for guard-post success. Either makes "fight the leader" rational
-  for the first time. Both are single, small rule changes — the next
+  for the first time. Both are single, small rule changes, and the next
   test cycle is cheap.</p>
   <p class="muted">Second, smaller issue: the player who acts first
   in the final round still holds an edge (about 28% vs 21% of wins
@@ -610,14 +609,14 @@
     16-round city cap. Every one is tested, neutral-or-better on
     length and decisiveness, and none needs extra components.</li>
     <li><b>Keep the Peristyle seal at 1 Glory.</b> Doubling it did not
-    create harder choices — it only locked poor players out.</li>
+    create harder choices; it only locked poor players out.</li>
     <li><b>Prototype the leader bounty.</b> One rule: <i>beat a player
     who holds an Emperor hit in a duel and earn 2 Glory</i>. It is the
     first mechanism that makes interference rational. Test it exactly
-    like everything here — scripts, then AI players.</li>
+    like everything here: scripts, then AI players.</li>
     <li><b>Consider a collection requirement at the checkpoint</b>
     (four of six treasures) so the Glory engine cannot fully replace
-    the city phase — decide after human playtests.</li>
+    the city phase; decide after human playtests.</li>
     <li><b>Playtest with people now.</b> The simulator cannot answer:
     does a lost duel feel harsh for children, does the catch-up gear
     feel cheap, is the Glory-cap dead air boring at the table? Eight
@@ -631,8 +630,8 @@
   <p class="lead">Across 15,000 scripted games, eight role-played
   games, and 160 AI games, the core promise held every time: a
   decisive, comeback-rich 14-round race with a real economy and a
-  genuinely tense finish. One structural gap — no way to fight a
-  leader — remains, three test cycles have isolated its cause, and
+  tense finish. One structural gap remains: you cannot fight a
+  leader. Three test cycles have isolated its cause, and
   the next candidate fix is a single sentence of rules text.</p>
   <p><b>Verdict: worth developing into a physical product.</b>
   Prototype after the leader-bounty test comes back positive; the
@@ -643,7 +642,7 @@
 <!-- ============================================================ ANNEX -->
 <section id="annex">
   <h2><span class="kick">Annex · prototype rulebook</span>The rules as they stand</h2>
-  <p class="lead">This is the complete rule set that survived testing —
+  <p class="lead">This is the complete rule set that survived testing,
   written to be played as-is at a table. Every rule in it earned its
   place; the evidence table at the end shows what was tried and
   rejected on the way.</p>
@@ -654,7 +653,7 @@
     <li>Four pawns, one per player, starting on the four gates.</li>
     <li>One standard six-sided die.</li>
     <li>Treasure cards: <b>dagger, javelin, helmet, shield, sword,
-    armor</b> — one hidden in each of the six city districts.</li>
+    armor</b>, one hidden in each of the six city districts.</li>
     <li>Glory tokens (each player may hold at most <b>2</b>).</li>
     <li>Seal tokens in three kinds: <b>Cellars, Barracks,
     Peristyle</b>.</li>
@@ -663,8 +662,8 @@
 
   <h3>Goal and setup</h3>
   <p><b>Be the first to land two hits on the Emperor.</b> Choose gates
-  freely — all four are equally good (measured, see evidence below).
-  Shuffle the six treasure cards face down, one per district A–F;
+  freely; all four are equally good (measured, see evidence below).
+  Shuffle the six treasure cards face down, one per district A to F;
   nobody knows which district holds which treasure. Each player
   starts with no treasure and no Glory. Pick a starting player at
   random; the start <b>rotates one seat clockwise every round</b>.</p>
@@ -674,52 +673,52 @@
     <li><b>Roll the die.</b> The number is your <i>maximum</i> steps,
     not an exact count.</li>
     <li><b>Move.</b> Move orthogonally (no diagonals) up to your roll.
-    You may stop early, and you may pass through other pawns —
-    walking past someone never starts a fight.</li>
+    You may stop early, and you may pass through other pawns.
+    Walking past someone never starts a fight.</li>
     <li><b>Do one thing</b> at the square you reached (see the action
     lists below), or simply end your move. One action per turn,
     never two.</li>
   </ol>
   <p class="muted">If you are already standing on a special square,
   you may use its action without moving (except guard posts and
-  duels — those always require a move of at least one step).</p>
+  duels, which always require a move of at least one step).</p>
 
-  <h3>Level 1 — the city</h3>
+  <h3>Level 1: the city</h3>
   <table>
     <thead><tr><th style="width:22%">Action</th><th>How it works</th></tr></thead>
     <tbody>
       <tr><td><b>Explore a district</b></td><td>End your move on an
       unrevealed district, or one whose treasure you do not own.
       Flip its card face up for everyone; take that treasure. Each
-      treasure can be taken by every player once — cards are never
+      treasure can be taken by every player once. Cards are never
       used up, and treasure is never stolen or lost.</td></tr>
       <tr><td><b>Stand a guard post</b></td><td>Move onto a corner
       guard post (★) and roll the die: <b>4, 5 or 6 earns 1 Glory</b>.
-      This is the board's reliable way to earn Glory — use it.</td></tr>
+      This is the board's reliable way to earn Glory; use it.</td></tr>
       <tr><td><b>Duel a rival</b></td><td>End your move within two
       squares of another pawn to challenge them. Both roll a die and
       add a gear bonus (below). <b>Higher total wins; ties go to the
       attacker.</b> The winner takes 1 Glory. Nobody loses anything
-      else — no gear, no position, no turns.</td></tr>
+      else: no gear, no position, no turns.</td></tr>
       <tr><td><b>Claim the checkpoint</b></td><td>The first player to
       own all six treasures and reach the gold checkpoint in the
       center claims it: <b>take 1 Glory</b>. This opens the gate to
       the palace (see below). Only the first claim counts.</td></tr>
     </tbody>
   </table>
-  <p><b>Gear bonus:</b> 0–2 treasures +0 · 3–5 treasures +1 · all 6
+  <p><b>Gear bonus:</b> 0-2 treasures +0 · 3-5 treasures +1 · all 6
   treasures +2. Added to every duel, Barracks contest, and Emperor
   strike.</p>
   <p><b>Glory:</b> you may hold at most <b>2</b>. Anything earned
-  beyond that is lost — spend it or waste it.</p>
+  beyond that is lost. Spend it or waste it.</p>
 
   <h3>Moving up to the palace</h3>
   <p>When the checkpoint is claimed, finish that round, then play
-  <b>one more full round</b> in the city — a last chance to grab
+  <b>one more full round</b> in the city, a last chance to grab
   treasure, Glory, or a grudge match. Then:</p>
   <ul>
     <li>Every player still missing treasures <b>receives them for
-    free</b> — nobody is left behind.</li>
+    free</b>, so nobody is left behind.</li>
     <li>All pawns return to their gates, Glory is kept, and the
     palace phase begins. Turn order keeps rotating as before.</li>
   </ul>
@@ -727,7 +726,7 @@
   round 16, the city is abandoned and everyone moves up anyway, with
   the same free gear.</p>
 
-  <h3>Level 2 — the palace</h3>
+  <h3>Level 2: the palace</h3>
   <p>The districts change roles (see the board): the Cellars and the
   Barracks sell seals, the Peristyle at the center sells a guaranteed
   one, and the Emperor waits in his chamber at the south gate. You
@@ -743,7 +742,7 @@
       the Barracks: you roll die + gear bonus, the guard rolls die
       +1. <b>Beat the guard strictly</b> to earn the seal.</td></tr>
       <tr><td><b>Peristyle</b></td><td>Roll the die at the Peristyle:
-      <b>5 or 6</b> earns the seal — or simply <b>pay 1 Glory</b> for
+      <b>5 or 6</b> earns the seal, or simply <b>pay 1 Glory</b> for
       it, no roll. The safe buy.</td></tr>
     </tbody>
   </table>
@@ -753,12 +752,12 @@
     <li>Stand in his chamber and strike: you roll die + gear bonus,
     he rolls die +2. <b>Score strictly higher to hit.</b></li>
     <li>You may <b>declare a powered strike before rolling: pay 1
-    Glory for +2</b> to your roll — paid whether you hit or miss.
+    Glory for +2</b> to your roll, paid whether you hit or miss.
     A powered strike lands about 7 times in 10; a free one about
     45 in 100.</li>
     <li><b>Hit:</b> mark it, stay in the chamber, strike again next
     turn. <b>Miss:</b> step back to the retreat hall one square
-    north — nothing else is lost.</li>
+    north. Nothing else is lost.</li>
     <li><b>First to two hits wins immediately.</b></li>
   </ol>
 
@@ -767,7 +766,7 @@
   and all revealed district cards. The only secrets are the face-down
   treasure cards and the next die roll.</p>
 
-  <h3>Evidence appendix — every rule earned its place</h3>
+  <h3>Evidence appendix: every rule earned its place</h3>
   <table>
     <thead><tr><th>Rule in this book</th><th>What testing showed</th></tr></thead>
     <tbody>
@@ -775,24 +774,24 @@
       <tr><td>One grace round</td><td>Zero grace rounds doubled the free catch-up gear; two rounds dragged. One keeps the fairness gain at half the cost. (1,000 games)</td></tr>
       <tr><td>Rotating start</td><td>Fixed start: the first player won 39% of games. Rotating: 33%, with 67% comeback wins. (1,000 games)</td></tr>
       <tr><td>City capped at 16 rounds</td><td>In 15,000 games a normal city phase never passed 13 rounds; the cap only ends the rare 20-round wandering stall. (96 AI games verified the cap itself costs nothing.)</td></tr>
-      <tr><td>Glory cap of 2</td><td>A cap of 3 was tested: more fights, zero more wins — the bigger bank was simply easier to ignore. (1,000 games)</td></tr>
+      <tr><td>Glory cap of 2</td><td>A cap of 3 was tested: more fights, zero more wins, and the bigger bank was simply easier to ignore. (1,000 games)</td></tr>
       <tr><td>Two hits on the Emperor</td><td>Three hits tested: games grew longer and nothing improved. Two hits give the tense countdown every playtest praised. (1,000 games)</td></tr>
-      <tr><td>Peristyle seal costs 1 Glory</td><td>Cost 2 tested under AI play: one third fewer purchases, no harder decisions — poor players were simply locked out. (32 AI games)</td></tr>
-      <tr><td>Duels cost the loser nothing</td><td>Three penalties tested — Glory theft (fighters won 0 of 500 games), teleport to the retreat hall (victims gained ground), lost turn (scripts liked it; reasoning players refused to aim it at leaders). All rejected. (3,000 games + 32 AI games)</td></tr>
-      <tr><td>Free gear at the gate</td><td>86% of engaged players never needed it — it is a safety net, not a free ride. One AI strategy (skip collecting, fight for Glory) does exploit it; watch for it in human games. (1,000 games + 64 AI games)</td></tr>
+      <tr><td>Peristyle seal costs 1 Glory</td><td>Cost 2 tested under AI play: one third fewer purchases, no harder decisions; poor players were simply locked out. (32 AI games)</td></tr>
+      <tr><td>Duels cost the loser nothing</td><td>Three penalties were tested: Glory theft (fighters won 0 of 500 games), teleport to the retreat hall (victims gained ground), lost turn (scripts liked it; reasoning players refused to aim it at leaders). All rejected. (3,000 games + 32 AI games)</td></tr>
+      <tr><td>Free gear at the gate</td><td>86% of engaged players never needed it. It is a safety net, not a free ride. One AI strategy (skip collecting, fight for Glory) does exploit it; watch for it in human games. (1,000 games + 64 AI games)</td></tr>
       <tr><td>All four gates equal</td><td>Win rates per gate stay within ±3% of each other across every test. (15,000 games)</td></tr>
     </tbody>
   </table>
   <p class="muted">One rule is still open: nothing today lets you slow
-  a player who is about to win. The recommended prototype addition —
-  <i>beat a player who holds an Emperor hit in a duel and earn 2
-  Glory</i> — is not in this book because it has not been tested yet.
+  a player who is about to win. The recommended prototype addition
+  (<i>beat a player who holds an Emperor hit in a duel and earn 2
+  Glory</i>) is not in this book because it has not been tested yet.
   Test it before you print anything.</p>
 </section>
 
 <footer>
   Diocletian's Palace · game design report · 2026-11-07 ·
-  built from five measured test cycles (V0.1 – V0.5) ·
+  built from five measured test cycles (V0.1 to V0.5) ·
   every number reproducible from the project repository
 </footer>
 
