@@ -138,3 +138,29 @@ label[for="seed"], #seed { font-size: 14px; }
 .cell.reachable { cursor: pointer; }
 .pawn { transition: transform 0.12s linear; }
 .revealchip { font: bold 10px Verdana, sans-serif; }
+
+button.ghost {
+  border-color: var(--muted); color: var(--muted);
+  background: transparent; padding: 6px 12px; font-size: 13px;
+}
+header button.ghost { margin-left: auto; align-self: center; }
+#rules .rulespanel { max-width: 720px; max-height: 88vh; overflow-y: auto;
+                     position: relative; padding-top: 40px; }
+#rules .close { position: absolute; top: 12px; right: 14px; margin: 0; }
+#rulesbody h2 { color: var(--purple); font-size: 19px; margin: 18px 0 6px;
+                border-bottom: 2px solid var(--gold); padding-bottom: 3px; }
+#rulesbody h2:first-child { margin-top: 0; }
+#rulesbody h3 { color: #5a3d6b; margin: 12px 0 4px; font-size: 15px; }
+#rulesbody ul, #rulesbody ol { margin: 6px 0; padding-left: 22px; }
+#rulesbody li { margin: 4px 0; }
+#rulesbody table { border-collapse: collapse; width: 100%; margin: 8px 0;
+                   font-size: 14px; }
+#rulesbody th, #rulesbody td { border: 1px solid var(--line);
+                               padding: 6px 8px; text-align: left;
+                               vertical-align: top; }
+#rulesbody th { background: #f3ead2; }
+#rulesbody .where { color: var(--muted); font-size: 12px; }
+#rulesbody .note { background: #faf3df; border-left: 3px solid var(--gold);
+                   padding: 8px 12px; border-radius: 0 8px 8px 0; }
+#rulesbody .provenance { color: var(--muted); font-size: 12px;
+                         font-style: italic; margin-top: 16px; }

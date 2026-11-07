@@ -51,30 +51,62 @@
                        class: "cell" });
       }
     }
+    const TITLES = {
+      gate: "Gate and start position",
+      entry: "Treasure entry: stop here to take the card",
+      checkpoint: "Checkpoint: first with all six treasures opens the" +
+                  " gate; also the Peristyle seal in the palace",
+      post: "Guard post: roll 4 or more for 1 Glory",
+      emperor: "The Emperor's chamber: two hits win the game",
+      retreat: "Retreat hall: step back here on a missed strike",
+    };
+    // Decorations never block clicks or hover: the street circle under
+    // a chip owns the pointer and carries the tooltip.
     const chip = (k, fill, text) => {
       const [x, y] = at(k);
       el("circle", { cx: cx(x), cy: cy(y), r: 16.5, fill,
-                     stroke: "#3a2d20", "stroke-width": 2.5 });
+                     stroke: "#3a2d20", "stroke-width": 2.5,
+                     "pointer-events": "none" });
       el("text", { x: cx(x), y: cy(y) + 5.5, "text-anchor": "middle",
                    "font-family": "Georgia, serif", "font-size": 16,
-                   "font-weight": "bold", fill: "#fffdf6" }, svg, text);
+                   "font-weight": "bold", fill: "#fffdf6",
+                   "pointer-events": "none" }, svg, text);
+    };
+    const tip = (k, text) => {
+      const c = svg.querySelector(`[data-k="${k}"]`);
+      if (!c) return;
+      const t = document.createElementNS(NS, "title");
+      t.textContent = text;
+      c.appendChild(t);
+      c.setAttribute("aria-label", text);
     };
     for (const [p, c] of Object.entries(B.gates)) {
       chip(K(...c), "#5a3d6b", { P0: "N", P1: "E", P2: "S", P3: "W" }[p]);
+      tip(K(...c), TITLES.gate + " (" + p + ")");
     }
-    for (const [n, c] of Object.entries(B.districts)) chip(K(...c), "#3f6f9e", n);
+    for (const [n, c] of Object.entries(B.districts)) {
+      chip(K(...c), "#3f6f9e", n);
+      tip(K(...c), TITLES.entry + " (" + n + ")");
+    }
     chip(K(...B.checkpoint), "#c9972b", "X");
-    for (const c of B.gloryPosts) chip(K(...c), "#5f7a4a", "*");
+    tip(K(...B.checkpoint), TITLES.checkpoint);
+    for (const c of B.gloryPosts) {
+      chip(K(...c), "#5f7a4a", "*");
+      tip(K(...c), TITLES.post);
+    }
     chip(K(...B.level2.emperor), "#a03d2e", "E");
+    tip(K(...B.level2.emperor), TITLES.emperor);
     chip(K(...B.level2.retreat), "#4a6b7a", "r");
+    tip(K(...B.level2.retreat), TITLES.retreat);
     for (const [label, site] of [["c", "cellars"], ["b", "guard_barracks"],
                                  ["p", "peristyle"]]) {
       const [x, y] = B.level2[site];
       el("circle", { cx: cx(x) + 14, cy: cy(y) - 15, r: 8, fill: "#fffdf6",
-                     stroke: "#3a2d20", "stroke-width": 1.4 });
+                     stroke: "#3a2d20", "stroke-width": 1.4,
+                     "pointer-events": "none" });
       el("text", { x: cx(x) + 14, y: cy(y) - 11.5, "text-anchor": "middle",
                    "font-family": "Verdana, sans-serif", "font-size": 10,
-                   fill: "#3a2d20" }, svg, label);
+                   fill: "#3a2d20", "pointer-events": "none" }, svg, label);
     }
     svg.addEventListener("click", onBoardClick);
   }
@@ -84,7 +116,8 @@
   function placePawns() {
     for (const p of g.players) {
       if (pawnFor(p.id)) continue;
-      const grp = el("g", { id: "pawn-" + p.id, class: "pawn" });
+      const grp = el("g", { id: "pawn-" + p.id, class: "pawn",
+                            "pointer-events": "none" });
       el("circle", { r: 9.5, fill: COLORS[p.id], stroke: "#fffdf6",
                      "stroke-width": 2.2 }, grp);
       el("text", { y: 3.6, "text-anchor": "middle", fill: "#fffdf6",
@@ -117,7 +150,8 @@
       const [x, y] = at(k);
       el("text", { id: "rv-" + k, x: cx(x), y: cy(y) + 27,
                    "text-anchor": "middle", "font-family": "Verdana, sans-serif",
-                   "font-size": 8.5, fill: "#7a5c2e", class: "revealchip" },
+                   "font-size": 8.5, fill: "#7a5c2e", class: "revealchip",
+                   "pointer-events": "none" },
          svg, item.replace("lorica_segmentata", "armor").slice(0, 9));
     }
   }
@@ -195,7 +229,7 @@
     if (g.draw) { line.textContent = "The palace gates closed: a draw."; return; }
     const p = E.active(g);
     const phase = g.phase === 1 ? "the city" : "the palace";
-    line.textContent = `Round ${g.round} in ${phase} — ${p.name}` +
+    line.textContent = `Round ${g.round} in ${phase}: ${p.name}` +
       (p.kind === "human" ? " (your turn)" : " is thinking…");
   }
 
@@ -216,6 +250,17 @@
     for (const k of byDest.keys()) {
       const c = svg.querySelector(`[data-k="${k}"]`);
       if (c) c.classList.add("reachable");
+    }
+    const p0 = E.active(g);
+    if (p0.kind === "human") {
+      const box0 = document.getElementById("actionbox");
+      const hint = document.createElement("div");
+      hint.className = "hint";
+      hint.innerHTML = "You rolled <b>" + g.currentRoll.total +
+        "</b>. Tap a lit circle to move. Blue letters hold treasure," +
+        " green stars pay Glory, the gold X opens the gate, and ending" +
+        " within two spaces of a rival lets you duel.";
+      box0.appendChild(hint);
     }
   }
 
@@ -252,17 +297,17 @@
       case "move": return "Just <b>walk</b> here";
       case "explore": return `<b>Take the treasure</b> (${a.item
         .replace("lorica_segmentata", "armor")})`;
-      case "guard_post": return "<b>Stand guard</b> — roll for Glory";
+      case "guard_post": return "<b>Stand guard</b>: roll for Glory";
       case "duel": {
         const q = E.player(g, a.target);
         return `<b>Duel ${q.name}</b>`;
       }
-      case "claim_checkpoint": return "<b>Open the gate</b> — first through";
+      case "claim_checkpoint": return "<b>Open the gate</b>: first through";
       case "attempt_seal": return a.spend
         ? `<b>Buy the seal</b> at the ${siteNames[a.site]} (1 Glory)`
         : `<b>Roll for the seal</b> at the ${siteNames[a.site]}`;
       case "attack_emperor": return a.spend
-        ? "<b>Powered strike</b> — pay 1 Glory for +2"
+        ? "<b>Powered strike</b>: pay 1 Glory for +2"
         : "<b>Strike the Emperor</b>";
     }
     return a.kind;
@@ -376,6 +421,21 @@
     refreshActions();
     scheduleBot();
   }
+
+  // Rules overlay (full rulebook from rules.js).
+  const rulesOverlay = document.getElementById("rules");
+  document.getElementById("rulesbody").innerHTML =
+    window.DIOCLET_RULES;
+  document.getElementById("rulesbtn").onclick = () =>
+    rulesOverlay.classList.remove("hidden");
+  document.getElementById("rulesclose").onclick = () =>
+    rulesOverlay.classList.add("hidden");
+  rulesOverlay.addEventListener("click", ev => {
+    if (ev.target === rulesOverlay) rulesOverlay.classList.add("hidden");
+  });
+  document.addEventListener("keydown", ev => {
+    if (ev.key === "Escape") rulesOverlay.classList.add("hidden");
+  });
 
   buildBoard();
   buildSetup();
