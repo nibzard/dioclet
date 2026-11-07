@@ -186,7 +186,7 @@ complete 64-game log set ships as the release artifact
 
 ## V0.6.1: real board validation (print-and-play ready)
 
-The designer's physical board is encoded (107 street spaces), 2d6
+The designer's physical board is encoded, 2d6
 movement is measured in, and a print-and-play pack exists:
 `playtest/playtest-pack.html` (board, cards, tokens, rulebook, quick
 reference, teaching script, feedback form) plus
@@ -199,14 +199,29 @@ CSS, 7 mm pawns with a landscape board page, four equipment tracker
 sheets, an explicit move-first rule for guard posts and duels, and
 real policy dispatch in `tools/mirror_batch.py`.
 
+## V0.7: the six-block board
+
+Designer correction (2026-11-07): the point of the layout is six
+blocks with one card each. The V0.6 encoding had added a central
+north-south street (D27) that split the middle column into four
+strips, so the simulated board carried eight blocks and two cards
+without a block of their own. `rules_v07_6blocks.json` removes that
+street: 97 street spaces, six 5x5 blocks, entries B and E moved to
+the north and south streets in front of the middle blocks, the
+retreat hall one step east of the Emperor. Everything else carries
+over unchanged. Measured against the V0.6 board: fewer city timeouts
+(129 versus 162 per 1000 games), same collection and comeback rates,
+and even gates under both the balanced-se mirror and first-challenger
+probe (`DECISIONS.md` D33, `notes/board-comparison.md`).
+
 ## Play it in the browser
 
 A playable web version of the validated board lives in `web/`: plain
 HTML, CSS, and JavaScript, no build step. Hot-seat humans and the four
-ported bot policies play the measured ruleset on the 107-space board.
-The full rulebook ships with the site behind the **How to play**
-button. The board definition is generated from
-`rules_v06_realboard_p3.json` (`python3 tools/make_web_board.py`),
+ported bot policies play the measured ruleset on the six-block,
+97-space board. The full rulebook ships with the site behind the
+**How to play** button. The board definition is generated from
+`rules_v07_6blocks.json` (`python3 tools/make_web_board.py`),
 never hand-copied. Logic tests: `node tools/test_web_engine.mjs`.
 UI smoke test (jsdom, plays a full game by clicking):
 `node tools/test_web_ui.mjs`. Deployed to Cloudflare via

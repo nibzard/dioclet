@@ -2,7 +2,8 @@
 """Generate web/board-data.js from the adopted rules JSON.
 
 The web board is generated, never hand-copied, so it always mirrors
-the measured ruleset (rules_v06_realboard_p3.json)."""
+the measured ruleset (rules_v07_6blocks.json: the six-block board,
+one card per block)."""
 
 import json
 import os
@@ -12,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import engine  # noqa: E402
 from board import Board  # noqa: E402
 
-RULES = "rules_v06_realboard_p3.json"
+RULES = "rules_v07_6blocks.json"
 OUT = "web/board-data.js"
 
 

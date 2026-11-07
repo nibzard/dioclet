@@ -63,7 +63,7 @@ document.getElementById("startbtn").click();
 await sleep(50);
 check("setup overlay hidden after start",
   document.getElementById("setup").classList.contains("hidden"));
-check("107 street circles", document.querySelectorAll(".cell").length === 107);
+check("97 street circles", document.querySelectorAll(".cell").length === 97);
 check("4 pawns placed", document.querySelectorAll(".pawn").length === 4);
 
 // --- click-through and tooltips ------------------------------------
