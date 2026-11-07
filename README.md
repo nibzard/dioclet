@@ -12,6 +12,7 @@ with repeatable batches before any physical playtesting.
 - `FINDINGS_V02.md` — combat and fairness experiments
 - `FINDINGS_V03.md` — duel consequence experiments
 - `FINDINGS_V04.md` — OpenAI Decisions player intelligence
+- `FINDINGS_V041.md` — AI tournament and decision analysis
 
 ## Where the design stands
 
@@ -141,6 +142,31 @@ Budget exhaustion stops the game cleanly as `incomplete.json`.
 Details and measured results: `FINDINGS_V04.md`; configuration:
 `decisions_config.json`.
 
+## AI tournaments and offline analysis (V0.4.1)
+
+Tournament configs live in `tournaments/`; all outputs go to
+`results/v041/` (never overwriting earlier results).
+
+```bash
+# Estimate cost and call count before spending anything
+python3 sim.py tournament --config tournaments/v041_tournament_a.json \
+  --out results/v041 --dry-run
+
+# Live (requires OPENAI_API_KEY, explicit opt-in, budget caps)
+python3 sim.py tournament --config tournaments/v041_tournament_a.json \
+  --out results/v041 --live-decisions --resume
+
+# Offline analysis of any completed tournament
+python3 analyze_v041.py analyze results/v041   # decision scorecard
+python3 analyze_v041.py report  results/v041   # strength, cost, CIs
+```
+
+Resume re-runs only games without a `result.json`; per-game and
+aggregate cost caps stop the run gracefully; completed games are
+never silently re-played or substituted. Measured outcomes of the
+64-game V0.4.1 tournament: `FINDINGS_V041.md` and the qualitative
+game studies in `notes/v041/`.
+
 ## Modules
 
 - `sim.py` — CLI entry point
@@ -155,6 +181,9 @@ Details and measured results: `FINDINGS_V04.md`; configuration:
 - `ai_driver.py` — single-writer AI game driver with budgets
 - `report.py` — batch runner, CSV, summary statistics
 - `compare.py` — side-by-side markdown table across batch summaries
+- `tournament.py` — reproducible AI tournament runner (V0.4.1)
+- `analyze_v041.py` — offline decision scorecards and tournament
+  reports (V0.4.1)
 - `decisions_config.json`, `requirements-decisions.txt` — V0.4 config
   and optional dependency pin
 - `tests/` — engine invariants, resolution tests, policy unit tests,

@@ -1,0 +1,4878 @@
+{
+  "active_player": "P1",
+  "created": "2026-11-07T08:34:59Z",
+  "current_roll": 5,
+  "district_equipment": {
+    "A": "gladius",
+    "B": "scutum",
+    "C": "lorica_segmentata",
+    "D": "galea",
+    "E": "pugio",
+    "F": "pilum"
+  },
+  "end_reason": "emperor",
+  "engine_version": "0.1.0",
+  "event_seq": 55,
+  "events": [
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0016",
+      "dice_used": [],
+      "equipment_count_after": 0,
+      "event_seq": 1,
+      "events": [],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 1,
+      "turn_id": 1
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0056",
+      "dice_used": [],
+      "equipment_count_after": 0,
+      "event_seq": 2,
+      "events": [],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 1,
+      "turn_id": 2
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0030",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 3,
+      "events": [
+        {
+          "district": "B",
+          "item": "scutum",
+          "type": "district_revealed"
+        },
+        {
+          "district": "B",
+          "item": "scutum",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "explore_unknown",
+      "round": 1,
+      "turn_id": 3
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0008",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 4,
+      "events": [
+        {
+          "district": "E",
+          "item": "pugio",
+          "type": "district_revealed"
+        },
+        {
+          "district": "E",
+          "item": "pugio",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "explore_unknown",
+      "round": 1,
+      "turn_id": 4
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0009",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 5,
+      "events": [
+        {
+          "district": "C",
+          "item": "lorica_segmentata",
+          "type": "district_revealed"
+        },
+        {
+          "district": "C",
+          "item": "lorica_segmentata",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 2,
+      "turn_id": 5
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0021",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 6,
+      "events": [
+        {
+          "district": "C",
+          "item": "lorica_segmentata",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "explore_certain",
+      "round": 2,
+      "turn_id": 6
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0007",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 7,
+      "events": [
+        {
+          "district": "D",
+          "item": "galea",
+          "type": "district_revealed"
+        },
+        {
+          "district": "D",
+          "item": "galea",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "explore_unknown",
+      "round": 2,
+      "turn_id": 7
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 1,
+      "event_seq": 8,
+      "events": [
+        {
+          "district": "B",
+          "item": "scutum",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 2,
+      "turn_id": 8
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            4,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0009",
+      "dice_used": [
+        4
+      ],
+      "equipment_count_after": 2,
+      "event_seq": 9,
+      "events": [
+        {
+          "player": "P0",
+          "roll": 4,
+          "success": true,
+          "type": "guard_post"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P0",
+          "type": "glory_earned_guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        4,
+        1
+      ],
+      "reason": "guard_glory",
+      "round": 3,
+      "turn_id": 9
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0031",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 10,
+      "events": [
+        {
+          "district": "B",
+          "item": "scutum",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "explore_certain",
+      "round": 3,
+      "turn_id": 10
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0030",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 11,
+      "events": [
+        {
+          "district": "D",
+          "item": "galea",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 3,
+      "turn_id": 11
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0025",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 12,
+      "events": [
+        {
+          "district": "B",
+          "item": "scutum",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 3,
+      "turn_id": 12
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0031",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 13,
+      "events": [
+        {
+          "district": "C",
+          "item": "lorica_segmentata",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "explore_certain",
+      "round": 4,
+      "turn_id": 13
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "move",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0043",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 14,
+      "events": [],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 4,
+      "turn_id": 14
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0017",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 15,
+      "events": [
+        {
+          "district": "E",
+          "item": "pugio",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 4,
+      "turn_id": 15
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            4,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0004",
+      "dice_used": [],
+      "equipment_count_after": 2,
+      "event_seq": 16,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "advance",
+      "round": 4,
+      "turn_id": 16
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0020",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 17,
+      "events": [
+        {
+          "district": "E",
+          "item": "pugio",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 5,
+      "turn_id": 17
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0012",
+      "dice_used": [
+        6,
+        5
+      ],
+      "equipment_count_after": 3,
+      "event_seq": 18,
+      "events": [
+        {
+          "attacker": "P1",
+          "attacker_bonus": 1,
+          "attacker_roll": 6,
+          "attacker_score": 7,
+          "defender": "P0",
+          "defender_bonus": 0,
+          "defender_roll": 5,
+          "defender_score": 5,
+          "type": "duel",
+          "winner": "P1"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P1",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 5,
+      "turn_id": 18
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0037",
+      "dice_used": [],
+      "equipment_count_after": 3,
+      "event_seq": 19,
+      "events": [
+        {
+          "district": "E",
+          "item": "pugio",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "explore_certain",
+      "round": 5,
+      "turn_id": 19
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 20,
+      "events": [
+        {
+          "district": "A",
+          "item": "gladius",
+          "type": "district_revealed"
+        },
+        {
+          "district": "A",
+          "item": "gladius",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "explore_unknown",
+      "round": 5,
+      "turn_id": 20
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0034",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 21,
+      "events": [
+        {
+          "district": "D",
+          "item": "galea",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 6,
+      "turn_id": 21
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0011",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 22,
+      "events": [
+        {
+          "district": "D",
+          "item": "galea",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "explore_certain",
+      "round": 6,
+      "turn_id": 22
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0005",
+      "dice_used": [
+        2
+      ],
+      "equipment_count_after": 5,
+      "event_seq": 23,
+      "events": [
+        {
+          "player": "P2",
+          "roll": 2,
+          "success": false,
+          "type": "guard_post"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        0,
+        1
+      ],
+      "reason": "guard_glory",
+      "round": 6,
+      "turn_id": 23
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0030",
+      "dice_used": [],
+      "equipment_count_after": 4,
+      "event_seq": 24,
+      "events": [
+        {
+          "district": "C",
+          "item": "lorica_segmentata",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        3,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 6,
+      "turn_id": 24
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0029",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 25,
+      "events": [
+        {
+          "district": "A",
+          "item": "gladius",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "explore_certain",
+      "round": 7,
+      "turn_id": 25
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          3
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0013",
+      "dice_used": [
+        5
+      ],
+      "equipment_count_after": 5,
+      "event_seq": 26,
+      "events": [
+        {
+          "player": "P2",
+          "roll": 5,
+          "success": true,
+          "type": "guard_post"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P2",
+          "type": "glory_earned_guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        0,
+        3
+      ],
+      "reason": "guard_glory",
+      "round": 7,
+      "turn_id": 26
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            3,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0008",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 27,
+      "events": [
+        {
+          "district": "A",
+          "item": "gladius",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 2,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 7,
+      "turn_id": 27
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0028",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 28,
+      "events": [
+        {
+          "district": "A",
+          "item": "gladius",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 7,
+      "turn_id": 28
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0034",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 29,
+      "events": [
+        {
+          "district": "F",
+          "item": "pilum",
+          "type": "district_revealed"
+        },
+        {
+          "district": "F",
+          "item": "pilum",
+          "player": "P2",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "explore_unknown",
+      "round": 8,
+      "turn_id": 29
+    },
+    {
+      "action": {
+        "destination": [
+          0,
+          1
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0003",
+      "dice_used": [
+        5,
+        5
+      ],
+      "equipment_count_after": 5,
+      "event_seq": 30,
+      "events": [
+        {
+          "attacker": "P3",
+          "attacker_bonus": 1,
+          "attacker_roll": 5,
+          "attacker_score": 6,
+          "defender": "P0",
+          "defender_bonus": 1,
+          "defender_roll": 5,
+          "defender_score": 6,
+          "type": "duel",
+          "winner": "P3"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P3",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        0,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 8,
+      "turn_id": 30
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0028",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 31,
+      "events": [
+        {
+          "district": "F",
+          "item": "pilum",
+          "player": "P1",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 8,
+      "turn_id": 31
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0028",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 32,
+      "events": [
+        {
+          "district": "F",
+          "item": "pilum",
+          "player": "P0",
+          "source": "explored",
+          "type": "equipment_collected"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "explore_certain",
+      "round": 8,
+      "turn_id": 32
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0003",
+      "dice_used": [],
+      "equipment_count_after": 5,
+      "event_seq": 33,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 9,
+      "turn_id": 33
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "claim_checkpoint",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 34,
+      "events": [
+        {
+          "player": "P1",
+          "round": 9,
+          "type": "first_challenger"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P1",
+          "type": "glory_earned_first_challenger"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 9,
+      "turn_id": 34
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          3
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0037",
+      "dice_used": [
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 35,
+      "events": [
+        {
+          "player": "P0",
+          "roll": 6,
+          "success": true,
+          "type": "guard_post"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P0",
+          "type": "glory_earned_guard_post"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        4,
+        3
+      ],
+      "reason": "guard_glory",
+      "round": 9,
+      "turn_id": 35
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          3
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0024",
+      "dice_used": [
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 36,
+      "events": [
+        {
+          "player": "P2",
+          "roll": 3,
+          "success": false,
+          "type": "guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 3,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        4,
+        3
+      ],
+      "reason": "guard_glory",
+      "round": 9,
+      "turn_id": 36
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          3
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0009",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 37,
+      "events": [],
+      "glory_after": 2,
+      "movement_die": 1,
+      "phase": 1,
+      "player": "P1",
+      "position_after": [
+        2,
+        3
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 10,
+      "turn_id": 37
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0040",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 38,
+      "events": [],
+      "glory_after": 2,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P0",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "advance",
+      "round": 10,
+      "turn_id": 38
+    },
+    {
+      "action": {
+        "destination": [
+          4,
+          1
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0037",
+      "dice_used": [
+        2
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 39,
+      "events": [
+        {
+          "player": "P2",
+          "roll": 2,
+          "success": false,
+          "type": "guard_post"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 1,
+      "player": "P2",
+      "position_after": [
+        4,
+        1
+      ],
+      "reason": "guard_glory",
+      "round": 10,
+      "turn_id": 39
+    },
+    {
+      "action": {
+        "destination": [
+          3,
+          3
+        ],
+        "kind": "explore",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ]
+      },
+      "action_id": "a0033",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 40,
+      "events": [
+        {
+          "district": "F",
+          "item": "pilum",
+          "player": "P3",
+          "source": "explored",
+          "type": "equipment_collected"
+        },
+        {
+          "auto_granted": {
+            "P0": [],
+            "P1": [],
+            "P2": [],
+            "P3": []
+          },
+          "from_phase": 1,
+          "phase1_timeout": false,
+          "to_phase": 2,
+          "type": "phase_transition"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 1,
+      "player": "P3",
+      "position_after": [
+        3,
+        3
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 10,
+      "turn_id": 40
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0003",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 41,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P3",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P3",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 4,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 1,
+      "turn_id": 41
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            4,
+            2
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0003",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 42,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P1",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P1",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 5,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 1,
+      "turn_id": 42
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0003",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 43,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P0",
+          "purpose": "peristyle_seal",
+          "type": "glory_spent"
+        },
+        {
+          "glory_spent": 1,
+          "order": 1,
+          "player": "P0",
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "seal_buy_at_cap",
+      "round": 1,
+      "turn_id": 43
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        4
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 44,
+      "events": [
+        {
+          "player": "P2",
+          "roll": 4,
+          "site": "peristyle",
+          "type": "seal_failed"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "seal_roll",
+      "round": 1,
+      "turn_id": 44
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 45,
+      "events": [
+        {
+          "order": 2,
+          "player": "P1",
+          "roll": 3,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 2,
+      "turn_id": 45
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 46,
+      "events": [
+        {
+          "order": 2,
+          "player": "P0",
+          "roll": 6,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "seal_roll",
+      "round": 2,
+      "turn_id": 46
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          2
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            2
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 47,
+      "events": [
+        {
+          "order": 1,
+          "player": "P2",
+          "roll": 6,
+          "site": "peristyle",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        2,
+        2
+      ],
+      "reason": "seal_roll",
+      "round": 2,
+      "turn_id": 47
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0041",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 48,
+      "events": [],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 2,
+      "turn_id": 48
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        4,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 49,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P0",
+          "purpose": "emperor_attack",
+          "type": "glory_spent"
+        },
+        {
+          "emperor_roll": 3,
+          "emperor_score": 5,
+          "hits": 1,
+          "player": "P0",
+          "player_roll": 4,
+          "player_score": 8,
+          "spend_glory": true,
+          "type": "emperor_hit"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 6,
+      "phase": 2,
+      "player": "P0",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "emperor_attack_spend",
+      "round": 3,
+      "turn_id": 49
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          1
+        ],
+        "kind": "attempt_seal",
+        "path": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        6
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 50,
+      "events": [
+        {
+          "order": 2,
+          "player": "P2",
+          "roll": 6,
+          "site": "cellars",
+          "type": "seal_acquired"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 3,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        1,
+        1
+      ],
+      "reason": "seal_roll",
+      "round": 3,
+      "turn_id": 50
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0013",
+      "dice_used": [
+        5,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 51,
+      "events": [
+        {
+          "attacker": "P3",
+          "attacker_bonus": 2,
+          "attacker_roll": 5,
+          "attacker_score": 7,
+          "defender": "P0",
+          "defender_bonus": 2,
+          "defender_roll": 3,
+          "defender_score": 5,
+          "type": "duel",
+          "winner": "P3"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P3",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 1,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 3,
+      "turn_id": 51
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": true
+      },
+      "action_id": "a0002",
+      "dice_used": [
+        5,
+        2
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 52,
+      "events": [
+        {
+          "amount": 1,
+          "player": "P1",
+          "purpose": "emperor_attack",
+          "type": "glory_spent"
+        },
+        {
+          "emperor_roll": 2,
+          "emperor_score": 4,
+          "hits": 1,
+          "player": "P1",
+          "player_roll": 5,
+          "player_score": 9,
+          "spend_glory": true,
+          "type": "emperor_hit"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 3,
+      "turn_id": 52
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          3
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ]
+        ],
+        "target": "P0"
+      },
+      "action_id": "a0004",
+      "dice_used": [
+        4,
+        1
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 53,
+      "events": [
+        {
+          "attacker": "P2",
+          "attacker_bonus": 2,
+          "attacker_roll": 4,
+          "attacker_score": 6,
+          "defender": "P0",
+          "defender_bonus": 2,
+          "defender_roll": 1,
+          "defender_score": 3,
+          "type": "duel",
+          "winner": "P2"
+        },
+        {
+          "glory_awarded": 1,
+          "player": "P2",
+          "type": "glory_earned_duel"
+        }
+      ],
+      "glory_after": 2,
+      "movement_die": 2,
+      "phase": 2,
+      "player": "P2",
+      "position_after": [
+        1,
+        3
+      ],
+      "reason": "duel_edge",
+      "round": 4,
+      "turn_id": 53
+    },
+    {
+      "action": {
+        "destination": [
+          1,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "action_id": "a0010",
+      "dice_used": [],
+      "equipment_count_after": 6,
+      "event_seq": 54,
+      "events": [],
+      "glory_after": 1,
+      "movement_die": 1,
+      "phase": 2,
+      "player": "P3",
+      "position_after": [
+        1,
+        2
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 4,
+      "turn_id": 54
+    },
+    {
+      "action": {
+        "destination": [
+          2,
+          4
+        ],
+        "kind": "attack_emperor",
+        "path": [
+          [
+            2,
+            4
+          ]
+        ],
+        "spend_glory": false
+      },
+      "action_id": "a0001",
+      "dice_used": [
+        6,
+        3
+      ],
+      "equipment_count_after": 6,
+      "event_seq": 55,
+      "events": [
+        {
+          "emperor_roll": 3,
+          "emperor_score": 5,
+          "hits": 2,
+          "player": "P1",
+          "player_roll": 6,
+          "player_score": 8,
+          "spend_glory": false,
+          "type": "emperor_hit"
+        },
+        {
+          "player": "P1",
+          "type": "game_won"
+        }
+      ],
+      "glory_after": 0,
+      "movement_die": 5,
+      "phase": 2,
+      "player": "P1",
+      "position_after": [
+        2,
+        4
+      ],
+      "reason": "openai_decisions_choice",
+      "round": 4,
+      "turn_id": 55
+    }
+  ],
+  "first_challenger": "P1",
+  "game_id": "tb210",
+  "phase": 2,
+  "phase1_timeout": false,
+  "phase2_timeout": false,
+  "players": {
+    "P0": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        2,
+        0
+      ],
+      "glory": 0,
+      "hits": 1,
+      "pos": [
+        2,
+        4
+      ],
+      "seals": [
+        "peristyle",
+        "cellars"
+      ],
+      "skip_next_turn": false,
+      "turns": 13
+    },
+    "P1": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        4,
+        2
+      ],
+      "glory": 0,
+      "hits": 2,
+      "pos": [
+        2,
+        4
+      ],
+      "seals": [
+        "peristyle",
+        "cellars"
+      ],
+      "skip_next_turn": false,
+      "turns": 14
+    },
+    "P2": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        2,
+        4
+      ],
+      "glory": 2,
+      "hits": 0,
+      "pos": [
+        1,
+        3
+      ],
+      "seals": [
+        "peristyle",
+        "cellars"
+      ],
+      "skip_next_turn": false,
+      "turns": 14
+    },
+    "P3": {
+      "equipment": [
+        "galea",
+        "gladius",
+        "lorica_segmentata",
+        "pilum",
+        "pugio",
+        "scutum"
+      ],
+      "gate": [
+        0,
+        2
+      ],
+      "glory": 1,
+      "hits": 0,
+      "pos": [
+        1,
+        2
+      ],
+      "seals": [
+        "peristyle"
+      ],
+      "skip_next_turn": false,
+      "turns": 14
+    }
+  },
+  "policies": {
+    "P0": "tactical",
+    "P1": "decisions",
+    "P2": "tactical",
+    "P3": "decisions"
+  },
+  "revealed": {
+    "A": "gladius",
+    "B": "scutum",
+    "C": "lorica_segmentata",
+    "D": "galea",
+    "E": "pugio",
+    "F": "pilum"
+  },
+  "rng": {
+    "battle": [
+      3,
+      [
+        924649780,
+        2572700974,
+        2245243518,
+        880634725,
+        2945294619,
+        4199797683,
+        2220814712,
+        2212354525,
+        1404490484,
+        3990906339,
+        364715990,
+        991540882,
+        729161736,
+        3035773833,
+        4068564046,
+        4009423594,
+        3012131908,
+        3549808994,
+        3488592314,
+        3561876035,
+        2380181869,
+        4174904994,
+        4073277169,
+        2702927475,
+        3779251854,
+        2021678021,
+        853784653,
+        3539553978,
+        506478781,
+        61156635,
+        645510341,
+        3501417434,
+        3179011495,
+        2593214683,
+        483187193,
+        3768606457,
+        3976823242,
+        949653343,
+        1225413257,
+        396430873,
+        16301104,
+        3994386108,
+        2512514466,
+        1452604300,
+        3196447970,
+        3756709152,
+        527353139,
+        980131008,
+        1378426996,
+        116054603,
+        970158851,
+        1030143346,
+        2334975044,
+        4035785812,
+        3277468008,
+        1496195168,
+        985425957,
+        337127981,
+        1048407080,
+        1882635500,
+        2345044313,
+        258464501,
+        2150881164,
+        73215257,
+        4168095172,
+        2372154197,
+        2599949110,
+        165470512,
+        98201251,
+        3678688131,
+        1252092383,
+        2271936907,
+        1235672904,
+        3495507210,
+        3365926332,
+        3406198227,
+        1718638412,
+        1026128189,
+        3127112589,
+        4252475694,
+        517162261,
+        3701745793,
+        899536339,
+        2140878814,
+        3782655826,
+        1631355387,
+        2789061017,
+        2624270739,
+        1607712628,
+        511580052,
+        4238104208,
+        2765716541,
+        3197222754,
+        4159851462,
+        248710468,
+        3088651185,
+        2321371679,
+        3133967008,
+        2282105637,
+        3463540979,
+        2598169674,
+        651905310,
+        383971589,
+        4263321868,
+        2694521635,
+        1547486490,
+        2783227503,
+        3937889915,
+        1205247561,
+        3717213500,
+        3857896487,
+        2694169592,
+        1889794746,
+        1107960489,
+        2889285224,
+        1897386709,
+        2122259740,
+        3247376545,
+        4251592748,
+        3852132912,
+        2238387910,
+        1984316121,
+        3134204301,
+        4070562973,
+        4084725858,
+        1267125839,
+        1806898146,
+        2371655308,
+        3946303014,
+        16929333,
+        2822609014,
+        2749305777,
+        3402139645,
+        2991357450,
+        2779322365,
+        2273671944,
+        4211004487,
+        1028170498,
+        3198329233,
+        2253832536,
+        2359107758,
+        823882028,
+        1613542719,
+        4263339183,
+        1946042869,
+        3029392322,
+        2752376065,
+        3011520404,
+        3636590500,
+        505684504,
+        3638916277,
+        1078541728,
+        2974400469,
+        2534011107,
+        3290002922,
+        611932693,
+        2622291155,
+        3123261817,
+        693901972,
+        2381648156,
+        4164032326,
+        2771230615,
+        3654126015,
+        4025572260,
+        3902051194,
+        990196348,
+        343833919,
+        1726536533,
+        1714189786,
+        1485368235,
+        67126449,
+        3810400881,
+        2791182505,
+        2518845855,
+        507510711,
+        3332722853,
+        2364465987,
+        2069198438,
+        311001577,
+        4165566019,
+        1617543978,
+        326783733,
+        3426057523,
+        3167242723,
+        2407643193,
+        4073762425,
+        3871773616,
+        2819273689,
+        3328791989,
+        639600862,
+        991233081,
+        3126122702,
+        3904579058,
+        3745516519,
+        2308251569,
+        4007974346,
+        22300669,
+        4142576250,
+        394833110,
+        503914640,
+        3103589331,
+        34256211,
+        3242070889,
+        1580507378,
+        2913517422,
+        272739302,
+        3282924638,
+        3443751031,
+        2289945999,
+        3029967578,
+        443754073,
+        1457280151,
+        3329951607,
+        3922452722,
+        94024680,
+        2846786891,
+        584083298,
+        4159327373,
+        1357533792,
+        1870817546,
+        839233691,
+        1243274685,
+        1837400304,
+        3730607907,
+        3873911697,
+        4226916428,
+        2321346137,
+        2096607563,
+        2522153753,
+        1129290975,
+        2417578707,
+        2223987228,
+        3333550105,
+        1578680515,
+        764984891,
+        1874894647,
+        1887337858,
+        2070539180,
+        2383532847,
+        2215265604,
+        560784592,
+        1788860117,
+        895674266,
+        2208009913,
+        3415805933,
+        1576288308,
+        1035857758,
+        819848107,
+        871435163,
+        2292688217,
+        646092300,
+        72347097,
+        1291310788,
+        1832764864,
+        1986603758,
+        81464710,
+        3535590096,
+        2683610047,
+        764666126,
+        4128843086,
+        2997475655,
+        1087747745,
+        1121914772,
+        242555767,
+        1201192464,
+        1093936990,
+        3829052117,
+        3194914258,
+        1113689809,
+        1249639551,
+        1809641030,
+        3707896096,
+        1832088836,
+        1118588440,
+        2417180360,
+        825222499,
+        1602097636,
+        4101568394,
+        2392802278,
+        1418359829,
+        1485908576,
+        1821149968,
+        74913018,
+        1058213990,
+        2413904957,
+        2789710378,
+        3169138950,
+        2249045413,
+        2234591217,
+        3675669453,
+        4051286924,
+        927158338,
+        1758399034,
+        2709223379,
+        1700160534,
+        3500416601,
+        1292649763,
+        2507473977,
+        1651600666,
+        241017348,
+        2772243921,
+        1292364235,
+        3295034590,
+        1572318559,
+        990827762,
+        4007204487,
+        3680077165,
+        178733943,
+        329977598,
+        1730872638,
+        2880146032,
+        3835749456,
+        1646003740,
+        1607328115,
+        1663278010,
+        3459380972,
+        1730227376,
+        3633093672,
+        2581456298,
+        2934201507,
+        2297328078,
+        1119672215,
+        1138226175,
+        2636771547,
+        3496075610,
+        3865215831,
+        1069064039,
+        4118883376,
+        71637595,
+        974132180,
+        4050641735,
+        2714820591,
+        2173087415,
+        1723561669,
+        2432440486,
+        1433114131,
+        4282110624,
+        715023071,
+        2689150245,
+        1075547378,
+        4232084953,
+        3609556923,
+        3639455739,
+        2132200281,
+        951733722,
+        243333334,
+        624486103,
+        2948283754,
+        1231229190,
+        3350734420,
+        3739487414,
+        903279305,
+        2854074397,
+        4045400708,
+        522095080,
+        2903961207,
+        937398812,
+        3001416743,
+        2913184147,
+        700996637,
+        2536120911,
+        4100323775,
+        2553404371,
+        3597163418,
+        1555945577,
+        835090949,
+        1519396085,
+        1026430086,
+        601727689,
+        1459177262,
+        1238543667,
+        3694220449,
+        433675659,
+        2319132402,
+        136972339,
+        507421001,
+        3196248785,
+        772095478,
+        195005009,
+        11482492,
+        606096421,
+        3643348571,
+        1522741960,
+        1248833816,
+        109061526,
+        1274588680,
+        480758822,
+        3350607342,
+        337203133,
+        2215579486,
+        3788205066,
+        513894863,
+        2795923619,
+        2013880494,
+        2151520261,
+        953076569,
+        2777124716,
+        4169132740,
+        463529647,
+        2468065184,
+        3906881330,
+        2348660273,
+        3170181554,
+        2986247628,
+        995382311,
+        1633188292,
+        431295672,
+        51916419,
+        3275926057,
+        3258754264,
+        3959720287,
+        3797131356,
+        3587615238,
+        2968370308,
+        324428149,
+        539623208,
+        1660349878,
+        2289585610,
+        1237240125,
+        1537139267,
+        1515768915,
+        3509226611,
+        4243875358,
+        3620148298,
+        3348195981,
+        420681997,
+        2854468486,
+        2678950993,
+        2369208092,
+        2974227585,
+        245823378,
+        3889852374,
+        3291032240,
+        1688830157,
+        3785708874,
+        351440177,
+        1384651164,
+        2464069534,
+        309540085,
+        886002248,
+        2467440090,
+        2451082540,
+        1650895014,
+        1462877418,
+        2165667022,
+        1922240893,
+        2149334920,
+        2787269433,
+        596978752,
+        3859324800,
+        3788821735,
+        1659147176,
+        2117772339,
+        2148349844,
+        3545702228,
+        3806761233,
+        1082636258,
+        1872207519,
+        3134525785,
+        871084143,
+        3657267126,
+        2617167585,
+        755124962,
+        1850961017,
+        1661403286,
+        2715965894,
+        1255610857,
+        1512761896,
+        3712591723,
+        1576329667,
+        900562895,
+        1632473880,
+        2534373884,
+        437616637,
+        944955101,
+        1013106386,
+        658324042,
+        1267638440,
+        531187820,
+        3013763082,
+        925809405,
+        710053277,
+        1659361551,
+        172908287,
+        2305712249,
+        1343533155,
+        2696602414,
+        3307603609,
+        1848177498,
+        1445354635,
+        2230105710,
+        3058830192,
+        1549303476,
+        873045252,
+        2487954939,
+        2442786942,
+        395614920,
+        2100409376,
+        1769667858,
+        2325975519,
+        251194300,
+        4157522161,
+        2287775204,
+        1825966667,
+        131703508,
+        1596405347,
+        292350345,
+        323341952,
+        424474559,
+        953725568,
+        4176045778,
+        1408720386,
+        1911752271,
+        1207811788,
+        2965516156,
+        2191516890,
+        1235763410,
+        1325680254,
+        113428735,
+        492531343,
+        424017343,
+        3371509941,
+        3369091096,
+        3308864397,
+        3115201781,
+        2935777184,
+        2429405714,
+        1286125826,
+        3421526473,
+        1585586675,
+        4026000871,
+        928330173,
+        2454221421,
+        1108528821,
+        2564912059,
+        4221854840,
+        2243983925,
+        3464361945,
+        1135836710,
+        1737195644,
+        2023524877,
+        1935472603,
+        286048313,
+        680855693,
+        865326917,
+        1607182920,
+        590167663,
+        2014005244,
+        421448856,
+        1205793761,
+        4000197094,
+        2728170303,
+        1205202729,
+        3572577688,
+        1412614648,
+        3552356368,
+        2128125949,
+        4206722337,
+        3247077036,
+        2478131900,
+        1418384709,
+        2071537299,
+        3366706203,
+        184390154,
+        949823905,
+        252154949,
+        3333630079,
+        1636402707,
+        3127456011,
+        1643189122,
+        1552528034,
+        2372146681,
+        147961667,
+        2822242674,
+        1267265500,
+        847327736,
+        3911195596,
+        3961742435,
+        2041773343,
+        506221695,
+        4275864435,
+        1895062640,
+        3213783394,
+        1862182241,
+        577009433,
+        961954960,
+        1672608195,
+        4221436019,
+        4007151206,
+        3621923260,
+        2946577795,
+        171706967,
+        1935065703,
+        266025260,
+        1932204805,
+        3690814411,
+        288275177,
+        1176452420,
+        2844866111,
+        4039050290,
+        1202927247,
+        1434203187,
+        3637769460,
+        2629481327,
+        2412597741,
+        3161119397,
+        753777116,
+        2722861870,
+        4155625345,
+        3207443703,
+        3506987728,
+        188048280,
+        1769389395,
+        1898598768,
+        3426859345,
+        1051709259,
+        3208096195,
+        1133178328,
+        2244849856,
+        1252136747,
+        2106008389,
+        1653896631,
+        766006932,
+        4262005750,
+        32
+      ],
+      null
+    ],
+    "movement": [
+      3,
+      [
+        2205928571,
+        3976687637,
+        156576782,
+        3142365543,
+        12391384,
+        2459248830,
+        824008926,
+        1004245395,
+        41398677,
+        1184766901,
+        4114119249,
+        3785915270,
+        190985683,
+        1209722251,
+        466690091,
+        2570425523,
+        1130815358,
+        2844103352,
+        3761502933,
+        2083196857,
+        3840089680,
+        329386892,
+        2268958722,
+        3601199682,
+        118408668,
+        4062683887,
+        3881047448,
+        3188170394,
+        454015603,
+        3085654566,
+        1990687518,
+        2097957122,
+        3906405442,
+        864613670,
+        2972337108,
+        523464534,
+        874485320,
+        1765875306,
+        3708695081,
+        3110216770,
+        2498921075,
+        3876153289,
+        1291944051,
+        1457124334,
+        4157895460,
+        2776090750,
+        2138388048,
+        3029486357,
+        1080976436,
+        257623667,
+        2720335827,
+        1068091153,
+        3583316013,
+        3739822493,
+        2777104540,
+        2687207436,
+        2692545907,
+        913286802,
+        2738046501,
+        4060309459,
+        1195116764,
+        3327095151,
+        2303819202,
+        3421432147,
+        4198582703,
+        1388050399,
+        728300216,
+        528274221,
+        4282796327,
+        96838524,
+        2322611631,
+        4164266107,
+        2023325087,
+        635753639,
+        1515150250,
+        169233428,
+        2598220213,
+        3541629080,
+        2717933639,
+        2408247457,
+        3494814163,
+        589679239,
+        2952265270,
+        3219325214,
+        1049679754,
+        3191933178,
+        2566365979,
+        1163438860,
+        1236652785,
+        14145720,
+        2796697193,
+        3163000652,
+        3343651849,
+        1941882147,
+        2533355969,
+        151085860,
+        1470403202,
+        1417156484,
+        1521838740,
+        1080222528,
+        3852669545,
+        3116669181,
+        2605751951,
+        2308487595,
+        2110115395,
+        198509115,
+        2755794859,
+        2329823415,
+        2313165762,
+        2830578769,
+        3029711133,
+        3692961873,
+        2610287315,
+        807983291,
+        626280771,
+        3137092133,
+        2813070753,
+        3220095755,
+        1873467790,
+        1341955502,
+        710487012,
+        2372655290,
+        50721385,
+        3673864680,
+        3520221690,
+        3120453866,
+        4123663565,
+        2819589973,
+        2683372206,
+        3736625228,
+        263523976,
+        352838320,
+        1588899982,
+        888328558,
+        2309053367,
+        3987117512,
+        1888963596,
+        2387229852,
+        4053293875,
+        4120775718,
+        860982830,
+        972349269,
+        1356676740,
+        2788766618,
+        4141713588,
+        2090056230,
+        2192744381,
+        3219321560,
+        92277938,
+        991883227,
+        3660521894,
+        2889374783,
+        2888765009,
+        1874920065,
+        2039473559,
+        4018694700,
+        2444885634,
+        1193459647,
+        2000287383,
+        2129811121,
+        3563422535,
+        2330582733,
+        3541730667,
+        4169880068,
+        3568895964,
+        2508056947,
+        662095900,
+        323246582,
+        357546947,
+        3458868726,
+        1492650524,
+        2261156905,
+        1329357324,
+        2472210848,
+        597945378,
+        2924910949,
+        113059365,
+        3410049509,
+        1791655078,
+        3792823933,
+        1561759189,
+        1635123250,
+        233210344,
+        3008912217,
+        3406907862,
+        2497074538,
+        3448560478,
+        3560595485,
+        2179251957,
+        90430894,
+        4067634392,
+        378617187,
+        4197488086,
+        2822686783,
+        1154327816,
+        4082574663,
+        2888291408,
+        3926217689,
+        3974541515,
+        2392123826,
+        3731965601,
+        1789567332,
+        3639054267,
+        861304232,
+        2349343221,
+        1513641845,
+        2287345931,
+        3897484277,
+        2069169360,
+        3118646134,
+        1648644963,
+        2653290376,
+        2281964098,
+        3358244484,
+        2218715435,
+        3302459532,
+        119016993,
+        3196348459,
+        4247173704,
+        2451396328,
+        1382746226,
+        448854415,
+        3621826995,
+        3733183408,
+        1967343745,
+        1785797187,
+        1856768431,
+        4209310719,
+        3369899969,
+        2788343582,
+        2688880554,
+        3778775286,
+        2741451585,
+        4070641917,
+        310935914,
+        3278251933,
+        2172948438,
+        509393387,
+        1519924657,
+        1075658526,
+        624664914,
+        3761803186,
+        2342802525,
+        1458771123,
+        2801297790,
+        1603534834,
+        4199971426,
+        1869293480,
+        505417413,
+        461657123,
+        3676764417,
+        1690124428,
+        4208135056,
+        3652124732,
+        66126851,
+        975468189,
+        1345272839,
+        3532594642,
+        1453134737,
+        4255725779,
+        2890578781,
+        125756762,
+        2259643836,
+        3763630987,
+        3767731456,
+        462675125,
+        3331687837,
+        1225954131,
+        2151188448,
+        91636147,
+        2094166069,
+        352940244,
+        410324449,
+        2670741709,
+        3850776673,
+        4282591230,
+        3508838515,
+        3156471956,
+        1025022406,
+        4132311471,
+        962769257,
+        1738511929,
+        62249049,
+        3016648022,
+        3450353612,
+        1575278557,
+        2247365251,
+        2768581346,
+        1346787626,
+        2460404923,
+        630872552,
+        1195197506,
+        2095506699,
+        405665820,
+        1553958807,
+        1322156243,
+        1486951538,
+        3309579818,
+        1980604211,
+        3813976176,
+        3327884793,
+        3960843693,
+        1811260105,
+        1886525286,
+        1436479045,
+        2770824117,
+        1701440062,
+        71317176,
+        2700500251,
+        3424948234,
+        544242648,
+        4148103620,
+        2020904008,
+        661642822,
+        783061969,
+        1623694698,
+        3302599674,
+        2231929140,
+        4283239242,
+        421298963,
+        4199708423,
+        955919560,
+        862082578,
+        2957857174,
+        3126392941,
+        502457487,
+        967571256,
+        1767955963,
+        1688087941,
+        3181197463,
+        1561884528,
+        4061993878,
+        526503193,
+        716669835,
+        2139821634,
+        2336313146,
+        2276676286,
+        1597266634,
+        3843956310,
+        3812225026,
+        1971104193,
+        2950283942,
+        2045835982,
+        3674563323,
+        873547067,
+        4224364919,
+        2151542101,
+        1317584858,
+        3844717484,
+        1156962963,
+        2069826440,
+        192341324,
+        3770641638,
+        695482889,
+        4251485358,
+        1984357024,
+        1622704409,
+        4151160230,
+        89611548,
+        3993905396,
+        2112710673,
+        472656260,
+        1689022369,
+        3457577671,
+        4112836120,
+        902384858,
+        2387350207,
+        3302970271,
+        1734141555,
+        3395004885,
+        116532076,
+        927972095,
+        4233431525,
+        1563280876,
+        1972105777,
+        3408325031,
+        208406781,
+        333090217,
+        1239835762,
+        350354352,
+        4121522267,
+        4120316780,
+        2580319322,
+        1430335540,
+        523789395,
+        1079919060,
+        2052781364,
+        3669303560,
+        3942690114,
+        3008074612,
+        1551712131,
+        3921850819,
+        3377469086,
+        1141486920,
+        3833720845,
+        736327781,
+        3007936589,
+        2202677899,
+        1019642645,
+        2380219820,
+        3603579253,
+        1397774800,
+        3892340010,
+        1155401601,
+        624603262,
+        2351201986,
+        3480256337,
+        799695165,
+        36547355,
+        1567346497,
+        3609048493,
+        2369839547,
+        3064795612,
+        2955609051,
+        561136502,
+        3117197207,
+        4129966524,
+        2330575791,
+        3152712381,
+        4020147922,
+        305850302,
+        1509899416,
+        1220499980,
+        3713877136,
+        722204299,
+        4189180416,
+        601261220,
+        4077136711,
+        21615743,
+        1698158903,
+        1282979528,
+        1132417686,
+        218354172,
+        2060949924,
+        260346035,
+        3004915937,
+        3218036486,
+        1916603714,
+        3163808898,
+        793570632,
+        1263465922,
+        1879786908,
+        868986328,
+        1070652100,
+        1907470072,
+        1617241551,
+        1085193604,
+        1935996372,
+        1364361573,
+        2961917042,
+        1723769506,
+        2499470710,
+        1307778936,
+        3529629042,
+        4234222677,
+        1139097512,
+        786498975,
+        2108047631,
+        2584259318,
+        350648587,
+        226895286,
+        3858346375,
+        684382053,
+        264718454,
+        2806030878,
+        3856463956,
+        2323083796,
+        259583795,
+        433315692,
+        1405458070,
+        3581191589,
+        2943672786,
+        3306224773,
+        521676458,
+        1388149409,
+        1318672633,
+        590507878,
+        2612957854,
+        1473918694,
+        3522881474,
+        1241919185,
+        115136242,
+        296403672,
+        3940186371,
+        4159262468,
+        445100772,
+        4053542068,
+        1210688864,
+        4219113216,
+        2843754672,
+        928909194,
+        185294712,
+        1566653525,
+        1715678893,
+        1658070288,
+        695544692,
+        1012633272,
+        4070366780,
+        2714693376,
+        2894479510,
+        1855806261,
+        1323794096,
+        1333736066,
+        281635391,
+        2160097745,
+        3424040952,
+        1062771445,
+        2876733460,
+        3120740109,
+        364710318,
+        1135702578,
+        3254668202,
+        2460751575,
+        233534798,
+        4121120553,
+        2238830758,
+        447862127,
+        2311380169,
+        2002666825,
+        2294571918,
+        2222690349,
+        1136663640,
+        665068011,
+        1197592874,
+        1909700008,
+        841640632,
+        242411445,
+        3785630604,
+        240134590,
+        3696760289,
+        746205282,
+        49560964,
+        14159302,
+        2541985045,
+        260386967,
+        3100498852,
+        1683647724,
+        74277840,
+        2755949561,
+        2486902890,
+        1384321083,
+        106826505,
+        1016176820,
+        3015282422,
+        2579947118,
+        2043151051,
+        3331859718,
+        924229234,
+        1446067383,
+        587854246,
+        2593718975,
+        4165402690,
+        149594202,
+        1142105231,
+        1038412824,
+        658231205,
+        1495761901,
+        717957596,
+        2947145078,
+        3212179414,
+        3076945876,
+        4160484615,
+        4294092516,
+        1591129317,
+        1741478687,
+        3865499845,
+        1921191501,
+        999758851,
+        2480322357,
+        3163979975,
+        2643201132,
+        1963366893,
+        1641558464,
+        2083904795,
+        1186456217,
+        3084403741,
+        1293719274,
+        271791863,
+        2856877730,
+        1039240744,
+        1676038427,
+        4040915606,
+        1954145422,
+        713042444,
+        3944107829,
+        2030352777,
+        3406059446,
+        1415702064,
+        1805698242,
+        2802588171,
+        2849538551,
+        3571265276,
+        1368737863,
+        2608238645,
+        3731168312,
+        4124881830,
+        3320731162,
+        3253737332,
+        3925013205,
+        161146661,
+        2908749439,
+        607775583,
+        721947477,
+        2145544631,
+        3535224109,
+        217063722,
+        893978669,
+        3647467197,
+        4161788105,
+        430024419,
+        1654071407,
+        1981918296,
+        2620791296,
+        3489081137,
+        1506248907,
+        2337318673,
+        2050777221,
+        107350582,
+        3087520632,
+        741826685,
+        3781464712,
+        1090767254,
+        3976440208,
+        1811689135,
+        72
+      ],
+      null
+    ],
+    "placement": [
+      3,
+      [
+        4230265839,
+        1061407923,
+        483808817,
+        1810026414,
+        3644757119,
+        2760170409,
+        1745743048,
+        316319914,
+        129363581,
+        3708599975,
+        2558779625,
+        1579133809,
+        1991442005,
+        1943198927,
+        165484205,
+        3521671985,
+        2713705356,
+        1555761583,
+        861333562,
+        4158333495,
+        980001891,
+        694040497,
+        1105338800,
+        1653250580,
+        1654726617,
+        4011412504,
+        1968303686,
+        1512898906,
+        3534188626,
+        1786775304,
+        1470494903,
+        29616086,
+        2731466892,
+        685630864,
+        3577644942,
+        1112379861,
+        2901451733,
+        3620985016,
+        2165175121,
+        3720615176,
+        2305182205,
+        1184256616,
+        3043630431,
+        2678949420,
+        364517441,
+        3019693327,
+        1853333666,
+        2646594312,
+        3542498790,
+        1433476817,
+        3465606907,
+        1217521609,
+        1373491004,
+        2456349878,
+        2628419571,
+        3209410650,
+        243315750,
+        3834347268,
+        3918637795,
+        2379635955,
+        1870286449,
+        148226260,
+        1646334090,
+        1550072245,
+        2066131748,
+        3640769074,
+        2166880611,
+        3515872111,
+        4112406390,
+        3110708476,
+        3583684777,
+        3244774144,
+        4088598279,
+        778089805,
+        1904836058,
+        1502669391,
+        1304774683,
+        3780503999,
+        2590605580,
+        742339815,
+        2388864797,
+        432006852,
+        1888541292,
+        2023320951,
+        3143979531,
+        4191155046,
+        4285729645,
+        3896678367,
+        2832387056,
+        4158301440,
+        3098920986,
+        1526522635,
+        2601073988,
+        196505697,
+        3690250133,
+        3751186332,
+        2651471382,
+        4174593148,
+        1619617896,
+        2450278610,
+        2832285059,
+        1455547245,
+        3098614187,
+        2769424075,
+        3063615054,
+        1485560437,
+        1218672871,
+        4246791117,
+        3991593973,
+        3715210268,
+        1436628999,
+        1368205622,
+        3630530595,
+        21607657,
+        375433569,
+        701990110,
+        811541293,
+        3178501073,
+        3003256533,
+        3244448789,
+        2621293833,
+        2792736629,
+        2854091115,
+        91102899,
+        2678781045,
+        4265740937,
+        2599281257,
+        3481954616,
+        2723361259,
+        2775998989,
+        2012158580,
+        3225010730,
+        1814471177,
+        224594192,
+        1809474077,
+        3937742006,
+        4001732424,
+        1772893320,
+        3601968020,
+        2533093902,
+        3108498357,
+        62266482,
+        2375243179,
+        1908174702,
+        499568416,
+        649188269,
+        314316449,
+        854896301,
+        1925410564,
+        3207499769,
+        899431222,
+        3079448827,
+        3717283143,
+        2310550244,
+        243910555,
+        552536372,
+        1968604408,
+        1475170317,
+        1226480834,
+        1231506205,
+        2327266285,
+        872698149,
+        814369181,
+        3592900112,
+        3723499578,
+        511340123,
+        2990858539,
+        1236109854,
+        442090503,
+        4088455070,
+        3252991420,
+        3428740484,
+        2836834893,
+        133311282,
+        2270256018,
+        3898078246,
+        2875311393,
+        200605187,
+        1000962407,
+        613330994,
+        2566901487,
+        212042641,
+        2694121906,
+        2003207,
+        4185274916,
+        2257965093,
+        2148194582,
+        94869278,
+        891131110,
+        1978208812,
+        2302406581,
+        12367248,
+        3762240613,
+        134335785,
+        3682229579,
+        1557771548,
+        2039073397,
+        196844185,
+        986170077,
+        3448114271,
+        3411895096,
+        3287708885,
+        3254209307,
+        351801608,
+        2831750210,
+        3107693457,
+        1134520328,
+        1512701454,
+        3494151382,
+        3195804563,
+        2505313832,
+        2987114367,
+        332064694,
+        3247132,
+        3037207451,
+        1406138482,
+        3644602233,
+        1729742590,
+        459658624,
+        2424481787,
+        3546654126,
+        3575936896,
+        274352876,
+        2236535376,
+        3329017021,
+        2264026950,
+        211265177,
+        1652282916,
+        4261700671,
+        363336128,
+        2660524019,
+        1726743114,
+        858732484,
+        1966607911,
+        1120236621,
+        2368426816,
+        3801090352,
+        3430932856,
+        3337326493,
+        3625992865,
+        3772727785,
+        1952132308,
+        771984829,
+        2996121991,
+        3075090058,
+        1549093522,
+        3135469643,
+        934458333,
+        3397058126,
+        889578977,
+        1267610434,
+        4262922717,
+        3969996280,
+        3184725268,
+        3557426018,
+        3711287539,
+        2896468676,
+        4022768475,
+        364383560,
+        3263469327,
+        3251378299,
+        171059810,
+        2796657165,
+        608913850,
+        2122375767,
+        4098427243,
+        2159326728,
+        1829547623,
+        2566405443,
+        1451109409,
+        3557412524,
+        2200946930,
+        3419390733,
+        3185325438,
+        986263448,
+        2659999173,
+        2038923180,
+        3677786236,
+        2587963491,
+        3982679049,
+        3365141643,
+        3919878982,
+        3831863567,
+        3191048417,
+        1110722786,
+        1750004813,
+        2357846778,
+        2461036606,
+        2312329799,
+        2315859682,
+        4259021081,
+        781925014,
+        3578929216,
+        4018497089,
+        1576417786,
+        1709806263,
+        1631136590,
+        3310998317,
+        1017856990,
+        3042741026,
+        1201358232,
+        1114692270,
+        3135988205,
+        1722874915,
+        535479605,
+        384674255,
+        2146064102,
+        952105075,
+        566275182,
+        1883247591,
+        3919343925,
+        4167941969,
+        2363295656,
+        1594958792,
+        494917113,
+        1220006349,
+        135825516,
+        1337126407,
+        1379256460,
+        3409572019,
+        2306989612,
+        2457052170,
+        3987971745,
+        1026547312,
+        2688742864,
+        4211585580,
+        2531813017,
+        2496703602,
+        3179252289,
+        3841754527,
+        1334409525,
+        1553986755,
+        818298256,
+        330472188,
+        3680213656,
+        3554007076,
+        1793107887,
+        2296989017,
+        1619275629,
+        330192032,
+        4149620822,
+        1590928376,
+        897805858,
+        2317742481,
+        969025968,
+        3021428745,
+        1094477721,
+        3619024894,
+        1404646626,
+        2652325048,
+        2908618407,
+        143444993,
+        2833616156,
+        3435414048,
+        1536781647,
+        2101613028,
+        1843354604,
+        2847569577,
+        257526539,
+        2737504017,
+        3354568899,
+        1918978171,
+        3956933839,
+        2212363943,
+        194333435,
+        2828699913,
+        3743945609,
+        2034361549,
+        1502131415,
+        978893208,
+        4165757952,
+        2793483325,
+        1368641416,
+        3842204255,
+        1712271471,
+        1990476612,
+        1319462347,
+        230795339,
+        2045661600,
+        2145714581,
+        3855006347,
+        3554709332,
+        697212342,
+        3052167298,
+        104496729,
+        2174169324,
+        1216728994,
+        1727114435,
+        2076282155,
+        3878490022,
+        968092932,
+        295285332,
+        3773359758,
+        4088352364,
+        3553917755,
+        3893876763,
+        3872752160,
+        4227002965,
+        3715763646,
+        1993666768,
+        3068369528,
+        376191048,
+        3277775252,
+        745883093,
+        2225397765,
+        3842156996,
+        2680768876,
+        1329597929,
+        3669493033,
+        3680843568,
+        3366182711,
+        2449677882,
+        958361771,
+        285164557,
+        505804800,
+        392185536,
+        1810623595,
+        1347165357,
+        3169082439,
+        1359855659,
+        2888712209,
+        2774641983,
+        2438706139,
+        2553821550,
+        1754360209,
+        814238579,
+        372205238,
+        1682067874,
+        3003524638,
+        1654620,
+        3408501397,
+        3759525208,
+        3904041890,
+        1261748856,
+        1364614788,
+        3554296995,
+        3697337733,
+        4239554959,
+        2687067729,
+        1868758546,
+        1492812992,
+        101022025,
+        1845309495,
+        2562506141,
+        943246623,
+        153504505,
+        2370027954,
+        3270951950,
+        2699375648,
+        156082857,
+        3234013726,
+        894149012,
+        1746192743,
+        3321555651,
+        938021352,
+        1613492484,
+        2846560584,
+        3944597485,
+        1510472311,
+        2952703548,
+        3071335050,
+        2908836846,
+        1420225287,
+        3656708575,
+        1326549156,
+        4216827947,
+        3050048860,
+        3704804675,
+        1706389105,
+        3257646853,
+        3081072166,
+        367053994,
+        3283905332,
+        2215558324,
+        1484809756,
+        157047719,
+        2772440915,
+        3456493836,
+        487343912,
+        2562007841,
+        1482184079,
+        2715334715,
+        895231054,
+        2366417523,
+        665252666,
+        474058771,
+        182250014,
+        2237893069,
+        4080334660,
+        2324521354,
+        2389835761,
+        1311202092,
+        3618569731,
+        2656128786,
+        1515393954,
+        2673157687,
+        461151632,
+        3573715210,
+        1779636409,
+        1789255596,
+        4115881019,
+        2794945070,
+        1351248124,
+        1687216433,
+        824583202,
+        1477912733,
+        3957495874,
+        459341481,
+        1577344871,
+        373753051,
+        48023433,
+        888506083,
+        817807657,
+        928255915,
+        1726126863,
+        4109134152,
+        2920351324,
+        1593316516,
+        3842466844,
+        225294265,
+        2841374034,
+        144022094,
+        1974283429,
+        78682813,
+        3692519946,
+        3242779420,
+        639411045,
+        368002258,
+        939636958,
+        1720674906,
+        4108626073,
+        551200804,
+        1323578154,
+        4062334294,
+        3351729771,
+        2678566725,
+        602518575,
+        3970455923,
+        4046184992,
+        1509402872,
+        355817305,
+        3182614238,
+        78230890,
+        3120712269,
+        398623376,
+        950823574,
+        1277263060,
+        1112780906,
+        2836586890,
+        153117677,
+        3608667809,
+        2216494528,
+        4260368632,
+        1104654780,
+        801782858,
+        1027995759,
+        1394298093,
+        2741044795,
+        111091803,
+        1101595514,
+        1674642303,
+        2301542284,
+        3539075876,
+        894890533,
+        2965288327,
+        3285587623,
+        2733159363,
+        79335906,
+        2987274655,
+        3352605871,
+        662330168,
+        2587816736,
+        3685661083,
+        905562028,
+        2483598835,
+        949166386,
+        2137759891,
+        3637461413,
+        4034204030,
+        3428504140,
+        2629024459,
+        20616142,
+        2800714855,
+        362620178,
+        4284914097,
+        3669072879,
+        190385780,
+        3991581490,
+        1784975686,
+        3869666283,
+        3911910898,
+        813217950,
+        863045313,
+        2637828422,
+        2557239955,
+        3443062907,
+        4113104157,
+        930723379,
+        2766626983,
+        3116925423,
+        516639776,
+        4131807040,
+        2067500805,
+        3849460889,
+        667431830,
+        12846941,
+        868589838,
+        904365362,
+        621632755,
+        2393161989,
+        4018530798,
+        3174603568,
+        4133620959,
+        76996325,
+        1315393349,
+        1003362523,
+        4252881348,
+        2595362858,
+        1516683420,
+        1470929287,
+        238709612,
+        2583649078,
+        176275673,
+        30371592,
+        12
+      ],
+      null
+    ]
+  },
+  "rotate_first": true,
+  "round": 4,
+  "round_start": 3,
+  "rounds_level1": 10,
+  "rules": {
+    "board": {
+      "checkpoint": [
+        2,
+        2
+      ],
+      "districts": {
+        "A": [
+          1,
+          1
+        ],
+        "B": [
+          2,
+          1
+        ],
+        "C": [
+          3,
+          1
+        ],
+        "D": [
+          1,
+          3
+        ],
+        "E": [
+          2,
+          3
+        ],
+        "F": [
+          3,
+          3
+        ]
+      },
+      "gates": {
+        "P0": [
+          2,
+          0
+        ],
+        "P1": [
+          4,
+          2
+        ],
+        "P2": [
+          2,
+          4
+        ],
+        "P3": [
+          0,
+          2
+        ]
+      },
+      "glory_posts": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "height": 5,
+      "level2_sites": {
+        "cellars": [
+          1,
+          1
+        ],
+        "emperor": [
+          2,
+          4
+        ],
+        "guard_barracks": [
+          3,
+          1
+        ],
+        "peristyle": [
+          2,
+          2
+        ],
+        "retreat": [
+          2,
+          3
+        ]
+      },
+      "width": 5
+    },
+    "combat": {
+      "emperor_bonus": 2,
+      "emperor_hits_to_win": 2,
+      "equipment_bonus_tiers": [
+        {
+          "bonus": 0,
+          "max_count": 2,
+          "min_count": 0
+        },
+        {
+          "bonus": 1,
+          "max_count": 5,
+          "min_count": 3
+        },
+        {
+          "bonus": 2,
+          "max_count": 6,
+          "min_count": 6
+        }
+      ],
+      "glory_attack_bonus": 2,
+      "imperial_guard_bonus": 1,
+      "tie_goes_to_defender": false
+    },
+    "equipment": [
+      "pugio",
+      "pilum",
+      "galea",
+      "scutum",
+      "gladius",
+      "lorica_segmentata"
+    ],
+    "game_name": "Diocletian's Palace: Six Treasures",
+    "glory": {
+      "cap": 2,
+      "duel_win_reward": 1,
+      "first_challenger_reward": 1,
+      "guard_post_reward": 1,
+      "guard_post_success_min_roll": 4
+    },
+    "level1": {
+      "auto_equip_at_transition": true,
+      "grace_full_rounds": 1,
+      "max_rounds": 24
+    },
+    "level2": {
+      "cellars_success_min_roll": 3,
+      "max_rounds": 24,
+      "peristyle_glory_cost": 1,
+      "peristyle_success_min_roll": 5,
+      "required_distinct_seals": 2
+    },
+    "logging": {
+      "sample_games_per_batch": 5,
+      "save_anomalous_game_logs": true,
+      "save_full_batch_logs": false
+    },
+    "movement": {
+      "allow_early_stop": true,
+      "allow_stationary_special_actions": true,
+      "die_is_max_steps": true,
+      "die_sides": 6,
+      "duel_range": 2,
+      "pass_through_players": true
+    },
+    "players": 4,
+    "rules_version": "0.1",
+    "turns": {
+      "rotate_first_player_each_round": true
+    }
+  },
+  "rules_hash": "405f6d18dee5f068ef672358dcc75ec45b88fbb1b708b488a1e6681b9b6e7a0b",
+  "seed": 5310,
+  "status": "finished",
+  "trigger_round": 9,
+  "turn_id": 55,
+  "turn_index": 2,
+  "turn_order": [
+    "P3",
+    "P1",
+    "P0",
+    "P2"
+  ],
+  "winner": "P1"
+}
