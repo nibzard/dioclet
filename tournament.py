@@ -214,13 +214,23 @@ def run_tournament(config_path, root, live=False, resume=False,
                              "reason": "aggregate cost cap would be exceeded",
                              "projected": round(projected, 4)})
             break
+        # Strict enforcement: the game driver receives whichever is
+        # tighter — the per-game cap or the tournament's remaining
+        # aggregate budget — and checks it before every API call.
+        per_game_cap = budget_cfg.get("per_game_max_cost_usd", 0.0)
+        if agg_cap:
+            remaining = round(agg_cap - spent["estimated_cost_usd"], 6)
+            game_cost_cap = min(per_game_cap, remaining) \
+                if per_game_cap else remaining
+        else:
+            game_cost_cap = per_game_cap
         try:
             summary = ai_driver.run_ai_game(
                 engine.load_rules(config["rules"]),
                 game["seed"], gid, game["players"], gdir,
                 provider=provider, config=decisions_config,
                 max_decisions_calls=budget_cfg.get("per_game_max_calls", 0),
-                max_cost_usd=budget_cfg.get("per_game_max_cost_usd", 0.0),
+                max_cost_usd=game_cost_cap,
                 max_input_tokens=budget_cfg.get("per_game_max_tokens", 0),
                 wall_clock_seconds=budget_cfg.get(
                     "per_game_wall_clock_seconds", 0.0),

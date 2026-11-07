@@ -120,6 +120,48 @@ class TestRunner(unittest.TestCase):
         with self.assertRaises(SystemExit):
             tournament.run_tournament(path, self.root, live=False)
 
+    def test_remaining_aggregate_budget_passed_to_game(self):
+        """The driver must receive min(per-game cap, remaining cap)."""
+        import decisions_policy
+
+        config = json.loads(json.dumps(MOCK_CONFIG))
+        config["schedules"] = [
+            {"type": "mirror", "policy": "decisions", "games": 1,
+             "seed_base": 7301, "prefix": "bg"}]
+        config["budget"] = {"aggregate_max_cost_usd": 0.50,
+                            "per_game_max_calls": 120,
+                            "per_game_max_cost_usd": 1.0}
+        path = write_config(self.tmp, config)
+        # Pre-spend $0.30 via a recorded live decision in an existing
+        # (already complete) game so aggregate_usage picks it up.
+        done = os.path.join(self.root, "games", "spent01")
+        os.makedirs(done, exist_ok=True)
+        with open(os.path.join(done, "decisions.jsonl"), "w") as fh:
+            fh.write(json.dumps({
+                "game_id": "spent01", "turn_id": 1, "player": "P0",
+                "metadata": {"provider": "live",
+                             "usage": {"input_tokens": 2_700_000},
+                             "estimated_cost_usd": 0.27}}) + "\n")
+
+        captured = {}
+
+        def capture(rules, seed, game_id, players, out, **kwargs):
+            captured.update(kwargs)
+            captured["_game_id"] = game_id
+            return {"status": "finished", "winner": "P0",
+                    "incomplete_reason": None, "decisions": {},
+                    "budget": {"calls": 0, "input_tokens": 0,
+                               "estimated_cost_usd": 0.0}}
+
+        with mock.patch.object(ai_driver, "run_ai_game",
+                               side_effect=capture):
+            tournament.run_tournament(path, self.root)
+        # Pre-seeded spend $0.27 + new live record 0.27 = may vary;
+        # the strict contract: game cap = min(1.0, 0.50 - spent).
+        spent = tournament.aggregate_usage(self.root)["estimated_cost_usd"]
+        self.assertAlmostEqual(spent, 0.27, places=6)
+        self.assertAlmostEqual(captured["max_cost_usd"], 0.23, places=6)
+
     def test_budget_stop_preserves_completed_games(self):
         config = json.loads(json.dumps(MOCK_CONFIG))
         config["schedules"] = [

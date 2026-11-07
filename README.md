@@ -162,10 +162,15 @@ python3 analyze_v041.py report  results/v041   # strength, cost, CIs
 ```
 
 Resume re-runs only games without a `result.json`; per-game and
-aggregate cost caps stop the run gracefully; completed games are
-never silently re-played or substituted. Measured outcomes of the
-64-game V0.4.1 tournament: `FINDINGS_V041.md` and the qualitative
-game studies in `notes/v041/`.
+aggregate cost caps stop the run gracefully (the driver receives
+whichever cap is tighter and checks it before every call); completed
+games are never silently re-played or substituted. Measured outcomes
+of the 64-game V0.4.1 tournament: `FINDINGS_V041.md` and the
+qualitative game studies in `notes/v041/`. The repository keeps the
+six games cited in the findings under `results/v041/games/`; the
+complete 64-game log set ships as the release artifact
+`v041-tournament-logs` (2.5 MB, offline re-analyzable with
+`analyze_v041.py`).
 
 ## Modules
 

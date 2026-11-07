@@ -67,3 +67,15 @@ hit 2, `game_won`.
 P1 and P3 hand-collected all 6 equipment that the auto-grant gave P0 for free, then ground
 seal rolls (P3 rolled three consecutive 1s at the peristyle, t43, t46, t49); neither seat
 ever attempted the Emperor, and P1's second seal landed at t52, after P0's first hit.
+
+## Correction (PR review reconciliation, 2026-11-07)
+
+The line above saying the winner worked "2 guard posts" is wrong. The
+engine record (`result.json`, `events.jsonl`) for winner P0 shows
+`guard_post_attempts: 0`; every Glory point came from duels (4/4 wins
+attacking plus 1 defensive win; 3 Glory kept, 2 duel wins wasted at
+the cap of 2; 3 spent: the Peristyle seal and two boosted Emperor
+attacks). The Glory-engine reading stands — it was fueled entirely by
+favorable fights, with the auto-grant completing the kit from 3
+collected items. This strengthens the tournament-wide guard-post
+finding: not even this dominant winner used one.

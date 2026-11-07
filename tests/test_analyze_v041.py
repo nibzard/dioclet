@@ -92,6 +92,37 @@ class TestAnalyze(AnalyzeTestBase):
         self.assertLess(ci["lo"], 0.25)
         self.assertGreater(ci["hi"], 0.25)
 
+    def test_snapshot_validation_reads_actual_rules(self):
+        """Caps must come from the game's snapshot, not hardcoding."""
+        src = os.path.join(self.root, "games", "az01")
+        dst_dir = os.path.join(self.tmp, "modified")
+        shutil.rmtree(dst_dir, ignore_errors=True)
+        shutil.copytree(src, dst_dir)
+        snap_path = os.path.join(dst_dir, "rules.snapshot.json")
+        snap = json.load(open(snap_path))
+        snap["glory"]["cap"] = 3
+        snap["combat"]["emperor_hits_to_win"] = 3
+        with open(snap_path, "w") as fh:
+            json.dump(snap, fh)
+        game = analyze_v041.load_game(dst_dir)
+        caps = analyze_v041.snapshot_caps(game)
+        self.assertEqual(caps, {"glory_cap": 3,
+                                "emperor_hits_to_win": 3,
+                                "snapshot_checked": True})
+        card = analyze_v041.score_game(game)
+        self.assertEqual(card["rules_snapshot"]["glory_cap"], 3)
+
+        # Missing snapshot: loud fallback, never silent.
+        os.unlink(snap_path)
+        game = analyze_v041.load_game(dst_dir)
+        caps = analyze_v041.snapshot_caps(game)
+        self.assertEqual(caps, {"glory_cap": 2,
+                                "emperor_hits_to_win": 2,
+                                "snapshot_checked": False})
+        card = analyze_v041.score_game(game)
+        if card is not None:
+            self.assertFalse(card["rules_snapshot"]["snapshot_checked"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -51,9 +51,11 @@ also what noise would show.
 ### 2. Does AI play reveal strategies the scripted bots overlooked?
 
 **[O]** Yes, two. **[E]** (a) *Glory-engine opening*: in
-`tb209` (notes/v041) the winner explored only 3 districts, won 4
-duels and 2 guard posts, and let the auto-grant complete the kit —
-treating Level 1 as Glory farming, not collecting. Decisions seats
+`tb209` (notes/v041) the winner explored only 3 districts, won five
+duels (four attacking, one defending; two wins wasted at the Glory
+cap, zero guard-post turns — see the correction appended to that
+note), and let the auto-grant complete the kit — treating Level 1 as
+Glory farming, not collecting. Decisions seats
 collected 5.39 items/seat vs tactical 5.90 and bots 6.00 — and still
 won games. (b) *Seal-market timing*: decisions has the best
 seal-acquisition efficiency of any policy (0.73 seals per attempt vs
@@ -168,7 +170,7 @@ simultaneous Emperor resolution for the initiative gap.
 |---|---:|---|
 | Winning-attack utilization | **92/92 = 100%** | never once forgone |
 | Low-value duel share (p<50% or Glory-capped) | 13.3% | mostly cap-waste, not bad odds |
-| Unproductive moves (goal-distance heuristic) | 0.8% | clean routing |
+| Unproductive moves (goal-distance heuristic) | 3/177 = 1.7% | clean routing |
 | `explore_no_gain` turns | 0 | never explored a known duplicate |
 | Seats losing with unspent Glory | 34/176 (19%) | hoarding is its main leak |
 | Glory wasted at cap | 0.30/seat | low but nonzero |

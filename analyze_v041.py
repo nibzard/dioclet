@@ -32,7 +32,7 @@ def load_jsonl(path):
 
 def load_game(gdir):
     payload = {}
-    for name in ("result.json", "incomplete.json"):
+    for name in ("result.json", "incomplete.json", "rules.snapshot.json"):
         path = os.path.join(gdir, name)
         if os.path.exists(path):
             with open(path, "r", encoding="utf-8") as fh:
@@ -40,6 +40,24 @@ def load_game(gdir):
     payload["decisions"] = load_jsonl(os.path.join(gdir, "decisions.jsonl"))
     payload["events"] = load_jsonl(os.path.join(gdir, "events.jsonl"))
     return payload
+
+
+def snapshot_caps(game):
+    """Glory cap and Emperor hits-to-win from the game's rules snapshot.
+
+    Falls back to the v041 tournament values (cap 2, hits 2) with
+    `snapshot_checked: False` when the snapshot is absent or invalid,
+    so older run directories still analyze with a loud caveat.
+    """
+    snap = game.get("rules")
+    try:
+        caps = {"glory_cap": snap["glory"]["cap"],
+                "emperor_hits_to_win": snap["combat"]["emperor_hits_to_win"],
+                "snapshot_checked": True}
+    except (TypeError, KeyError):
+        caps = {"glory_cap": 2, "emperor_hits_to_win": 2,
+                "snapshot_checked": False}
+    return caps
 
 
 def iter_games(root):
@@ -129,13 +147,14 @@ def score_game(game, decisions_policy_name="decisions"):
     events = game["events"]
     timeline = player_timeline(events)
     hits_at = hits_timeline(events, result["players"])
-    hits_to_win = 2  # rules_v03_base; verified via rules snapshot below
-    snapshot = None
+    caps = snapshot_caps(game)
+    glory_cap = caps["glory_cap"]
+    hits_to_win = caps["emperor_hits_to_win"]
 
     seats = result["policies"]
     score = {"game_id": result["game_id"], "winner": result["winner"],
              "turn_order": result["turn_order"], "seats": {},
-             "flags": []}
+             "rules_snapshot": caps, "flags": []}
     for record in game["decisions"]:
         pid = record["player"]
         seat = score["seats"].setdefault(
@@ -165,19 +184,26 @@ def score_game(game, decisions_policy_name="decisions"):
                     {"turn_id": record["turn_id"],
                      "issue": "mandatory action excluded",
                      "excluded": excluded})
-        # A. Immediate winning attack.
+        # A. Immediate winning attack. The candidate description marks
+        # "wins the game on a hit"; cross-check against the snapshot's
+        # hits-to-win via the recorded hit timeline.
         win_attacks = [f for f in facts.values()
                        if f["kind"] == "attack_emperor" and f["wins_game"]]
+        if win_attacks and not caps["snapshot_checked"]:
+            score["flags"].append(
+                {"turn_id": record["turn_id"],
+                 "issue": "winning-attack check ran without a validated "
+                          "rules snapshot (fallback hits_to_win=2)"})
         if win_attacks:
             seat["win_attack_available"] += 1
             if chosen.get("kind") == "attack_emperor":
                 seat["win_attack_taken"] += 1
-        # C. Duel value (rules_v03_base: duels pay only banked Glory).
+        # C. Duel value (duels pay only banked Glory to the winner).
         if chosen.get("kind") == "duel":
             seat["duels"] += 1
             own_glory = glory_before(events, record["turn_id"])
             p_win = chosen.get("duel_win_pct", 50)
-            if p_win < 50 or own_glory >= 2:
+            if p_win < 50 or own_glory >= glory_cap:
                 seat["low_value_duels"] += 1
         # E. Detours: phase 2, seals done, chose a move that is strictly
         # farther from the goal than the best candidate move.
@@ -206,7 +232,6 @@ def score_game(game, decisions_policy_name="decisions"):
         seat["duels_initiated"] = m["duels_initiated"]
         seat["emperor_hits"] = m["emperor_hits"]
         seat["won"] = result["winner"] == pid
-    score["snapshot_checked"] = snapshot is not None
     return score
 
 
