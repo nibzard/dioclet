@@ -1,0 +1,35 @@
+{
+  "provider": "live",
+  "model": "gpt-6-luna",
+  "decisions_config": "decisions_config.json",
+  "schedules": [
+    {
+      "type": "rotation",
+      "policies": [
+        "decisions",
+        "tactical",
+        "balanced",
+        "greedy"
+      ],
+      "games": 16,
+      "prefix": "e2r",
+      "seed_base": 6301
+    },
+    {
+      "type": "pairs",
+      "a": "decisions",
+      "b": "tactical",
+      "games": 16,
+      "prefix": "e2p",
+      "seed_base": 6401
+    }
+  ],
+  "budget": {
+    "aggregate_max_cost_usd": 1.6,
+    "per_game_max_calls": 120,
+    "per_game_max_cost_usd": 0.05,
+    "per_game_wall_clock_seconds": 900
+  },
+  "tournament_id": "v05_exp2_peristyle2_ai",
+  "rules": "rules_v05_peristyle2.json"
+}

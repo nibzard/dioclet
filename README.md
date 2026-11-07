@@ -13,6 +13,9 @@ with repeatable batches before any physical playtesting.
 - `FINDINGS_V03.md` — duel consequence experiments
 - `FINDINGS_V04.md` — OpenAI Decisions player intelligence
 - `FINDINGS_V041.md` — AI tournament and decision analysis
+- `FINDINGS_V05.md` — rule experiments under Decisions play
+- `notes/v05-experiment-plan.md` — V0.5 experiment plan with
+  predictions and outcome lines
 
 ## Where the design stands
 
@@ -23,12 +26,18 @@ rotation (baseline → adopted package → candidate):
   ties, one grace round, rotating first player. Aggressive seats 11%,
   comebacks 70%, challenger edge down to 30%, median 14 rounds.
 - **Candidate from V0.3**: the duel lost turn
-  (`rules_v03_lostturn.json`) — aggressive 14%, no timeouts, one
-  round longer.
+  (`rules_v03_lostturn.json`) — aggressive 14% under bots, but the
+  V0.5 AI test showed it does not redirect aggression at leaders and
+  raises auto-grants 32% (see `FINDINGS_V05.md`); do not adopt.
+- **Adopted for V0.5** (`rules_v05_l1max16.json`): Level 1 capped at
+  16 rounds as guardrail insurance — binds only the worst stalls
+  (about 6% of AI games), every observed median untouched.
 - **Rejected so far**: Glory cap 3 (more fights, no strategy shift),
   Glory theft (zero-sum economy crowns the pacifist: aggressive 0%,
   greedy 36%), retreat-node displacement (drops victims on the
-  chamber doorstep; falsified by playtest `runs/narr8`).
+  chamber doorstep; falsified by playtest `runs/narr8`), Peristyle
+  seal cost 2 (locks Glory-poor seats out of the guaranteed buy;
+  no new deliberation), duel lost turn (see the candidate note).
 - **Open questions**: the residual turn-order gap (28/21), `balanced`
   dominance (~30%), and displacement geometry (try the loser's own
   gate next).
@@ -103,6 +112,9 @@ Existing variants (reports in `FINDINGS.md`, `FINDINGS_V02.md`, and
 - V0.3 duel consequences (`rules_v03_*.json`), on top of the adopted
   V0.2 package: duel Glory theft, duel displacement to the retreat
   node, and the duel lost turn.
+- V0.5 (`rules_v05_*.json`), each one knob on the V0.3 base:
+  Peristyle seal cost 2 Glory (rejected), Level 1 capped at 16
+  rounds (adopted as a guardrail).
 
 Optional rule keys absent from the baseline:
 `turns.rotate_first_player_each_round`, `combat.duel_glory_theft`,
@@ -171,6 +183,16 @@ six games cited in the findings under `results/v041/games/`; the
 complete 64-game log set ships as the release artifact
 `v041-tournament-logs` (2.5 MB, offline re-analyzable with
 `analyze_v041.py`).
+
+## V0.5 experiments (run)
+
+Three rule experiments, each with a bot baseline and a live AI
+tournament: the duel lost turn, Peristyle seal cost 2, and Level 1
+capped at 16 rounds. Measured outcomes: `FINDINGS_V05.md` (96 games,
+$0.2214 of a $5.00 authorized cap, all games replay-verified).
+Repository copies hold each tournament's aggregates
+(`results/v05_exp*/`); the full 96-game log set ships as the release
+artifact `v05-tournament-logs`.
 
 ## Modules
 
