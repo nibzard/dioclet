@@ -115,14 +115,16 @@
 
 <header class="hero">
   <h1>Diocletian's Palace</h1>
-  <p class="sub">Game design report: five test cycles on a four-player,
-  two-level board game of treasures, Glory, and one final duel with the Emperor.</p>
+  <p class="sub">Game design report: seven design cycles on a
+  four-player, two-level board game of treasures, Glory, and one final
+  duel with the Emperor, measured from first sketch to the printed
+  board.</p>
   <div class="stats">
-    <div class="stat"><b>15,000+</b>simulated games</div>
+    <div class="stat"><b>29,000+</b>simulated games</div>
     <div class="stat"><b>160</b>games vs AI players</div>
     <div class="stat"><b>8</b>role-played full games</div>
-    <div class="stat"><b>12</b>rule variants tested</div>
-    <div class="stat"><b>4</b>rules adopted</div>
+    <div class="stat"><b>24</b>rulesets measured</div>
+    <div class="stat"><b>8</b>changes adopted</div>
     <div class="stat"><b>$0.54</b>total AI testing cost</div>
   </div>
 </header>
@@ -136,8 +138,8 @@
   the Emperor, twice.</p>
   <div class="cols">
     <div>
-      <p><b>Level 1, the city.</b> Six districts hide one treasure
-      each. You roll and move, reveal districts, and take their
+      <p><b>Level 1, the city.</b> Six blocks hide one treasure card
+      each. You roll and move, reveal cards, and take their
       treasure: a dagger, a shield, a sword… A full kit of six makes
       you deadlier in every fight. Along the way you can duel rivals
       within reach, or stand a guard post turn for guaranteed Glory
@@ -154,105 +156,174 @@
       Glory buys power.</p>
     </div>
     <div>
-      <figure>
-        <svg viewBox="0 0 536 536" role="img" aria-label="Game board: a five by five grid with four gates, six treasure districts, guard posts at the corners, and the checkpoint in the middle.">
-          <!-- walkway cells -->
-          <g fill="#efe4cf" stroke="#d8c9ad" stroke-width="1.5">
-            <rect x="48"  y="48"  width="84" height="84" rx="10"/>
-            <rect x="224" y="48"  width="84" height="84" rx="10"/>
-            <rect x="400" y="48"  width="84" height="84" rx="10"/>
-            <rect x="136" y="136" width="84" height="84" rx="10"/>
-            <rect x="312" y="136" width="84" height="84" rx="10"/>
-            <rect x="48"  y="312" width="84" height="84" rx="10"/>
-            <rect x="136" y="400" width="84" height="84" rx="10"/>
-            <rect x="312" y="400" width="84" height="84" rx="10"/>
-            <rect x="400" y="400" width="84" height="84" rx="10"/>
-          </g>
-          <!-- glory posts -->
-          <g fill="#5f7a4a" stroke="#48603a" stroke-width="1.5">
-            <rect x="48"  y="136" width="84" height="84" rx="10"/>
-            <rect x="400" y="136" width="84" height="84" rx="10"/>
-            <rect x="48"  y="312" width="84" height="84" rx="10"/>
-            <rect x="400" y="312" width="84" height="84" rx="10"/>
-          </g>
-          <g fill="#f6efe2" font-family="Georgia, serif" font-size="34" text-anchor="middle">
-            <text x="90"  y="186">★</text>
-            <text x="442" y="186">★</text>
-            <text x="90"  y="362">★</text>
-            <text x="442" y="362">★</text>
-          </g>
-          <!-- districts -->
-          <g fill="#e9d9b8" stroke="#cdb684" stroke-width="1.5">
-            <rect x="136" y="136" width="84" height="84" rx="10"/>
-            <rect x="224" y="136" width="84" height="84" rx="10"/>
-            <rect x="312" y="136" width="84" height="84" rx="10"/>
-            <rect x="136" y="312" width="84" height="84" rx="10"/>
-            <rect x="312" y="312" width="84" height="84" rx="10"/>
-          </g>
-          <g fill="#7a5c2e" font-family="Georgia, serif" font-size="30" font-weight="bold" text-anchor="middle">
-            <text x="178" y="184">A</text>
-            <text x="266" y="184">B</text>
-            <text x="354" y="184">C</text>
-            <text x="178" y="360">D</text>
-            <text x="354" y="360">F</text>
-          </g>
-          <g fill="#a5854a" font-family="Georgia, serif" font-size="15" text-anchor="middle">
-            <text x="178" y="205">◆</text>
-            <text x="266" y="205">◆</text>
-            <text x="354" y="205">◆</text>
-            <text x="178" y="381">◆</text>
-            <text x="354" y="381">◆</text>
-          </g>
-          <!-- E district + retreat badge -->
-          <g>
-            <rect x="224" y="312" width="84" height="84" rx="10" fill="#e9d9b8" stroke="#cdb684" stroke-width="1.5"/>
-            <text x="266" y="360" fill="#7a5c2e" font-family="Georgia, serif" font-size="30" font-weight="bold" text-anchor="middle">E</text>
-            <text x="266" y="381" fill="#a5854a" font-family="Georgia, serif" font-size="15" text-anchor="middle">◆</text>
-            <rect x="238" y="316" width="56" height="17" rx="8.5" fill="#4a6b7a"/>
-            <text x="266" y="328.5" fill="#f6efe2" font-family="Verdana, sans-serif" font-size="10" text-anchor="middle">RETREAT</text>
-          </g>
-          <!-- checkpoint / peristyle -->
-          <g>
-            <rect x="224" y="224" width="84" height="84" rx="10" fill="#c9972b" stroke="#a87c1a" stroke-width="2"/>
-            <text x="266" y="258" fill="#4a3305" font-family="Verdana, sans-serif" font-size="10.5" text-anchor="middle" letter-spacing="1">CHECKPOINT</text>
-            <text x="266" y="274" fill="#4a3305" font-family="Georgia, serif" font-size="16" font-weight="bold" text-anchor="middle">Peristyle</text>
-            <text x="266" y="291" fill="#5d4407" font-family="Georgia, serif" font-size="11.5" text-anchor="middle">seal for 1 Glory</text>
-          </g>
-          <!-- gates -->
-          <g>
-            <rect x="224" y="48" width="84" height="84" rx="10" fill="#5a3d6b" stroke="#463053" stroke-width="1.5"/>
-            <text x="266" y="98" fill="#f6efe2" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle">N</text>
-            <rect x="48" y="224" width="84" height="84" rx="10" fill="#5a3d6b" stroke="#463053" stroke-width="1.5"/>
-            <text x="90" y="274" fill="#f6efe2" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle">W</text>
-            <rect x="400" y="224" width="84" height="84" rx="10" fill="#5a3d6b" stroke="#463053" stroke-width="1.5"/>
-            <text x="442" y="274" fill="#f6efe2" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle">E</text>
-            <rect x="224" y="400" width="84" height="84" rx="10" fill="#a03d2e" stroke="#7d2e22" stroke-width="1.5"/>
-            <text x="266" y="438" fill="#f6efe2" font-family="Georgia, serif" font-size="18" font-weight="bold" text-anchor="middle">EMPEROR</text>
-            <text x="266" y="458" fill="#f0d9c9" font-family="Verdana, sans-serif" font-size="10" text-anchor="middle">south gate · 2 hits</text>
-          </g>
-          <!-- L2 badges on A and C -->
-          <g font-family="Verdana, sans-serif" font-size="10" text-anchor="middle">
-            <rect x="146" y="146" width="64" height="17" rx="8.5" fill="#5a3d6b"/>
-            <text x="178" y="158.5" fill="#f6efe2">CELLARS</text>
-            <rect x="322" y="146" width="64" height="17" rx="8.5" fill="#5a3d6b"/>
-            <text x="354" y="158.5" fill="#f6efe2">BARRACKS</text>
-          </g>
-          <!-- frame -->
-          <rect x="30" y="30" width="476" height="476" rx="16" fill="none" stroke="#cbb98f" stroke-width="3"/>
-        </svg>
-        <figcaption>The board. In Level 2 the districts change roles:
-        the Cellars and Barracks sell seals, the gold Peristyle sells a
-        guaranteed seal for 1 Glory, and the Emperor waits at the south
-        gate. A missed strike on the Emperor throws you back to the
-        retreat hall.</figcaption>
+            <figure>
+        <svg viewBox="0 0 916 652" role="img" aria-label="The six-block city board: streets around and between six building blocks, four gates, six card entries on the north and south streets, guard posts, a central checkpoint, and the Emperor at the south gate.">
+<rect x="40" y="40" width="836" height="44" fill="#efe4cf"/>
+          <rect x="40" y="304" width="836" height="44" fill="#efe4cf"/>
+          <rect x="40" y="568" width="836" height="44" fill="#efe4cf"/>
+          <rect x="40" y="40" width="44" height="572" fill="#efe4cf"/>
+          <rect x="304" y="40" width="44" height="572" fill="#efe4cf"/>
+          <rect x="568" y="40" width="44" height="572" fill="#efe4cf"/>
+          <rect x="832" y="40" width="44" height="572" fill="#efe4cf"/>
+          <circle cx="62.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="106.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="150.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="194.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="238.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="282.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="370.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="414.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="458.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="502.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="546.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="634.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="678.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="722.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="766.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="810.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="62.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="106.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="106.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="106.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="106.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="150.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="150.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="150.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="150.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="194.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="194.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="194.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="194.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="238.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="238.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="238.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="238.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="282.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="282.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="282.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="282.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="106.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="150.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="194.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="238.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="282.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="370.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="414.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="458.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="502.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="546.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="634.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="678.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="722.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="766.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="810.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="326.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="370.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="370.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="370.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="370.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="414.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="414.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="414.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="414.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="458.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="458.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="458.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="458.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="502.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="502.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="502.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="502.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="546.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="546.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="546.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="546.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="62.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="106.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="150.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="194.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="238.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="282.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="326.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="370.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="414.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="458.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="502.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="546.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="590.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="634.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="678.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="722.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="766.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="810.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <circle cx="854.0" cy="590.0" r="5.5" fill="#fffdf6" stroke="#c9b995" stroke-width="1.1"/>
+          <rect x="89" y="89" width="210" height="210" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+          <rect x="89" y="353" width="210" height="210" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+          <rect x="353" y="89" width="210" height="210" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+          <rect x="353" y="353" width="210" height="210" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+          <rect x="617" y="89" width="210" height="210" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+          <rect x="617" y="353" width="210" height="210" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+          <circle cx="194.0" cy="62.0" r="16" fill="#e9d9b8" stroke="#b09a54" stroke-width="2.2"/>
+          <text x="194.0" y="68.5" text-anchor="middle" fill="#6b4f1e" font-family="Georgia, serif" font-size="19" font-weight="bold">A</text>
+          <circle cx="370.0" cy="62.0" r="16" fill="#e9d9b8" stroke="#b09a54" stroke-width="2.2"/>
+          <text x="370.0" y="68.5" text-anchor="middle" fill="#6b4f1e" font-family="Georgia, serif" font-size="19" font-weight="bold">B</text>
+          <circle cx="722.0" cy="62.0" r="16" fill="#e9d9b8" stroke="#b09a54" stroke-width="2.2"/>
+          <text x="722.0" y="68.5" text-anchor="middle" fill="#6b4f1e" font-family="Georgia, serif" font-size="19" font-weight="bold">C</text>
+          <circle cx="194.0" cy="590.0" r="16" fill="#e9d9b8" stroke="#b09a54" stroke-width="2.2"/>
+          <text x="194.0" y="596.5" text-anchor="middle" fill="#6b4f1e" font-family="Georgia, serif" font-size="19" font-weight="bold">D</text>
+          <circle cx="546.0" cy="590.0" r="16" fill="#e9d9b8" stroke="#b09a54" stroke-width="2.2"/>
+          <text x="546.0" y="596.5" text-anchor="middle" fill="#6b4f1e" font-family="Georgia, serif" font-size="19" font-weight="bold">E</text>
+          <circle cx="722.0" cy="590.0" r="16" fill="#e9d9b8" stroke="#b09a54" stroke-width="2.2"/>
+          <text x="722.0" y="596.5" text-anchor="middle" fill="#6b4f1e" font-family="Georgia, serif" font-size="19" font-weight="bold">F</text>
+          <rect x="440.0" y="44.0" width="36" height="36" rx="8" fill="#5a3d6b" stroke="#463053" stroke-width="1.6"/>
+          <text x="458.0" y="69.0" text-anchor="middle" fill="#f6efe2" font-family="Georgia, serif" font-size="20" font-weight="bold">N</text>
+          <rect x="44.0" y="308.0" width="36" height="36" rx="8" fill="#5a3d6b" stroke="#463053" stroke-width="1.6"/>
+          <text x="62.0" y="333.0" text-anchor="middle" fill="#f6efe2" font-family="Georgia, serif" font-size="20" font-weight="bold">W</text>
+          <rect x="836.0" y="308.0" width="36" height="36" rx="8" fill="#5a3d6b" stroke="#463053" stroke-width="1.6"/>
+          <text x="854.0" y="333.0" text-anchor="middle" fill="#f6efe2" font-family="Georgia, serif" font-size="20" font-weight="bold">E</text>
+          <rect x="432.0" y="571.0" width="52" height="38" rx="8" fill="#a03d2e" stroke="#7d2e22" stroke-width="1.6"/>
+          <text x="458.0" y="591.0" text-anchor="middle" fill="#f6efe2" font-family="Verdana, sans-serif" font-size="8.5">EMPEROR</text>
+          <text x="458.0" y="602.0" text-anchor="middle" fill="#f0d9c9" font-family="Verdana, sans-serif" font-size="7.5">2 hits</text>
+          <circle cx="458.0" cy="326.0" r="18" fill="#c9972b" stroke="#a87c1a" stroke-width="2.4"/>
+          <text x="458.0" y="333.0" text-anchor="middle" fill="#4a3305" font-family="Georgia, serif" font-size="20" font-weight="bold">X</text>
+          <circle cx="62.0" cy="150.0" r="15" fill="#5f7a4a" stroke="#48603a" stroke-width="2"/>
+          <text x="62.0" y="156.5" text-anchor="middle" fill="#f6efe2" font-size="15">&#9733;</text>
+          <circle cx="854.0" cy="150.0" r="15" fill="#5f7a4a" stroke="#48603a" stroke-width="2"/>
+          <text x="854.0" y="156.5" text-anchor="middle" fill="#f6efe2" font-size="15">&#9733;</text>
+          <circle cx="62.0" cy="502.0" r="15" fill="#5f7a4a" stroke="#48603a" stroke-width="2"/>
+          <text x="62.0" y="508.5" text-anchor="middle" fill="#f6efe2" font-size="15">&#9733;</text>
+          <circle cx="854.0" cy="502.0" r="15" fill="#5f7a4a" stroke="#48603a" stroke-width="2"/>
+          <text x="854.0" y="508.5" text-anchor="middle" fill="#f6efe2" font-size="15">&#9733;</text>
+          <circle cx="502.0" cy="590.0" r="13" fill="#4a6b7a" stroke="#3a5662" stroke-width="2"/>
+          <text x="502.0" y="595.0" text-anchor="middle" fill="#f6efe2" font-family="Georgia, serif" font-size="13" font-weight="bold">r</text>
+          <rect x="165.0" y="54.0" width="58" height="16" rx="8" fill="#5a3d6b"/>
+          <text x="194.0" y="65.5" text-anchor="middle" fill="#f6efe2" font-family="Verdana, sans-serif" font-size="9">CELLARS</text>
+          <rect x="690.0" y="582.0" width="64" height="16" rx="8" fill="#5a3d6b"/>
+          <text x="722.0" y="593.5" text-anchor="middle" fill="#f6efe2" font-family="Verdana, sans-serif" font-size="9">BARRACKS</text>
+          <rect x="424.0" y="350.0" width="68" height="16" rx="8" fill="#5a3d6b"/>
+          <text x="458.0" y="361.5" text-anchor="middle" fill="#f6efe2" font-family="Verdana, sans-serif" font-size="9">PERISTYLE</text>
+          <rect x="24" y="24" width="868" height="604" rx="14" fill="none" stroke="#cbb98f" stroke-width="3"/>
+        </svg>        <figcaption>The board as measured: a walled city of six
+        blocks, one card each, streets on the perimeter and crossing
+        at the center. In Level 2 the blocks change roles: the
+        Cellars (northwest) and Barracks (southeast) sell seals, the
+        gold Peristyle sells a guaranteed seal for 1 Glory, and the
+        Emperor waits at the south gate. A missed strike steps back
+        to the retreat hall beside his gate.</figcaption>
       </figure>
       <div class="legend">
         <span><span class="sw" style="background:#5a3d6b"></span>player gate</span>
-        <span><span class="sw" style="background:#e9d9b8"></span>treasure district</span>
+        <span><span class="sw" style="background:#e9d9b8"></span>card entry</span>
         <span><span class="sw" style="background:#5f7a4a"></span>guard post (Glory)</span>
         <span><span class="sw" style="background:#c9972b"></span>checkpoint / Peristyle</span>
         <span><span class="sw" style="background:#a03d2e"></span>Emperor</span>
         <span><span class="sw" style="background:#4a6b7a"></span>retreat</span>
+        <span><span class="sw" style="background:#c96b4f"></span>building block</span>
       </div>
     </div>
   </div>
@@ -267,9 +338,9 @@
       <g font-family="Verdana, sans-serif">
         <rect x="10" y="14" width="270" height="100" rx="12" fill="#efe4cf" stroke="#cdb684" stroke-width="1.5"/>
         <text x="145" y="42" text-anchor="middle" font-size="13" letter-spacing="1.5" fill="#7a5c2e">LEVEL 1 · THE CITY</text>
-        <text x="145" y="64" text-anchor="middle" font-size="11.5" fill="#5c4a30">explore districts, collect up to 6 treasures,</text>
+        <text x="145" y="64" text-anchor="middle" font-size="11.5" fill="#5c4a30">explore the six blocks, collect treasures,</text>
         <text x="145" y="80" text-anchor="middle" font-size="11.5" fill="#5c4a30">duel rivals for Glory, stand guard posts;</text>
-        <text x="145" y="96" text-anchor="middle" font-size="11.5" fill="#5c4a30">a full kit opens the checkpoint (8-9 rounds)</text>
+        <text x="145" y="96" text-anchor="middle" font-size="11.5" fill="#5c4a30">a full kit opens the checkpoint (about 15 rounds)</text>
 
         <rect x="325" y="14" width="270" height="100" rx="12" fill="#f3ead2" stroke="#c9972b" stroke-width="2"/>
         <text x="460" y="42" text-anchor="middle" font-size="13" letter-spacing="1.5" fill="#8a6508">THE CHECKPOINT</text>
@@ -281,14 +352,14 @@
         <text x="775" y="42" text-anchor="middle" font-size="13" letter-spacing="1.5" fill="#5a3d6b">LEVEL 2 · THE PALACE</text>
         <text x="775" y="64" text-anchor="middle" font-size="11.5" fill="#4a3157">claim 2 different seals (roll, fight, or buy),</text>
         <text x="775" y="80" text-anchor="middle" font-size="11.5" fill="#4a3157">then land 2 hits on the Emperor;</text>
-        <text x="775" y="96" text-anchor="middle" font-size="11.5" fill="#4a3157">1 Glory = +2 strength on a strike (≈5-6 rounds)</text>
+        <text x="775" y="96" text-anchor="middle" font-size="11.5" fill="#4a3157">1 Glory = +2 strength on a strike (about 9 rounds)</text>
 
         <line x1="282" y1="64" x2="322" y2="64" stroke="#a58a54" stroke-width="3" marker-end="url(#ar)"/>
         <line x1="597" y1="64" x2="637" y2="64" stroke="#a58a54" stroke-width="3" marker-end="url(#ar)"/>
       </g>
     </svg>
-    <figcaption>A full game runs about 14 rounds, half city and
-    half palace, and always ends with a winner.</figcaption>
+    <figcaption>A full game runs about 24 rounds, roughly 15 in the
+    city and 9 in the palace, and ends with a winner.</figcaption>
   </figure>
 </section>
 
@@ -366,6 +437,10 @@
     <li><b>AI players last.</b> Language-model players that reason
     over the same public information a human sees. 160 games against
     a strong scripted benchmark, for a total cost of 54 cents.</li>
+    <li><b>The physical board last.</b> The designer's printed
+    board was encoded cell by cell and every number re-measured on
+    it. The designer's correction then set its final shape: six
+    blocks, one card each (V0.6 to V0.7).</li>
     <li><b>One knob at a time.</b> Each variant changed exactly one
     rule. Adopted changes became the new base for the next test.</li>
   </ol>
@@ -376,48 +451,62 @@
 
 <!-- ============================================================ 4 -->
 <section>
-  <h2><span class="kick">The journey</span>Five cycles, twelve knobs</h2>
+  <h2><span class="kick">The journey</span>Seven cycles, one board</h2>
   <figure>
-    <svg viewBox="0 0 960 168" role="img" aria-label="Timeline of the five design cycles from V0.1 baseline to V0.5 rule tests under AI play.">
-      <line x1="40" y1="84" x2="920" y2="84" stroke="#cbb98f" stroke-width="4"/>
-      <g font-family="Verdana, sans-serif" text-anchor="middle">
-        <g>
-          <circle cx="80" cy="84" r="11" fill="#8a795a"/>
-          <text x="80" y="48" font-size="13" font-weight="bold" fill="#5c4a30">V0.1</text>
-          <text x="80" y="30" font-size="11" fill="#6f6252">Does it work?</text>
-          <text x="80" y="118" font-size="10.5" fill="#6f6252">1,000 games: decisive,</text>
-          <text x="80" y="132" font-size="10.5" fill="#6f6252">but duels punish attackers</text>
-        </g>
-        <g>
-          <circle cx="255" cy="84" r="11" fill="#5a3d6b"/>
-          <text x="255" y="48" font-size="13" font-weight="bold" fill="#5a3d6b">V0.2</text>
-          <text x="255" y="30" font-size="11" fill="#6f6252">Fair fights</text>
-          <text x="255" y="118" font-size="10.5" fill="#6f6252">adopt: ties to attacker,</text>
-          <text x="255" y="132" font-size="10.5" fill="#6f6252">grace 1, rotating start</text>
-        </g>
-        <g>
-          <circle cx="430" cy="84" r="11" fill="#a03d2e"/>
-          <text x="430" y="48" font-size="13" font-weight="bold" fill="#a03d2e">V0.3</text>
-          <text x="430" y="30" font-size="11" fill="#6f6252">Duel consequences</text>
-          <text x="430" y="118" font-size="10.5" fill="#6f6252">theft backfires, teleport</text>
-          <text x="430" y="132" font-size="10.5" fill="#6f6252">flaw found, lost turn promising</text>
-        </g>
-        <g>
-          <circle cx="605" cy="84" r="11" fill="#5f7a4a"/>
-          <text x="605" y="48" font-size="13" font-weight="bold" fill="#5f7a4a">V0.4-V0.4.1</text>
-          <text x="605" y="30" font-size="11" fill="#6f6252">AI players</text>
-          <text x="605" y="118" font-size="10.5" fill="#6f6252">64 live games: hidden strategies</text>
-          <text x="605" y="132" font-size="10.5" fill="#6f6252">found, two blind spots found</text>
-        </g>
-        <g>
-          <circle cx="800" cy="84" r="11" fill="#b8860b"/>
-          <text x="800" y="48" font-size="13" font-weight="bold" fill="#8a6508">V0.5</text>
-          <text x="800" y="30" font-size="11" fill="#6f6252">Rules under AI play</text>
-          <text x="800" y="118" font-size="10.5" fill="#6f6252">96 live games: one guardrail</text>
-          <text x="800" y="132" font-size="10.5" fill="#6f6252">adopted, two ideas rejected</text>
-        </g>
-      </g>
-    </svg>
+    <svg viewBox="0 0 960 168" role="img" aria-label="Timeline of the seven design cycles from V0.1 baseline to the V0.7 six-block board.">
+          <line x1="40" y1="84" x2="920" y2="84" stroke="#cbb98f" stroke-width="4"/>
+          <g font-family="Verdana, sans-serif" text-anchor="middle">
+            <g>
+              <circle cx="70" cy="84" r="11" fill="#8a795a"/>
+              <text x="70" y="48" font-size="13" font-weight="bold" fill="#8a795a">V0.1</text>
+              <text x="70" y="30" font-size="11" fill="#6f6252">Does it work?</text>
+              <text x="70" y="118" font-size="10.5" fill="#6f6252">1,000 games: decisive,</text>
+              <text x="70" y="132" font-size="10.5" fill="#6f6252">but duels punish attackers</text>
+            </g>
+            <g>
+              <circle cx="205" cy="84" r="11" fill="#5a3d6b"/>
+              <text x="205" y="48" font-size="13" font-weight="bold" fill="#5a3d6b">V0.2</text>
+              <text x="205" y="30" font-size="11" fill="#6f6252">Fair fights</text>
+              <text x="205" y="118" font-size="10.5" fill="#6f6252">adopt: ties to attacker,</text>
+              <text x="205" y="132" font-size="10.5" fill="#6f6252">grace 1, rotating start</text>
+            </g>
+            <g>
+              <circle cx="340" cy="84" r="11" fill="#a03d2e"/>
+              <text x="340" y="48" font-size="13" font-weight="bold" fill="#a03d2e">V0.3</text>
+              <text x="340" y="30" font-size="11" fill="#6f6252">Duel consequences</text>
+              <text x="340" y="118" font-size="10.5" fill="#6f6252">theft backfires, teleport</text>
+              <text x="340" y="132" font-size="10.5" fill="#6f6252">flaw found, lost turn promising</text>
+            </g>
+            <g>
+              <circle cx="475" cy="84" r="11" fill="#5f7a4a"/>
+              <text x="475" y="48" font-size="13" font-weight="bold" fill="#5f7a4a">V0.4-.4.1</text>
+              <text x="475" y="30" font-size="11" fill="#6f6252">AI players</text>
+              <text x="475" y="118" font-size="10.5" fill="#6f6252">64 live games: hidden</text>
+              <text x="475" y="132" font-size="10.5" fill="#6f6252">strategies found, two blind spots</text>
+            </g>
+            <g>
+              <circle cx="610" cy="84" r="11" fill="#b8860b"/>
+              <text x="610" y="48" font-size="13" font-weight="bold" fill="#b8860b">V0.5</text>
+              <text x="610" y="30" font-size="11" fill="#6f6252">Rules under AI play</text>
+              <text x="610" y="118" font-size="10.5" fill="#6f6252">96 live games: one guardrail</text>
+              <text x="610" y="132" font-size="10.5" fill="#6f6252">adopted, two ideas rejected</text>
+            </g>
+            <g>
+              <circle cx="745" cy="84" r="11" fill="#3f6f9e"/>
+              <text x="745" y="48" font-size="13" font-weight="bold" fill="#3f6f9e">V0.6</text>
+              <text x="745" y="30" font-size="11" fill="#6f6252">The real board</text>
+              <text x="745" y="118" font-size="10.5" fill="#6f6252">one die cannot finish the</text>
+              <text x="745" y="132" font-size="10.5" fill="#6f6252">city; 2d6 movement adopted</text>
+            </g>
+            <g>
+              <circle cx="880" cy="84" r="11" fill="#b0532f"/>
+              <text x="880" y="48" font-size="13" font-weight="bold" fill="#b0532f">V0.7</text>
+              <text x="880" y="30" font-size="11" fill="#6f6252">Six blocks</text>
+              <text x="880" y="118" font-size="10.5" fill="#6f6252">designer correction: one</text>
+              <text x="880" y="132" font-size="10.5" fill="#6f6252">card per block; fair and faster</text>
+            </g>
+          </g>
+        </svg>
   </figure>
 
   <h3>The verdict ledger</h3>
@@ -427,33 +516,40 @@
       <tr><td>Attacker wins duel ties</td><td>Attacker win rate 38% → 56%; the fighting style doubled its win share (6% → 11%)</td><td><span class="chip yes">Adopted</span></td></tr>
       <tr><td>One grace round at the checkpoint</td><td>Half the catch-up gear of no grace, most of the fairness gain</td><td><span class="chip yes">Adopted</span></td></tr>
       <tr><td>Rotating first player</td><td>Early-rush wins fell 39% → 33%; comebacks rose to 67%</td><td><span class="chip yes">Adopted</span></td></tr>
-      <tr><td>Level 1 capped at 16 rounds</td><td>Never touched a normal game (typical city phase: 8 rounds); ends only the rare 20-round stall</td><td><span class="chip mid">Adopted as guardrail</span></td></tr>
+      <tr><td>Level 1 capped at 16 rounds (small board)</td><td>Never touched a normal game (typical city phase: 8 rounds); ends only the rare 20-round stall</td><td><span class="chip mid">Adopted as guardrail</span></td></tr>
       <tr><td>Glory cap raised to 3</td><td>More fights, zero more winning, and the bank just got easier to ignore</td><td><span class="chip no">Rejected</span></td></tr>
       <tr><td>Three Emperor hits to win</td><td>Longer games (17 rounds), but nothing else improved; length was never the problem</td><td><span class="chip no">Rejected</span></td></tr>
       <tr><td>Duel winner steals Glory</td><td>Backfired spectacularly: fighters won 0 of 500 games; pacifists feasted on the chaos</td><td><span class="chip no">Rejected</span></td></tr>
       <tr><td>Loser pushed to the retreat hall</td><td>A teleport: the retreat hall sits at the Emperor's doorstep, so victims gained ground</td><td><span class="chip no">Rejected</span></td></tr>
       <tr><td>Duel loser skips a turn</td><td>Worked under scripts (fighters 14%), but under AI play nobody aimed it at leaders and catch-up gear rose 32%</td><td><span class="chip no">Rejected after AI test</span></td></tr>
       <tr><td>Peristyle seal costs 2 Glory</td><td>Poorer players were simply locked out; buyers bought at the same instant as before</td><td><span class="chip no">Rejected</span></td></tr>
+      <tr><td>Movement: two dice, summed (2d6)</td><td>One die on the real board left 94 of 100 city phases unfinished (939 of 1,000 games hit the cap at 4.0 of 6 treasures). Two dice finish the city with room to spare (129 of 1,000)</td><td><span class="chip yes">Adopted</span></td></tr>
+      <tr><td>Card entries spread north and south</td><td>Entries on the west and east streets, as first sketched, handed those two gates 44% of wins each; spreading them evened the race</td><td><span class="chip yes">Adopted</span></td></tr>
+      <tr><td>Seal sites in a triangle</td><td>Both roll-seal sites clustered up north gave the north gate 32% of wins; Cellars northwest, Barracks southeast, Peristyle center evened the travel</td><td><span class="chip yes">Adopted</span></td></tr>
+      <tr><td>City cap re-measured at 24 rounds</td><td>The small-board cap of 16 was insurance for a city that finished in 8; the real board needs and gets 24 (the cap ends 13% of games, all wanderer-heavy)</td><td><span class="chip mid">Adopted as guardrail</span></td></tr>
+      <tr><td>Extra central street (cardo)</td><td>Added for a central checkpoint crossing, it split the middle blocks into four strips: eight blocks, six cards. The designer's rule wins: six blocks, one card each</td><td><span class="chip no">Removed by designer</span></td></tr>
     </tbody>
   </table>
-  <p class="muted">Each verdict rests on 1,000 scripted games, role-play
-  evidence, or 32 AI games, depending on the question. Nothing was
-  adopted on theory alone.</p>
+  <p class="muted">Each verdict rests on 1,000 scripted games,
+  role-play evidence, or 32 AI games, depending on the question.
+  Board verdicts rest on 1,000-game batches plus mirror probes that
+  run one bot type in all four seats. Nothing was adopted on theory
+  alone.</p>
 </section>
 
 <!-- ============================================================ 5 -->
 <section>
   <h2><span class="kick">Findings · part 1</span>What the numbers say works</h2>
   <table>
-    <thead><tr><th>Health check (current rules)</th><th class="num">Result</th><th>Why it matters</th></tr></thead>
+    <thead><tr><th>Health check (current rules, real board)</th><th class="num">Result</th><th>Why it matters</th></tr></thead>
     <tbody>
-      <tr><td>Games that reach a winner</td><td class="num"><b>100%</b></td><td>Zero draws or stalls in 15,000+ games</td></tr>
-      <tr><td>Typical game length</td><td class="num"><b>14 rounds</b></td><td>A comfortable 30-45 minutes at the table</td></tr>
+      <tr><td>Games that reach a winner</td><td class="num"><b>100%</b></td><td>Every scheduled batch ends with a winner; only a table of four wanderers reaches the palace cap</td></tr>
+      <tr><td>Typical game length</td><td class="num"><b>24 rounds</b></td><td>15 in the city, 9 in the palace; the print pack exists to time it at a real table</td></tr>
       <tr><td>Wins by a player who was behind</td><td class="num"><b>70%</b></td><td>Early leads do not decide the game</td></tr>
-      <tr><td>Early-rush advantage</td><td class="num"><b>30%</b></td><td>Down from 39%: first through the gate now wins under a third of games</td></tr>
-      <tr><td>Treasures collected per player</td><td class="num"><b>5.6 / 6</b></td><td>The city phase is a real quest, not a formality</td></tr>
-      <tr><td>Players needing catch-up gear</td><td class="num"><b>0.4 items</b></td><td>The safety net exists but rarely fires for engaged players</td></tr>
-      <tr><td>Four gates fairness</td><td class="num"><b>±3%</b></td><td>No gate is better or worse than chance</td></tr>
+      <tr><td>Early-rush advantage</td><td class="num"><b>19%</b></td><td>Down from 39% at the start and 30% on the small board: first through the gate now wins under one game in five</td></tr>
+      <tr><td>Treasures collected per player</td><td class="num"><b>5.7 / 6</b></td><td>The city phase is a real quest, not a formality</td></tr>
+      <tr><td>Players needing catch-up gear</td><td class="num"><b>0.3 items</b></td><td>The safety net exists but rarely fires for engaged players</td></tr>
+      <tr><td>Four gates fairness</td><td class="num"><b>±3%</b></td><td>No gate is better or worse than chance; on the final board the four-wanderer mirror reads 21 / 18 / 20 / 21 wins per gate</td></tr>
       <tr><td>Duel attacker win rate</td><td class="num"><b>56%</b></td><td>Fights are slightly favorable to the bold, as they should feel</td></tr>
     </tbody>
   </table>
@@ -496,7 +592,8 @@
           </g>
         </svg>
         <figcaption>Both fairness fixes worked, and the game did not
-        get softer. Trailing players simply won more.</figcaption>
+        get softer. Trailing players simply won more. The real board
+        holds the same 70%.</figcaption>
       </figure>
     </div>
     <div>
@@ -605,9 +702,11 @@
   <h2><span class="kick">Recommendations</span>What to do next</h2>
   <ol class="rec">
     <li><b>Lock the current package for the physical prototype.</b>
-    Attacker wins ties, one grace round, rotating start, and the
-    16-round city cap. Every one is tested, neutral-or-better on
-    length and decisiveness, and none needs extra components.</li>
+    The six-block board with one card per block, two-dice movement,
+    card entries spread north and south, the seal triangle, attacker
+    wins ties, one grace round, rotating start, and the 24-round
+    city cap. Every piece is tested; the only new component is a
+    second die.</li>
     <li><b>Keep the Peristyle seal at 1 Glory.</b> Doubling it did not
     create harder choices; it only locked poor players out.</li>
     <li><b>Prototype the leader bounty.</b> One rule: <i>beat a player
@@ -617,22 +716,29 @@
     <li><b>Consider a collection requirement at the checkpoint</b>
     (four of six treasures) so the Glory engine cannot fully replace
     the city phase; decide after human playtests.</li>
-    <li><b>Playtest with people now.</b> The simulator cannot answer:
-    does a lost duel feel harsh for children, does the catch-up gear
-    feel cheap, is the Glory-cap dead air boring at the table? Eight
-    role-played games say these are the feel risks.</li>
+    <li><b>Playtest with people now; the pack is printed and
+    waiting.</b> The print-and-play pack (board, cards, trackers,
+    rulebook, teaching script, feedback form) plus a session
+    protocol exist in the repository. The simulator cannot answer
+    the two feel questions: is half of all turn time spent walking
+    too much, and does the city tail drag? Only a table can.</li>
+    <li><b>Use the web board to teach it.</b> The same measured
+    ruleset plays in any browser, hot-seat humans against bot
+    opponents. It is the fastest way to put the game in front of
+    someone.</li>
     <li><b>Watch the final-round initiative.</b> If human games show
     the first-player edge, test the snake order or simultaneous
     Emperor strikes before printing.</li>
   </ol>
 
   <h3>The bottom line</h3>
-  <p class="lead">Across 15,000 scripted games, eight role-played
+  <p class="lead">Across 29,000 scripted games, eight role-played
   games, and 160 AI games, the core promise held every time: a
-  decisive, comeback-rich 14-round race with a real economy and a
-  tense finish. One structural gap remains: you cannot fight a
-  leader. Three test cycles have isolated its cause, and
-  the next candidate fix is a single sentence of rules text.</p>
+  decisive, comeback-rich race with a real economy and a tense
+  finish, now measured on the real six-block board. One structural
+  gap remains: you cannot fight a leader. Three test cycles have
+  isolated its cause, and the next candidate fix is a single
+  sentence of rules text.</p>
   <p><b>Verdict: worth developing into a physical product.</b>
   Prototype after the leader-bounty test comes back positive; the
   testing rig to prove it already exists and costs pennies per
@@ -642,18 +748,21 @@
 <!-- ============================================================ ANNEX -->
 <section id="annex">
   <h2><span class="kick">Annex · prototype rulebook</span>The rules as they stand</h2>
-  <p class="lead">This is the complete rule set that survived testing,
-  written to be played as-is at a table. Every rule in it earned its
-  place; the evidence table at the end shows what was tried and
-  rejected on the way.</p>
+  <p class="lead">This is the complete rule set that survived
+  testing, version V0.7: the real six-block board. Written to be
+  played as-is at a table. Every rule in it earned its place; the
+  evidence table at the end shows what was tried and rejected on the
+  way.</p>
 
   <h3>What you need</h3>
   <ul>
-    <li>The palace board (the 5 × 5 plan on this page).</li>
+    <li>The palace board: the six-block city plan on this page,
+    97 street circles.</li>
     <li>Four pawns, one per player, starting on the four gates.</li>
-    <li>One standard six-sided die.</li>
+    <li>Two ordinary six-sided dice for movement (add them together)
+    and one six-sided die for every fight and trial.</li>
     <li>Treasure cards: <b>dagger, javelin, helmet, shield, sword,
-    armor</b>, one hidden in each of the six city districts.</li>
+    armor</b>, one hidden at each of the six block entries.</li>
     <li>Glory tokens (each player may hold at most <b>2</b>).</li>
     <li>Seal tokens in three kinds: <b>Cellars, Barracks,
     Peristyle</b>.</li>
@@ -663,16 +772,16 @@
   <h3>Goal and setup</h3>
   <p><b>Be the first to land two hits on the Emperor.</b> Choose gates
   freely; all four are equally good (measured, see evidence below).
-  Shuffle the six treasure cards face down, one per district A to F;
-  nobody knows which district holds which treasure. Each player
+  Shuffle the six treasure cards face down, one per block entry A
+  to F; nobody knows which block holds which treasure. Each player
   starts with no treasure and no Glory. Pick a starting player at
   random; the start <b>rotates one seat clockwise every round</b>.</p>
 
   <h3>On your turn</h3>
   <ol>
-    <li><b>Roll the die.</b> The number is your <i>maximum</i> steps,
-    not an exact count.</li>
-    <li><b>Move.</b> Move orthogonally (no diagonals) up to your roll.
+    <li><b>Roll both movement dice.</b> The sum is your
+    <i>maximum</i> steps, not an exact count.</li>
+    <li><b>Move.</b> Walk along the street circles up to your roll.
     You may stop early, and you may pass through other pawns.
     Walking past someone never starts a fight.</li>
     <li><b>Do one thing</b> at the square you reached (see the action
@@ -687,16 +796,17 @@
   <table>
     <thead><tr><th style="width:22%">Action</th><th>How it works</th></tr></thead>
     <tbody>
-      <tr><td><b>Explore a district</b></td><td>End your move on an
-      unrevealed district, or one whose treasure you do not own.
-      Flip its card face up for everyone; take that treasure. Each
-      treasure can be taken by every player once. Cards are never
-      used up, and treasure is never stolen or lost.</td></tr>
-      <tr><td><b>Stand a guard post</b></td><td>Move onto a corner
-      guard post (★) and roll the die: <b>4, 5 or 6 earns 1 Glory</b>.
+      <tr><td><b>Take a treasure</b></td><td>End your move on a
+      block's entry circle (A to F, on the north and south streets)
+      and take that block's card. When a card is first taken it is
+      revealed to everyone. Each treasure can be taken by every
+      player once. Cards are never used up, and treasure is never
+      stolen or lost.</td></tr>
+      <tr><td><b>Stand a guard post</b></td><td>Move onto a guard
+      post (★, on the west and east walls) and roll the die: <b>4, 5 or 6 earns 1 Glory</b>.
       This is the board's reliable way to earn Glory; use it.</td></tr>
       <tr><td><b>Duel a rival</b></td><td>End your move within two
-      squares of another pawn to challenge them. Both roll a die and
+      street spaces of another pawn to challenge them. Both roll a die and
       add a gear bonus (below). <b>Higher total wins; ties go to the
       attacker.</b> The winner takes 1 Glory. Nobody loses anything
       else: no gear, no position, no turns.</td></tr>
@@ -723,13 +833,15 @@
     palace phase begins. Turn order keeps rotating as before.</li>
   </ul>
   <p class="muted">If nobody claims the checkpoint by the end of
-  round 16, the city is abandoned and everyone moves up anyway, with
+  round 24, the city is abandoned and everyone moves up anyway, with
   the same free gear.</p>
 
   <h3>Level 2: the palace</h3>
-  <p>The districts change roles (see the board): the Cellars and the
-  Barracks sell seals, the Peristyle at the center sells a guaranteed
-  one, and the Emperor waits in his chamber at the south gate. You
+  <p>The blocks change roles (see the board): the Cellars at the
+  northwest entry A and the Barracks at the southeast entry F sell
+  seals, the Peristyle at the center of the main street sells a
+  guaranteed one, and the Emperor waits in his chamber at the south
+  gate. You
   need <b>any two different seals</b> before you may face him. You
   cannot repeat a seal you already own, and duels remain available
   exactly as in the city.</p>
@@ -756,15 +868,15 @@
     A powered strike lands about 7 times in 10; a free one about
     45 in 100.</li>
     <li><b>Hit:</b> mark it, stay in the chamber, strike again next
-    turn. <b>Miss:</b> step back to the retreat hall one square
-    north. Nothing else is lost.</li>
+    turn. <b>Miss:</b> step back one space to the retreat hall
+    beside his gate. Nothing else is lost.</li>
     <li><b>First to two hits wins immediately.</b></li>
   </ol>
 
   <h3>What everyone may see</h3>
   <p>Everything is public: positions, treasure, Glory, seals, hits,
-  and all revealed district cards. The only secrets are the face-down
-  treasure cards and the next die roll.</p>
+  and all revealed cards. The only secrets are the face-down treasure
+  cards and the next die roll.</p>
 
   <h3>Evidence appendix: every rule earned its place</h3>
   <table>
@@ -773,13 +885,16 @@
       <tr><td>Ties go to the attacker</td><td>With ties for the defender, attackers won only 38% of duels and pure fighters won 6% of games. This rule: 56% and 11%. (2,000 games)</td></tr>
       <tr><td>One grace round</td><td>Zero grace rounds doubled the free catch-up gear; two rounds dragged. One keeps the fairness gain at half the cost. (1,000 games)</td></tr>
       <tr><td>Rotating start</td><td>Fixed start: the first player won 39% of games. Rotating: 33%, with 67% comeback wins. (1,000 games)</td></tr>
-      <tr><td>City capped at 16 rounds</td><td>In 15,000 games a normal city phase never passed 13 rounds; the cap only ends the rare 20-round wandering stall. (96 AI games verified the cap itself costs nothing.)</td></tr>
+      <tr><td>City capped (16 on the small board, 24 on the real board)</td><td>On the small board a normal city phase never passed 13 rounds, so 16 was pure insurance. The real board re-measured the limit at 24; the cap ends only 13% of games, all wanderer-heavy. (96 AI games verified a cap itself costs nothing.)</td></tr>
       <tr><td>Glory cap of 2</td><td>A cap of 3 was tested: more fights, zero more wins, and the bigger bank was simply easier to ignore. (1,000 games)</td></tr>
       <tr><td>Two hits on the Emperor</td><td>Three hits tested: games grew longer and nothing improved. Two hits give the tense countdown every playtest praised. (1,000 games)</td></tr>
       <tr><td>Peristyle seal costs 1 Glory</td><td>Cost 2 tested under AI play: one third fewer purchases, no harder decisions; poor players were simply locked out. (32 AI games)</td></tr>
       <tr><td>Duels cost the loser nothing</td><td>Three penalties were tested: Glory theft (fighters won 0 of 500 games), teleport to the retreat hall (victims gained ground), lost turn (scripts liked it; reasoning players refused to aim it at leaders). All rejected. (3,000 games + 32 AI games)</td></tr>
       <tr><td>Free gear at the gate</td><td>86% of engaged players never needed it. It is a safety net, not a free ride. One AI strategy (skip collecting, fight for Glory) does exploit it; watch for it in human games. (1,000 games + 64 AI games)</td></tr>
-      <tr><td>All four gates equal</td><td>Win rates per gate stay within ±3% of each other across every test. (15,000 games)</td></tr>
+      <tr><td>All four gates equal</td><td>Win rates per gate stay within ±3% across every test; on the final six-block board the four-wanderer mirror reads 21 / 18 / 20 / 21 wins per gate. (29,000 games)</td></tr>
+      <tr><td>Two dice for movement</td><td>One die cannot cross the real city: 939 of 1,000 games hit the cap with 4.0 of 6 treasures collected. Two dice: 129 of 1,000, and 5.7 collected. (2,000 games)</td></tr>
+      <tr><td>Card entries on the north and south streets</td><td>Entries on the west and east streets, as first sketched from the physical board, handed those gates 44% of wins each. (2,000 games)</td></tr>
+      <tr><td>Six blocks, one card each</td><td>A simulated extra street split the middle blocks into strips with no card of their own. The designer restored the six-block plan; removing the street improved every pacing number. (1,000 games)</td></tr>
     </tbody>
   </table>
   <p class="muted">One rule is still open: nothing today lets you slow
@@ -791,7 +906,7 @@
 
 <footer>
   Diocletian's Palace · game design report · 2026-11-07 ·
-  built from five measured test cycles (V0.1 to V0.5) ·
+  built from seven measured design cycles (V0.1 to V0.7) ·
   every number reproducible from the project repository
 </footer>
 
