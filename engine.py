@@ -113,6 +113,13 @@ def validate_rules(rules):
     for name, cell in sites.items():
         _require(in_bounds(cell), f"level2 site {name} out of bounds: {cell}")
 
+    blocked_raw = board.get("blocked", [])
+    _require(isinstance(blocked_raw, list),
+             "board.blocked must be a list of [x, y] cells")
+    for cell in blocked_raw:
+        _require(in_bounds(cell), f"blocked cell out of bounds: {cell}")
+    blocked = {tuple(c) for c in blocked_raw}
+
     # Reachability: every special site must be reachable from gate P0.
     probe = Board(rules)
     dist = probe.distances(probe.gates["P0"])
@@ -120,11 +127,16 @@ def validate_rules(rules):
                + [probe.checkpoint] + probe.glory_posts
                + [tuple(c) for c in sites.values()])
     for cell in special:
+        _require(cell not in blocked,
+                 f"site {cell} may not be a blocked cell")
         _require(cell in dist, f"site {cell} is not reachable from gate P0")
 
     movement = rules["movement"]
     die = movement["die_sides"]
     _require(isinstance(die, int) and die >= 2, "die_sides must be >= 2")
+    dice_count = movement.get("dice_count", 1)
+    _require(isinstance(dice_count, int) and dice_count >= 1,
+             "dice_count must be an integer >= 1")
     _require(isinstance(movement["duel_range"], int) and movement["duel_range"] >= 0,
              "duel_range must be >= 0")
     for flag in ("die_is_max_steps", "allow_early_stop", "pass_through_players",
@@ -307,9 +319,15 @@ def _store_rng(state, stream, rng):
 
 
 def _start_turn(state):
-    """Roll the active player's movement die; called once per turn start."""
+    """Roll the active player's movement dice; called once per turn start.
+
+    `movement.dice_count` dice of `die_sides` are summed (default 1).
+    Challenge and duel rolls always use a single die of `die_sides`.
+    """
     rng = _rng(state, "movement")
-    die = rng.randint(1, state["rules"]["movement"]["die_sides"])
+    movement = state["rules"]["movement"]
+    die = sum(rng.randint(1, movement["die_sides"])
+              for _ in range(movement.get("dice_count", 1)))
     _store_rng(state, "movement", rng)
     state["current_roll"] = die
     state["turn_id"] += 1

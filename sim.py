@@ -290,6 +290,10 @@ def cmd_replay(args):
         with open(os.path.join(run, "result.json"), "r", encoding="utf-8") as fh:
             original_result = json.load(fh)
         replay_result = engine.result(state)
+        # engine_version is run metadata, not game content; a version
+        # bump must not fail verification of older runs.
+        for blob in (replay_result, original_result):
+            blob.pop("engine_version", None)
         result_ok = replay_result == original_result
         events_ok = replayed == original
     _print_json({
