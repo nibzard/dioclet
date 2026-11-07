@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diocletian's Palace — Game Design Report</title>
+<style>
+  :root {
+    --paper: #f6efe2;
+    --card: #fffdf6;
+    --ink: #2a2119;
+    --muted: #6f6252;
+    --line: #e2d5bc;
+    --purple: #5a3d6b;
+    --terra: #b0532f;
+    --gold: #b8860b;
+    --green: #5f7a4a;
+    --red: #a03d2e;
+    --blue: #4a6b7a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.62 Georgia, "Times New Roman", serif;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 28px 22px 80px; }
+  header.hero {
+    background: linear-gradient(160deg, #4a3157 0%, #5a3d6b 55%, #6d4a80 100%);
+    color: #f6efe2;
+    border-radius: 14px;
+    padding: 42px 40px 34px;
+    margin-bottom: 26px;
+  }
+  header.hero h1 {
+    margin: 0 0 6px;
+    font-size: 40px;
+    line-height: 1.15;
+    letter-spacing: 0.4px;
+  }
+  header.hero p.sub { margin: 0 0 18px; font-size: 19px; color: #e8dcc6; }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px; }
+  .stat {
+    background: rgba(246, 239, 226, 0.12);
+    border: 1px solid rgba(246, 239, 226, 0.35);
+    border-radius: 9px;
+    padding: 8px 14px;
+    font-size: 14px;
+    color: #f2e9d8;
+  }
+  .stat b { display: block; font-size: 21px; color: #fff; }
+  section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 30px 34px 26px;
+    margin-bottom: 24px;
+  }
+  h2 {
+    margin: 0 0 4px;
+    font-size: 27px;
+    color: var(--purple);
+  }
+  h2 .kick {
+    display: block;
+    font-size: 12.5px;
+    letter-spacing: 2.6px;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 4px;
+    font-family: Verdana, Arial, sans-serif;
+  }
+  h3 { margin: 26px 0 8px; font-size: 19px; color: var(--purple); }
+  p { margin: 10px 0; }
+  .lead { font-size: 18px; }
+  .muted, caption { color: var(--muted); font-size: 14px; }
+  figure { margin: 20px 0 6px; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption { font-size: 13.5px; color: var(--muted); margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 4px; font-size: 15px; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { font-family: Verdana, Arial, sans-serif; font-size: 12.5px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid #cbb98f; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:nth-child(even) td { background: #faf5e9; }
+  .chip {
+    display: inline-block; padding: 2px 11px; border-radius: 20px;
+    font: 12.5px Verdana, Arial, sans-serif; white-space: nowrap;
+  }
+  .chip.yes { background: #e4ecdb; color: #3d5630; border: 1px solid #b7c8a4; }
+  .chip.no  { background: #f4ddd6; color: #7c2d1f; border: 1px solid #ddb4a8; }
+  .chip.mid { background: #f3ead2; color: #7a5c0e; border: 1px solid #ddc98f; }
+  .callout {
+    border-left: 4px solid var(--gold);
+    background: #faf3df;
+    padding: 12px 18px;
+    border-radius: 0 10px 10px 0;
+    margin: 16px 0;
+  }
+  .callout.red { border-left-color: var(--red); background: #f9ebe7; }
+  .callout.green { border-left-color: var(--green); background: #eef2e6; }
+  .cols { display: flex; gap: 22px; flex-wrap: wrap; }
+  .cols > div { flex: 1 1 300px; }
+  ol.rec { padding-left: 22px; }
+  ol.rec li { margin: 12px 0; }
+  ol.rec b { color: var(--purple); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: 13.5px; color: var(--muted); }
+  .sw { display: inline-block; width: 13px; height: 13px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; border: 1px solid rgba(0,0,0,0.18); }
+  footer { text-align: center; color: var(--muted); font-size: 13.5px; margin-top: 10px; }
+  @media print { body { background: #fff; } section { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>Diocletian's Palace</h1>
+  <p class="sub">Game design report — five test cycles on a four-player,
+  two-level board game of treasures, Glory, and one final duel with the Emperor.</p>
+  <div class="stats">
+    <div class="stat"><b>15,000+</b>simulated games</div>
+    <div class="stat"><b>160</b>games vs AI players</div>
+    <div class="stat"><b>8</b>role-played full games</div>
+    <div class="stat"><b>12</b>rule variants tested</div>
+    <div class="stat"><b>4</b>rules adopted</div>
+    <div class="stat"><b>$0.54</b>total AI testing cost</div>
+  </div>
+</header>
+
+<!-- ============================================================ 1 -->
+<section>
+  <h2><span class="kick">The game</span>The palace in one minute</h2>
+  <p class="lead">Four players enter a ruined Roman palace through four
+  gates. Each wants the same thing: gear up in the abandoned city,
+  then race through the palace halls to be the first to strike down
+  the Emperor — twice.</p>
+  <div class="cols">
+    <div>
+      <p><b>Level 1 — the city.</b> Six districts hide one treasure
+      each. You roll and move, reveal districts, and take their
+      treasure: a dagger, a shield, a sword… A full kit of six makes
+      you deadlier in every fight. Along the way you can duel rivals
+      within reach, or stand a guard post turn for guaranteed Glory
+      if you roll well.</p>
+      <p><b>The checkpoint.</b> The first fully equipped player opens
+      the gate to Level 2. Anyone missing gear gets the rest for free
+      — nobody is left in the city. The first player through earns a
+      bonus Glory.</p>
+      <p><b>Level 2 — the palace.</b> You need two different seals
+      before the Emperor will face you: roll for the Cellars, fight
+      the guards at the Barracks, or simply buy the Peristyle seal
+      with Glory. Then it is two clean hits on the Emperor to win.
+      A miss throws you back a step; a duel won pays Glory — and
+      Glory buys power.</p>
+    </div>
+    <div>
+      <figure>
+        <svg viewBox="0 0 536 536" role="img" aria-label="Game board: a five by five grid with four gates, six treasure districts, guard posts at the corners, and the checkpoint in the middle.">
+          <!-- walkway cells -->
+          <g fill="#efe4cf" stroke="#d8c9ad" stroke-width="1.5">
+            <rect x="48"  y="48"  width="84" height="84" rx="10"/>
+            <rect x="224" y="48"  width="84" height="84" rx="10"/>
+            <rect x="400" y="48"  width="84" height="84" rx="10"/>
+            <rect x="136" y="136" width="84" height="84" rx="10"/>
+            <rect x="312" y="136" width="84" height="84" rx="10"/>
+            <rect x="48"  y="312" width="84" height="84" rx="10"/>
+            <rect x="136" y="400" width="84" height="84" rx="10"/>
+            <rect x="312" y="400" width="84" height="84" rx="10"/>
+            <rect x="400" y="400" width="84" height="84" rx="10"/>
+          </g>
+          <!-- glory posts -->
+          <g fill="#5f7a4a" stroke="#48603a" stroke-width="1.5">
+            <rect x="48"  y="136" width="84" height="84" rx="10"/>
+            <rect x="400" y="136" width="84" height="84" rx="10"/>
+            <rect x="48"  y="312" width="84" height="84" rx="10"/>
+            <rect x="400" y="312" width="84" height="84" rx="10"/>
+          </g>
+          <g fill="#f6efe2" font-family="Georgia, serif" font-size="34" text-anchor="middle">
+            <text x="90"  y="186">★</text>
+            <text x="442" y="186">★</text>
+            <text x="90"  y="362">★</text>
+            <text x="442" y="362">★</text>
+          </g>
+          <!-- districts -->
+          <g fill="#e9d9b8" stroke="#cdb684" stroke-width="1.5">
+            <rect x="136" y="136" width="84" height="84" rx="10"/>
+            <rect x="224" y="136" width="84" height="84" rx="10"/>
+            <rect x="312" y="136" width="84" height="84" rx="10"/>
+            <rect x="136" y="312" width="84" height="84" rx="10"/>
+            <rect x="312" y="312" width="84" height="84" rx="10"/>
+          </g>
+          <g fill="#7a5c2e" font-family="Georgia, serif" font-size="30" font-weight="bold" text-anchor="middle">
+            <text x="178" y="184">A</text>
+            <text x="266" y="184">B</text>
+            <text x="354" y="184">C</text>
+            <text x="178" y="360">D</text>
+            <text x="354" y="360">F</text>
+          </g>
+          <g fill="#a5854a" font-family="Georgia, serif" font-size="15" text-anchor="middle">
+            <text x="178" y="205">◆</text>
+            <text x="266" y="205">◆</text>
+            <text x="354" y="205">◆</text>
+            <text x="178" y="381">◆</text>
+            <text x="354" y="381">◆</text>
+          </g>
+          <!-- E district + retreat badge -->
+          <g>
+            <rect x="224" y="312" width="84" height="84" rx="10" fill="#e9d9b8" stroke="#cdb684" stroke-width="1.5"/>
+            <text x="266" y="360" fill="#7a5c2e" font-family="Georgia, serif" font-size="30" font-weight="bold" text-anchor="middle">E</text>
+            <text x="266" y="381" fill="#a5854a" font-family="Georgia, serif" font-size="15" text-anchor="middle">◆</text>
+            <rect x="238" y="316" width="56" height="17" rx="8.5" fill="#4a6b7a"/>
+            <text x="266" y="328.5" fill="#f6efe2" font-family="Verdana, sans-serif" font-size="10" text-anchor="middle">RETREAT</text>
+          </g>
+          <!-- checkpoint / peristyle -->
+          <g>
+            <rect x="224" y="224" width="84" height="84" rx="10" fill="#c9972b" stroke="#a87c1a" stroke-width="2"/>
+            <text x="266" y="258" fill="#4a3305" font-family="Verdana, sans-serif" font-size="10.5" text-anchor="middle" letter-spacing="1">CHECKPOINT</text>
+            <text x="266" y="274" fill="#4a3305" font-family="Georgia, serif" font-size="16" font-weight="bold" text-anchor="middle">Peristyle</text>
+            <text x="266" y="291" fill="#5d4407" font-family="Georgia, serif" font-size="11.5" text-anchor="middle">seal for 1 Glory</text>
+          </g>
+          <!-- gates -->
+          <g>
+            <rect x="224" y="48" width="84" height="84" rx="10" fill="#5a3d6b" stroke="#463053" stroke-width="1.5"/>
+            <text x="266" y="98" fill="#f6efe2" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle">N</text>
+            <rect x="48" y="224" width="84" height="84" rx="10" fill="#5a3d6b" stroke="#463053" stroke-width="1.5"/>
+            <text x="90" y="274" fill="#f6efe2" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle">W</text>
+            <rect x="400" y="224" width="84" height="84" rx="10" fill="#5a3d6b" stroke="#463053" stroke-width="1.5"/>
+            <text x="442" y="274" fill="#f6efe2" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle">E</text>
+            <rect x="224" y="400" width="84" height="84" rx="10" fill="#a03d2e" stroke="#7d2e22" stroke-width="1.5"/>
+            <text x="266" y="438" fill="#f6efe2" font-family="Georgia, serif" font-size="18" font-weight="bold" text-anchor="middle">EMPEROR</text>
+            <text x="266" y="458" fill="#f0d9c9" font-family="Verdana, sans-serif" font-size="10" text-anchor="middle">south gate · 2 hits</text>
+          </g>
+          <!-- L2 badges on A and C -->
+          <g font-family="Verdana, sans-serif" font-size="10" text-anchor="middle">
+            <rect x="146" y="146" width="64" height="17" rx="8.5" fill="#5a3d6b"/>
+            <text x="178" y="158.5" fill="#f6efe2">CELLARS</text>
+            <rect x="322" y="146" width="64" height="17" rx="8.5" fill="#5a3d6b"/>
+            <text x="354" y="158.5" fill="#f6efe2">BARRACKS</text>
+          </g>
+          <!-- frame -->
+          <rect x="30" y="30" width="476" height="476" rx="16" fill="none" stroke="#cbb98f" stroke-width="3"/>
+        </svg>
+        <figcaption>The board. In Level 2 the districts change roles:
+        the Cellars and Barracks sell seals, the gold Peristyle sells a
+        guaranteed seal for 1 Glory, and the Emperor waits at the south
+        gate. A missed strike on the Emperor throws you back to the
+        retreat hall.</figcaption>
+      </figure>
+      <div class="legend">
+        <span><span class="sw" style="background:#5a3d6b"></span>player gate</span>
+        <span><span class="sw" style="background:#e9d9b8"></span>treasure district</span>
+        <span><span class="sw" style="background:#5f7a4a"></span>guard post (Glory)</span>
+        <span><span class="sw" style="background:#c9972b"></span>checkpoint / Peristyle</span>
+        <span><span class="sw" style="background:#a03d2e"></span>Emperor</span>
+        <span><span class="sw" style="background:#4a6b7a"></span>retreat</span>
+      </div>
+    </div>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 920 128" role="img" aria-label="Flow of a game: level one city, checkpoint, level two palace.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#a58a54"/>
+        </marker>
+      </defs>
+      <g font-family="Verdana, sans-serif">
+        <rect x="10" y="14" width="270" height="100" rx="12" fill="#efe4cf" stroke="#cdb684" stroke-width="1.5"/>
+        <text x="145" y="42" text-anchor="middle" font-size="13" letter-spacing="1.5" fill="#7a5c2e">LEVEL 1 · THE CITY</text>
+        <text x="145" y="64" text-anchor="middle" font-size="11.5" fill="#5c4a30">explore districts, collect up to 6 treasures,</text>
+        <text x="145" y="80" text-anchor="middle" font-size="11.5" fill="#5c4a30">duel rivals for Glory, stand guard posts;</text>
+        <text x="145" y="96" text-anchor="middle" font-size="11.5" fill="#5c4a30">a full kit opens the checkpoint (8–9 rounds)</text>
+
+        <rect x="325" y="14" width="270" height="100" rx="12" fill="#f3ead2" stroke="#c9972b" stroke-width="2"/>
+        <text x="460" y="42" text-anchor="middle" font-size="13" letter-spacing="1.5" fill="#8a6508">THE CHECKPOINT</text>
+        <text x="460" y="64" text-anchor="middle" font-size="11.5" fill="#6b5009">first player with 6 treasures opens the gate;</text>
+        <text x="460" y="80" text-anchor="middle" font-size="11.5" fill="#6b5009">missing gear is granted, the leader earns Glory,</text>
+        <text x="460" y="96" text-anchor="middle" font-size="11.5" fill="#6b5009">everyone enters the palace together</text>
+
+        <rect x="640" y="14" width="270" height="100" rx="12" fill="#e9dde9" stroke="#5a3d6b" stroke-width="2"/>
+        <text x="775" y="42" text-anchor="middle" font-size="13" letter-spacing="1.5" fill="#5a3d6b">LEVEL 2 · THE PALACE</text>
+        <text x="775" y="64" text-anchor="middle" font-size="11.5" fill="#4a3157">claim 2 different seals (roll, fight, or buy),</text>
+        <text x="775" y="80" text-anchor="middle" font-size="11.5" fill="#4a3157">then land 2 hits on the Emperor;</text>
+        <text x="775" y="96" text-anchor="middle" font-size="11.5" fill="#4a3157">1 Glory = +2 strength on a strike (≈5–6 rounds)</text>
+
+        <line x1="282" y1="64" x2="322" y2="64" stroke="#a58a54" stroke-width="3" marker-end="url(#ar)"/>
+        <line x1="597" y1="64" x2="637" y2="64" stroke="#a58a54" stroke-width="3" marker-end="url(#ar)"/>
+      </g>
+    </svg>
+    <figcaption>A full game runs about 14 rounds — half city, half
+    palace — and always ends with a winner.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ 2 -->
+<section>
+  <h2><span class="kick">The engine room</span>Glory: one currency, real tension</h2>
+  <p class="lead">The best thing the game has is its economy. Glory is
+  scarce (you can hold only 2), easy to lose (spend it or waste it at
+  the cap), and it buys exactly two things — both worth winning for.</p>
+  <figure>
+    <svg viewBox="0 0 920 250" role="img" aria-label="Glory economy diagram: three sources feed a bank capped at two; two sinks buy a seal or an emperor strike; overflow is lost.">
+      <defs>
+        <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#8a6d3b"/>
+        </marker>
+      </defs>
+      <g font-family="Verdana, sans-serif">
+        <!-- sources -->
+        <g>
+          <rect x="15" y="22" width="215" height="52" rx="10" fill="#e4ecdb" stroke="#a9bd93" stroke-width="1.5"/>
+          <text x="122" y="44" text-anchor="middle" font-size="12" fill="#3d5630">Win a duel</text>
+          <text x="122" y="62" text-anchor="middle" font-size="11" fill="#5b7048">+1 Glory</text>
+          <rect x="15" y="99" width="215" height="52" rx="10" fill="#e4ecdb" stroke="#a9bd93" stroke-width="1.5"/>
+          <text x="122" y="121" text-anchor="middle" font-size="12" fill="#3d5630">Guard post, good roll</text>
+          <text x="122" y="139" text-anchor="middle" font-size="11" fill="#5b7048">+1 Glory · the reliable source</text>
+          <rect x="15" y="176" width="215" height="52" rx="10" fill="#e4ecdb" stroke="#a9bd93" stroke-width="1.5"/>
+          <text x="122" y="198" text-anchor="middle" font-size="12" fill="#3d5630">First through the checkpoint</text>
+          <text x="122" y="216" text-anchor="middle" font-size="11" fill="#5b7048">+1 Glory · once per game</text>
+        </g>
+        <!-- bank -->
+        <circle cx="460" cy="125" r="72" fill="#c9972b" stroke="#a87c1a" stroke-width="3"/>
+        <text x="460" y="108" text-anchor="middle" font-size="21" font-weight="bold" fill="#4a3305" font-family="Georgia, serif">Glory</text>
+        <text x="460" y="132" text-anchor="middle" font-size="12.5" fill="#5d4407">bank · holds at most 2</text>
+        <text x="460" y="152" text-anchor="middle" font-size="11" fill="#5d4407">earn more and it is lost</text>
+        <!-- sinks -->
+        <g>
+          <rect x="665" y="40" width="240" height="62" rx="10" fill="#e9dde9" stroke="#5a3d6b" stroke-width="1.5"/>
+          <text x="785" y="64" text-anchor="middle" font-size="12" fill="#5a3d6b">Peristyle seal — pay 1</text>
+          <text x="785" y="84" text-anchor="middle" font-size="11" fill="#6d5380">a guaranteed seal, no roll</text>
+          <rect x="665" y="148" width="240" height="62" rx="10" fill="#f4ddd6" stroke="#a03d2e" stroke-width="1.5"/>
+          <text x="785" y="172" text-anchor="middle" font-size="12" fill="#7c2d1f">Emperor strike — pay 1</text>
+          <text x="785" y="192" text-anchor="middle" font-size="11" fill="#96503f">+2 strength on the killing blow</text>
+        </g>
+        <!-- arrows -->
+        <line x1="232" y1="48"  x2="396" y2="98"  stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#ar2)"/>
+        <line x1="232" y1="125" x2="384" y2="125" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#ar2)"/>
+        <line x1="232" y1="202" x2="396" y2="152" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#ar2)"/>
+        <line x1="527" y1="97"  x2="660" y2="71"  stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#ar2)"/>
+        <line x1="527" y1="153" x2="660" y2="179" stroke="#8a6d3b" stroke-width="2.5" marker-end="url(#ar2)"/>
+        <!-- overflow -->
+        <path d="M 460 197 Q 460 232, 560 232 L 640 232" fill="none" stroke="#b09a6b" stroke-width="2" stroke-dasharray="6 5"/>
+        <text x="600" y="242" text-anchor="middle" font-size="10.5" fill="#8a795a">overflow wasted at the cap</text>
+      </g>
+    </svg>
+    <figcaption>Every close game we observed turned on this choice:
+    bank Glory, buy the safe seal, or spend it on the Emperor. The AI
+    players were markedly more certain about their choices in the
+    palace than in the city — the decisions there simply matter more.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ 3 -->
+<section>
+  <h2><span class="kick">Method</span>How we tested — in plain words</h2>
+  <p>Every rule change went through the same discipline, so results
+  are comparable across the whole project:</p>
+  <ol>
+    <li><b>Scripted players first.</b> Four simple player types
+    (collector, fighter, all-rounder, wanderer) played 1,000 games
+    per rule variant, always on the same board layouts, with every
+    seat rotated fairly. Free, fast, and repeatable.</li>
+    <li><b>Role-played games.</b> Eight full games played
+    character-by-character (cautious merchant, duelist, tactician,
+    racer…) to catch what counters miss: how rules <i>feel</i>.</li>
+    <li><b>AI players last.</b> Language-model players that reason
+    over the same public information a human sees. 160 games against
+    a strong scripted benchmark — for a total cost of 54 cents.</li>
+    <li><b>One knob at a time.</b> Each variant changed exactly one
+    rule. Adopted changes became the new base for the next test.</li>
+  </ol>
+  <p class="muted">Every game in every batch can be replayed move by
+  move and reproduces exactly — the numbers below are verifiable, not
+  estimated.</p>
+</section>
+
+<!-- ============================================================ 4 -->
+<section>
+  <h2><span class="kick">The journey</span>Five cycles, twelve knobs</h2>
+  <figure>
+    <svg viewBox="0 0 960 168" role="img" aria-label="Timeline of the five design cycles from V0.1 baseline to V0.5 rule tests under AI play.">
+      <line x1="40" y1="84" x2="920" y2="84" stroke="#cbb98f" stroke-width="4"/>
+      <g font-family="Verdana, sans-serif" text-anchor="middle">
+        <g>
+          <circle cx="80" cy="84" r="11" fill="#8a795a"/>
+          <text x="80" y="48" font-size="13" font-weight="bold" fill="#5c4a30">V0.1</text>
+          <text x="80" y="30" font-size="11" fill="#6f6252">Does it work?</text>
+          <text x="80" y="118" font-size="10.5" fill="#6f6252">1,000 games: decisive,</text>
+          <text x="80" y="132" font-size="10.5" fill="#6f6252">but duels punish attackers</text>
+        </g>
+        <g>
+          <circle cx="255" cy="84" r="11" fill="#5a3d6b"/>
+          <text x="255" y="48" font-size="13" font-weight="bold" fill="#5a3d6b">V0.2</text>
+          <text x="255" y="30" font-size="11" fill="#6f6252">Fair fights</text>
+          <text x="255" y="118" font-size="10.5" fill="#6f6252">adopt: ties to attacker,</text>
+          <text x="255" y="132" font-size="10.5" fill="#6f6252">grace 1, rotating start</text>
+        </g>
+        <g>
+          <circle cx="430" cy="84" r="11" fill="#a03d2e"/>
+          <text x="430" y="48" font-size="13" font-weight="bold" fill="#a03d2e">V0.3</text>
+          <text x="430" y="30" font-size="11" fill="#6f6252">Duel consequences</text>
+          <text x="430" y="118" font-size="10.5" fill="#6f6252">theft backfires, teleport</text>
+          <text x="430" y="132" font-size="10.5" fill="#6f6252">flaw found, lost turn promising</text>
+        </g>
+        <g>
+          <circle cx="605" cy="84" r="11" fill="#5f7a4a"/>
+          <text x="605" y="48" font-size="13" font-weight="bold" fill="#5f7a4a">V0.4–V0.4.1</text>
+          <text x="605" y="30" font-size="11" fill="#6f6252">AI players</text>
+          <text x="605" y="118" font-size="10.5" fill="#6f6252">64 live games: hidden strategies</text>
+          <text x="605" y="132" font-size="10.5" fill="#6f6252">found, two blind spots found</text>
+        </g>
+        <g>
+          <circle cx="800" cy="84" r="11" fill="#b8860b"/>
+          <text x="800" y="48" font-size="13" font-weight="bold" fill="#8a6508">V0.5</text>
+          <text x="800" y="30" font-size="11" fill="#6f6252">Rules under AI play</text>
+          <text x="800" y="118" font-size="10.5" fill="#6f6252">96 live games: one guardrail</text>
+          <text x="800" y="132" font-size="10.5" fill="#6f6252">adopted, two ideas rejected</text>
+        </g>
+      </g>
+    </svg>
+  </figure>
+
+  <h3>The verdict ledger</h3>
+  <table>
+    <thead><tr><th>Rule change tested</th><th>What happened</th><th style="width:120px">Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>Attacker wins duel ties</td><td>Attacker win rate 38% → 56%; the fighting style doubled its win share (6% → 11%)</td><td><span class="chip yes">Adopted</span></td></tr>
+      <tr><td>One grace round at the checkpoint</td><td>Half the catch-up gear of no grace, most of the fairness gain</td><td><span class="chip yes">Adopted</span></td></tr>
+      <tr><td>Rotating first player</td><td>Early-rush wins fell 39% → 33%; comebacks rose to 67%</td><td><span class="chip yes">Adopted</span></td></tr>
+      <tr><td>Level 1 capped at 16 rounds</td><td>Never touched a normal game (typical city phase: 8 rounds); ends only the rare 20-round stall</td><td><span class="chip mid">Adopted as guardrail</span></td></tr>
+      <tr><td>Glory cap raised to 3</td><td>More fights, zero more winning — the bank just got easier to ignore</td><td><span class="chip no">Rejected</span></td></tr>
+      <tr><td>Three Emperor hits to win</td><td>Longer games (17 rounds), but nothing better — length was never the problem</td><td><span class="chip no">Rejected</span></td></tr>
+      <tr><td>Duel winner steals Glory</td><td>Backfired spectacularly: fighters won 0 of 500 games; pacifists feasted on the chaos</td><td><span class="chip no">Rejected</span></td></tr>
+      <tr><td>Loser pushed to the retreat hall</td><td>A teleport: the retreat hall sits at the Emperor's doorstep — victims gained ground</td><td><span class="chip no">Rejected</span></td></tr>
+      <tr><td>Duel loser skips a turn</td><td>Worked under scripts (fighters 14%), but under AI play nobody aimed it at leaders and catch-up gear rose 32%</td><td><span class="chip no">Rejected after AI test</span></td></tr>
+      <tr><td>Peristyle seal costs 2 Glory</td><td>Poorer players were simply locked out; buyers bought at the same instant as before</td><td><span class="chip no">Rejected</span></td></tr>
+    </tbody>
+  </table>
+  <p class="muted">Each verdict rests on 1,000 scripted games, role-play
+  evidence, or 32 AI games — whatever the question needed. Nothing was
+  adopted on theory alone.</p>
+</section>
+
+<!-- ============================================================ 5 -->
+<section>
+  <h2><span class="kick">Findings · part 1</span>What the numbers say works</h2>
+  <table>
+    <thead><tr><th>Health check (current rules)</th><th class="num">Result</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>Games that reach a winner</td><td class="num"><b>100%</b></td><td>Zero draws or stalls in 15,000+ games</td></tr>
+      <tr><td>Typical game length</td><td class="num"><b>14 rounds</b></td><td>A comfortable 30–45 minutes at the table</td></tr>
+      <tr><td>Wins by a player who was behind</td><td class="num"><b>70%</b></td><td>Early leads do not decide the game</td></tr>
+      <tr><td>Early-rush advantage</td><td class="num"><b>30%</b></td><td>Down from 39% — first through the gate wins under a third of games</td></tr>
+      <tr><td>Treasures collected per player</td><td class="num"><b>5.6 / 6</b></td><td>The city phase is a real quest, not a formality</td></tr>
+      <tr><td>Players needing catch-up gear</td><td class="num"><b>0.4 items</b></td><td>The safety net exists but rarely fires for engaged players</td></tr>
+      <tr><td>Four gates fairness</td><td class="num"><b>±3%</b></td><td>No gate is better or worse than chance</td></tr>
+      <tr><td>Duel attacker win rate</td><td class="num"><b>56%</b></td><td>Fights are slightly favorable to the bold — as they should feel</td></tr>
+    </tbody>
+  </table>
+
+  <div class="cols">
+    <div>
+      <h3>Fairness climbed, comebacks grew</h3>
+      <figure>
+        <svg viewBox="0 0 440 240" role="img" aria-label="Line chart: comeback share rises from 61 to 70 percent while the early-rush win share falls from 39 to 30.">
+          <!-- grid -->
+          <g stroke="#e7dcc2" stroke-width="1">
+            <line x1="50" y1="40" x2="420" y2="40"/><line x1="50" y1="90" x2="420" y2="90"/>
+            <line x1="50" y1="140" x2="420" y2="140"/><line x1="50" y1="190" x2="420" y2="190"/>
+          </g>
+          <g font-family="Verdana, sans-serif" font-size="11" fill="#8a795a">
+            <text x="44" y="44" text-anchor="end">80%</text>
+            <text x="44" y="94" text-anchor="end">65%</text>
+            <text x="44" y="144" text-anchor="end">50%</text>
+            <text x="44" y="194" text-anchor="end">35%</text>
+          </g>
+          <!-- scale: 35%->190, 80%->40 ; y = 190 - (v-35) -->
+          <!-- comeback 61,67,70 -->
+          <polyline points="90,130 235,95 380,80" fill="none" stroke="#5f7a4a" stroke-width="3.5"/>
+          <g fill="#5f7a4a"><circle cx="90" cy="130" r="6"/><circle cx="235" cy="95" r="6"/><circle cx="380" cy="80" r="6"/></g>
+          <g font-family="Verdana, sans-serif" font-size="11.5" fill="#3d5630" text-anchor="middle">
+            <text x="90" y="115">61%</text><text x="235" y="80">67%</text><text x="380" y="65">70%</text>
+          </g>
+          <!-- rush 39,33,30 -->
+          <polyline points="90,155 235,185 380,200" fill="none" stroke="#b0532f" stroke-width="3.5"/>
+          <g fill="#b0532f"><circle cx="90" cy="155" r="6"/><circle cx="235" cy="185" r="6"/><circle cx="380" cy="200" r="6"/></g>
+          <g font-family="Verdana, sans-serif" font-size="11.5" fill="#7c3517" text-anchor="middle">
+            <text x="90" y="145">39%</text><text x="235" y="208">33%</text><text x="380" y="223">30%</text>
+          </g>
+          <g font-family="Verdana, sans-serif" font-size="10.5" fill="#6f6252" text-anchor="middle">
+            <text x="90" y="236">original</text><text x="235" y="236">+ rotating start</text><text x="380" y="236">current rules</text>
+          </g>
+          <g font-family="Verdana, sans-serif" font-size="11.5">
+            <rect x="120" y="8" width="14" height="4" fill="#5f7a4a"/><text x="140" y="15" fill="#3d5630">comeback wins</text>
+            <rect x="250" y="8" width="14" height="4" fill="#b0532f"/><text x="270" y="15" fill="#7c3517">early-rush wins</text>
+          </g>
+        </svg>
+        <figcaption>Both fairness fixes worked, and they did not
+        soften the game — they made trailing players win more.</figcaption>
+      </figure>
+    </div>
+    <div>
+      <h3>…but aggression still does not pay</h3>
+      <figure>
+        <svg viewBox="0 0 440 240" role="img" aria-label="Bar chart: the fighting style's win share across rule sets: 6, 11, 14, 0 percent against a 25 percent equal-share line.">
+          <g stroke="#e7dcc2" stroke-width="1">
+            <line x1="50" y1="40" x2="420" y2="40"/><line x1="50" y1="90" x2="420" y2="90"/>
+            <line x1="50" y1="140" x2="420" y2="140"/><line x1="50" y1="190" x2="420" y2="190"/>
+          </g>
+          <!-- equal share line: 25% -> y=215 ; v% -> y = 190 - (v-35)... reuse: y=190-(v-35) => 25% -> 200 -->
+          <line x1="50" y1="200" x2="420" y2="200" stroke="#8a795a" stroke-width="2" stroke-dasharray="7 5"/>
+          <text x="416" y="214" text-anchor="end" font-family="Verdana, sans-serif" font-size="10.5" fill="#8a795a">equal share = 25%</text>
+          <!-- bars: v -> y = 190-(v-35); 6->219, 11->214, 14->211... too flat. Use own scale: y = 230 - v*6 -->
+          <g>
+            <rect x="70"  y="194" width="70" height="36"  fill="#8a795a"/>
+            <rect x="160" y="164" width="70" height="66"  fill="#5a3d6b"/>
+            <rect x="250" y="146" width="70" height="84"  fill="#b8860b"/>
+            <rect x="340" y="230" width="70" height="0.5" fill="#a03d2e"/>
+            <rect x="340" y="226" width="70" height="4" fill="#a03d2e"/>
+          </g>
+          <g font-family="Verdana, sans-serif" font-size="12.5" text-anchor="middle" font-weight="bold">
+            <text x="105" y="186" fill="#5c4a30">6%</text>
+            <text x="195" y="156" fill="#5a3d6b">11%</text>
+            <text x="285" y="138" fill="#8a6508">14%</text>
+            <text x="375" y="218" fill="#a03d2e">0%</text>
+          </g>
+          <g font-family="Verdana, sans-serif" font-size="10.5" fill="#6f6252" text-anchor="middle">
+            <text x="105" y="244">original</text>
+            <text x="195" y="244">+ fair ties</text>
+            <text x="285" y="244">+ lost turn</text>
+            <text x="375" y="244">+ Glory theft</text>
+          </g>
+        </svg>
+        <figcaption>Win share of the all-fighter play style. Fair ties
+        helped; the lost turn helped scripts only; stealing Glory
+        collapsed it to zero. Fighting is still a losing lifestyle —
+        the game's one open design problem.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="callout green">
+    <b>The two-hit Emperor ending works.</b> Every qualitative table,
+    scripted run, and AI game agrees: the countdown after a leader's
+    first hit is the emotional peak of the game. Paid strikes
+    (about 72% success) open the endgame; free strikes (about 45%)
+    decide it when Glory runs dry. That arc survived every rule
+    change we tested.
+  </div>
+</section>
+
+<!-- ============================================================ 6 -->
+<section>
+  <h2><span class="kick">Findings · part 2</span>What the AI players revealed</h2>
+  <p class="lead">Reasoning players — given exactly the information a
+  human sees — found strategies the scripts never tried, and walked
+  past an obvious one.</p>
+  <table>
+    <thead><tr><th style="width:34%">Question</th><th>Answer from 160 AI games</th></tr></thead>
+    <tbody>
+      <tr><td>Are they strong?</td><td>On par with our best scripted benchmark. In 64 direct head-to-head games the script's seats won 39 to the model's 25 — a lean, but not yet a proven gap.</td></tr>
+      <tr><td>New strategies?</td><td><b>Two.</b> The <i>Glory engine</i>: skip collecting almost entirely, win duels for Glory, and let the free catch-up gear finish your kit — then out-spend everyone at the Emperor. And <i>seal-market timing</i>: buy the guaranteed seal early, roll only for the cheap ones.</td></tr>
+      <tr><td>Blind spots?</td><td><b>One glaring:</b> guard posts — the board's only reliable Glory source — were used about once per 176 player-games. Players who ignored Glory lost locked-out and hoarding: one in five losers died holding unspent Glory.</td></tr>
+      <tr><td>Discipline?</td><td>Flawless execution: a winning Emperor strike was taken 100% of the time (168 of 168 chances), with zero illegal moves across every game.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout">
+    <b>What this means for the design.</b> The Glory engine works only
+    because the free catch-up gear subsidizes it. That is a feature
+    today (a legitimate second strategy) — but if human players copy
+    it, the city phase stops mattering. The fix under consideration:
+    make the checkpoint require, for example, four of six treasures.
+  </div>
+</section>
+
+<!-- ============================================================ 7 -->
+<section>
+  <h2><span class="kick">Findings · part 3</span>The one problem left</h2>
+  <div class="callout red">
+    <b>You cannot slow a leader.</b> A duel pays only its winner — so
+    attacking the player about to win <i>risks handing them Glory</i>.
+    Every qualitative table refused to do it; the AI players refused
+    too, even in games where a rival sat one hit from victory. Three
+    separate test cycles converged on the same root cause: the problem
+    is not what a duel <i>costs</i> the loser, it is what it <i>pays</i>
+    the winner.
+  </div>
+  <p>Tested and failed: making the loser skip a turn (scripts liked
+  it, reasoning players simply refused to aim it at leaders), stealing
+  Glory (collapses the fighting style entirely), and pushing the
+  loser to the retreat hall (a free teleport toward the Emperor).</p>
+  <p>The evidence now points at <b>duel value</b>: paying a bounty
+  when you beat a player who holds an Emperor hit, or paying Glory
+  for guard-post success. Either makes "fight the leader" rational
+  for the first time. Both are single, small rule changes — the next
+  test cycle is cheap.</p>
+  <p class="muted">Second, smaller issue: the player who acts first
+  in the final round still holds an edge (about 28% vs 21% of wins
+  across 1,000 games). Fix candidates if human play shows it matters:
+  a snake-shaped turn order, or all players strike at the Emperor
+  simultaneously.</p>
+</section>
+
+<!-- ============================================================ 8 -->
+<section>
+  <h2><span class="kick">Recommendations</span>What to do next</h2>
+  <ol class="rec">
+    <li><b>Lock the current package for the physical prototype.</b>
+    Attacker wins ties, one grace round, rotating start, and the
+    16-round city cap. Every one is tested, neutral-or-better on
+    length and decisiveness, and none needs extra components.</li>
+    <li><b>Keep the Peristyle seal at 1 Glory.</b> Doubling it did not
+    create harder choices — it only locked poor players out.</li>
+    <li><b>Prototype the leader bounty.</b> One rule: <i>beat a player
+    who holds an Emperor hit in a duel and earn 2 Glory</i>. It is the
+    first mechanism that makes interference rational. Test it exactly
+    like everything here — scripts, then AI players.</li>
+    <li><b>Consider a collection requirement at the checkpoint</b>
+    (four of six treasures) so the Glory engine cannot fully replace
+    the city phase — decide after human playtests.</li>
+    <li><b>Playtest with people now.</b> The simulator cannot answer:
+    does a lost duel feel harsh for children, does the catch-up gear
+    feel cheap, is the Glory-cap dead air boring at the table? Eight
+    role-played games say these are the feel risks.</li>
+    <li><b>Watch the final-round initiative.</b> If human games show
+    the first-player edge, test the snake order or simultaneous
+    Emperor strikes before printing.</li>
+  </ol>
+
+  <h3>The bottom line</h3>
+  <p class="lead">Across 15,000 scripted games, eight role-played
+  games, and 160 AI games, the core promise held every time: a
+  decisive, comeback-rich 14-round race with a real economy and a
+  genuinely tense finish. One structural gap — no way to fight a
+  leader — remains, three test cycles have isolated its cause, and
+  the next candidate fix is a single sentence of rules text.</p>
+  <p><b>Verdict: worth developing into a physical product.</b>
+  Prototype after the leader-bounty test comes back positive; the
+  testing rig to prove it already exists and costs pennies per
+  hundred games to run.</p>
+</section>
+
+<!-- ============================================================ ANNEX -->
+<section id="annex">
+  <h2><span class="kick">Annex · prototype rulebook</span>The rules as they stand</h2>
+  <p class="lead">This is the complete rule set that survived testing —
+  written to be played as-is at a table. Every rule in it earned its
+  place; the evidence table at the end shows what was tried and
+  rejected on the way.</p>
+
+  <h3>What you need</h3>
+  <ul>
+    <li>The palace board (the 5 × 5 plan on this page).</li>
+    <li>Four pawns, one per player, starting on the four gates.</li>
+    <li>One standard six-sided die.</li>
+    <li>Treasure cards: <b>dagger, javelin, helmet, shield, sword,
+    armor</b> — one hidden in each of the six city districts.</li>
+    <li>Glory tokens (each player may hold at most <b>2</b>).</li>
+    <li>Seal tokens in three kinds: <b>Cellars, Barracks,
+    Peristyle</b>.</li>
+    <li>Two hit markers per player for the Emperor battle.</li>
+  </ul>
+
+  <h3>Goal and setup</h3>
+  <p><b>Be the first to land two hits on the Emperor.</b> Choose gates
+  freely — all four are equally good (measured, see evidence below).
+  Shuffle the six treasure cards face down, one per district A–F;
+  nobody knows which district holds which treasure. Each player
+  starts with no treasure and no Glory. Pick a starting player at
+  random; the start <b>rotates one seat clockwise every round</b>.</p>
+
+  <h3>On your turn</h3>
+  <ol>
+    <li><b>Roll the die.</b> The number is your <i>maximum</i> steps,
+    not an exact count.</li>
+    <li><b>Move.</b> Move orthogonally (no diagonals) up to your roll.
+    You may stop early, and you may pass through other pawns —
+    walking past someone never starts a fight.</li>
+    <li><b>Do one thing</b> at the square you reached (see the action
+    lists below), or simply end your move. One action per turn,
+    never two.</li>
+  </ol>
+  <p class="muted">If you are already standing on a special square,
+  you may use its action without moving (except guard posts and
+  duels — those always require a move of at least one step).</p>
+
+  <h3>Level 1 — the city</h3>
+  <table>
+    <thead><tr><th style="width:22%">Action</th><th>How it works</th></tr></thead>
+    <tbody>
+      <tr><td><b>Explore a district</b></td><td>End your move on an
+      unrevealed district, or one whose treasure you do not own.
+      Flip its card face up for everyone; take that treasure. Each
+      treasure can be taken by every player once — cards are never
+      used up, and treasure is never stolen or lost.</td></tr>
+      <tr><td><b>Stand a guard post</b></td><td>Move onto a corner
+      guard post (★) and roll the die: <b>4, 5 or 6 earns 1 Glory</b>.
+      This is the board's reliable way to earn Glory — use it.</td></tr>
+      <tr><td><b>Duel a rival</b></td><td>End your move within two
+      squares of another pawn to challenge them. Both roll a die and
+      add a gear bonus (below). <b>Higher total wins; ties go to the
+      attacker.</b> The winner takes 1 Glory. Nobody loses anything
+      else — no gear, no position, no turns.</td></tr>
+      <tr><td><b>Claim the checkpoint</b></td><td>The first player to
+      own all six treasures and reach the gold checkpoint in the
+      center claims it: <b>take 1 Glory</b>. This opens the gate to
+      the palace (see below). Only the first claim counts.</td></tr>
+    </tbody>
+  </table>
+  <p><b>Gear bonus:</b> 0–2 treasures +0 · 3–5 treasures +1 · all 6
+  treasures +2. Added to every duel, Barracks contest, and Emperor
+  strike.</p>
+  <p><b>Glory:</b> you may hold at most <b>2</b>. Anything earned
+  beyond that is lost — spend it or waste it.</p>
+
+  <h3>Moving up to the palace</h3>
+  <p>When the checkpoint is claimed, finish that round, then play
+  <b>one more full round</b> in the city — a last chance to grab
+  treasure, Glory, or a grudge match. Then:</p>
+  <ul>
+    <li>Every player still missing treasures <b>receives them for
+    free</b> — nobody is left behind.</li>
+    <li>All pawns return to their gates, Glory is kept, and the
+    palace phase begins. Turn order keeps rotating as before.</li>
+  </ul>
+  <p class="muted">If nobody claims the checkpoint by the end of
+  round 16, the city is abandoned and everyone moves up anyway, with
+  the same free gear.</p>
+
+  <h3>Level 2 — the palace</h3>
+  <p>The districts change roles (see the board): the Cellars and the
+  Barracks sell seals, the Peristyle at the center sells a guaranteed
+  one, and the Emperor waits in his chamber at the south gate. You
+  need <b>any two different seals</b> before you may face him. You
+  cannot repeat a seal you already own, and duels remain available
+  exactly as in the city.</p>
+  <table>
+    <thead><tr><th style="width:22%">Seal</th><th>How to earn it</th></tr></thead>
+    <tbody>
+      <tr><td><b>Cellars</b></td><td>Roll the die at the Cellars:
+      <b>3 or higher</b> earns the seal.</td></tr>
+      <tr><td><b>Barracks</b></td><td>Roll off against the guard at
+      the Barracks: you roll die + gear bonus, the guard rolls die
+      +1. <b>Beat the guard strictly</b> to earn the seal.</td></tr>
+      <tr><td><b>Peristyle</b></td><td>Roll the die at the Peristyle:
+      <b>5 or 6</b> earns the seal — or simply <b>pay 1 Glory</b> for
+      it, no roll. The safe buy.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>The Emperor</h3>
+  <ol>
+    <li>Stand in his chamber and strike: you roll die + gear bonus,
+    he rolls die +2. <b>Score strictly higher to hit.</b></li>
+    <li>You may <b>declare a powered strike before rolling: pay 1
+    Glory for +2</b> to your roll — paid whether you hit or miss.
+    A powered strike lands about 7 times in 10; a free one about
+    45 in 100.</li>
+    <li><b>Hit:</b> mark it, stay in the chamber, strike again next
+    turn. <b>Miss:</b> step back to the retreat hall one square
+    north — nothing else is lost.</li>
+    <li><b>First to two hits wins immediately.</b></li>
+  </ol>
+
+  <h3>What everyone may see</h3>
+  <p>Everything is public: positions, treasure, Glory, seals, hits,
+  and all revealed district cards. The only secrets are the face-down
+  treasure cards and the next die roll.</p>
+
+  <h3>Evidence appendix — every rule earned its place</h3>
+  <table>
+    <thead><tr><th>Rule in this book</th><th>What testing showed</th></tr></thead>
+    <tbody>
+      <tr><td>Ties go to the attacker</td><td>With ties for the defender, attackers won only 38% of duels and pure fighters won 6% of games. This rule: 56% and 11%. (2,000 games)</td></tr>
+      <tr><td>One grace round</td><td>Zero grace rounds doubled the free catch-up gear; two rounds dragged. One keeps the fairness gain at half the cost. (1,000 games)</td></tr>
+      <tr><td>Rotating start</td><td>Fixed start: the first player won 39% of games. Rotating: 33%, with 67% comeback wins. (1,000 games)</td></tr>
+      <tr><td>City capped at 16 rounds</td><td>In 15,000 games a normal city phase never passed 13 rounds; the cap only ends the rare 20-round wandering stall. (96 AI games verified the cap itself costs nothing.)</td></tr>
+      <tr><td>Glory cap of 2</td><td>A cap of 3 was tested: more fights, zero more wins — the bigger bank was simply easier to ignore. (1,000 games)</td></tr>
+      <tr><td>Two hits on the Emperor</td><td>Three hits tested: games grew longer and nothing improved. Two hits give the tense countdown every playtest praised. (1,000 games)</td></tr>
+      <tr><td>Peristyle seal costs 1 Glory</td><td>Cost 2 tested under AI play: one third fewer purchases, no harder decisions — poor players were simply locked out. (32 AI games)</td></tr>
+      <tr><td>Duels cost the loser nothing</td><td>Three penalties tested — Glory theft (fighters won 0 of 500 games), teleport to the retreat hall (victims gained ground), lost turn (scripts liked it; reasoning players refused to aim it at leaders). All rejected. (3,000 games + 32 AI games)</td></tr>
+      <tr><td>Free gear at the gate</td><td>86% of engaged players never needed it — it is a safety net, not a free ride. One AI strategy (skip collecting, fight for Glory) does exploit it; watch for it in human games. (1,000 games + 64 AI games)</td></tr>
+      <tr><td>All four gates equal</td><td>Win rates per gate stay within ±3% of each other across every test. (15,000 games)</td></tr>
+    </tbody>
+  </table>
+  <p class="muted">One rule is still open: nothing today lets you slow
+  a player who is about to win. The recommended prototype addition —
+  <i>beat a player who holds an Emperor hit in a duel and earn 2
+  Glory</i> — is not in this book because it has not been tested yet.
+  Test it before you print anything.</p>
+</section>
+
+<footer>
+  Diocletian's Palace · game design report · 2026-11-07 ·
+  built from five measured test cycles (V0.1 – V0.5) ·
+  every number reproducible from the project repository
+</footer>
+
+</div>
+</body>
+</html>
