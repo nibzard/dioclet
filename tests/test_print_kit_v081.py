@@ -30,7 +30,9 @@ def page_text(name, page_index):
 
 
 def whole_text(name):
-    return "\n".join(p.extract_text() for p in PdfReader(PRINT / name).pages)
+    # Wrapping changes with type size; assertions concern the printed words.
+    return " ".join(" ".join(p.extract_text() for p in
+                             PdfReader(PRINT / name).pages).split())
 
 
 class BoardPages(unittest.TestCase):
@@ -54,14 +56,27 @@ class BoardPages(unittest.TestCase):
             for word in name.split(" - "):
                 self.assertIn(word, text)
 
+    def test_building_hatch_clip_uses_board_coordinates(self):
+        # The northwest building's inset hatch rectangle must share the
+        # point scale of its outline, rather than appearing near the origin.
+        page = PdfReader(PRINT / self.FILE).pages[0]
+        expected = (80.5 * kit.mm, 219.5 * kit.mm,
+                    117.5 * kit.mm, 117.5 * kit.mm)
+        rectangles = [tuple(float(v) for v in args)
+                      for args, operator in page.get_contents().operations
+                      if operator == b"re"]
+        self.assertTrue(any(all(abs(a - b) < 0.001
+                                for a, b in zip(rect, expected))
+                            for rect in rectangles))
+
 
 class DocumentPages(unittest.TestCase):
     FILES = {
         "dioclet-player-sheets-A4-BW.pdf": 2,
         "dioclet-cards-tokens-A4-BW.pdf": 3,
-        "dioclet-rulebook-A4-BW.pdf": 7,
+        "dioclet-rulebook-A4-BW.pdf": 6,
         "dioclet-quick-reference-A4-BW.pdf": 1,
-        "dioclet-teaching-guide-A4-BW.pdf": 2,
+        "dioclet-teaching-guide-A4-BW.pdf": 1,
         "dioclet-playtest-form-A4-BW.pdf": 2,
         "dioclet-print-instructions-A4-BW.pdf": 2,
     }
@@ -119,14 +134,14 @@ class BoardMatchesRules(unittest.TestCase):
         self.assertEqual(sorted(layout["specials_mm"]["factions"]),
                          sorted(self.rules["succession"]["factions"]))
 
-    def test_tiles_are_297_by_210_with_9mm_overlap_on_each_cut(self):
+    def test_tiles_are_a4_with_shared_overlap_on_each_cut(self):
         layout = self.manifest["layout"]
         cut_x, cut_y = layout["cut_lines_mm"]["x"], layout["cut_lines_mm"]["y"]
         overlap = layout["overlap_mm"]
         self.assertEqual(layout["page_mm"], [kit.PAGE_W, kit.PAGE_H])
         art = layout["art_bounds_mm"]
         # The four windows tile the art 2x2: each cut line sits in the
-        # middle of a 9 mm band shared by two neighbouring pages.
+        # middle of the overlap band shared by two neighbouring pages.
         self.assertAlmostEqual(art[2] - art[0], 2 * kit.PAGE_W - overlap, places=3)
         self.assertAlmostEqual(art[3] - art[1], 2 * kit.PAGE_H - overlap, places=3)
         self.assertAlmostEqual(cut_x, art[0] + kit.PAGE_W - overlap / 2, places=3)
@@ -137,6 +152,17 @@ class BoardMatchesRules(unittest.TestCase):
         self.assertEqual(len(ys), 2)
         self.assertAlmostEqual(min(xs) + kit.PAGE_W - overlap, max(xs), places=3)
         self.assertAlmostEqual(min(ys) + kit.PAGE_H - overlap, max(ys), places=3)
+
+    def test_cut_strokes_clear_the_print_margin_on_every_tile(self):
+        # Include half the 0.5-point stroke, not only its centre.
+        half_stroke = 0.25 / kit.mm
+        for x0, y0, _ in self.L["tiles"].values():
+            for coordinate, edge, extent in (
+                    (self.L["cut"]["x"], x0, kit.PAGE_W),
+                    (self.L["cut"]["y"], y0, kit.PAGE_H)):
+                offset = coordinate - edge
+                self.assertGreaterEqual(offset - half_stroke, kit.SAFE)
+                self.assertLessEqual(offset + half_stroke, extent - kit.SAFE)
 
     def test_every_space_clears_the_safe_zone_on_some_tile(self):
         layout = self.manifest["layout"]
@@ -182,6 +208,8 @@ class PrintedRulesMatchV08(unittest.TestCase):
         self.assertIn("round 24", text)                             # round limits
         self.assertIn("Two ordinary six-sided dice for movement", text)
         self.assertIn("on a tie the attacker wins", text)
+        self.assertIn("Marcus still wins", text)
+        self.assertIn("leaving him with 2 Prestige", text)
 
     def test_player_sheets_list_all_trackers(self):
         text = whole_text("dioclet-player-sheets-A4-BW.pdf")

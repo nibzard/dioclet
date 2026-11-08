@@ -301,9 +301,9 @@ regenerates every PDF from `rules_v08_succession.json`:
 python3 tools/make_a4_print_kit.py
 ```
 
-The kit contains the four-tile board (584 × 410 mm assembled,
+The kit contains the four-tile board (580 × 406 mm assembled,
 butt-join with dashed cut lines), player sheets, cards and tokens, a
-seven-page family rulebook, a quick reference, a teaching guide, a
+six-page family rulebook, a quick reference, a teaching guide, a
 playtest form, and print instructions with a 100 mm calibration
 ruler. `print/kit-manifest.json` records every drawn position. The
 generator stops if the rules JSON drifts from the numbers printed in

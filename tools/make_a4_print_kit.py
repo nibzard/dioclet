@@ -46,9 +46,7 @@ KIT_VERSION = "V0.8.1 print kit (V0.8 Succession rules)"
 
 CELL = 25.5
 ML, MB = 50.0, 36.0                       # grid left / bottom margins
-OVERLAP = 10.0                            # tile overlap for joining (spec: 8-10);
-                                           # 10 keeps every gate ring >= 6 mm
-                                           # from its keeper page edge
+OVERLAP = 14.0                            # cut guides sit 7 mm from page edges
 PAGE_W, PAGE_H = 297.0, 210.0             # A4 landscape
 SAFE = 6.0                                # keep-out from page edges
 
@@ -68,7 +66,7 @@ def build_layout(rules):
 
     # Tile windows. The vertical cut line runs between grid columns 9
     # and 10 (inside the block band, no street circles); the horizontal
-    # cut line between the decumanus (row 6) and the blocks north of
+    # cut line between the decumanus (row 6) and the blocks south of
     # it, so no movement-space centre falls inside either band.
     cut_x = ML + 10 * CELL
     cut_y = MB + (rows - 7) * CELL         # boundary between rows 6 and 7
@@ -86,7 +84,7 @@ def build_layout(rules):
     # taping: one pair along the vertical cut, one along the
     # horizontal cut.
     reg_marks = [(cut_x - 12.0, 300.0), (cut_x + 12.0, 300.0),   # vertical cut, top tiles
-                 (cut_x - 12.0, 130.0), (cut_x + 12.0, 130.0),   # vertical cut, bottom tiles
+                 (cut_x - 12.0, 160.0), (cut_x + 12.0, 160.0),   # vertical cut, bottom tiles
                  # The horizontal-cut pairs must share x so families can
                  # stack them vertically when taping. The decumanus street
                  # row (circles x 62.75..521.75, y 192.6..211) leaves no
@@ -161,13 +159,18 @@ def _column(c, x, y, r):
 
 def _laurel(c, x, y, r):
     import math
-    c.arc(x - r, y - r * 0.9, x + r, y + r * 0.9, startAng=200, extent=140)
-    for i in range(5):
-        a = math.radians(210 + i * 27)
-        lx, ly = x + r * 0.72 * math.cos(a), y + r * 0.62 * math.sin(a)
-        rx, ry = x - r * 0.72 * math.cos(a), y + r * 0.62 * math.sin(a)
-        c.ellipse(lx - r * 0.14, ly - r * 0.28, lx + r * 0.14, ly + r * 0.28)
-        c.ellipse(rx - r * 0.14, ry - r * 0.28, rx + r * 0.14, ry + r * 0.28)
+    c.arc(x - r * 0.7, y - r * 0.8, x + r * 0.7, y + r * 0.8,
+          startAng=145, extent=250)
+    for side in (-1, 1):
+        for i in range(5):
+            a = math.radians(25 + i * 30)
+            lx = x + side * r * 0.7 * math.sin(a)
+            ly = y - r * 0.8 * math.cos(a)
+            c.saveState()
+            c.translate(lx, ly)
+            c.rotate(side * (35 - i * 22))
+            c.ellipse(-r * 0.12, -r * 0.22, r * 0.12, r * 0.22)
+            c.restoreState()
 
 
 def _arch(c, x, y, r):
@@ -190,15 +193,16 @@ def _crosshair(c, x, y, r=4.0):
 
 
 def _hatch(c, x0, y0, w, h, gap=7.0):
+    """Draw clipped building hatching from coordinates in millimetres."""
     c.saveState()
     p = c.beginPath()
-    p.rect(x0, y0, w, h)
+    p.rect(x0 * mm, y0 * mm, w * mm, h * mm)
     c.clipPath(p, stroke=0, fill=0)
     c.setLineWidth(0.25)
     step = gap * 2
     d = x0 - h
     while d < x0 + w:
-        c.line(d, y0, d + h, y0 + h)
+        c.line(d * mm, y0 * mm, (d + h) * mm, (y0 + h) * mm)
         d += step
     c.restoreState()
 
@@ -266,7 +270,7 @@ def draw_board(c, L):
         c.rect((cx - 19) * mm, (cy - 17.6) * mm, 38 * mm, 6.4 * mm, stroke=0, fill=1)
         c.restoreState()
         _centered(c, cx, cy - 2.6, bld["district"], "Times-Bold", 40)
-        _centered(c, cx, cy - 15.5, "PALACE BLOCK", "Helvetica", 5.4)
+        _centered(c, cx, cy - 15.5, "PALACE BLOCK", "Helvetica", 8)
 
     # Streets: open circles. Cells with their own symbol (guard posts,
     # treasure entries, gates, the Peristyle) get no plain circle.
@@ -352,9 +356,9 @@ def draw_board(c, L):
                      ("laurel", "City elites meeting place"),
                      ("hatch", "building - no entry")]),
     ]
-    for sy, entries in row_defs:
-        x = bx0 + 6.0
-        for kind, label in entries:
+    legend_positions = ((25, 115, 245, 355, 450), (25, 130, 310, 440))
+    for (sy, entries), positions in zip(row_defs, legend_positions):
+        for (kind, label), x in zip(entries, positions):
             c.setLineWidth(1.0)
             if kind == "circle":
                 c.circle(x * mm, sy * mm, 3.0 * mm)
@@ -390,13 +394,8 @@ def draw_board(c, L):
                 for d in (1.4, 3.0, 4.6):
                     c.line((x + d) * mm, (sy - 2.8) * mm, (x + d - 2.2) * mm, (sy + 2.8) * mm)
                 x += 9.0
-            c.setFont("Helvetica", 7.2)
+            c.setFont("Helvetica", 9.5)
             c.drawString(x * mm, (sy - 1.1) * mm, label)
-            x += c.stringWidth(label, "Helvetica", 7.2) / mm + 7.5
-    _centered(c, (bx0 + bx1) / 2.0, by0 + 2.8,
-              "Move on street circles only - the vertical street is the cardo, "
-              "the horizontal one the decumanus - treasures A to F",
-              "Helvetica", 6.2)
 
 
 def draw_tile_furniture(c, L, page_no, window):
@@ -436,6 +435,10 @@ def draw_tile_furniture(c, L, page_no, window):
     for ax, ay in L["reg_marks"]:
         px, py = ax - x0, ay - y0
         if 11 < px < PAGE_W - 11 and 11 < py < PAGE_H - 11:
+            c.saveState()
+            c.setFillColorRGB(1, 1, 1)
+            c.circle(px * mm, py * mm, 5.2 * mm, stroke=0, fill=1)
+            c.restoreState()
             _crosshair(c, px * mm, py * mm, 3.2 * mm)
 
     # Sheet number in the outer corner of the tile (the corner of the
@@ -506,7 +509,7 @@ def doc_footer(c, page, total=None):
 
 def para(c, text, x, y, w, size=9.6, leading=None, font="Times-Roman", indent=0.0):
     """Simple word wrap; returns the y after the last line."""
-    leading = leading or size * 1.38
+    leading = leading or size * 1.38 / mm
     c.setFont(font, size)
     words, lines, cur = text.split(), [], ""
     for word in words:
@@ -541,7 +544,7 @@ def wrap_lines(c, text, w, size=9.6, font="Times-Roman"):
 def bullet(c, text, x, y, w, size=9.6, marker="-", indent=4.5):
     c.setFont("Times-Roman", size)
     c.drawString(x * mm, y * mm, marker)
-    return para(c, text, x, y, w, size=size, indent=indent)
+    return para(c, text, x + indent, y, w - indent, size=size)
 
 
 def section(c, title, y, size=13):
@@ -770,12 +773,27 @@ def cards_tokens_pdf(path):
         c.rect(cx * mm, cy * mm, CARD_W * mm, CARD_H * mm)
         c.setLineWidth(0.5)
         c.rect((cx + 2.0) * mm, (cy + 2.0) * mm, (CARD_W - 4.0) * mm, (CARD_H - 4.0) * mm)
-        draw_equipment_icon(c, icon, cx + CARD_W / 2.0, cy + CARD_H - 21.0, 22.0)
+        # An arch frames the larger equipment drawing without a solid fill.
+        c.setLineWidth(0.6)
+        mid = cx + CARD_W / 2.0
+        frame = c.beginPath()
+        frame.moveTo((mid - 19) * mm, (cy + 28) * mm)
+        frame.lineTo((mid - 19) * mm, (cy + 47) * mm)
+        frame.curveTo((mid - 19) * mm, (cy + 68) * mm,
+                      (mid + 19) * mm, (cy + 68) * mm,
+                      (mid + 19) * mm, (cy + 47) * mm)
+        frame.lineTo((mid + 19) * mm, (cy + 28) * mm)
+        frame.close()
+        c.drawPath(frame, stroke=1, fill=0)
+        draw_equipment_icon(c, icon, cx + CARD_W / 2.0, cy + 45.0, 31.0)
+        c.setLineWidth(0.6)
+        c.line((cx + 7) * mm, (cy + 25) * mm,
+               (cx + CARD_W - 7) * mm, (cy + 25) * mm)
         _centered(c, cx + CARD_W / 2.0, cy + 20.0, name.upper(), "Times-Bold", 10.5)
         _centered(c, cx + CARD_W / 2.0, cy + 13.5, flavor, "Times-Italic", 7.0)
         _centered(c, cx + CARD_W / 2.0, cy + 5.5, "PALACE TREASURE - LOCATION CARD",
                   "Helvetica", 5.2)
-    y = y0 - 2 * (CARD_H + 5.0) - 3.5
+    y = y0 - (CARD_H + 5.0) - 9.0
     para(c, "Shuffle face down and deal one card to each treasure entry A-F; the first "
             "player to stop there reveals it to everyone.", 16, y, PW - 32, size=8.4)
     doc_footer(c, 1)
@@ -822,7 +840,7 @@ def cards_tokens_pdf(path):
     y -= 12
     c.setFont("Helvetica-Bold", 8.5)
     c.drawString(16 * mm, y * mm, "PRESTIGE COUNTERS (16)")
-    y -= 6
+    y -= 10
     for i in range(16):
         px = 20.0 + (i % 8) * 22.0
         py = y - (i // 8) * 20.0
@@ -1041,8 +1059,9 @@ RULEBOOK_PAGES = [
               "the boost for 1 more, and rolls 5 + 1 (equipment) + 2 (boost) = 8. "
               "Livia rolls 4 + 2 (all six items) = 6. Marcus wins; the claim is "
               "canceled and Livia's pawn goes back to her gate with everything she "
-              "owns. Had Livia rolled 6 or more, the challenge would have failed and "
-              "Marcus's 2 Prestige would still be gone."),
+              "owns. Even if Livia rolls 6, her total is 8: Marcus still wins "
+              "because the attacker wins ties. Marcus also earns 1 Prestige "
+              "for winning the duel, leaving him with 2 Prestige."),
         ("h", "If nobody wins"),
         ("p", "If no claim survives by the end of round 24 of the succession phase, "
               "the game ends in a draw - the throne stays empty. This is rare."),
@@ -1061,7 +1080,7 @@ RULEBOOK_PAGES = [
               "claims the claimant is an ordinary rival and duels are free."),
         ("q", "Can the claimant boost their defense? No. Only the attacker may pay "
               "for the +2 boost."),
-        ("q", "I have 3 Prestige and win a guard roll. Nothing happens - the cap is "
+        ("q", "What if I have 3 Prestige and win a guard roll? Nothing happens - the cap is "
               "3. Spend some first."),
         ("q", "Can a faction support two different players? Yes - every faction can "
               "back every player once."),
@@ -1081,8 +1100,8 @@ def rulebook_pdf(path):
 
     y = PH - 36
     c.setFont("Times-Italic", 9.5)
-    y = para(c, "Read pages 1 and 2 aloud to start playing. The rest can wait "
-                "until the succession phase begins.", 22, y, PW - 44)
+    y = para(c, "Read pages 1 to 3 before the first turn. Use pages 4 to 6 for "
+                "the succession phase and common questions.", 22, y, PW - 44)
     y -= 3
 
     def new_page():
@@ -1093,9 +1112,12 @@ def rulebook_pdf(path):
         doc_header(c, "DIOCLETIAN'S PALACE - RULES", "The Succession")
         y = PH - 36
 
-    for section_title, blocks in RULEBOOK_PAGES:
-        if y < 46:
+    for section_index, (section_title, blocks) in enumerate(RULEBOOK_PAGES):
+        # Movement and equipment share a page; both are used each turn.
+        if section_index and section_index != 2:
             new_page()
+        elif section_index == 2:
+            y -= 6
         y -= 2
         c.setFont("Times-Bold", 14)
         c.drawString(16 * mm, y * mm, section_title)
@@ -1103,16 +1125,18 @@ def rulebook_pdf(path):
         c.setLineWidth(0.8)
         c.line(16 * mm, y * mm, (PW - 16) * mm, y * mm)
         y -= 6
+        step_number = 0
         for kind, content in blocks:
             if kind == "h":
+                step_number = 0
                 need = 12.0
             elif kind == "p":
-                need = 9.6 * 1.38 * len(wrap_lines(c, content, PW - 36)) + 2.0
+                need = 11 * 1.38 / mm * len(wrap_lines(c, content, PW - 36, size=11)) + 2.0
             elif kind in ("b", "n"):
-                need = 9.6 * 1.38 * len(wrap_lines(c, content, PW - 41)) + 1.2
+                need = 11 * 1.38 / mm * len(wrap_lines(c, content, PW - 41, size=11)) + 1.2
             elif kind == "q":
                 rest = content.split("?", 1)[1] if "?" in content else ""
-                need = 6.4 + 9.6 * 1.38 * len(wrap_lines(c, rest.strip(), PW - 43))
+                need = 6.4 + 11 * 1.38 / mm * len(wrap_lines(c, rest.strip(), PW - 43, size=11))
             else:
                 need = 7.4 * len(content) + 3.4
             if y - need < 24:
@@ -1122,21 +1146,23 @@ def rulebook_pdf(path):
                 c.drawString(18 * mm, y * mm, content)
                 y -= 5.6
             elif kind == "p":
-                y = para(c, content, 18, y, PW - 36, size=9.6) - 1.6
+                y = para(c, content, 18, y, PW - 36, size=11) - 3.0
             elif kind in ("b", "n", "q"):
-                mark = {"b": "-", "n": "o", "q": "?"}[kind]
+                if kind == "n":
+                    step_number += 1
+                mark = {"b": "-", "n": f"{step_number}.", "q": "?"}[kind]
                 if kind == "q":
-                    c.setFont("Times-Bold", 9.6)
+                    c.setFont("Times-Bold", 11)
                     q = content.split("?")
                     c.drawString(18 * mm, y * mm, q[0] + "?")
                     rest = "?".join(q[1:]).strip()
-                    y -= 4.6 * 1.38
+                    y -= 5.4
                     if rest:
-                        y = para(c, rest, 25, y, PW - 43, size=9.6) - 0.6
+                        y = para(c, rest, 25, y, PW - 43, size=11) - 3.0
                 else:
-                    c.setFont("Times-Roman", 9.6)
+                    c.setFont("Times-Roman", 11)
                     c.drawString(18 * mm, y * mm, mark)
-                    y = para(c, content, 23.5, y, PW - 41, size=9.6, indent=1.5) - 0.8
+                    y = para(c, content, 23.5, y, PW - 41, size=11, indent=1.5) - 3.0
             elif kind == "t":
                 rows, cols = content, len(content[0])
                 widths = {2: (58.0, 118.0), 3: (44.0, 30.0, 102.0)}[cols]
@@ -1211,7 +1237,7 @@ def teaching_guide_pdf(path):
     c = new_doc(path, "Diocletian's Palace - five-minute teaching guide")
     page = 1
     doc_header(c, "TEACH IN FIVE MINUTES",
-               "read aloud - do not open the rulebook while teaching (page 1 of 2)")
+               "read aloud - seven steps, then two short demonstrations")
     y = PH - 36
     steps = [
         ("The goal (30 seconds)", "Diocletian has retired and the throne is empty. "
@@ -1242,13 +1268,6 @@ def teaching_guide_pdf(path):
          "each round. Youngest player rolls first if you like. Let's play."),
     ]
     for i, (title, text) in enumerate(steps, 1):
-        if i == 6:
-            doc_footer(c, page, 2)
-            c.showPage()
-            page += 1
-            doc_header(c, "TEACH IN FIVE MINUTES (continued)",
-                       "the endgame and two tiny demonstrations")
-            y = PH - 36
         c.setFont("Times-Bold", 11)
         c.drawString(16 * mm, y * mm, f"{i}. {title}")
         y -= 5.4
@@ -1267,7 +1286,7 @@ def teaching_guide_pdf(path):
     y = para(c, "Answer everything else when it comes up. Rare cases live in the "
                 "rulebook, not in the introduction.", 19, y, PW - 38, size=9.4,
              font="Times-Italic")
-    doc_footer(c, page, 2)
+    doc_footer(c, page, 1)
     c.showPage()
     c.save()
 
@@ -1335,7 +1354,7 @@ def playtest_form_pdf(path):
                         c.line(16 * mm, y * mm, (PW - 16) * mm, y * mm)
                         y -= 7.5
                 else:
-                    y = para(c, row, 18, y, PW - 36, size=9.2) - 1.6
+                    y = para(c, row, 18, y, PW - 36, size=9.2, leading=12.7) - 1.6
             y -= 4
         c.setFont("Times-Italic", 7.6)
         c.drawString(16 * mm, 18 * mm,
@@ -1409,7 +1428,8 @@ def print_instructions_pdf(path):
     c.setFont("Times-Bold", 11)
     c.drawString(16 * mm, y * mm, "Arrangement (north at the top)")
     y -= 6
-    dx, dy, cw, ch = 34.0, y - 62.0, 56.0, 40.0
+    cw, ch = 56.0, 40.0
+    dx, dy = 34.0, y - 2 * ch - 8.0
     labels = ((1, "top left", dx, dy + ch + 4), (2, "top right", dx + cw + 6, dy + ch + 4),
               (3, "bottom left", dx, dy - 2), (4, "bottom right", dx + cw + 6, dy - 2))
     for number, where, lx, ly in labels:
@@ -1468,9 +1488,12 @@ PRINTED_RULES_VALUES = {
     ("glory", "guard_post_reward"): 1,
     ("glory", "duel_win_reward"): 1,
     ("movement", "dice_count"): 2,
+    ("movement", "die_sides"): 6,
     ("movement", "duel_range"): 2,
     ("level1", "max_rounds"): 24,
     ("level1", "grace_full_rounds"): 1,
+    ("level2", "max_rounds"): 24,
+    ("combat", "tie_goes_to_defender"): False,
 }
 
 
