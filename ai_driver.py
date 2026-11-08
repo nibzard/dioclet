@@ -60,7 +60,7 @@ def run_ai_game(rules, seed, game_id, players_by_seat, out_dir,
                 provider="mock", config=None, live_client=None,
                 max_decisions_calls=0, max_cost_usd=0.0,
                 max_input_tokens=0, wall_clock_seconds=0.0,
-                resume=False, progress=None):
+                resume=False, progress=None, shared_budget=None, before_action=None):
     """Play one game; returns a summary dict.
 
     `players_by_seat` maps P0..P3 to policy names among the built-in
@@ -74,7 +74,9 @@ def run_ai_game(rules, seed, game_id, players_by_seat, out_dir,
                         "timeout_seconds": 20,
                         "fallback_on_live_error": False,
                         "persona": "win_focused"}
-    if provider == "live" and not (max_decisions_calls or max_cost_usd):
+    if provider == "live" and not (max_decisions_calls or max_cost_usd or
+                                   (shared_budget is not None and
+                                    (shared_budget.max_calls or shared_budget.max_cost_usd))):
         raise ValueError("live provider requires an explicit budget cap")
 
     # Run-dir collision handling: refuse unless resuming.
@@ -96,10 +98,11 @@ def run_ai_game(rules, seed, game_id, players_by_seat, out_dir,
         with open(decisions_path, "w", encoding="utf-8") as fh:
             fh.write("")  # truncate: fresh game log
 
-    budget = decisions_policy.Budget(
+    budget = shared_budget if shared_budget is not None else decisions_policy.Budget(
         max_calls=max_decisions_calls, max_cost_usd=max_cost_usd,
         max_input_tokens=max_input_tokens,
         wall_clock_seconds=wall_clock_seconds)
+    budget_start = (budget.calls, budget.input_tokens_seen, budget.spent_estimate_usd)
     playback_records = _load_playback(decisions_path, provider,
                                       applied_turn_ids)
     provider_impl = decisions_policy.make_provider(
@@ -132,8 +135,7 @@ def run_ai_game(rules, seed, game_id, players_by_seat, out_dir,
                 "provider": provider,
                 "observation_hash": candidate_actions.projection_hash(
                     projection),
-                "projection_schema":
-                    candidate_actions.PROJECTION_SCHEMA_VERSION,
+                "projection_schema": projection["schema"],
                 "legal_action_count": len(obs["legal_actions"]),
                 "candidate_count": len(candidates),
                 "candidates": [{"action_id": c["action_id"],
@@ -198,10 +200,15 @@ def run_ai_game(rules, seed, game_id, players_by_seat, out_dir,
             audit["selected_mode"] = selected_mode
             reason = decision.reason
         elif policy_name == "tactical":
-            action_id, reason = tactical_policy.choose(obs, rules)
+            if obs.get("gameplay_mode") == "succession-v1":
+                action_id, reason = policies.act("tactical", obs, policy_rng)
+            else:
+                action_id, reason = tactical_policy.choose(obs, rules)
         else:
             action_id, reason = policies.act(policy_name, obs, policy_rng)
 
+        if before_action:
+            before_action(state, obs, action_id)
         record = engine.apply_action(state, active, obs["turn_id"],
                                      action_id, reason)
         if policy_name == "decisions":
@@ -224,6 +231,10 @@ def run_ai_game(rules, seed, game_id, players_by_seat, out_dir,
                    "input_tokens": budget.input_tokens_seen,
                    "estimated_cost_usd": round(
                        budget.spent_estimate_usd, 6)},
+        "budget_scope": "shared" if shared_budget is not None else "game",
+        "budget_delta": {"calls": budget.calls - budget_start[0],
+                         "input_tokens": budget.input_tokens_seen - budget_start[1],
+                         "estimated_cost_usd": round(budget.spent_estimate_usd - budget_start[2], 6)},
         "incomplete_reason": incomplete_reason,
         "status": "in_progress", "winner": None,
     }

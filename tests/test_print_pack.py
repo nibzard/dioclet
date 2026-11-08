@@ -16,6 +16,7 @@ class TestPrintPack(unittest.TestCase):
         cls.out = os.path.join(cls.tmp, "pack.html")
         res = subprocess.run(
             [sys.executable, os.path.join(ROOT, "tools/make_print_pack.py"),
+             "--rules", os.path.join(ROOT, "rules_v073_sixblocks_cardo.json"),
              "--out", cls.out],
             capture_output=True, text=True, check=True)
         cls.html = open(cls.out, encoding="utf-8").read()

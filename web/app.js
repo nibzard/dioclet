@@ -3,6 +3,9 @@
   "use strict";
 
   const B = window.DIOCLET_BOARD;
+  const SUCCESSION = B.mode === "succession-v1";
+  const FACTIONS = { army: "Army", officials: "Imperial officials", elites: "City elites" };
+  const GATES = { P0: "North · Golden", P1: "East · Silver", P2: "South · Bronze", P3: "West · Iron" };
   const E = window.DIOCLET_ENGINE;
   const BOTS = window.DIOCLET_BOTS;
   const CELL = 44, PAD = 36;
@@ -14,7 +17,7 @@
 
   const svg = document.getElementById("board");
   const NS = "http://www.w3.org/2000/svg";
-  let g = null, seed = 2026, botTimer = null;
+  let g = null, seed = 2026, botTimer = null, performing = false;
 
   const cx = x => PAD + x * CELL + CELL / 2;
   const cy = y => PAD + y * CELL + CELL / 2;
@@ -66,20 +69,16 @@
                  fill: "none", stroke: "#bdbea6", "stroke-width": 1.5 });
     el("rect", { x: 14, y: 14, width: w - 28, height: h - 28, rx: 0,
                  fill: "none", stroke: "#cfd0b9", "stroke-width": .8 });
-    // Six buildings from the authoritative board data. The two
-    // middle blocks are pierced by the cardo lane; each building
-    // keeps exactly one treasure at its entry.
-    const districts = Object.entries(B.districts)
-      .sort((a, b) => a[1][1] - b[1][1] || a[1][0] - b[1][0]);
+    // Each declared footprint is one intact, non-walkable block.
+    // District ownership is explicit; proximity must not assign cards.
     B.buildings.forEach(bld => {
       const left = PAD + bld.x0 * CELL + 3;
       const top = PAD + bld.y0 * CELL + 3;
       const width = (bld.x1 - bld.x0 + 1) * CELL - 6;
       const height = (bld.y1 - bld.y0 + 1) * CELL - 6;
-      const district = districts.find(([, c]) =>
-        c[0] >= bld.x0 - 1 && c[0] <= bld.x1 + 1 &&
-        c[1] >= bld.y0 - 1 && c[1] <= bld.y1 + 1);
-      const group = el("g", { "pointer-events": "none", "aria-hidden": "true" });
+      const district = [bld.district, B.districts[bld.district]];
+      const group = el("g", { "pointer-events": "none", "aria-hidden": "true",
+        class: "city-block", "data-district": bld.district });
       el("rect", { x: left, y: top, width, height, rx: 0, fill: "#d9d5c2", stroke: "#b7b89d", "stroke-width": 1.3 }, group);
       // Inset masonry gives the blocks an architectural plan treatment.
       for (let x = left + 12; x < left + width - 8; x += CELL) {
@@ -105,6 +104,12 @@
           "font-size": 9 }, group, "Hidden treasure");
       }
     });
+    const streetLabel = (x, y, text) => el("text", { x, y,
+      "text-anchor": "middle", fill: "#747d64", "font-family": "Verdana, sans-serif",
+      "font-size": 8, "letter-spacing": 1, "pointer-events": "none" }, svg, text);
+    streetLabel(cx(B.streets.cardo.coordinate), 26, "CARDO · N–S");
+    streetLabel(cx(10), cy(B.streets.decumanus.coordinate) - 15, "DECUMANUS · E–W");
+    streetLabel(w - 34, 26, "N ↑");
     for (let y = 0; y < B.height; y++) {
       for (let x = 0; x < B.width; x++) {
         if (B.blocked.some(c => c[0] === x && c[1] === y)) continue;
@@ -117,36 +122,32 @@
     const TITLES = {
       gate: "Gate and start position",
       entry: "Treasure entry: stop here to take the card",
-      checkpoint: "Checkpoint: first with all six treasures opens the" +
-                  " gate; also the Peristyle seal in the palace",
-      post: "Guard post: roll 4 or more for 1 Glory",
+      checkpoint: "Checkpoint: first with all six treasures opens the gate",
+      post: "Guard post: roll 4 or more for 1 Prestige",
       emperor: "The Emperor's chamber: two hits win the game",
       retreat: "Retreat hall: step back here on a missed strike",
     };
     // Decorations never block clicks or hover: the street circle under
     // a chip owns the pointer and carries the tooltip.
-    const chip = (k, fill, text) => {
+    const chip = (k, fill, text, parent = svg) => {
       const [x, y] = at(k);
       // The interactive circle must cover the whole marker. Its outer
       // edge also keeps the available-move highlight visible.
       const target = svg.querySelector(`[data-k="${k}"]`);
       target.setAttribute("r", "20");
-      target.classList.add("site-cell");
+      target.classList.add("site-cell", parent === svg ? "city-site" : "palace-site");
       el("circle", { cx: cx(x), cy: cy(y), r: 16.5, fill,
                      stroke: "#3a2d20", "stroke-width": 2.5,
-                     "pointer-events": "none" });
+                     "pointer-events": "none" }, parent);
       el("text", { x: cx(x), y: cy(y) + 5.5, "text-anchor": "middle",
                    "font-family": "Georgia, serif", "font-size": 16,
                    "font-weight": "bold", fill: "#fffdf6",
-                   "pointer-events": "none" }, svg, text);
+                   "pointer-events": "none" }, parent, text);
     };
-    const tip = (k, text) => {
+    const tip = (k, text, phase = 1) => {
       const c = svg.querySelector(`[data-k="${k}"]`);
       if (!c) return;
-      const t = document.createElementNS(NS, "title");
-      t.textContent = text;
-      c.appendChild(t);
-      c.setAttribute("aria-label", text);
+      c.dataset[phase === 2 ? "palaceTitle" : "cityTitle"] = text;
     };
     for (const [p, c] of Object.entries(B.gates)) {
       chip(K(...c), "#5a3d6b", { P0: "N", P1: "E", P2: "S", P3: "W" }[p]);
@@ -162,19 +163,45 @@
       chip(K(...c), "#5f7a4a", "*");
       tip(K(...c), TITLES.post);
     }
-    chip(K(...B.level2.emperor), "#a03d2e", "E");
-    tip(K(...B.level2.emperor), TITLES.emperor);
-    chip(K(...B.level2.retreat), "#4a6b7a", "r");
-    tip(K(...B.level2.retreat), TITLES.retreat);
+    const palaceLayer = el("g", { id: "palace-markers", display: "none",
+      "aria-hidden": "true", "pointer-events": "none" });
+    if (!SUCCESSION) {
+    chip(K(...B.level2.emperor), "#a03d2e", "E", palaceLayer);
+    tip(K(...B.level2.emperor), TITLES.emperor, 2);
+    chip(K(...B.level2.retreat), "#4a6b7a", "r", palaceLayer);
+    tip(K(...B.level2.retreat), TITLES.retreat, 2);
     for (const [label, site] of [["c", "cellars"], ["b", "guard_barracks"],
                                  ["p", "peristyle"]]) {
       const [x, y] = B.level2[site];
+      tip(K(x, y), { cellars: "Cellars: roll 3 or more for a seal",
+        guard_barracks: "Barracks: beat the guard for a seal",
+        peristyle: "Peristyle: roll 5 or 6, or spend 1 Glory for a seal" }[site], 2);
       el("circle", { cx: cx(x) + 14, cy: cy(y) - 15, r: 8, fill: "#fffdf6",
                      stroke: "#3a2d20", "stroke-width": 1.4,
-                     "pointer-events": "none" });
+                     "pointer-events": "none" }, palaceLayer);
       el("text", { x: cx(x) + 14, y: cy(y) - 11.5, "text-anchor": "middle",
                    "font-family": "Verdana, sans-serif", "font-size": 10,
-                   fill: "#3a2d20", "pointer-events": "none" }, svg, label);
+                   fill: "#3a2d20", "pointer-events": "none" }, palaceLayer, label);
+    }
+    }
+    if (SUCCESSION) {
+      const factions = el("g", { id: "faction-markers", "pointer-events": "none", "aria-hidden": "true" });
+      for (const [faction, location] of Object.entries(B.succession.factions)) {
+        const [x, y] = location, k = K(x, y);
+        el("rect", { x: cx(x) + 10, y: cy(y) - 25, width: 18, height: 16,
+          fill: "#203d35", stroke: "#f3f0e8", "stroke-width": 1 }, factions);
+        el("text", { x: cx(x) + 19, y: cy(y) - 13, "text-anchor": "middle",
+          fill: "#fffdf6", "font-family": "Verdana, sans-serif", "font-size": 9 }, factions,
+          { army: "A", officials: "O", elites: "C" }[faction]);
+        const base = svg.querySelector(`[data-k="${k}"]`).dataset.cityTitle || "Street space";
+        const supportTip = FACTIONS[faction] + ": spend " + B.succession.support_cost + " Prestige for support";
+        tip(k, base + ". " + supportTip, 2);
+        if (B.succession.support_in_city) tip(k, base + ". " + supportTip);
+      }
+      const [x, y] = B.checkpoint;
+      const claim = el("g", { id: "claim-marker", display: "none", "pointer-events": "none", "aria-hidden": "true" });
+      el("rect", { x: cx(x)-24, y: cy(y)-24, width: 48, height: 48,
+        fill: "none", stroke: "#a4772d", "stroke-width": 3 }, claim);
     }
     svg.addEventListener("click", onBoardClick);
     svg.addEventListener("keydown", ev => {
@@ -183,6 +210,36 @@
         onBoardClick(ev);
       }
     });
+  }
+
+  let boardPhase = null;
+  function renderBoardPhase() {
+    const phase = g ? g.phase : 1;
+    if (boardPhase === phase) return;
+    boardPhase = phase;
+    const palace = phase === 2;
+    const layer = document.getElementById("palace-markers");
+    layer.setAttribute("display", palace && !SUCCESSION ? "inline" : "none");
+    layer.setAttribute("aria-hidden", String(!palace || SUCCESSION));
+    for (const item of document.querySelectorAll("[data-phase='2']")) {
+      item.hidden = !palace || SUCCESSION;
+      item.style.display = palace && !SUCCESSION ? "" : "none";
+    }
+    document.getElementById("checkpoint-key").textContent = palace ? "Peristyle · claim" : "Checkpoint";
+    if (SUCCESSION) {
+      document.getElementById("faction-markers").setAttribute("display",
+        palace || B.succession.support_in_city ? "inline" : "none");
+    }
+    for (const c of svg.querySelectorAll(".cell")) {
+      c.setAttribute("r", c.classList.contains("city-site") ||
+        (palace && c.classList.contains("palace-site")) ? "20" : "13");
+      const text = (palace && c.dataset.palaceTitle) || c.dataset.cityTitle;
+      c.querySelector("title")?.remove();
+      if (text) {
+        el("title", {}, c, text);
+        c.setAttribute("aria-label", text);
+      } else c.removeAttribute("aria-label");
+    }
   }
 
   function pawnFor(id) { return document.getElementById("pawn-" + id); }
@@ -196,7 +253,7 @@
                      "stroke-width": 2.2 }, grp);
       el("text", { y: 3.6, "text-anchor": "middle", fill: "#fffdf6",
                    "font-family": "Verdana, sans-serif", "font-size": 8.5,
-                   "font-weight": "bold" }, grp, SEATNAMES[p.id][0]);
+                   "font-weight": "bold" }, grp, SUCCESSION ? String(p.index + 1) : SEATNAMES[p.id][0]);
       svg.appendChild(grp);
       setPawn(p.id, p.pos);
     }
@@ -245,19 +302,19 @@
                        E.active(g).id === p.id;
       const d = document.createElement("div");
       d.className = "pcard" + (isActive ? " active" : "");
-      const glory = [0, 1].map(i =>
-        `<span class="gtoken ${i < p.glory ? "" : "off"}"></span>`).join("");
-      const seals = ["cellars", "guard_barracks", "peristyle"].map(s =>
-        `<span class="sealtag ${p.seals.includes(s) ? "got" : ""}">` +
-        { cellars: "C", guard_barracks: "B", peristyle: "P" }[s] + `</span>`).join("");
       const kind = p.kind === "human" ? "Human · this device" :
-        "Bot · " + { balanced: "balanced", greedy: "collector", aggressive: "fighter", random: "wanderer" }[p.kind];
+        "Bot · " + ({ balanced: "balanced", greedy: "collector", aggressive: "fighter", random: "wanderer", tactical: "tactical" }[p.kind] || p.kind);
       d.setAttribute("aria-label", p.name + (isActive ? ", current turn" : ""));
-      d.innerHTML =
-        `<div class="pname"><span class="pawnchip" style="background:${COLORS[p.id]}"></span>${escapeHTML(p.name)}</div>
-         <span class="player-kind">${kind}</span>
-         <div class="pstats"><span aria-label="${p.glory} Glory">${glory}</span><span>Equipment <strong>${p.equipment.length}/6</strong></span></div>` +
-         (g.phase === 2 ? `<div class="seals">Seals ${seals} <span class="hittag" aria-label="${p.hits} hits">${"✦".repeat(p.hits)}</span></div>` : "");
+      if (SUCCESSION) {
+        const supporters = p.support.map(f => FACTIONS[f]).join(", ") || "No faction support yet";
+        d.innerHTML = `<div class="pname"><span class="pawnchip" style="background:${COLORS[p.id]}"></span>${escapeHTML(p.name)}</div>
+          <span class="player-kind">${kind}<br>${GATES[p.gateId]}</span>
+          <div class="pstats"><span>Prestige <strong>${p.prestige}${B.gloryCap === null ? "" : "/" + B.gloryCap}</strong></span><span>Gear <strong>${p.equipment.length}/6</strong></span></div>
+          <div class="support-list"><strong>${p.support.length}/${B.succession.required_support} support</strong> · ${escapeHTML(supporters)}</div>`;
+      } else {
+        d.innerHTML = `<div class="pname">${escapeHTML(p.name)}</div><span class="player-kind">${kind}</span>
+          <div class="pstats">Glory ${p.glory} · Equipment ${p.equipment.length}/6</div>`;
+      }
       box.appendChild(d);
     }
   }
@@ -293,28 +350,41 @@
       const d = document.createElement("div");
       d.textContent = line;
       if (/HIT|wins|defeats/.test(line)) d.className = "evt";
-      if (/Glory/.test(line)) d.className = "glory";
+      if (/Glory|Prestige/.test(line)) d.className = "glory";
       box.appendChild(d);
     }
     box.scrollTop = box.scrollHeight;
   }
 
   function renderTurnline() {
+    renderBoardPhase();
     const line = document.getElementById("turnline");
-    document.getElementById("phase-label").textContent = g.phase === 1 ? "City · Level I" : "Palace · Level II";
+    document.getElementById("phase-label").textContent = g.phase === 1 ? "City · Preparation" : "Palace · Succession";
     document.getElementById("city-step").classList.toggle("current", g.phase === 1);
-    document.getElementById("palace-step").classList.toggle("current", g.phase === 2 && !g.winner);
-    document.getElementById("emperor-step").classList.toggle("current", Boolean(g.winner));
+    document.getElementById("palace-step").classList.toggle("current", g.phase === 2 && !g.winner && !g.pendingClaim);
+    document.getElementById("emperor-step").classList.toggle("current", Boolean(g.winner || g.pendingClaim));
     if (g.winner) {
       const p = E.player(g, g.winner);
-      line.textContent = `${p.name} defeated the Emperor. Game over.`;
+      line.textContent = SUCCESSION ? `${p.name} is acclaimed emperor. Game over.` : `${p.name} defeated the Emperor. Game over.`;
       return;
     }
-    if (g.draw) { line.textContent = "The palace gates closed: a draw."; return; }
+    renderClaim();
+    if (g.draw) { line.textContent = "No claim prevailed before the deadline. A draw."; return; }
     const p = E.active(g);
     const phase = g.phase === 1 ? "the city" : "the palace";
     line.textContent = `Round ${g.round} in ${phase}: ${p.name}` +
       (p.kind === "human" ? " (your turn)" : " is thinking…");
+  }
+
+  function renderClaim() {
+    if (!SUCCESSION) return;
+    const claim = g.pendingClaim;
+    document.getElementById("claim-marker").setAttribute("display", claim ? "inline" : "none");
+    const box = document.getElementById("claim-status");
+    box.hidden = !claim;
+    if (!claim) { box.textContent = ""; return; }
+    const name = E.player(g, claim.claimant).name;
+    box.textContent = name + " claims the throne. " + claim.responded.length + "/3 rivals have responded. A winning challenge cancels the claim.";
   }
 
   /* ---------------- interaction ---------------- */
@@ -346,9 +416,9 @@
       const hint = document.createElement("div");
       hint.className = "hint";
       hint.innerHTML = "You rolled <b>" + g.currentRoll.total +
-        "</b>. Tap a lit circle to move. Blue letters hold treasure," +
-        " green stars pay Glory, the gold X opens the gate, and ending" +
-        " within two spaces of a rival lets you duel.";
+        "</b>. Tap a lit circle. Collect equipment, earn Prestige at a guard post, or spend it for faction support." +
+        (g.pendingClaim ? " <b>A rival's claim is active.</b> Challenge them from within two street spaces, or take another action as your response." :
+          g.phase === 2 ? " With two supporters, proclaim your claim at the Peristyle." : " Your equipment and position carry into succession.");
       box0.appendChild(hint);
     } else {
       const hint = document.createElement("div");
@@ -405,12 +475,22 @@
                         peristyle: "Peristyle" };
     switch (a.kind) {
       case "move": return "Just <b>walk</b> here";
-      case "explore": return `<b>Take the treasure</b> (${a.item
-        .replace("lorica_segmentata", "armor")})`;
-      case "guard_post": return "<b>Stand guard</b>: roll for Glory";
+      case "explore": {
+        const known = g.revealed[a.dest];
+        return "<b>Take the treasure</b>" + (known ? " (" + escapeHTML(known.replace("lorica_segmentata", "armor")) + ")" : "");
+      }
+      case "guard_post": return "<b>Stand guard</b>: roll 4 or more for 1 Prestige";
+      case "gain_support": return "<b>Secure " + FACTIONS[a.faction] + " support</b> · " + B.succession.support_cost + " Prestige";
+      case "proclaim": return "<b>Proclaim your claim</b> · Give each rival one response turn";
+      case "maintain_claim": return "<b>Maintain your claim</b> · Stay at the Peristyle";
       case "duel": {
         const q = E.player(g, a.target);
-        return `<b>Duel ${escapeHTML(q.name)}</b>`;
+        const contest = g.pendingClaim && g.pendingClaim.claimant === a.target;
+        const label = contest ? "Contest " + escapeHTML(q.name) + "’s claim" : "Duel " + escapeHTML(q.name);
+        const fee = contest ? (B.succession.contest_cost || 0) : 0;
+        const boost = a.spend_prestige || a.spend;
+        const total = fee + (boost ? B.succession.challenge_cost : 0);
+        return "<b>" + label + "</b> · " + total + " Prestige" + (boost ? " · +" + B.succession.challenge_bonus + " to your roll" : "");
       }
       case "claim_checkpoint": return "<b>Open the gate</b>: first through";
       case "attempt_seal": return a.spend
@@ -429,21 +509,21 @@
   }
 
   async function perform(a) {
-    const p = E.active(g);
-    const from = p.pos;
-    clearHighlights();
-    const rec = E.applyAction(g, a);
-    if (a.kind !== "attack_emperor" || rec.dice.length === 0) {
+    if (performing) return;
+    performing = true;
+    try {
+      const p = E.active(g), from = p.pos;
+      clearHighlights();
+      const rec = E.applyAction(g, a);
       await animatePawn(p.id, from, a.dest);
-    } else { setPawn(p.id, p.pos); }
-    if (a.kind === "attack_emperor" && p.pos !== a.dest) setPawn(p.id, p.pos);
-    renderDice(rec.dice);
-    showRevealed();
-    renderPlayers(); renderLog(); renderTurnline();
-    if (g.winner || g.draw) { showGameOver(); return; }
-    refreshActions();
-    renderDice();
-    scheduleBot();
+      // A challenge can also return another pawn to its assigned gate.
+      for (const q of g.players) setPawn(q.id, q.pos);
+      renderDice(rec.dice);
+      showRevealed();
+      renderPlayers(); renderLog(); renderTurnline();
+      if (g.winner || g.draw) { showGameOver(); return; }
+      refreshActions(); renderDice(); scheduleBot();
+    } finally { performing = false; }
   }
 
   function scheduleBot() {
@@ -461,12 +541,12 @@
 
   function showGameOver() {
     document.getElementById("overline").textContent = g.winner
-      ? E.player(g, g.winner).name + " rules the palace!"
+      ? E.player(g, g.winner).name + " is acclaimed emperor!"
       : "A draw in the palace.";
     document.getElementById("oversub").textContent =
       `Seed ${g.seed} · ${g.round} rounds · ` +
       g.players.map(p => `${p.name}: ${p.equipment.length} gear` +
-        (g.phase === 2 ? `, ${p.seals.length} seals, ${p.hits} hits` : ""))
+        (SUCCESSION ? `, ${p.support.length} support, ${p.prestige} Prestige` : ""))
         .join(" · ");
     showOverlay("gameover");
   }
@@ -476,16 +556,19 @@
   function buildSetup() {
     const seats = document.getElementById("seats");
     seats.innerHTML = "";
-    for (const [pid, label] of Object.entries(SEATNAMES)) {
+    for (const [index, pid] of ["P0", "P1", "P2", "P3"].entries()) {
+      const label = "Player " + (index + 1);
       const d = document.createElement("div");
       d.className = "seat";
       d.innerHTML =
-        `<label for="name-${pid}"><span class="pawnchip" style="background:${COLORS[pid]}"></span>${label} gate</label>
-         <input id="name-${pid}" value="Player ${label}" maxlength="16" autocomplete="off">
-         <select id="kind-${pid}" aria-label="${label} gate player type">` +
+        `<label for="name-${pid}"><span class="pawnchip" style="background:${COLORS[pid]}"></span>${label}</label>
+         <input id="name-${pid}" value="${label}" maxlength="16" autocomplete="off">
+         <select id="kind-${pid}" aria-label="${label} player type">` +
         KINDS.map(([v, t]) =>
           `<option value="${v}" ${v === "human" ? "" : ""}>${t}</option>`)
-          .join("") + `</select>`;
+          .join("") + `</select><select class="manual-gate" id="gate-${pid}" aria-label="${label} starting gate">` +
+          Object.entries(GATES).map(([id, text]) => `<option value="${id}" ${id === pid ? "selected" : ""}>${text}</option>`).join("") +
+          `</select><span class="gate-preview" id="gate-preview-${pid}"></span>`;
       seats.appendChild(d);
     }
     document.getElementById("kind-P1").value = "balanced";
@@ -501,12 +584,39 @@
     };
     document.getElementById("againbtn").onclick = () => {
       hideOverlay("gameover");
+      if (g.setupOptions && g.setupOptions.gateMode === "rotation") g.setupOptions.gateRotation = (g.setupOptions.gateRotation + 1) % 4;
       startGame(false, true);
     };
     document.getElementById("setupbtn").onclick = () => {
       hideOverlay("gameover");
       showOverlay("setup");
     };
+  }
+
+  function setupOptions() {
+    const mode = document.getElementById("gate-mode").value;
+    return { gateMode: mode,
+      gateOrder: mode === "manual" ? ["P0", "P1", "P2", "P3"].map(id => document.getElementById("gate-" + id).value) : undefined,
+      gateRotation: Number(document.getElementById("gate-rotation").value) };
+  }
+
+  function previewAssignments() {
+    const options = setupOptions(), ids = ["P0", "P1", "P2", "P3"];
+    for (const id of ids) document.getElementById("gate-" + id).hidden = options.gateMode !== "manual";
+    document.getElementById("rotation-label").hidden = options.gateMode !== "rotation";
+    const error = document.getElementById("setup-error");
+    try {
+      const preview = E.newGame(Number(document.getElementById("seed").value) || 2026,
+        ids.map(id => ({ id, name: id, kind: "human" })), options);
+      for (const p of preview.players) document.getElementById("gate-preview-" + p.id).textContent = "Starts at " + GATES[p.gateId];
+      error.textContent = "";
+      document.getElementById("startbtn").disabled = false;
+      document.getElementById("watchbtn").disabled = false;
+    } catch (err) {
+      error.textContent = "Choose four different starting gates.";
+      document.getElementById("startbtn").disabled = true;
+      document.getElementById("watchbtn").disabled = true;
+    }
   }
 
   function startGame(watch, reuseSeats) {
@@ -524,12 +634,14 @@
       kind: watch ? "balanced" :
         (reuseSeats ? g.players.find(p => p.id === pid).kind
           : document.getElementById("kind-" + pid).value),
-      name: watch ? pid :
+      name: watch ? "Player " + (Number(pid[1]) + 1) :
         (reuseSeats ? g.players.find(p => p.id === pid).name
           : (document.getElementById("name-" + pid).value || pid)),
     }));
     if (watch) seats[1].kind = "greedy";
-    g = E.newGame(seed, seats);
+    const options = reuseSeats ? { ...g.setupOptions } : setupOptions();
+    g = E.newGame(seed, seats, options);
+    g.setupOptions = options;
     g.log.push("The city gates open. Six treasures wait in the blocks.");
     placePawns();
     renderPlayers(); renderDice(); renderLog(); renderTurnline();
@@ -580,6 +692,10 @@
   };
 
   buildBoard();
+  renderBoardPhase();
   buildSetup();
+  for (const element of document.querySelectorAll("#setup select, #seed")) element.addEventListener("change", previewAssignments);
+  document.getElementById("seed").addEventListener("input", previewAssignments);
+  previewAssignments();
   showOverlay("setup");
 })();

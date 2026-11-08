@@ -239,6 +239,9 @@ POLICIES = {
 
 def act(policy_name, obs, rng):
     """Run one policy; returns (action_id, reason)."""
+    if obs.get("gameplay_mode") == "succession-v1":
+        import succession
+        return succession.choose_policy(policy_name, obs, rng)
     try:
         func = POLICIES[policy_name]
     except KeyError:

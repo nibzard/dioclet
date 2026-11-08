@@ -267,3 +267,59 @@ practical. No baseline rule values were changed.
   (31/16/21/32) remains the D32 northwest tie-break artifact. This
   closes the board cycle: six blocks (D33), doors on streets
   (D34), and the real two-street plan (D35) are now one geometry.
+
+- **D36 Six physical blocks take precedence over building labels
+  (V0.7.3, designer correction 2026-11-08).** D35 is superseded for
+  the active board. A street through each middle footprint creates
+  eight connected blocks; naming the pieces one building is not a
+  correction. `rules_v073_sixblocks_cardo.json` removes column 9,
+  restores six solid 5x5 blocks and 97 street spaces, and explicitly
+  assigns one district to each block. The existing column 6 is the
+  cardo, row 6 is the decumanus, and column 12 remains a secondary
+  street. Gates are P0 `[6,0]`, P1 `[18,6]`, P2 `[6,12]`, P3 `[0,6]`.
+  The checkpoint is `[6,6]`; the Emperor and retreat remain at the
+  south end of the cardo, `[6,12]` and `[6,11]`. This map is a game
+  abstraction with an off-center main street. Gate distances to the
+  crossing are 6/12/6/6. Earlier balance measurements do not transfer
+  to this geometry. Random player-to-gate assignment shares access
+  to positions, not equal positional strength; it belongs to the
+  intervention plan with a seeded shuffle and repeat-session rotation.
+  Both generators now validate actual connected blocks, complete
+  blocked footprints, distinct district ownership, and main-street
+  endpoints. The rejected V0.7.2 layout fails that contract.
+
+- **D37 Succession-mode interpretations (V0.8, 2026-11-08).** The
+  succession prototype introduces its own state (`prestige`,
+  `support`, pending claims) and never reinterprets legacy `seals`
+  or `hits`; Python results keep explicit legacy CSV columns beside
+  the succession metrics. Recorded interpretations: Prestige is the
+  player-facing name for Glory and keeps its sources. A claim
+  survives one completed response from each rival, tracked by player
+  identity; any legal action counts as a response, including
+  inaction. A claimant whose turn falls inside the window may
+  maintain the claim without moving. Leaving the Peristyle
+  voluntarily cancels the claim. A successful challenge returns the
+  claimant to the assigned gate; equipment and support survive.
+  `succession.contest_cost` is a mandatory Prestige fee for every
+  duel against an active claimant, paid before rolling and separate
+  from the optional `challenge_cost` boost; the winner still
+  receives the normal duel reward. Gate identity is distinct from
+  player identity: seeded random, manual, and rotation assignments
+  use a dedicated RNG stream, and repeat sessions rotate gates
+  without renaming players. Both engines use independent xorshift32
+  streams for gates, order, equipment, movement, and combat, and the
+  parity test compares full legal-action sequences and resulting
+  state. The active JSON ships with `contest_cost: 0` as the
+  comparison baseline; the denial-loop evidence for cost one is in
+  the V0.8 experiment reports, not in this decision.
+
+- **D38 Contest fee released at 1 (V0.8, 2026-11-08).** The active
+  `rules_v08_succession.json` now ships `succession.contest_cost: 1`,
+  superseding the D37 baseline note. Decision evidence: fee 0 causes
+  a free-denial loop (57% draws, 25 canceled claims per game); fee 2
+  passed every bot promotion check but produced zero legal contests
+  in four live Decisions games, because no responder held the full
+  fee at the response turn; fee 1 kept 12 of 13 live claims
+  challenged with 9 cancellations. The live probe, not bot
+  screening, decided between fees 1 and 2. Full record:
+  `FINDINGS_V08.md`.

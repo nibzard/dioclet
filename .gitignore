@@ -17,3 +17,21 @@ results/v041/games/*
 !results/v041/games/tb209/
 .axinbox/
 .wrangler/
+
+# V0.8 bulk bot game logs: suite aggregates, audits, prompts, and
+# proposals stay in git; full per-game logs and turn logs are
+# regenerable from seeds (see FINDINGS_V08.md). Live games are few
+# and are kept whole as the cited evidence.
+results/v08-contestcost-001/**/base/
+results/v08-programme-001/**/base/
+results/v08-altaudit-fee1/base/
+results/v08-altaudit-fee2/base/
+
+# V0.5 tournament full log sets ship as the v05-tournament-logs
+# release artifact (see README); repo copies hold the aggregates.
+results/v05_exp1/games/
+results/v05_exp2/games/
+results/v05_exp3/games/
+
+# Transient ledger lock
+results/v08-live-budget.json.lock

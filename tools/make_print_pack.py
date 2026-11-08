@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate the printable V0.6.1 playtest pack (playtest/playtest-pack.html).
 
-Reads rules_v072_cardo.json and renders: the board (all 107
+Reads rules_v073_sixblocks_cardo.json and renders: the board (all 97
 street spaces and the six building blocks), equipment cards, token
 sheets, the player rulebook, a quick-reference sheet, a five-minute
 teaching script, and a feedback form. Print with a browser at 100%
@@ -15,9 +15,9 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import engine  # noqa: E402
-from board import Board  # noqa: E402
+from board import Board, validate_six_block_layout  # noqa: E402
 
-RULES_FILE = "rules_v072_cardo.json"
+RULES_FILE = "rules_v08_succession.json"
 OUT_FILE = "playtest/playtest-pack.html"
 
 CELL = 44
@@ -37,17 +37,16 @@ def board_svg(rules):
 
     parts = [f'<svg viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Game board">']
     parts.append(f'<rect width="{w}" height="{h}" fill="#f6efe2"/>')
-    parts.append(f'<rect x="10" y="10" width="{w-20}" height="{h-20}" rx="14" '
+    parts.append(f'<rect x="10" y="10" width="{w-20}" height="{h-20}" rx="0" '
                  f'fill="none" stroke="#9c8a64" stroke-width="5"/>')
-    # building blocks: one footprint per declared building, so a
-    # block pierced by the cardo lane still reads as one building
+    # Every footprint is fully blocked. No street cuts through it.
     for bld in rules["board"].get("buildings", []):
         px, py = PAD + bld["x0"] * CELL, PAD + bld["y0"] * CELL
         pw = (bld["x1"] - bld["x0"] + 1) * CELL
         ph = (bld["y1"] - bld["y0"] + 1) * CELL
         parts.append(
             f'<rect x="{px+2}" y="{py+2}" width="{pw-4}" height="{ph-4}" '
-            f'rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>')
+            f'rx="0" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>')
     # street circles
     for x in range(b.width):
         for y in range(b.height):
@@ -71,22 +70,35 @@ def board_svg(rules):
     s.append(chip(*b.checkpoint, "#c9972b", "X", 16))
     for (x, y) in b.glory_posts:
         s.append(chip(x, y, "#5f7a4a", "*", 18))
-    s.append(chip(*b.emperor, "#a03d2e", "E", 15))
-    s.append(chip(*b.retreat, "#4a6b7a", "r", 15))
-    parts.extend(s)
-    # level 2 overlay badges (c cellars, b barracks, p peristyle)
-    for label, site in (("c", "cellars"), ("b", "guard_barracks"),
-                        ("p", "peristyle")):
-        x, y = b.seal_sites[site]
-        bx, by = cx(x) + 14, cy(y) - 15
-        parts.append(
-            f'<circle cx="{bx}" cy="{by}" r="8" fill="#fffdf6" stroke="#3a2d20" '
-            f'stroke-width="1.5"/><text x="{bx}" y="{by+4}" text-anchor="middle" '
-            f'font-family="Verdana, sans-serif" font-size="10" fill="#3a2d20">'
-            f'{label}</text>')
+    if rules.get("gameplay_mode") == "succession-v1":
+        for faction, (x, y) in rules["succession"]["factions"].items():
+            label = {"army": "A", "officials": "O", "elites": "C"}[faction]
+            s.append(f'<rect x="{cx(x)+10}" y="{cy(y)-25}" width="18" height="16" fill="#203d35"/>')
+            s.append(f'<text x="{cx(x)+19}" y="{cy(y)-13}" text-anchor="middle" font-size="9" fill="#fffdf6">{label}</text>')
+        parts.extend(s)
+    else:
+        s.append(chip(*b.emperor, "#a03d2e", "E", 15))
+        s.append(chip(*b.retreat, "#4a6b7a", "r", 15))
+        parts.extend(s)
+        # level 2 overlay badges (c cellars, b barracks, p peristyle)
+        for label, site in (("c", "cellars"), ("b", "guard_barracks"),
+                            ("p", "peristyle")):
+            x, y = b.seal_sites[site]
+            bx, by = cx(x) + 14, cy(y) - 15
+            parts.append(
+                f'<circle cx="{bx}" cy="{by}" r="8" fill="#fffdf6" stroke="#3a2d20" '
+                f'stroke-width="1.5"/><text x="{bx}" y="{by+4}" text-anchor="middle" '
+                f'font-family="Verdana, sans-serif" font-size="10" fill="#3a2d20">'
+                f'{label}</text>')
+    # The main axes use existing streets; no extra street splits a block.
+    for tx, ty, label in ((cx(6), 24, "CARDO · N–S"),
+                          (cx(10), cy(6) - 15, "DECUMANUS · E–W")):
+        parts.append(f'<text x="{tx}" y="{ty}" text-anchor="middle" '
+                     f'font-family="Verdana, sans-serif" font-size="8" '
+                     f'fill="#7a6a4d">{label}</text>')
     # compass
     parts.append(
-        f'<text x="{w/2}" y="{PAD-12}" text-anchor="middle" '
+        f'<text x="{w-58}" y="{PAD-12}" text-anchor="middle" '
         f'font-family="Georgia, serif" font-size="13" fill="#7a6a4d">N O R T H</text>')
     parts.append("</svg>")
     return "\n".join(parts)
@@ -220,7 +232,7 @@ HTML = """<!DOCTYPE html>
   one per player.</p>
   <h2>What is in the pack</h2>
   <ol>
-    <li>The board (all 107 street spaces; its page prints landscape,
+    <li>The board (all 97 street spaces; its page prints landscape,
     and A3 paper makes the pieces comfortable).</li>
     <li>Six treasure location cards.</li>
     <li>Tokens: Glory, seals, Emperor hits, pawns.</li>
@@ -230,10 +242,10 @@ HTML = """<!DOCTYPE html>
     <li>Five-minute teaching script.</li>
     <li>Feedback form.</li>
   </ol>
-  <p class="small">Rules version: V0.7.2 real board, cardo and decumanus,
+  <p class="small">Rules version: V0.7.3 six-block board, cardo and decumanus,
   six blocks one card each, 2d6 movement.
-  Level 2 site placements on this board are the design team's current
-  tested choice, not final artwork.</p>
+  The six-block geometry is corrected. Gate balance on this layout
+  requires fresh measurement; this map is a game abstraction.</p>
 </div>
 
 <div class="page board">
@@ -430,14 +442,21 @@ __TRACKERS__
 
 
 def main():
-    rules = engine.load_rules(RULES_FILE)
-    html = (HTML.replace("__BOARD__", board_svg(rules))
+    rules_path = sys.argv[sys.argv.index("--rules") + 1] if "--rules" in sys.argv else RULES_FILE
+    rules = engine.load_rules(rules_path)
+    validate_six_block_layout(rules)
+    if rules.get("gameplay_mode") == "succession-v1":
+        from tools.succession_content import printable_pack
+        html = printable_pack(rules, board_svg(rules), equipment_cards(rules))
+    else:
+        html = (HTML.replace("__BOARD__", board_svg(rules))
                  .replace("__CARDS__", equipment_cards(rules))
                  .replace("__TOKENS__", token_sheet())
                  .replace("__TRACKERS__", tracker_sheets(rules)))
     # The template doubles CSS braces; the placeholders above are plain
     # string replacement, so unescape them for the final document.
-    html = html.replace("{{", "{").replace("}}", "}")
+    if rules.get("gameplay_mode") != "succession-v1":
+        html = html.replace("{{", "{").replace("}}", "}")
     out = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else OUT_FILE
     os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
     with open(out, "w", encoding="utf-8") as fh:

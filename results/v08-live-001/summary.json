@@ -1,0 +1,114 @@
+{
+  "alternative_positions": 2,
+  "budget": {
+    "accounting": "Successful input at uncached rate; failed or interrupted requests retain conservative reserves.",
+    "calls": 376,
+    "estimated_cost_usd": 0.131644,
+    "input_tokens": 1316531,
+    "max_calls": 1200,
+    "max_cost_usd": 0.75,
+    "pricing_source": "https://developers.openai.com/api/docs/guides/decisions#pricing-and-availability",
+    "pricing_verified": "2026-11-08"
+  },
+  "games_per_variant": 4,
+  "notes": "Gate permutations are covered in blocks of 24; policy identities rotate between blocks. Use at least 96 games for one full profile/gate rotation.",
+  "policy_version": "succession-probes-0.8.0",
+  "profiles": [
+    "collector",
+    "early_support",
+    "prestige_farmer",
+    "counterleader"
+  ],
+  "provider": "live-decisions",
+  "rules_hash": "fb7a41feab56e9ceeabbfd4e78220bb8b88466df31720c42f44add28553c6fac",
+  "schema": "succession-experiments-1",
+  "seed_base": 130000,
+  "split": "screen",
+  "variants": {
+    "base": {
+      "avoidable_treasure_walks": 1,
+      "challenged_claim_fraction": 0.0,
+      "challenged_claims": 0,
+      "choice_rich_turns": 169,
+      "claim_statistics_scope": "finished_games",
+      "counterclaim_attempts": 0,
+      "draw_fraction": 0.0,
+      "draws": 0,
+      "finished_games": 4,
+      "first_collector_games": 4,
+      "first_collector_wins": 2,
+      "gate_rates": {
+        "P0": {
+          "games": 4,
+          "rate": 0.0,
+          "wilson_95": [
+            0,
+            0.4898908364545973
+          ],
+          "wins": 0
+        },
+        "P1": {
+          "games": 4,
+          "rate": 0.5,
+          "wilson_95": [
+            0.15003898915214947,
+            0.8499610108478506
+          ],
+          "wins": 2
+        },
+        "P2": {
+          "games": 4,
+          "rate": 0.25,
+          "wilson_95": [
+            0.04558726080970055,
+            0.6993581574175981
+          ],
+          "wins": 1
+        },
+        "P3": {
+          "games": 4,
+          "rate": 0.25,
+          "wilson_95": [
+            0.04558726080970055,
+            0.6993581574175981
+          ],
+          "wins": 1
+        }
+      },
+      "incomplete_games": 0,
+      "interpretation": "Diagnostic measures for mechanical incentives; none alone measures human fun.",
+      "median_rounds": 22.0,
+      "resource_and_claim_totals": {
+        "claims_cancelled": 0,
+        "claims_made": 4,
+        "equipment_collected": 91,
+        "idle_moves": 242,
+        "prestige_earned": 18,
+        "prestige_spent": 15,
+        "prestige_wasted_at_cap": 0,
+        "response_turns": 12,
+        "support_gained": 15
+      },
+      "strategy_rates": {
+        "decisions": {
+          "games": 16,
+          "rate": 0.25,
+          "wilson_95": [
+            0.10182067491213048,
+            0.49498316535508774
+          ],
+          "wins": 4
+        }
+      },
+      "turns_observed": 376,
+      "wins_by_gate": {
+        "P1": 2,
+        "P2": 1,
+        "P3": 1
+      },
+      "wins_by_strategy": {
+        "decisions": 4
+      }
+    }
+  }
+}

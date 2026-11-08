@@ -93,3 +93,65 @@ class Board:
                     break
             path.append(cur)
         return path
+
+
+def validate_six_block_layout(rules):
+    """Check the playable geometry, not only six declared rectangles.
+
+    Generators use this check for the adopted six-block layout. Old
+    rules remain available for replay without applying this contract.
+    """
+    b = Board(rules)
+    remaining = set(b.blocked)
+    components = []
+    while remaining:
+        start = remaining.pop()
+        group = {start}
+        queue = [start]
+        for x, y in queue:
+            for dx, dy in DIRECTIONS:
+                adjacent = (x + dx, y + dy)
+                if adjacent in remaining:
+                    remaining.remove(adjacent)
+                    group.add(adjacent)
+                    queue.append(adjacent)
+        components.append(frozenset(group))
+    if len(components) != 6:
+        raise ValueError(f"expected six intact blocks, found {len(components)}")
+
+    buildings = rules["board"].get("buildings", [])
+    if len(buildings) != 6:
+        raise ValueError("expected six declared block footprints")
+    footprints = []
+    assigned = []
+    for building in buildings:
+        cells = frozenset((x, y)
+                          for x in range(building["x0"], building["x1"] + 1)
+                          for y in range(building["y0"], building["y1"] + 1))
+        if not cells <= b.blocked:
+            raise ValueError(f"street crosses block {building['name']}")
+        footprints.append(cells)
+        district = building.get("district")
+        if district not in b.districts:
+            raise ValueError(f"block {building['name']} needs its own district")
+        assigned.append(district)
+        ex, ey = b.districts[district]
+        if not any((ex + dx, ey + dy) in cells for dx, dy in DIRECTIONS):
+            raise ValueError(f"district {district} does not enter its block")
+    if set(footprints) != set(components):
+        raise ValueError("declared footprints must match the six physical blocks")
+    if len(set(assigned)) != 6 or set(assigned) != set(b.districts):
+        raise ValueError("each block needs exactly one distinct district")
+
+    streets = rules["board"]["streets"]
+    cardo, decumanus = streets["cardo"], streets["decumanus"]
+    if cardo["axis"] != "north-south" or decumanus["axis"] != "east-west":
+        raise ValueError("cardo must run north-south; decumanus must run east-west")
+    cx, dy = cardo["coordinate"], decumanus["coordinate"]
+    main_streets = {(cx, y) for y in range(b.height)} | {(x, dy) for x in range(b.width)}
+    if main_streets & b.blocked:
+        raise ValueError("main streets must run continuously between their gates")
+    expected_gates = {"P0": (cx, 0), "P1": (b.width - 1, dy),
+                      "P2": (cx, b.height - 1), "P3": (0, dy)}
+    if b.gates != expected_gates or b.checkpoint != (cx, dy):
+        raise ValueError("gates must end the main streets; checkpoint must mark their crossing")

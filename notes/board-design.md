@@ -45,3 +45,21 @@ The user could not see the choice menu below the player cards. Clicking a treasu
 The special marker also covered its movement highlight and extended beyond its clickable circle. The circle now covers the whole marker and shows an outer highlight. Browser checks reproduce an edge click and verify the mobile modal. Interface tests cover automatic collection, competing actions, cancellation, focus, a complete game, and replay.
 
 The deployment folder is `/tmp/dioclet-treasure-deploy`. It preserves the live board data. Concurrent workspace changes to the V0.7.2 board remain separate from this interface update.
+
+## Six-block correction, 2026-11-08
+
+The designer rejects V0.7.2 because its added central lane creates eight physical blocks. V0.7.3 removes that lane, keeps six solid 5×5 blocks, and aligns both north and south gates with the existing western street. The cardo is off-center; the decumanus retains the east and west gates. Each block has an explicit district assignment.
+
+The active rules source is `rules_v073_sixblocks_cardo.json`. Both generators validate six connected blocks, complete blocked footprints, one entry per block, main-street continuity, and gate endpoints. The old eight-block map fails that contract. The geometry is not claimed to have equal gate strength.
+
+The full design intervention is recorded in `docs/intervention-plan.md`. It includes persistent equipment, faction support, Prestige, a contested succession, and seeded random gate assignment. Those mechanics remain a separate prototype after the immediate board correction.
+
+Verification of V0.7.3: 135 Python tests pass; the JavaScript engine completes 40 bot games; the interface completes a full game and replay. Desktop and 390-pixel mobile browser checks show six distinct district blocks. The deployed board independently reports six connected blocked groups of 25 cells each and 97 street spaces. Deployment version: `5f11cb62-58af-4e6a-a121-ff7c550c1a87`.
+
+## Markers by phase, 2026-11-08
+
+The browser renderer previously drew both phases at once. The inactive Emperor circle covered the south gate during the city phase, and palace tooltips overwrote city tooltips.
+
+Palace markers now share a layer that is hidden in the city phase. The Emperor, retreat, seal badges, legend, hit areas, and tooltips switch with the phase. The city shows the south gate and checkpoint. Returning to a city game through replay resets the layer and labels.
+
+Interface regression checks cover initial setup, a city game, a palace game, return to the city, and a full game with replay. They also verify that the colored Emperor and retreat circles belong to the hidden layer.

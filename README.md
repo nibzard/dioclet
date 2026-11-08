@@ -16,6 +16,8 @@ with repeatable batches before any physical playtesting.
 - `FINDINGS_V05.md` — rule experiments under Decisions play
 - `notes/v05-experiment-plan.md` — V0.5 experiment plan with
   predictions and outcome lines
+- `FINDINGS_V08.md` — succession fee experiments, proposal agents,
+  and live Decisions validation
 
 ## Where the design stands
 
@@ -47,7 +49,7 @@ rotation (baseline → adopted package → candidate):
 Python 3.11 or newer. Standard library only.
 
 ```bash
-python3 -m unittest discover -s tests    # 43 engine and policy tests
+python3 -m unittest discover -s tests    # engine, policy, board, and harness tests
 ```
 
 ## Play one game turn by turn
@@ -214,33 +216,81 @@ over unchanged. Measured against the V0.6 board: fewer city timeouts
 and even gates under both the balanced-se mirror and first-challenger
 probe (`DECISIONS.md` D33, `notes/board-comparison.md`).
 
-## V0.7.1: gates on the streets, and V0.7.2: the real plan
+## V0.7.3: six intact blocks and aligned gates
 
-Second designer correction (2026-11-07): the north and south doors
-must open onto a street, not face a block wall. V0.7.1 moved them
-onto the internal vertical streets. Third correction (2026-11-08):
-the real palace has two main streets, cardo and decumanus, with the
-four doors at their ends, symmetric. `rules_v072_cardo.json`
-(current) restores the cardo and puts the north and south doors at
-its ends; the two middle buildings are declared as single blocks
-pierced by the cardo lane, so the board keeps six buildings and six
-cards. Game content is identical to the measured V0.6 p3 ruleset
-(verified by 100 paired games), so its numbers stand: 162 city
-timeouts per 1,000, median 26 rounds, even gates in the random
-mirror.
+The active board is `rules_v073_sixblocks_cardo.json`. It keeps six
+solid 5x5 blocks and 97 street spaces. The cardo follows the existing
+western street, column 6. The decumanus follows row 6. The north and
+south gates both end the cardo; the east and west gates end the
+decumanus. The checkpoint marks their crossing.
+
+V0.7.2 added column 9 through the two middle blocks. That creates
+eight physical blocks, even when metadata calls them six buildings.
+It is rejected for the active layout and retained for old replays.
+The generators now check physical connected blocks, complete
+footprints, distinct card ownership, and the four street endpoints.
+
+The cardo is off-center to preserve six equal blocks without adding
+a street. Gate-to-checkpoint distances are north 6, east 12, south 6,
+and west 6. Random gate assignment can share the chance of each
+position; it does not prove equal strength. This layout needs new
+balance measurements.
+
+The full gameplay redesign is specified in
+[`docs/intervention-plan.md`](docs/intervention-plan.md). It covers
+persistent equipment, faction support, Prestige, random gate
+assignment, and a contested claim to imperial power.
+
+## V0.8: imperial succession
+
+The active prototype is `rules_v08_succession.json`
+(`gameplay_mode: "succession-v1"`). It keeps the V0.7.3 six-block
+board and replaces the palace boss fight with a contested claim:
+
+- Players get names and colors; gates are assigned separately
+  (seeded random, manual, or a four-game rotation).
+- Equipment persists through the whole game. There are no free
+  grants at transition, and collection stays legal in succession.
+- Glory is renamed Prestige and has spending options.
+- Seals are replaced by faction support: visit a meeting place and
+  spend one Prestige. Support from two of three factions qualifies a
+  claim.
+- The endgame is a claim at the Peristyle that every rival answers.
+  Challenging an active claimant costs 1 Prestige, paid before the
+  roll and separate from the optional +2 boost. A winning challenge
+  cancels the claim and returns the claimant to the assigned gate. A
+  claim that survives all three responses wins. Fee 0 lost to a
+  free-denial loop and fee 2 removed live counterplay; see
+  `FINDINGS_V08.md`.
+
+Legacy `seals` and `hits` state is never reinterpreted; the legacy
+engine still replays old rules files. The succession engine lives in
+`succession.py` (Python) and `web/succession-engine.js` (browser);
+`web/succession-bots.js` supplies the public-information bot
+policies. Offline strategy evaluation, gate permutation audits, and
+alternative-play audits: `tools/succession_experiments.py`
+(`evaluate_rules`). The bounded autoresearch runner over
+`experiments/v08-programme.json` is `tools/run_programme.py`
+(sequential tool-free Claude proposal agents; scripted smoke mode
+needs no model call). Human playtest protocol:
+`playtest/protocol-v08.md`. Experiment instructions and evidence
+rules: `programme.md`.
 
 ## Play it in the browser
 
-A playable web version of the validated board lives in `web/`: plain
-HTML, CSS, and JavaScript, no build step. Hot-seat humans and the four
-ported bot policies play the measured ruleset on the six-block,
-97-space board. The full rulebook ships with the site behind the
-**How to play** button. The board definition is generated from
-`rules_v072_cardo.json` (`python3 tools/make_web_board.py`),
-never hand-copied. Logic tests: `node tools/test_web_engine.mjs`.
-UI smoke test (jsdom, plays a full game by clicking):
-`node tools/test_web_ui.mjs`. Deployed to Cloudflare via
-`npx wrangler deploy` (see `wrangler.jsonc`).
+A playable web version lives in `web/`: plain HTML, CSS, and
+JavaScript, no build step. Hot-seat humans and the bot policies play
+the V0.8 succession rules on the six-block, 97-space board. The full
+rulebook ships with the site behind the **How to play** button. The
+board definition is generated from `rules_v08_succession.json`
+(`python3 tools/make_web_board.py`), never hand-copied; pass
+`--rules` for legacy artifacts. Tests: `node
+tools/test_web_engine.mjs` (legacy engine), `node
+tools/test_succession_engine.mjs` (succession behavior), `node
+tools/test_succession_parity.mjs` (Python/JavaScript action parity),
+and `node tools/test_web_ui.mjs` (jsdom UI test; prints SKIP without
+jsdom installed). Deployed to Cloudflare via `npx wrangler deploy`
+(see `wrangler.jsonc`).
 
 ## V0.5 experiments (run)
 
@@ -256,6 +306,9 @@ artifact `v05-tournament-logs`.
 
 - `sim.py` — CLI entry point
 - `engine.py` — state machine, legal actions, resolution, events
+  (dispatches `gameplay_mode: "succession-v1"` to `succession.py`)
+- `succession.py` — V0.8 succession mode: state, claims, support,
+  invariants, and strategy probes
 - `board.py` — grid graph, deterministic shortest paths, site lookups
 - `policies.py` — `random`, `greedy`, `aggressive`, `balanced` bots
 - `tactical_policy.py` — frozen deterministic benchmark bot (V0.4)
@@ -269,6 +322,10 @@ artifact `v05-tournament-logs`.
 - `tournament.py` — reproducible AI tournament runner (V0.4.1)
 - `analyze_v041.py` — offline decision scorecards and tournament
   reports (V0.4.1)
+- `tools/succession_experiments.py` — V0.8 offline evaluation,
+  gate-permutation and alternative-play audits, bounded live games
+- `tools/run_programme.py` — bounded sequential proposal-agent runner
+  over `experiments/v08-programme.json` (V0.8)
 - `decisions_config.json`, `requirements-decisions.txt` — V0.4 config
   and optional dependency pin
 - `tests/` — engine invariants, resolution tests, policy unit tests,

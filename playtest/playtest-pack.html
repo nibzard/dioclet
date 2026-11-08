@@ -1,105 +1,21 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
-<title>Diocletian's Palace — playtest pack</title>
-<style>
-  :root { --ink:#2a2119; --paper:#fffdf6; --line:#e2d5bc; --purple:#5a3d6b;
-           --gold:#b8860b; --green:#5f7a4a; --red:#a03d2e; }
-  * { box-sizing: border-box; }
-  body { margin:0; font:13.5px/1.5 Georgia, serif; color:var(--ink);
-         background:#d8cdb4; }
-  .page { width:210mm; min-height:296mm; margin:8px auto; padding:14mm 12mm;
-           background:var(--paper); box-shadow:0 1px 6px #0003; }
-  h1 { margin:2mm 0 1mm; font-size:26px; color:var(--purple); }
-  h2 { margin:6mm 0 2mm; font-size:18px; color:var(--purple);
-        border-bottom:2px solid var(--gold); padding-bottom:1mm; }
-  h3 { margin:4mm 0 1mm; font-size:14.5px; color:#5a3d6b; }
-  p, li { margin:1.5mm 0; }
-  ol, ul { padding-left:6mm; }
-  table { border-collapse:collapse; width:100%; margin:2mm 0; font-size:12.5px; }
-  th, td { border:1px solid var(--line); padding:1.5mm 2mm; text-align:left; }
-  th { background:#f3ead2; }
-  .board svg { width:100%; height:auto; }
-  .legend { display:flex; flex-wrap:wrap; gap:3mm; font-size:11.5px; margin:2mm 0; }
-  .legend span { white-space:nowrap; }
-  .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
-          margin-right:1.5mm; vertical-align:-1px; border:1px solid #3a2d20; }
-  .tokrow { display:flex; flex-wrap:wrap; gap:3mm; margin:3mm 0; }
-  .tok { width:22mm; height:22mm; border-radius:50%; display:flex;
-          align-items:center; justify-content:center; text-align:center;
-          font:600 11px Verdana, sans-serif; border:2px dashed #7a6a4d; }
-  .tok.glory { background:#f3e6b8; color:#7a5c0e; }
-  .tok.pawn { border-style:solid; color:#fffdf6; font-size:9px;
-             width:7mm; height:7mm; }
-  .pawn.p0 { background:#5a3d6b; } .pawn.p1 { background:#b0532f; }
-  .pawn.p2 { background:#5f7a4a; } .pawn.p3 { background:#3f6f9e; }
-  .tok.seal { border-radius:4mm; background:#efe4cf; }
-  .tok.hit { background:#f4ddd6; color:#7c2d1f; border-radius:2mm; }
-  .eqgrid { display:grid; grid-template-columns:repeat(3, 54mm); gap:4mm; }
-  .eqcard { border:2px solid var(--purple); border-radius:3mm; height:74mm;
-             padding:4mm; background:#fbf6ea; }
-  .eqname { font-size:16px; font-weight:bold; color:var(--purple); }
-  .eqflavor { margin-top:2mm; font-style:italic; color:#6f6252; }
-  .eqfoot { margin-top:52mm; font-size:10px; color:#8a795a;
-             text-align:center; letter-spacing:1px; }
-  .script li { margin:2.5mm 0; }
-  .trkgrid { display:grid; grid-template-columns:1fr 1fr; gap:5mm; }
-  .tracker { border:2px solid var(--purple); border-radius:3mm;
-              padding:3mm; page-break-inside:avoid; }
-  .tracker h3 { margin:1mm 0 2mm; }
-  .trkcol { display:inline-block; vertical-align:top; width:48%;
-             font-size:11.5px; margin:1mm 0; }
-  .eqline { margin:1.2mm 0; }
-  .box { display:inline-block; width:4mm; height:4mm;
-          border:1.5px solid var(--ink); border-radius:1mm;
-          vertical-align:-0.5mm; }
-  .formline { border-bottom:1px solid var(--line); height:8mm; margin:3mm 0; }
-  .small { font-size:11px; color:#6f6252; }
-  @page boardpage { size: A4 landscape; }
-  .page.board { page: boardpage; }
-  @media print {
-    body { background:#fff; }
-    .page { margin:0; box-shadow:none; page-break-after:always; }
-  }
-</style></head><body>
-
-<div class="page">
-  <h1>Diocletian's Palace</h1>
-  <p><b>Print-and-play playtest pack.</b> Unofficial prototype for
-  tabletop testing. Print these pages at 100% scale. You need, besides
-  this pack: <b>two ordinary six-sided dice for movement</b> and
-  <b>one six-sided die for fights and trials</b>. Cut out the cards and
-  tokens on the later pages. Any small object
-  (coin, meeple, button) works better than paper pawns if you have
-  one per player.</p>
-  <h2>What is in the pack</h2>
-  <ol>
-    <li>The board (all 107 street spaces; its page prints landscape,
-    and A3 paper makes the pieces comfortable).</li>
-    <li>Six treasure location cards.</li>
-    <li>Tokens: Glory, seals, Emperor hits, pawns.</li>
-    <li>Four equipment tracker sheets.</li>
-    <li>The rules (two pages).</li>
-    <li>One-page quick reference.</li>
-    <li>Five-minute teaching script.</li>
-    <li>Feedback form.</li>
-  </ol>
-  <p class="small">Rules version: V0.7.2 real board, cardo and decumanus,
-  six blocks one card each, 2d6 movement.
-  Level 2 site placements on this board are the design team's current
-  tested choice, not final artwork.</p>
-</div>
-
-<div class="page board">
-  <h2>The board</h2>
-  <svg viewBox="0 0 904 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Game board">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Diocletian’s Palace · Succession playtest</title>
+<style>body{font:14px/1.6 Georgia,serif;color:#263b34;background:#eee;margin:0}.page{max-width:950px;margin:20px auto;padding:28px;background:#fffdf6;break-after:page}
+h1,h2,h3{font-weight:normal}h2{margin-top:24px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:8px;text-align:left}
+.board svg{width:100%;height:auto}.tracker{border:1px solid #ccc;padding:15px;margin-bottom:15px;break-inside:avoid}.eqgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.eqcard{border:1px solid #ccc;padding:20px}
+@media print{body{background:white}.page{margin:0;max-width:none;padding:12mm}@page{size:A4;margin:10mm}.board{page:board}@page board{size:A4 landscape}}</style></head><body>
+<section class="page"><h1>Diocletian’s Palace: the succession</h1><p>Prototype V0.8 · Four players · Two movement dice and one combat die per player.</p>
+<p>Print the board in landscape. Use four distinct pawns, counters for Prestige, and the player trackers.
+Give the six equipment cards public locations; each player marks their own collected copy on a tracker.</p>
+<p>Start with random gate assignments. For four repeated games, rotate players through all four gates.</p></section>
+<section class="page board"><h2>Six blocks · Six treasures</h2><svg viewBox="0 0 904 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Game board">
 <rect width="904" height="640" fill="#f6efe2"/>
-<rect x="10" y="10" width="884" height="620" rx="14" fill="none" stroke="#9c8a64" stroke-width="5"/>
-<rect x="80" y="80" width="216" height="216" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
-<rect x="344" y="80" width="216" height="216" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
-<rect x="608" y="80" width="216" height="216" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
-<rect x="80" y="344" width="216" height="216" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
-<rect x="344" y="344" width="216" height="216" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
-<rect x="608" y="344" width="216" height="216" rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+<rect x="10" y="10" width="884" height="620" rx="0" fill="none" stroke="#9c8a64" stroke-width="5"/>
+<rect x="80" y="80" width="216" height="216" rx="0" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+<rect x="344" y="80" width="216" height="216" rx="0" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+<rect x="608" y="80" width="216" height="216" rx="0" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+<rect x="80" y="344" width="216" height="216" rx="0" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+<rect x="344" y="344" width="216" height="216" rx="0" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
+<rect x="608" y="344" width="216" height="216" rx="0" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>
 <circle cx="56.0" cy="56.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
 <circle cx="56.0" cy="100.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
 <circle cx="56.0" cy="144.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
@@ -148,17 +64,7 @@
 <circle cx="408.0" cy="320.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
 <circle cx="408.0" cy="584.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
 <circle cx="452.0" cy="56.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="100.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="144.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="188.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="232.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="276.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
 <circle cx="452.0" cy="320.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="364.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="408.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="452.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="496.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="540.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
 <circle cx="452.0" cy="584.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
 <circle cx="496.0" cy="56.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
 <circle cx="496.0" cy="320.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
@@ -207,212 +113,105 @@
 <circle cx="848.0" cy="496.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
 <circle cx="848.0" cy="540.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
 <circle cx="848.0" cy="584.0" r="13" fill="#fffdf6" stroke="#b7a77f" stroke-width="2"/>
-<circle cx="452.0" cy="56.0" r="16.5" fill="#5a3d6b" stroke="#3a2d20" stroke-width="2.5"/><text x="452.0" y="62.5" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#fffdf6">N</text>
+<circle cx="320.0" cy="56.0" r="16.5" fill="#5a3d6b" stroke="#3a2d20" stroke-width="2.5"/><text x="320.0" y="62.5" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#fffdf6">N</text>
 <circle cx="848.0" cy="320.0" r="16.5" fill="#5a3d6b" stroke="#3a2d20" stroke-width="2.5"/><text x="848.0" y="326.5" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#fffdf6">E</text>
-<circle cx="452.0" cy="584.0" r="16.5" fill="#5a3d6b" stroke="#3a2d20" stroke-width="2.5"/><text x="452.0" y="590.5" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#fffdf6">S</text>
+<circle cx="320.0" cy="584.0" r="16.5" fill="#5a3d6b" stroke="#3a2d20" stroke-width="2.5"/><text x="320.0" y="590.5" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#fffdf6">S</text>
 <circle cx="56.0" cy="320.0" r="16.5" fill="#5a3d6b" stroke="#3a2d20" stroke-width="2.5"/><text x="56.0" y="326.5" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#fffdf6">W</text>
 <circle cx="188.0" cy="56.0" r="16.5" fill="#3f6f9e" stroke="#3a2d20" stroke-width="2.5"/><text x="188.0" y="63.0" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fffdf6">A</text>
-<circle cx="452.0" cy="188.0" r="16.5" fill="#3f6f9e" stroke="#3a2d20" stroke-width="2.5"/><text x="452.0" y="195.0" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fffdf6">B</text>
+<circle cx="452.0" cy="56.0" r="16.5" fill="#3f6f9e" stroke="#3a2d20" stroke-width="2.5"/><text x="452.0" y="63.0" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fffdf6">B</text>
 <circle cx="716.0" cy="56.0" r="16.5" fill="#3f6f9e" stroke="#3a2d20" stroke-width="2.5"/><text x="716.0" y="63.0" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fffdf6">C</text>
 <circle cx="188.0" cy="584.0" r="16.5" fill="#3f6f9e" stroke="#3a2d20" stroke-width="2.5"/><text x="188.0" y="591.0" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fffdf6">D</text>
-<circle cx="452.0" cy="452.0" r="16.5" fill="#3f6f9e" stroke="#3a2d20" stroke-width="2.5"/><text x="452.0" y="459.0" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fffdf6">E</text>
+<circle cx="452.0" cy="584.0" r="16.5" fill="#3f6f9e" stroke="#3a2d20" stroke-width="2.5"/><text x="452.0" y="591.0" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fffdf6">E</text>
 <circle cx="716.0" cy="584.0" r="16.5" fill="#3f6f9e" stroke="#3a2d20" stroke-width="2.5"/><text x="716.0" y="591.0" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fffdf6">F</text>
-<circle cx="452.0" cy="320.0" r="16.5" fill="#c9972b" stroke="#3a2d20" stroke-width="2.5"/><text x="452.0" y="327.0" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fffdf6">X</text>
+<circle cx="320.0" cy="320.0" r="16.5" fill="#c9972b" stroke="#3a2d20" stroke-width="2.5"/><text x="320.0" y="327.0" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fffdf6">X</text>
 <circle cx="56.0" cy="144.0" r="16.5" fill="#5f7a4a" stroke="#3a2d20" stroke-width="2.5"/><text x="56.0" y="152.0" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#fffdf6">*</text>
 <circle cx="848.0" cy="144.0" r="16.5" fill="#5f7a4a" stroke="#3a2d20" stroke-width="2.5"/><text x="848.0" y="152.0" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#fffdf6">*</text>
 <circle cx="56.0" cy="496.0" r="16.5" fill="#5f7a4a" stroke="#3a2d20" stroke-width="2.5"/><text x="56.0" y="504.0" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#fffdf6">*</text>
 <circle cx="848.0" cy="496.0" r="16.5" fill="#5f7a4a" stroke="#3a2d20" stroke-width="2.5"/><text x="848.0" y="504.0" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#fffdf6">*</text>
-<circle cx="452.0" cy="584.0" r="16.5" fill="#a03d2e" stroke="#3a2d20" stroke-width="2.5"/><text x="452.0" y="590.5" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#fffdf6">E</text>
-<circle cx="452.0" cy="540.0" r="16.5" fill="#4a6b7a" stroke="#3a2d20" stroke-width="2.5"/><text x="452.0" y="546.5" text-anchor="middle" font-family="Georgia, serif" font-size="15" font-weight="bold" fill="#fffdf6">r</text>
-<circle cx="202.0" cy="41.0" r="8" fill="#fffdf6" stroke="#3a2d20" stroke-width="1.5"/><text x="202.0" y="45.0" text-anchor="middle" font-family="Verdana, sans-serif" font-size="10" fill="#3a2d20">c</text>
-<circle cx="730.0" cy="569.0" r="8" fill="#fffdf6" stroke="#3a2d20" stroke-width="1.5"/><text x="730.0" y="573.0" text-anchor="middle" font-family="Verdana, sans-serif" font-size="10" fill="#3a2d20">b</text>
-<circle cx="466.0" cy="305.0" r="8" fill="#fffdf6" stroke="#3a2d20" stroke-width="1.5"/><text x="466.0" y="309.0" text-anchor="middle" font-family="Verdana, sans-serif" font-size="10" fill="#3a2d20">p</text>
-<text x="452.0" y="22" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#7a6a4d">N O R T H</text>
-</svg>
-  <div class="legend">
-    <span><span class="dot" style="background:#5a3d6b"></span>gate and start</span>
-    <span><span class="dot" style="background:#3f6f9e"></span>treasure entry (stop here to take the card)</span>
-    <span><span class="dot" style="background:#c9972b"></span>checkpoint (Peristyle in the palace)</span>
-    <span><span class="dot" style="background:#5f7a4a"></span>guard post (Glory)</span>
-    <span><span class="dot" style="background:#a03d2e"></span>Emperor</span>
-    <span><span class="dot" style="background:#4a6b7a"></span>retreat hall</span>
-  </div>
-  <p class="small">Small white circles with letters are the palace
-  trials: <b>c</b> Cellars, <b>b</b> Barracks, <b>p</b> Peristyle.
-  They share the entry spaces of the matching city blocks. Red squares
-  are building blocks: nobody walks there.</p>
-</div>
-
-<div class="page">
-  <h2>Treasure cards (cut out)</h2>
-  <div class="eqgrid"><div class="eqcard"><div class="eqname">pugio</div><div class="eqflavor">A short dagger, easy to carry.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">pilum</div><div class="eqflavor">A throwing javelin.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">galea</div><div class="eqflavor">A legionary helmet.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">scutum</div><div class="eqflavor">A tall curved shield.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">gladius</div><div class="eqflavor">The Roman short sword.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">lorica segmentata</div><div class="eqflavor">Banded plate armor.</div><div class="eqfoot">Treasure of the city</div></div></div>
-  <p class="small">These six cards are <b>location cards</b>: put one
-  face down on each blue entry space. When a card is revealed it stays
-  on its space. Players mark what they own on their tracker sheet
-  (next page), not on the cards.</p>
-  <h2>Tokens (cut out)</h2>
-  <div class="tokrow"><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div><div class="tok glory">Glory</div></div><div class="tokrow"><div class="tok pawn p0">N</div><div class="tok pawn p1">E</div><div class="tok pawn p2">S</div><div class="tok pawn p3">W</div></div><div class="tokrow"><div class="tok seal cellars">Cellars</div><div class="tok seal cellars">Cellars</div><div class="tok seal cellars">Cellars</div><div class="tok seal cellars">Cellars</div><div class="tok seal barracks">Barracks</div><div class="tok seal barracks">Barracks</div><div class="tok seal barracks">Barracks</div><div class="tok seal barracks">Barracks</div><div class="tok seal peristyle">Peristyle</div><div class="tok seal peristyle">Peristyle</div><div class="tok seal peristyle">Peristyle</div><div class="tok seal peristyle">Peristyle</div></div><div class="tokrow"><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div><div class="tok hit">Hit</div></div>
-  <p class="small">Glory: each player may hold at most 2. Seals: you
-  need two different ones. Hits: mark your strikes on the Emperor.</p>
-</div>
-
-<div class="page">
-  <h2>The rules</h2>
-  <h3>Goal</h3>
-  <p>Be the first to land <b>two hits</b> on the Emperor.</p>
-  <h3>Setup</h3>
-  <p>Each player picks a gate (all four are equal). Put your pawn on
-  it. Shuffle the six treasure cards face down, one on each blue entry
-  space. Choose a starting player; the start moves one seat clockwise
-  every round.</p>
-  <h3>Your turn</h3>
-  <ol>
-    <li><b>Roll both movement dice.</b> The sum is your <i>maximum</i>
-    steps, not an exact count.</li>
-    <li><b>Move</b> along the street circles, orthogonally, up to your
-    roll. You may stop early. You may pass through other pawns.</li>
-    <li><b>Do one thing</b> where you stand (or just end your move):
-    take a treasure card, stand a guard post, duel a rival, or later
-    claim a seal or strike the Emperor.</li>
-    <li class="small">Guard posts and duels always need a move of at
-    least one space first. You cannot use either of them twice from
-    the same spot without moving away and coming back.</li>
-  </ol>
-  <h3>The city (first half)</h3>
-  <ul>
-    <li><b>Blue entry spaces:</b> end your move there and take that
-    block's treasure card. Every card can be taken by every player
-    once. Treasure is never stolen or lost.</li>
-    <li><b>Guard posts</b> (green *): end your move there and roll one
-    die: <b>4, 5 or 6 earns 1 Glory</b>.</li>
-    <li><b>Duels:</b> end your move within two street spaces of a
-    rival to challenge them. Each of you rolls one die and adds a gear
-    bonus (below). Higher total wins, <b>ties to the attacker</b>. The
-    winner takes 1 Glory. Nothing else changes hands.</li>
-    <li><b>Gear bonus:</b> 0-2 cards +0, 3-5 cards +1, all 6 cards +2.</li>
-    <li><b>Glory:</b> hold at most 2. Beyond that it is lost.</li>
-  </ul>
-  <h3>The gate</h3>
-  <p>The first player who owns all six treasures and reaches the gold
-  checkpoint takes 1 Glory and opens the gate. Finish that round, then
-  one more full round in the city. Then everyone missing cards gets
-  them for free, all pawns return to their gates, and the palace
-  begins. If nobody opens the gate by the end of round 24, it opens
-  anyway.</p>
-  <h3>The palace (second half)</h3>
-  <p>You need <b>two different seals</b> before the Emperor will face
-  you. Duels still work exactly as in the city.</p>
-  <table>
-    <tr><th>Seal</th><th>How to earn it</th></tr>
-    <tr><td>Cellars (c)</td><td>Roll one die: <b>3 or more</b>.</td></tr>
-    <tr><td>Barracks (b)</td><td>You roll die + gear bonus, the guard
-    rolls die +1. <b>Beat the guard.</b></td></tr>
-    <tr><td>Peristyle (p)</td><td>Roll one die: <b>5 or 6</b>. Or pay
-    <b>1 Glory</b>, no roll.</td></tr>
-  </table>
-  <h3>The Emperor</h3>
-  <ol>
-    <li>Stand in his chamber (red E) and strike: you roll die + gear
-    bonus, he rolls die +2. <b>Score higher to hit.</b></li>
-    <li>You may <b>declare a powered strike before rolling: pay 1
-    Glory for +2</b>, paid even on a miss.</li>
-    <li><b>Hit:</b> mark it, stay, strike again next turn.
-    <b>Miss:</b> step back to the retreat hall. Nothing else is lost.</li>
-    <li><b>First to two hits wins.</b></li>
-  </ol>
-  <p class="small">Everything is public: positions, cards, Glory,
-  seals, hits. Only the face-down treasures and the next roll are
-  hidden.</p>
-</div>
-
-<div class="page">
-  <h2>Quick reference (keep this on the table)</h2>
-  <table>
-    <tr><th>Your turn in one line</th></tr>
-    <tr><td>Roll 2 dice, move up to the sum, do one thing.</td></tr>
-  </table>
-  <table>
-    <tr><th>Rolls</th><th>What you roll</th></tr>
-    <tr><td>Movement</td><td>Two dice, summed (move up to the total)</td></tr>
-    <tr><td>Guard post</td><td>One die: 4+ earns Glory</td></tr>
-    <tr><td>Duel</td><td>One die each side + gear bonus, ties to attacker</td></tr>
-    <tr><td>Cellars / Peristyle</td><td>One die: 3+ / 5-6 (Peristyle: pay 1 Glory instead)</td></tr>
-    <tr><td>Barracks</td><td>You die + bonus vs guard die +1</td></tr>
-    <tr><td>Emperor</td><td>You die + bonus vs Emperor die +2; pay 1 Glory for +2 first if you want</td></tr>
-  </table>
-  <table>
-    <tr><th>Gear bonus</th><th>Glory</th></tr>
-    <tr><td>0-2 cards: +0<br>3-5 cards: +1<br>6 cards: +2</td>
-        <td>Cap 2 per player.<br>Earned: guard post, duel win, first
-        through the gate.<br>Spent: Peristyle seal (1), powered
-        Emperor strike (1).</td></tr>
-  </table>
-  <table>
-    <tr><th>Remember</th></tr>
-    <tr><td>Treasure: stop on the blue entry space.<br>
-    Guard posts and duels need a move first.<br>
-    Two different seals before the Emperor.<br>
-    Miss the Emperor: step back one space to the retreat hall.<br>
-    Two hits wins.</td></tr>
-  </table>
-</div>
-
-<div class="page script">
-  <h2>Five-minute teaching script</h2>
-  <ol>
-    <li><b>Point at the board.</b> "This is a Roman palace. You enter
-    through your gate. The streets are the circles; the red blocks are
-    buildings, you never walk there."</li>
-    <li><b>The race.</b> "Two halves. First, grab gear in the city.
-    Then the gate opens and everyone races to hit the Emperor twice."</li>
-    <li><b>Show a turn.</b> "Roll both dice, move up to the total,
-    then do one thing. That's a whole turn."</li>
-    <li><b>Show the three city things.</b> Stop on a blue space, take
-    that treasure. Stop on a green star, roll 4+ for Glory. End next
-    to a rival, duel: one die each plus your gear bonus, winner takes
-    a Glory.</li>
-    <li><b>Glory.</b> "You can hold two. It buys exactly two things:
-    the safe seal, or +2 on an Emperor strike."</li>
-    <li><b>The gate.</b> "First player with all six treasures opens
-    it; everyone else gets their missing cards free, so nobody is left
-    behind."</li>
-    <li><b>The palace.</b> "Two different seals, then into the
-    chamber: beat his die by yours plus bonus. A miss only steps you
-    back one space. Two hits and the game is yours."</li>
-    <li><b>Start.</b> "Highest roll of one die moves first, and the
-    start rotates every round."</li>
-  </ol>
-  <p class="small">Read the quick reference aloud once, then start.
-  Answer the rest as it comes up.</p>
-</div>
-
-<div class="page"><h2>Equipment trackers (one per player)</h2><div class="trkgrid"><div class="tracker"><h3>Player 1: ______________</h3><div class="trkcol"><b>Equipment</b><div class="eqline"><span class="box"></span> pugio</div><br><div class="eqline"><span class="box"></span> pilum</div><br><div class="eqline"><span class="box"></span> galea</div><br><div class="eqline"><span class="box"></span> scutum</div><br><div class="eqline"><span class="box"></span> gladius</div><br><div class="eqline"><span class="box"></span> lorica segmentata</div></div><div class="trkcol"><b>Glory (max 2)</b><div class="eqline"><span class="box"></span> <span class="box"></span></div><b>Seals (2 different)</b><div class="eqline">Cellars <span class="box"></span> · Barracks <span class="box"></span> · Peristyle <span class="box"></span></div><b>Emperor hits</b><div class="eqline"><span class="box"></span> <span class="box"></span></div></div></div><div class="tracker"><h3>Player 2: ______________</h3><div class="trkcol"><b>Equipment</b><div class="eqline"><span class="box"></span> pugio</div><br><div class="eqline"><span class="box"></span> pilum</div><br><div class="eqline"><span class="box"></span> galea</div><br><div class="eqline"><span class="box"></span> scutum</div><br><div class="eqline"><span class="box"></span> gladius</div><br><div class="eqline"><span class="box"></span> lorica segmentata</div></div><div class="trkcol"><b>Glory (max 2)</b><div class="eqline"><span class="box"></span> <span class="box"></span></div><b>Seals (2 different)</b><div class="eqline">Cellars <span class="box"></span> · Barracks <span class="box"></span> · Peristyle <span class="box"></span></div><b>Emperor hits</b><div class="eqline"><span class="box"></span> <span class="box"></span></div></div></div><div class="tracker"><h3>Player 3: ______________</h3><div class="trkcol"><b>Equipment</b><div class="eqline"><span class="box"></span> pugio</div><br><div class="eqline"><span class="box"></span> pilum</div><br><div class="eqline"><span class="box"></span> galea</div><br><div class="eqline"><span class="box"></span> scutum</div><br><div class="eqline"><span class="box"></span> gladius</div><br><div class="eqline"><span class="box"></span> lorica segmentata</div></div><div class="trkcol"><b>Glory (max 2)</b><div class="eqline"><span class="box"></span> <span class="box"></span></div><b>Seals (2 different)</b><div class="eqline">Cellars <span class="box"></span> · Barracks <span class="box"></span> · Peristyle <span class="box"></span></div><b>Emperor hits</b><div class="eqline"><span class="box"></span> <span class="box"></span></div></div></div><div class="tracker"><h3>Player 4: ______________</h3><div class="trkcol"><b>Equipment</b><div class="eqline"><span class="box"></span> pugio</div><br><div class="eqline"><span class="box"></span> pilum</div><br><div class="eqline"><span class="box"></span> galea</div><br><div class="eqline"><span class="box"></span> scutum</div><br><div class="eqline"><span class="box"></span> gladius</div><br><div class="eqline"><span class="box"></span> lorica segmentata</div></div><div class="trkcol"><b>Glory (max 2)</b><div class="eqline"><span class="box"></span> <span class="box"></span></div><b>Seals (2 different)</b><div class="eqline">Cellars <span class="box"></span> · Barracks <span class="box"></span> · Peristyle <span class="box"></span></div><b>Emperor hits</b><div class="eqline"><span class="box"></span> <span class="box"></span></div></div></div></div></div>
-
-<div class="page">
-  <h2>Playtest feedback form</h2>
-  <p>Date: ________ Group: <span class="small">(family / kids 6-9 /
-  adult gamers / older adults)</span> ________ Players: ___ ages: ____________</p>
-  <ol>
-    <li>Minutes to explain the rules: ______</li>
-    <li>Total play duration (minutes): ______</li>
-    <li>Rules questions during play (count): ______
-      <div class="formline"></div>
-      <div class="small">What was asked most?</div><div class="formline"></div></li>
-    <li>Confusing spaces or moves:
-      <div class="formline"></div><div class="formline"></div></li>
-    <li>Did waiting between turns become boring? When?
-      <div class="formline"></div></li>
-    <li>Did players understand earning and spending Glory? yes / partly / no</li>
-    <li>Did collecting treasure feel worthwhile? yes / partly / no</li>
-    <li>Did trailing players stay interested? yes / partly / no</li>
-    <li>Was the Emperor fight exciting? yes / partly / no</li>
-    <li>Do you want to play again? yes / maybe / no</li>
-    <li>One thing to change:
-      <div class="formline"></div><div class="formline"></div></li>
-  </ol>
-  <p class="small">For the design team: record only what happened.
-  Predictions belong in the notes column, not in the recorded
-  observations.</p>
-</div>
-
-</body></html>
+<rect x="726.0" y="559.0" width="18" height="16" fill="#203d35"/>
+<text x="735.0" y="571.0" text-anchor="middle" font-size="9" fill="#fffdf6">A</text>
+<rect x="330.0" y="295.0" width="18" height="16" fill="#203d35"/>
+<text x="339.0" y="307.0" text-anchor="middle" font-size="9" fill="#fffdf6">O</text>
+<rect x="198.0" y="31.0" width="18" height="16" fill="#203d35"/>
+<text x="207.0" y="43.0" text-anchor="middle" font-size="9" fill="#fffdf6">C</text>
+<text x="320.0" y="24" text-anchor="middle" font-family="Verdana, sans-serif" font-size="8" fill="#7a6a4d">CARDO · N–S</text>
+<text x="496.0" y="305.0" text-anchor="middle" font-family="Verdana, sans-serif" font-size="8" fill="#7a6a4d">DECUMANUS · E–W</text>
+<text x="846" y="22" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#7a6a4d">N O R T H</text>
+</svg><p>N: Golden · E: Silver · S: Bronze · W: Iron.
+Blue letters mark treasures. Stars mark guard posts. A/O/C badges mark the Army, officials, and city elites.</p></section>
+<section class="page"><h2>Equipment cards</h2><div class="eqgrid"><div class="eqcard"><div class="eqname">pugio</div><div class="eqflavor">A short dagger, easy to carry.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">pilum</div><div class="eqflavor">A throwing javelin.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">galea</div><div class="eqflavor">A legionary helmet.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">scutum</div><div class="eqflavor">A tall curved shield.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">gladius</div><div class="eqflavor">The Roman short sword.</div><div class="eqfoot">Treasure of the city</div></div><div class="eqcard"><div class="eqname">lorica segmentata</div><div class="eqflavor">Banded plate armor.</div><div class="eqfoot">Treasure of the city</div></div></div></section><section class="page"><h2>Player trackers</h2><article class="tracker"><h3>Player 1</h3><p>Name: __________________ Gate: __________</p>
+<p>Equipment: □ pugio · □ pilum · □ galea · □ scutum · □ gladius · □ armor</p>
+<p>Prestige: ______ (maximum 3)</p>
+<p>Support: □ Army · □ Imperial officials · □ City elites</p><p>Claim responses: □ rival 1 · □ rival 2 · □ rival 3</p></article><article class="tracker"><h3>Player 2</h3><p>Name: __________________ Gate: __________</p>
+<p>Equipment: □ pugio · □ pilum · □ galea · □ scutum · □ gladius · □ armor</p>
+<p>Prestige: ______ (maximum 3)</p>
+<p>Support: □ Army · □ Imperial officials · □ City elites</p><p>Claim responses: □ rival 1 · □ rival 2 · □ rival 3</p></article><article class="tracker"><h3>Player 3</h3><p>Name: __________________ Gate: __________</p>
+<p>Equipment: □ pugio · □ pilum · □ galea · □ scutum · □ gladius · □ armor</p>
+<p>Prestige: ______ (maximum 3)</p>
+<p>Support: □ Army · □ Imperial officials · □ City elites</p><p>Claim responses: □ rival 1 · □ rival 2 · □ rival 3</p></article><article class="tracker"><h3>Player 4</h3><p>Name: __________________ Gate: __________</p>
+<p>Equipment: □ pugio · □ pilum · □ galea · □ scutum · □ gladius · □ armor</p>
+<p>Prestige: ______ (maximum 3)</p>
+<p>Support: □ Army · □ Imperial officials · □ City elites</p><p>Claim responses: □ rival 1 · □ rival 2 · □ rival 3</p></article></section>
+<section class="page"><h2>The game in one minute</h2>
+<p>Four rivals prepare a claim to imperial power. Collect equipment, earn Prestige, and secure faction support.
+During succession, reach the Peristyle with <b>2 different supporters</b> and proclaim your claim.
+If it survives a response turn from every rival, you win.</p>
+<h2>Set the table</h2>
+<p>Choose four humans or bots. Random gates use the game seed. You can also choose four distinct gates manually,
+or rotate gates across four games. Names and colors belong to players, not gates. The displayed assignment is final when you start.</p>
+<p>The six intact blocks hold six shuffled equipment types. Cards start face down. Each player can collect each type once.
+The north and south gates end the cardo; the east and west gates end the decumanus. The cardo is off-center in this game map.</p>
+<h2>Your turn</h2>
+<ol><li>Roll two six-sided dice for movement.</li><li>Move along the circles, up to the total. You may stop early and pass other pawns.</li>
+<li>Do <b>one action</b> at your destination. Taking equipment, gaining support, and fighting are separate actions.</li></ol>
+<p>Tap a highlighted circle. Collection is automatic when no competing action exists. Otherwise a modal shows the choices.
+A guard action or duel requires movement of at least one space. Equipment, support, a proclamation, and maintaining a claim can be stationary.</p>
+<h2>Equipment stays yours</h2>
+<p>Visit a treasure entry to collect its equipment. The first collection reveals the card to everyone.
+You can still collect equipment during succession. Equipment is never lost or given to you for free at transition.</p>
+<table><tr><th>Equipment</th><th>Added to your duel roll</th></tr><tr><td>0–2 items</td><td>+0</td></tr>
+<tr><td>3–5 items</td><td>+1</td></tr><tr><td>All six</td><td>+2</td></tr></table>
+<h2>Earn and spend Prestige</h2>
+<p>You can hold at most <b>3 Prestige</b>. Extra rewards are lost. Move to a guard post and roll one die: <b>4, 5, or 6 earns one Prestige</b>.
+The winner of a duel earns one Prestige. The first complete collector who opens the checkpoint also earns one.</p>
+<p>To duel, end your move within two street spaces of a rival. Each player rolls one die and adds the equipment bonus.
+<b>The attacker wins ties.</b> Before rolling, the attacker may spend <b>1 Prestige for +2</b>.
+The cost is paid even if the challenge fails. No one loses equipment or support.</p>
+<h2>Secure faction support</h2>
+<table><tr><th>Group</th><th>Meeting place</th></tr><tr><td><b>Army</b></td><td>District F · barracks</td></tr><tr><td><b>Imperial officials</b></td><td>Peristyle · main crossing</td></tr><tr><td><b>City elites</b></td><td>District A · civic meeting place</td></tr></table>
+<p>In both phases, visit a meeting place and <b>spend 1 Prestige for its support</b>. There is no additional roll.
+Every group can support every player, once per player. Support remains yours for the whole game.
+You need 2 different supporters to proclaim a claim. Rivals do not need to endorse you.</p>
+<h2>From preparation to succession</h2>
+<p>The first player with all six equipment types can open the checkpoint. Finish that round and
+<b>1 additional full round</b>. Then succession begins.
+If no one opens it, succession starts after 24 city rounds.</p>
+<p>Keep every pawn at its current position. Keep your equipment, Prestige, and support. <b>Missing equipment is not granted.</b>
+You can finish collecting it through play.</p>
+<h2>Proclaim and contest a claim</h2>
+<ol><li>During succession, reach the Peristyle with 2 supporters. Use your action to proclaim your claim.</li>
+<li>Every rival gets a response turn. They can challenge you, prepare their own position, or take another action.</li>
+<li>A winning challenge cancels your claim and returns your pawn to your assigned gate. Your equipment and support remain.</li>
+<li>If all three rivals finish a response with your claim intact, <b>you are acclaimed emperor</b>.</li></ol>
+<p>Only one claim can be pending. A failed challenge leaves it active. Leaving the Peristyle cancels your own claim.
+If your turn comes during the response window, you can maintain your claim and stay put.
+If nobody wins within 24 succession rounds, the game is a draw.</p><p>Challenging an active claimant costs <b>1 Prestige</b>, paid before you roll. This fee is mandatory and separate from the optional +2 boost. You pay it even if the challenge fails. An ordinary duel against a player without an active claim stays free. A winning challenge still earns the normal duel reward.</p>
+<h2>What you can see</h2>
+<p>Positions, equipment, Prestige, supporters, and claim responses are public. Unrevealed equipment and future rolls remain hidden.
+The same seed and setup reproduce the game. The game does not use real money.</p>
+<h2>History behind the game</h2>
+<p>Diocletian's Tetrarchy shared rule between two senior emperors and two junior emperors.
+This game imagines rival claims after his retirement. Its three support groups and palace contest are game abstractions.</p>
+<p>The gates have real names: Golden north, Silver east, Bronze south, and Iron west.
+The cardo runs north–south and the decumanus east–west. The six-block game map is not an exact reconstruction.</p>
+<p class="provenance">Succession prototype V0.8. The starting economy is experimental. Simulations can test incentives and strategies;
+only human playtests can establish whether these choices are clear and enjoyable.</p></section>
+<section class="page"><h2>Teach in five minutes</h2><ol><li>Show the six equipment locations and the lasting equipment bonus.</li>
+<li>Show where Prestige comes from and how one support action works.</li><li>Walk through a turn with two movement dice and one action.</li>
+<li>Show the Peristyle and demonstrate a claim, a challenge, and the three responses.</li>
+<li>Explain that rivals keep their equipment and support after a canceled claim.</li></ol>
+<h2>Playtest feedback</h2><p>What did you think your best strategy was? ______________________________</p>
+<p>Describe a turn with two appealing choices. __________________________________</p><p>Did preparation help later? __________________________________</p>
+<p>Could you meaningfully stop a rival? __________________________________</p><p>Where did you wait or repeat an action? __________________________________</p>
+<p>What rule needed an explanation? __________________________________</p><p>Would you play again, and what would you try differently? __________________________________</p>
+<p>Record seed, player-to-gate assignments, policies, turns, and rules version with the feedback.</p></section></body></html>

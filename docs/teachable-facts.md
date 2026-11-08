@@ -72,9 +72,11 @@ and mark the checkpoint as the Peristyle. The Peristyle seal
 already carries the name. Players leave knowing why Roman street
 grids look the way they do.
 
-Honest note: the physical board has two vertical streets; the
-real palace has one cardo north of the Peristyle (D27, D33
-history).
+Honest note: the game has two vertical streets. V0.7.3 labels the
+western existing street as the cardo and aligns both north and south
+gates with it. The off-center placement preserves six intact blocks.
+This teaches orientation and gate alignment, not an exact palace
+plan. Adding a central lane would split blocks (D36).
 
 ### 5. The emperor who yielded
 
@@ -156,3 +158,11 @@ the generated back data reproduces the front data.
   level transition (app.js presentation only)?
 - Does the pack get a game-over fact card page, or one fact card
   per player?
+
+## Gameplay intervention, 2026-11-08
+
+The [intervention plan](intervention-plan.md) applies the principle of
+teaching through play to equipment, faction support, and succession.
+Those are proposed rule changes and require new tests and playtests.
+The earlier claim of zero mechanical cost applies only to the
+presentation ideas above. The six-block board correction is V0.7.3.

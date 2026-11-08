@@ -1,0 +1,149 @@
+{
+  "checks": {
+    "holdout": [
+      {
+        "check": "draws_not_materially_worse",
+        "detail": "candidate 0.062 vs incumbent 0.573, allowed increase 0.02",
+        "passed": true
+      },
+      {
+        "check": "rounds_not_longer",
+        "detail": "candidate 26.0 vs incumbent 40.0 median rounds, allowed increase 4",
+        "passed": true
+      },
+      {
+        "check": "counterplay_exists",
+        "detail": "candidate challenged 0.986 of claims, floor 0.15",
+        "passed": true
+      },
+      {
+        "check": "profile_diversity",
+        "detail": "winning profiles ['collector', 'counterleader', 'early_support', 'prestige_farmer'], minimum 2",
+        "passed": true
+      },
+      {
+        "check": "draw_improvement",
+        "detail": "incumbent draws 0.573 at or above 0.05; candidate 0.062 must improve by 0.05",
+        "passed": true
+      },
+      {
+        "check": "cancellation_reduction",
+        "detail": "incumbent cancels 25.4 claims per game; candidate 8.8 must reach 20.3",
+        "passed": true
+      }
+    ],
+    "screen": [
+      {
+        "check": "draws_not_materially_worse",
+        "detail": "candidate 0.031 vs incumbent 0.625, allowed increase 0.02",
+        "passed": true
+      },
+      {
+        "check": "rounds_not_longer",
+        "detail": "candidate 24.0 vs incumbent 40.0 median rounds, allowed increase 4",
+        "passed": true
+      },
+      {
+        "check": "counterplay_exists",
+        "detail": "candidate challenged 0.991 of claims, floor 0.15",
+        "passed": true
+      },
+      {
+        "check": "profile_diversity",
+        "detail": "winning profiles ['collector', 'counterleader', 'early_support', 'prestige_farmer'], minimum 2",
+        "passed": true
+      },
+      {
+        "check": "draw_improvement",
+        "detail": "incumbent draws 0.625 at or above 0.05; candidate 0.031 must improve by 0.05",
+        "passed": true
+      },
+      {
+        "check": "cancellation_reduction",
+        "detail": "incumbent cancels 26.7 claims per game; candidate 7.0 must reach 21.4",
+        "passed": true
+      }
+    ]
+  },
+  "comparison": "succession.contest_cost 0 vs 1",
+  "date": "2026-11-08",
+  "games_per_suite": 96,
+  "rules_hashes": {
+    "candidate": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6",
+    "incumbent": "eb6d2186e48d57195a92f43b07dbb40ac2eb6579d59c4e95e3cd88418a8105b0"
+  },
+  "seed_bases": {
+    "holdout": 90000,
+    "screen": 20000
+  },
+  "suites": {
+    "holdout-candidate": {
+      "cancellation_rate": 0.8983957219251337,
+      "cancellations_per_game": 8.75,
+      "challenged_claim_fraction": 0.986096256684492,
+      "claims_cancelled": 840,
+      "claims_made": 935,
+      "draw_fraction": 0.0625,
+      "finished_games": 96,
+      "incomplete_games": 0,
+      "median_rounds": 26.0,
+      "wins_by_strategy": {
+        "collector": 32,
+        "counterleader": 30,
+        "early_support": 18,
+        "prestige_farmer": 10
+      }
+    },
+    "holdout-incumbent": {
+      "cancellation_rate": 0.9732321214542549,
+      "cancellations_per_game": 25.375,
+      "challenged_claim_fraction": 0.9900119856172593,
+      "claims_cancelled": 2436,
+      "claims_made": 2503,
+      "draw_fraction": 0.5729166666666666,
+      "finished_games": 96,
+      "incomplete_games": 0,
+      "median_rounds": 40.0,
+      "wins_by_strategy": {
+        "collector": 16,
+        "counterleader": 13,
+        "early_support": 10,
+        "prestige_farmer": 2
+      }
+    },
+    "screen-candidate": {
+      "cancellation_rate": 0.8766404199475065,
+      "cancellations_per_game": 6.958333333333333,
+      "challenged_claim_fraction": 0.9908136482939632,
+      "claims_cancelled": 668,
+      "claims_made": 762,
+      "draw_fraction": 0.03125,
+      "finished_games": 96,
+      "incomplete_games": 0,
+      "median_rounds": 24.0,
+      "wins_by_strategy": {
+        "collector": 28,
+        "counterleader": 24,
+        "early_support": 30,
+        "prestige_farmer": 11
+      }
+    },
+    "screen-incumbent": {
+      "cancellation_rate": 0.973823975720789,
+      "cancellations_per_game": 26.739583333333332,
+      "challenged_claim_fraction": 0.9882397572078907,
+      "claims_cancelled": 2567,
+      "claims_made": 2636,
+      "draw_fraction": 0.625,
+      "finished_games": 96,
+      "incomplete_games": 0,
+      "median_rounds": 40.0,
+      "wins_by_strategy": {
+        "collector": 14,
+        "counterleader": 11,
+        "early_support": 7,
+        "prestige_farmer": 4
+      }
+    }
+  }
+}

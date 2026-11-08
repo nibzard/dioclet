@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#203d35">
-<meta name="description" content="Enter Diocletian’s Palace. Collect six treasures, earn your seals, and challenge the Emperor in a four-player strategy board game.">
+<meta name="description" content="Enter Diocletian’s Palace. Collect equipment, secure faction support, and contest the imperial succession in a four-player strategy board game.">
 <title>Diocletian's Palace · Six treasures</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -20,8 +20,8 @@
   <div><span class="eyebrow">The game table</span><p id="turnline" role="status">The city awaits. Take your place at the gates.</p></div>
   <ol class="journey" aria-label="Your path to the throne">
     <li class="current" id="city-step"><span>01</span> Collect treasures</li>
-    <li id="palace-step"><span>02</span> Earn two seals</li>
-    <li id="emperor-step"><span>03</span> Defeat the Emperor</li>
+    <li id="palace-step"><span>02</span> Secure support</li>
+    <li id="emperor-step"><span>03</span> Claim the throne</li>
   </ol>
 </div>
 <main>
@@ -31,11 +31,12 @@
     <div class="legend" aria-label="Board key">
       <span><i class="sw gate"></i>Gate</span>
       <span><i class="sw entry"></i>Treasure</span>
-      <span><i class="sw cp"></i>Peristyle</span>
+      <span><i class="sw cp"></i><span id="checkpoint-key">Checkpoint</span></span>
       <span><i class="sw post"></i>Guard post</span>
-      <span><i class="sw emp"></i>Emperor</span>
-      <span><i class="sw ret"></i>Retreat</span>
+      <span data-phase="2" hidden style="display:none"><i class="sw emp"></i>Emperor</span>
+      <span data-phase="2" hidden style="display:none"><i class="sw ret"></i>Retreat</span>
       <span><i class="sw hl"></i>Available move</span>
+      <span class="faction-key">A Army · O Officials · C City elites</span>
     </div>
     <p class="board-note"><span aria-hidden="true">✧</span> Six blocks. Six treasures. One throne.</p>
   </section>
@@ -48,11 +49,12 @@
       <div id="dicelabel">Movement roll</div>
       <div id="dice"><span class="muted small">Your journey starts at the gate.</span></div>
     </div>
+    <div id="claim-status" class="claim-status" role="status" hidden></div>
     <div id="actionbox" aria-live="polite"></div>
     <section id="logbox" aria-labelledby="log-heading"><div class="section-heading"><h2 id="log-heading">Chronicle</h2><span class="live-dot">Live</span></div><div id="log" tabindex="0" aria-label="Game chronicle"><p class="empty-state">Every great story starts with a first move.</p></div></section>
   </aside>
 </main>
-<footer class="site-footer"><span>Diocletian’s Palace <span aria-hidden="true">/</span> Six treasures</span><span>Split, 305 AD · Board edition 0.7.2</span></footer>
+<footer class="site-footer"><span>Diocletian’s Palace <span aria-hidden="true">/</span> Six treasures</span><span>Split, After 305 AD · Succession prototype 0.8</span></footer>
 <div id="rules" class="overlay hidden" role="dialog" aria-modal="true" aria-label="How to play" tabindex="-1">
   <div class="panel rulespanel">
     <button id="rulesclose" class="ghost close">✕ Close</button>
@@ -64,7 +66,7 @@
     <div class="setup-intro">
       <span class="eyebrow">Welcome to ancient Split</span>
       <h2>A city of treasures.<br> A throne to claim.</h2>
-      <p>Walk the streets of the palace. Gather your equipment. Be the first to defeat the Emperor.</p>
+      <p>Walk the streets of the palace. Gather your equipment. Win support. Make your claim to imperial power.</p>
       <svg class="palace-art" viewBox="0 0 320 200" fill="none" aria-hidden="true">
         <path d="M25 168h270M38 164V78h244v86M31 78l129-51 129 51H31Z"/>
         <path d="M48 72l112-44 112 44M53 164V89h214v75M60 97h200M60 151h200"/>
@@ -73,13 +75,18 @@
         <path d="M20 164V60h18m244 0h18v104M15 60V48h28v12m234 0V48h28v12M155 51h10m-5-5v10"/>
         <circle cx="160" cy="69" r="8"/><path d="M65 197h190M103 190h114"/>
       </svg>
-      <div class="intro-facts"><span><b>4</b> players</span><span><b>6</b> treasures</span><span><b>1</b> Emperor</span></div>
+      <div class="intro-facts"><span><b>4</b> players</span><span><b>6</b> treasures</span><span><b>1</b> throne</span></div>
     </div>
     <div class="setup-form">
       <span class="eyebrow">Your story starts here</span>
       <h2 id="setup-title">Set the table</h2>
       <p class="muted setup-description">Play together on this device, face the bots, or watch the rivals compete.</p>
       <div id="seats"></div>
+      <div class="gate-settings"><label for="gate-mode">Starting gates</label>
+        <select id="gate-mode"><option value="random">Random · from the game seed</option><option value="manual">Choose each gate</option><option value="rotation">Rotate across four games</option></select>
+        <label id="rotation-label" hidden>Game in the rotation <select id="gate-rotation"><option value="0">1 of 4</option><option value="1">2 of 4</option><option value="2">3 of 4</option><option value="3">4 of 4</option></select></label>
+      </div>
+      <p id="setup-error" role="alert"></p>
       <div class="seed-row"><label for="seed">Game seed</label><input id="seed" type="number" value="2026" aria-describedby="seed-help"><span id="seed-help">Same seed, same starting city.</span></div>
       <div class="row setup-actions">
         <button id="startbtn" class="primary">Enter the city <span aria-hidden="true">→</span></button>
@@ -113,6 +120,8 @@
 <script src="board-data.js"></script>
 <script src="engine.js"></script>
 <script src="bots.js"></script>
+<script src="succession-engine.js"></script>
+<script src="succession-bots.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

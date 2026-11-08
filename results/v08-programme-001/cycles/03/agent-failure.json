@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/home/agent/.local/bin/claude",
+    "-p",
+    "--tools",
+    "",
+    "--output-format",
+    "json",
+    "--max-budget-usd",
+    "0.5",
+    "--json-schema",
+    "<schema>"
+  ],
+  "timeout_seconds": 180,
+  "max_budget_usd": 0.5,
+  "error": "agent_timeout"
+}

@@ -16,16 +16,37 @@ function check(name, cond) {
 }
 
 // --- board facts ---------------------------------------------------
-check("107 street spaces",
-  B.width * B.height - B.blocked.length === 107);
-check("six declared buildings, one card each",
-  (B.buildings || []).length === 6 &&
-  Object.keys(B.districts).length === 6);
+check("97 street spaces", B.width * B.height - B.blocked.length === 97);
+const remaining = new Set(B.blocked.map(c => c.join(",")));
+const blocks = [];
+while (remaining.size) {
+  const start = remaining.values().next().value;
+  remaining.delete(start);
+  const todo = [start.split(",").map(Number)];
+  for (let i = 0; i < todo.length; i++) {
+    const [x, y] = todo[i];
+    for (const next of [[x-1,y], [x+1,y], [x,y-1], [x,y+1]]) {
+      if (remaining.delete(next.join(","))) todo.push(next);
+    }
+  }
+  blocks.push(todo);
+}
+check("six physical blocks of 25 cells", blocks.length === 6 && blocks.every(b => b.length === 25));
+const blocked = new Set(B.blocked.map(c => c.join(",")));
+check("no street pierces a declared block", B.buildings.length === 6 && B.buildings.every(b => {
+  for (let x = b.x0; x <= b.x1; x++) for (let y = b.y0; y <= b.y1; y++) {
+    if (!blocked.has([x,y].join(","))) return false;
+  }
+  return true;
+}));
+check("one explicit card per block", new Set(B.buildings.map(b => b.district)).size === 6 &&
+  B.buildings.every(b => Object.hasOwn(B.districts, b.district)));
 check("cardo and decumanus run end to end",
-  Array.from({ length: B.height }, (_, y) => y).every(
-    y => !B.blocked.some(c => c[0] === 9 && c[1] === y)) &&
-  Array.from({ length: B.width }, (_, x) => x).every(
-    x => !B.blocked.some(c => c[0] === x && c[1] === 6)));
+  Array.from({length: B.height}, (_, y) => !blocked.has([6,y].join(","))).every(Boolean) &&
+  Array.from({length: B.width}, (_, x) => !blocked.has([x,6].join(","))).every(Boolean));
+check("four gates end the two main streets", JSON.stringify(B.gates) ===
+  JSON.stringify({P0:[6,0], P1:[18,6], P2:[6,12], P3:[0,6]}));
+check("checkpoint marks the main crossing", B.checkpoint.join(",") === "6,6");
 check("no blocked special",
   [...Object.values(B.gates), ...Object.values(B.districts),
    B.checkpoint, ...B.gloryPosts, ...Object.values(B.level2)]

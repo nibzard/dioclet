@@ -1,0 +1,1119 @@
+# Proposal request: cycle 3 of 3
+
+You are one fresh agent in a sequential research programme. Your only
+task is to propose ONE rule change as JSON. You have no tools. The
+trusted runner applies your proposal, runs the fixed experiments, and
+decides promotion with frozen checks. Output ONLY a JSON object that
+matches the schema at the end. No prose before or after the JSON.
+
+# Programme: test the succession game
+
+Your task is to find game rules that create understandable, consequential choices for human players.
+
+Do not confuse a bot winning, a high choice count, or a short game with human enjoyment. The purpose is to find promising mechanics, competing strategies, and useful questions for human playtests.
+
+## Context and fixed requirements
+
+Read `docs/intervention-plan.md`, `rules_v08_succession.json`, and the latest experiment report before proposing a change. The game has four claimants, six intact blocks, persistent equipment, Prestige, faction support, and a claim that rivals can contest.
+
+Keep the six-block board fixed. Keep the cardo north–south, the decumanus east–west, and the four gates at their ends. Do not add streets, split a block, move a gate, change the evaluator, weaken a test, expose hidden equipment, or change bot code while comparing rule candidates.
+
+Names and colors identify players. Gates are independently assigned. Compare all 24 assignments and independent player-order rotations. Never claim that random assignment removes a positional advantage.
+
+## The experiment loop
+
+1. Inspect the incumbent's results and representative public turns. Identify one causal problem, such as free denial, ineffective preparation, or a dominant farming strategy.
+2. Propose one permitted rule change. State the predicted effect, the mechanism, and what result would count against it.
+3. Let the trusted runner validate the candidate and run the fixed screening suite. The agent cannot edit scores, tests, logs, or engine code.
+4. Compare paired results against the incumbent. Inspect strategy outcomes, gate outcomes, resource use, claims, cancellations, and alternative plays.
+5. Validate a promising candidate on fresh holdout seeds. Each cycle uses a new holdout set; never tune against the same holdout after seeing its results.
+6. Retain a candidate only when the fixed promotion checks pass on screening and holdout. Otherwise keep the incumbent and record the rejection.
+7. Hand the evidence and unresolved questions to the next agent. Stop after the configured cycle count, time limit, or budget limit.
+
+A retained candidate is a provisional mechanical improvement. It is not certified as balanced or enjoyable.
+
+## Strategies to challenge
+
+Compare collection-first, early-support, Prestige-farming, and leader-challenging policies. Include mirror games and independent gate assignments. Watch for a strategy becoming useless, one strategy winning by avoiding the main game, or two policies cooperating accidentally through fixed priorities.
+
+Examine alternative legal actions at consequential turns. Resample hidden worlds compatible with public information and use paired future random streams for each alternative. Vary opponent continuation policies. Record truncated rollouts. A rollout win estimate is conditional on those assumptions, not an exact action value.
+
+The model receives only public state and a diverse legal-action shortlist. It must see claims, support opportunities, and ways to oppose a rival. Do not show the hidden treasure mapping or future dice.
+
+## Permitted changes
+
+`experiments/v08-programme.json` contains the exact finite search space and thresholds. Change one path per cycle: contest cost, Prestige cap, early support, support cost, challenge bonus, position reset, or grace rounds.
+
+The initial claim prototype allows free opposition. Initial simulations found repeated cancellation and many draws. A mandatory Prestige cost for contesting an active claim is a test candidate. Ordinary duels remain available under their normal costs. The optional roll bonus is a separate expense.
+
+Do not add several new systems to rescue one result. A change outside the permitted space needs a separate proposal and experiment definition.
+
+## Evidence to retain
+
+Keep the exact rules, rule hash, source hashes, policy version, seeds, assignments, game logs, public choices, alternative-play audits, proposal, prediction, decision, and rejection reason. Never overwrite a previous cycle.
+
+Report finished and incomplete games separately. Record draws, game length, equipment collected, support gained, Prestige earned/spent/wasted, claim attempts, cancellations, opponent responses, and outcomes by strategy and gate. Report sample sizes and uncertainty. An observation from four games is a diagnostic, not a balance result.
+
+The fixed promotion checks guard against more draws, longer games, lost counterplay, or a collapse to one winning profile. They do not measure fun. When measures disagree, retain the incumbent and document the tradeoff for human review.
+
+## Live play exercises
+
+Use the repository's OpenAI Decisions harness with `gpt-6-luna`, the existing legal-action validation, and an explicit shared budget ledger. Use the correct succession objective. Preserve candidate probabilities as model outputs; do not invent a written rationale that the Decisions endpoint did not return.
+
+Use live exercises to inspect plausible play and strategic alternatives. Small live samples do not establish win rates. Models are simulated players, not human participants. Do not label offline policies as live AI play, and do not replace failed live calls with bots while claiming a completed live game.
+
+The first exercise has a total ceiling of $0.75 estimated API cost and 1,200 requests across all games and cycles. A persistent ledger reserves costs before calls and carries usage across restarts. Stop when that budget ends. Any later run must receive its own explicit budget.
+
+## Run sequential unattended agents
+
+Preferred bounded runner:
+
+```bash
+python3 tools/run_programme.py --cycles 3 --games 96 \
+  --out results/v08-programme-001
+```
+
+The runner gives each fresh `claude -p` process this programme, the incumbent, prior evidence, and a strict JSON proposal format. Claude proposes a rule change. The runner applies it, runs experiments, and decides promotion using frozen checks. Agents run sequentially.
+
+The equivalent proposal call uses the generated cycle prompt:
+
+```bash
+claude -p --tools '' --output-format json --max-budget-usd 0.50 \
+  < results/v08-programme-001/cycles/01/prompt.txt
+```
+
+The `yolo` alias expands to `claude --dangerously-skip-permissions` on this machine. Noninteractive Bash does not load that alias. The bounded runner does not need it because proposal agents have no tools. Use the explicit `claude` command.
+
+For a smoke test of the runner without a model call, use `--agent scripted --games 4`. These proposals are labeled scripted. They are not evidence that a model played or reviewed a game.
+
+## Human playtest questions
+
+After selecting a candidate, give new players the printed quick reference and ask them to explain their goal without coaching. Record where they hesitate.
+
+Ask which turns had two appealing alternatives, whether equipment helped later, whether Prestige spending involved a choice, whether they could stop a leader, and whether they would try a different strategy next game. Record waiting and repetitive turns. Use that feedback to revise the experiment questions rather than calling a numerical score “fun.”
+
+## Stopping and publication
+
+Do not deploy, merge, commit, install software, or delete session data during an experiment cycle. Do not modify the active rules file. Write candidates and retained incumbents under the run's output directory.
+
+Stop on invalid rules, changed source hashes, invalid actions, engine disagreement, exhausted budget, unavailable authentication, or a stalled agent. Keep partial evidence and report the stop. Do not expand the cycle count or spending cap to obtain a preferred result.
+
+The final handoff names the retained candidate, rejected alternatives, evidence limits, and questions for human play. A separate release step updates the website, rulebook, print pack, and version together.
+
+
+## Permitted change space (exact)
+
+{
+  "glory.cap": {
+    "allowed": [
+      null,
+      2,
+      3,
+      4
+    ],
+    "incumbent_value": 3
+  },
+  "level1.grace_full_rounds": {
+    "allowed": [
+      0,
+      1,
+      2
+    ],
+    "incumbent_value": 1
+  },
+  "succession.challenge_bonus": {
+    "allowed": [
+      0,
+      1,
+      2
+    ],
+    "incumbent_value": 2
+  },
+  "succession.contest_cost": {
+    "allowed": [
+      0,
+      1,
+      2
+    ],
+    "incumbent_value": 2
+  },
+  "succession.reset_positions": {
+    "allowed": [
+      true,
+      false
+    ],
+    "incumbent_value": false
+  },
+  "succession.support_cost": {
+    "allowed": [
+      1,
+      2
+    ],
+    "incumbent_value": 1
+  },
+  "succession.support_in_city": {
+    "allowed": [
+      true,
+      false
+    ],
+    "incumbent_value": true
+  }
+}
+
+Propose one path and one allowed value only. The value must differ
+from the incumbent value. Everything else in the rules stays fixed.
+
+## Incumbent measured evidence
+
+Incumbent rules file: `results/v08-programme-001/cycles/02/candidate-rules.json` (hash below in the run log).
+
+- screen: 96 finished games, draws 0.000, median rounds 21.0, claims 266, canceled 170, challenged fraction 0.838, wins by profile {"collector": 33, "counterleader": 25, "early_support": 23, "prestige_farmer": 15}.
+- holdout: 96 finished games, draws 0.062, median rounds 26.0, claims 885, canceled 792, challenged fraction 0.990, wins by profile {"collector": 33, "counterleader": 19, "early_support": 28, "prestige_farmer": 10}.
+
+## Earlier cycles
+
+
+### Cycle 1 (claude agent, promoted)
+Proposal: succession.contest_cost = 1.
+Hypothesis: The incumbent lets any rival contest an active claim for free, so denial is strictly better than allowing the claim. Every rival cancels every claim, so few claims finish and games draw. Set the contest cost to 1 Prestige. Denial then competes with support and the challenge bonus for one scarce budget. A rival contests only when it can pay and when blocking beats spending on its own claim. A claimant gains a real choice: bait contests to drain rivals, or claim when rivals lack Prestige.
+Decision: all binding promotion checks passed on screen and holdout
+- screen: draws 0.031, median rounds 24.0, claims 762, canceled 668, challenged fraction 0.991, winners by profile {"collector": 28, "counterleader": 24, "early_support": 30, "prestige_farmer": 11}.
+- holdout: draws 0.062, median rounds 26.0, claims 935, canceled 840, challenged fraction 0.986, winners by profile {"collector": 32, "counterleader": 30, "early_support": 18, "prestige_farmer": 10}.
+
+### Cycle 2 (claude agent, promoted)
+Proposal: succession.contest_cost = 2.
+Hypothesis: At contest cost 1, denial still dominates: on the fresh holdout rivals challenged 99.0% of claims and canceled 2436 of 2503 (97.3%), so 57.3% of games drew with a 40-round median. One Prestige is too cheap next to the value of blocking a rival's win, so contesting stays a reflex instead of a decision. Set the contest cost to 2. That equals the full support price of a claim (2 factions at support cost 1), so one contest costs the rival as much Prestige as the claimant spent to set up the claim. Contests become income-limited choices: a rival blocks only when it can pay and when blocking beats its own plans. The claimant gains a real timing choice — bait contests to drain rivals, then claim when rivals cannot pay. Cycle 1 predicted cost 1 would do this; the holdout shows the threshold was set too low, so this tests the next step of the same mechanism.
+Decision: all binding promotion checks passed on screen and holdout
+- screen: draws 0.000, median rounds 21.0, claims 266, canceled 170, challenged fraction 0.838, winners by profile {"collector": 33, "counterleader": 25, "early_support": 23, "prestige_farmer": 15}.
+- holdout: draws 0.000, median rounds 21.0, claims 278, canceled 182, challenged fraction 0.835, winners by profile {"collector": 26, "counterleader": 24, "early_support": 30, "prestige_farmer": 16}.
+
+## Public turn examples (no hidden information)
+
+```json
+{"available_categories": ["explore", "guard_post"], "avoidable_treasure_walk": false, "choice_rich": true, "chosen_counterclaim": false, "chosen_kind": "guard_post", "game_id": "base-screen-20000", "pending_claim": null, "phase": 1, "player": "P2", "turn_id": 5}
+{"available_categories": ["explore", "guard_post"], "avoidable_treasure_walk": false, "choice_rich": true, "chosen_counterclaim": false, "chosen_kind": "guard_post", "game_id": "base-screen-20000", "pending_claim": null, "phase": 1, "player": "P1", "turn_id": 6}
+{"available_categories": ["duel", "explore", "guard_post"], "avoidable_treasure_walk": false, "choice_rich": true, "chosen_counterclaim": false, "chosen_kind": "explore", "game_id": "base-screen-20000", "pending_claim": null, "phase": 1, "player": "P3", "turn_id": 7}
+{"available_categories": ["duel", "guard_post"], "avoidable_treasure_walk": false, "choice_rich": true, "chosen_counterclaim": false, "chosen_kind": "guard_post", "game_id": "base-screen-20000", "pending_claim": null, "phase": 1, "player": "P3", "turn_id": 10}
+{"available_categories": ["duel", "guard_post"], "avoidable_treasure_walk": false, "choice_rich": true, "chosen_counterclaim": false, "chosen_kind": "move", "game_id": "base-screen-20000", "pending_claim": null, "phase": 1, "player": "P0", "turn_id": 11}
+{"available_categories": ["duel", "explore", "gain_support", "guard_post"], "avoidable_treasure_walk": false, "choice_rich": true, "chosen_counterclaim": false, "chosen_kind": "explore", "game_id": "base-screen-20000", "pending_claim": null, "phase": 1, "player": "P0", "turn_id": 14}
+{"available_categories": ["duel", "guard_post"], "avoidable_treasure_walk": false, "choice_rich": true, "chosen_counterclaim": false, "chosen_kind": "guard_post", "game_id": "base-screen-20000", "pending_claim": null, "phase": 1, "player": "P2", "turn_id": 15}
+{"available_categories": ["duel", "explore", "guard_post"], "avoidable_treasure_walk": false, "choice_rich": true, "chosen_counterclaim": false, "chosen_kind": "explore", "game_id": "base-screen-20000", "pending_claim": null, "phase": 1, "player": "P0", "turn_id": 17}
+{"available_categories": ["duel", "gain_support", "guard_post"], "avoidable_treasure_walk": false, "choice_rich": true, "chosen_counterclaim": false, "chosen_kind": "guard_post", "game_id": "base-screen-20000", "pending_claim": null, "phase": 1, "player": "P2", "turn_id": 18}
+{"available_categories": ["explore", "guard_post"], "avoidable_treasure_walk": false, "choice_rich": true, "chosen_counterclaim": false, "chosen_kind": "guard_post", "game_id": "base-screen-20000", "pending_claim": null, "phase": 1, "player": "P1", "turn_id": 19}
+
+```
+
+## Incumbent rules (the object your path edits)
+
+```json
+{
+  "board": {
+    "blocked": [
+      [
+        1,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        1,
+        9
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        11
+      ],
+      [
+        2,
+        1
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        2,
+        8
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        2,
+        10
+      ],
+      [
+        2,
+        11
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        3,
+        8
+      ],
+      [
+        3,
+        9
+      ],
+      [
+        3,
+        10
+      ],
+      [
+        3,
+        11
+      ],
+      [
+        4,
+        1
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        7
+      ],
+      [
+        4,
+        8
+      ],
+      [
+        4,
+        9
+      ],
+      [
+        4,
+        10
+      ],
+      [
+        4,
+        11
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        5,
+        5
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        5,
+        8
+      ],
+      [
+        5,
+        9
+      ],
+      [
+        5,
+        10
+      ],
+      [
+        5,
+        11
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        7,
+        2
+      ],
+      [
+        7,
+        3
+      ],
+      [
+        7,
+        4
+      ],
+      [
+        7,
+        5
+      ],
+      [
+        7,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        7,
+        10
+      ],
+      [
+        7,
+        11
+      ],
+      [
+        8,
+        1
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        8,
+        3
+      ],
+      [
+        8,
+        4
+      ],
+      [
+        8,
+        5
+      ],
+      [
+        8,
+        7
+      ],
+      [
+        8,
+        8
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        8,
+        10
+      ],
+      [
+        8,
+        11
+      ],
+      [
+        9,
+        1
+      ],
+      [
+        9,
+        2
+      ],
+      [
+        9,
+        3
+      ],
+      [
+        9,
+        4
+      ],
+      [
+        9,
+        5
+      ],
+      [
+        9,
+        7
+      ],
+      [
+        9,
+        8
+      ],
+      [
+        9,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        9,
+        11
+      ],
+      [
+        10,
+        1
+      ],
+      [
+        10,
+        2
+      ],
+      [
+        10,
+        3
+      ],
+      [
+        10,
+        4
+      ],
+      [
+        10,
+        5
+      ],
+      [
+        10,
+        7
+      ],
+      [
+        10,
+        8
+      ],
+      [
+        10,
+        9
+      ],
+      [
+        10,
+        10
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        11,
+        1
+      ],
+      [
+        11,
+        2
+      ],
+      [
+        11,
+        3
+      ],
+      [
+        11,
+        4
+      ],
+      [
+        11,
+        5
+      ],
+      [
+        11,
+        7
+      ],
+      [
+        11,
+        8
+      ],
+      [
+        11,
+        9
+      ],
+      [
+        11,
+        10
+      ],
+      [
+        11,
+        11
+      ],
+      [
+        13,
+        1
+      ],
+      [
+        13,
+        2
+      ],
+      [
+        13,
+        3
+      ],
+      [
+        13,
+        4
+      ],
+      [
+        13,
+        5
+      ],
+      [
+        13,
+        7
+      ],
+      [
+        13,
+        8
+      ],
+      [
+        13,
+        9
+      ],
+      [
+        13,
+        10
+      ],
+      [
+        13,
+        11
+      ],
+      [
+        14,
+        1
+      ],
+      [
+        14,
+        2
+      ],
+      [
+        14,
+        3
+      ],
+      [
+        14,
+        4
+      ],
+      [
+        14,
+        5
+      ],
+      [
+        14,
+        7
+      ],
+      [
+        14,
+        8
+      ],
+      [
+        14,
+        9
+      ],
+      [
+        14,
+        10
+      ],
+      [
+        14,
+        11
+      ],
+      [
+        15,
+        1
+      ],
+      [
+        15,
+        2
+      ],
+      [
+        15,
+        3
+      ],
+      [
+        15,
+        4
+      ],
+      [
+        15,
+        5
+      ],
+      [
+        15,
+        7
+      ],
+      [
+        15,
+        8
+      ],
+      [
+        15,
+        9
+      ],
+      [
+        15,
+        10
+      ],
+      [
+        15,
+        11
+      ],
+      [
+        16,
+        1
+      ],
+      [
+        16,
+        2
+      ],
+      [
+        16,
+        3
+      ],
+      [
+        16,
+        4
+      ],
+      [
+        16,
+        5
+      ],
+      [
+        16,
+        7
+      ],
+      [
+        16,
+        8
+      ],
+      [
+        16,
+        9
+      ],
+      [
+        16,
+        10
+      ],
+      [
+        16,
+        11
+      ],
+      [
+        17,
+        1
+      ],
+      [
+        17,
+        2
+      ],
+      [
+        17,
+        3
+      ],
+      [
+        17,
+        4
+      ],
+      [
+        17,
+        5
+      ],
+      [
+        17,
+        7
+      ],
+      [
+        17,
+        8
+      ],
+      [
+        17,
+        9
+      ],
+      [
+        17,
+        10
+      ],
+      [
+        17,
+        11
+      ]
+    ],
+    "buildings": [
+      {
+        "district": "A",
+        "name": "northwest",
+        "x0": 1,
+        "x1": 5,
+        "y0": 1,
+        "y1": 5
+      },
+      {
+        "district": "B",
+        "name": "north-middle",
+        "x0": 7,
+        "x1": 11,
+        "y0": 1,
+        "y1": 5
+      },
+      {
+        "district": "C",
+        "name": "northeast",
+        "x0": 13,
+        "x1": 17,
+        "y0": 1,
+        "y1": 5
+      },
+      {
+        "district": "D",
+        "name": "southwest",
+        "x0": 1,
+        "x1": 5,
+        "y0": 7,
+        "y1": 11
+      },
+      {
+        "district": "E",
+        "name": "south-middle",
+        "x0": 7,
+        "x1": 11,
+        "y0": 7,
+        "y1": 11
+      },
+      {
+        "district": "F",
+        "name": "southeast",
+        "x0": 13,
+        "x1": 17,
+        "y0": 7,
+        "y1": 11
+      }
+    ],
+    "checkpoint": [
+      6,
+      6
+    ],
+    "districts": {
+      "A": [
+        3,
+        0
+      ],
+      "B": [
+        9,
+        0
+      ],
+      "C": [
+        15,
+        0
+      ],
+      "D": [
+        3,
+        12
+      ],
+      "E": [
+        9,
+        12
+      ],
+      "F": [
+        15,
+        12
+      ]
+    },
+    "gates": {
+      "P0": [
+        6,
+        0
+      ],
+      "P1": [
+        18,
+        6
+      ],
+      "P2": [
+        6,
+        12
+      ],
+      "P3": [
+        0,
+        6
+      ]
+    },
+    "glory_posts": [
+      [
+        0,
+        2
+      ],
+      [
+        18,
+        2
+      ],
+      [
+        0,
+        10
+      ],
+      [
+        18,
+        10
+      ]
+    ],
+    "height": 13,
+    "level2_sites": {
+      "cellars": [
+        3,
+        0
+      ],
+      "emperor": [
+        6,
+        12
+      ],
+      "guard_barracks": [
+        15,
+        12
+      ],
+      "peristyle": [
+        6,
+        6
+      ],
+      "retreat": [
+        6,
+        11
+      ]
+    },
+    "streets": {
+      "cardo": {
+        "axis": "north-south",
+        "coordinate": 6
+      },
+      "decumanus": {
+        "axis": "east-west",
+        "coordinate": 6
+      },
+      "secondary": {
+        "axis": "north-south",
+        "coordinate": 12
+      }
+    },
+    "width": 19
+  },
+  "combat": {
+    "emperor_bonus": 2,
+    "emperor_hits_to_win": 2,
+    "equipment_bonus_tiers": [
+      {
+        "bonus": 0,
+        "max_count": 2,
+        "min_count": 0
+      },
+      {
+        "bonus": 1,
+        "max_count": 5,
+        "min_count": 3
+      },
+      {
+        "bonus": 2,
+        "max_count": 6,
+        "min_count": 6
+      }
+    ],
+    "glory_attack_bonus": 2,
+    "imperial_guard_bonus": 1,
+    "tie_goes_to_defender": false
+  },
+  "equipment": [
+    "pugio",
+    "pilum",
+    "galea",
+    "scutum",
+    "gladius",
+    "lorica_segmentata"
+  ],
+  "game_name": "Diocletian's Palace: Six Treasures",
+  "gameplay_mode": "succession-v1",
+  "glory": {
+    "cap": 3,
+    "duel_win_reward": 1,
+    "first_challenger_reward": 1,
+    "guard_post_reward": 1,
+    "guard_post_success_min_roll": 4
+  },
+  "level1": {
+    "auto_equip_at_transition": false,
+    "grace_full_rounds": 1,
+    "max_rounds": 24
+  },
+  "level2": {
+    "cellars_success_min_roll": 3,
+    "max_rounds": 24,
+    "peristyle_glory_cost": 1,
+    "peristyle_success_min_roll": 5,
+    "required_distinct_seals": 2
+  },
+  "logging": {
+    "sample_games_per_batch": 5,
+    "save_anomalous_game_logs": true,
+    "save_full_batch_logs": false
+  },
+  "movement": {
+    "allow_early_stop": true,
+    "allow_stationary_special_actions": true,
+    "dice_count": 2,
+    "die_is_max_steps": true,
+    "die_sides": 6,
+    "duel_range": 2,
+    "pass_through_players": true
+  },
+  "players": 4,
+  "rules_version": "0.8",
+  "succession": {
+    "challenge_bonus": 2,
+    "challenge_cost": 1,
+    "contest_cost": 2,
+    "factions": {
+      "army": [
+        15,
+        12
+      ],
+      "elites": [
+        3,
+        0
+      ],
+      "officials": [
+        6,
+        6
+      ]
+    },
+    "gate_assignment": "random",
+    "required_support": 2,
+    "reset_positions": false,
+    "support_cost": 1,
+    "support_in_city": true
+  },
+  "turns": {
+    "rotate_first_player_each_round": true
+  }
+}
+```
+
+## Output contract
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rule_path",
+    "value",
+    "hypothesis",
+    "prediction",
+    "refutation_evidence"
+  ],
+  "properties": {
+    "rule_path": {
+      "type": "string",
+      "enum": [
+        "glory.cap",
+        "level1.grace_full_rounds",
+        "succession.challenge_bonus",
+        "succession.contest_cost",
+        "succession.reset_positions",
+        "succession.support_cost",
+        "succession.support_in_city"
+      ]
+    },
+    "value": {
+      "description": "One of the allowed values for rule_path, and different from the incumbent value."
+    },
+    "hypothesis": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 900
+    },
+    "prediction": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 900
+    },
+    "refutation_evidence": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 900
+    }
+  }
+}
+```
+
+Fields: `rule_path` (one permitted path), `value` (one allowed value
+for that path, different from the incumbent value), `hypothesis` (the
+causal mechanism), `prediction` (the measurable effect you expect),
+`refutation_evidence` (what result would count against you).
+Output only the JSON object.

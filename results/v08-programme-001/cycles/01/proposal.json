@@ -1,0 +1,33 @@
+{
+  "agent": "claude",
+  "agent_record": {
+    "command": [
+      "/home/agent/.local/bin/claude",
+      "-p",
+      "--tools",
+      "",
+      "--output-format",
+      "json",
+      "--max-budget-usd",
+      "0.5",
+      "--json-schema",
+      "<schema>"
+    ],
+    "envelope": {
+      "duration_ms": 58210,
+      "is_error": false,
+      "model": null,
+      "subtype": "success",
+      "type": "result"
+    },
+    "max_budget_usd": 0.5,
+    "returncode": 0,
+    "stderr": "[claude-code:unrecognized_model] {\"model\":\"glm-5.3[1m]\",\"query_source\":\"sdk\"}\n",
+    "timeout_seconds": 180
+  },
+  "hypothesis": "The incumbent lets any rival contest an active claim for free, so denial is strictly better than allowing the claim. Every rival cancels every claim, so few claims finish and games draw. Set the contest cost to 1 Prestige. Denial then competes with support and the challenge bonus for one scarce budget. A rival contests only when it can pay and when blocking beats spending on its own claim. A claimant gains a real choice: bait contests to drain rivals, or claim when rivals lack Prestige.",
+  "prediction": "Paired with the incumbent on the same seeds, assignments, and policies, the candidate should show: a sharp fall in the claim cancellation rate; most claims completed or contested at most once; a lower draw rate and more finished games; contest Prestige visible in the spent ledger, so denial has an observable cost; game length still within the promotion bound; and leader-challenging, collection-first, and early-support policies each winning some games, so no one profile dominates. Mirror games stay close.",
+  "refutation_evidence": "The change fails if any of these appear on screening or holdout: cancellation and draw rates stay near incumbent levels, because bots still contest every claim and 1 Prestige does not change behavior; draws or game length rise because all players hoard Prestige and claims stall; counterplay drops out, shown by leader-challenging policies never contesting and one profile (for example early-support or Prestige farming) winning nearly all games across gates and rotations; or completed claims concentrate on one gate or player position. Any of these rejects the candidate and keeps the incumbent.",
+  "rule_path": "succession.contest_cost",
+  "value": 1
+}

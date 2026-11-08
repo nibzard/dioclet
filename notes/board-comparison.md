@@ -217,3 +217,17 @@ flips the schedule skew as in D32. The trade versus V0.7/V0.7.1
 (121 to 129 timeouts, 23 to 24 median rounds) buys board fidelity:
 the real street plan with symmetric doors, exactly as the palace
 stands in Split.
+
+## V0.7.3 correction: six physical blocks, 2026-11-08
+
+Source: the designer's correction in this session; `rules_v073_sixblocks_cardo.json`; the movement graph in `board.py`.
+
+V0.7.2 has eight connected groups of blocked cells. Its six declared building labels do not preserve six physical blocks. It is rejected as the active layout. Old V0.6 measurements cannot justify that mismatch.
+
+V0.7.3 restores six solid 5×5 blocks and 97 street spaces. The cardo uses existing column 6 and the decumanus uses row 6. North and south gates both end column 6. East and west gates both end row 6. Column 12 stays as the secondary street. Each block explicitly owns one district; entries B and E return to the north and south perimeter streets.
+
+The checkpoint sits at `(6,6)`. Distances from north/east/south/west are 6/12/6/6. Treasure-entry distance sums are 66/90/66/90. These values describe routes; they do not establish gate win rates.
+
+Random player-to-gate assignment can distribute access fairly across games, but cannot equalize positions within a game. The [intervention plan](../docs/intervention-plan.md) specifies a seeded gate shuffle, manual assignment for experiments, and a rotation for repeated sessions.
+
+Open questions: gate win rates on the corrected map, the effect of random assignment, and the interaction with the proposed faction-support economy. Existing historical reports remain unchanged. New measurements must name the corrected layout and rules hash.

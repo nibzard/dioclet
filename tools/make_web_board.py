@@ -2,8 +2,8 @@
 """Generate web/board-data.js from the adopted rules JSON.
 
 The web board is generated, never hand-copied, so it always mirrors
-the measured ruleset (rules_v072_cardo.json: the real street plan,
-cardo and decumanus, six buildings one card each)."""
+the active ruleset (rules_v073_sixblocks_cardo.json: six intact blocks,
+cardo and decumanus, and four gates at their ends)."""
 
 import json
 import os
@@ -11,21 +11,25 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import engine  # noqa: E402
-from board import Board  # noqa: E402
+from board import Board, validate_six_block_layout  # noqa: E402
 
-RULES = "rules_v072_cardo.json"
+RULES = "rules_v08_succession.json"
 OUT = "web/board-data.js"
 
 
 def main():
     rules = engine.load_rules(RULES)
+    validate_six_block_layout(rules)
     b = Board(rules)
     blocked = sorted(list(c) for c in b.blocked)
     data = {
+        "mode": rules.get("gameplay_mode", "legacy"),
+        "succession": rules.get("succession", {}),
         "width": b.width,
         "height": b.height,
         "blocked": blocked,
         "buildings": rules["board"].get("buildings", []),
+        "streets": rules["board"].get("streets", {}),
         "gates": {p: list(c) for p, c in b.gates.items()},
         "districts": {n: list(c) for n, c in b.districts.items()},
         "checkpoint": list(b.checkpoint),
@@ -34,8 +38,12 @@ def main():
         "equipment": rules["equipment"],
         "movement": {"sides": rules["movement"]["die_sides"],
                      "count": rules["movement"].get("dice_count", 1),
-                     "duelRange": rules["movement"]["duel_range"]},
+                     "duelRange": rules["movement"]["duel_range"],
+                     "allowStationary": rules["movement"]["allow_stationary_special_actions"]},
         "gloryCap": rules["glory"]["cap"],
+        "prestigeRules": rules["glory"],
+        "combatRules": rules["combat"],
+        "rotateFirst": rules.get("turns", {}).get("rotate_first_player_each_round", False),
         "l1MaxRounds": rules["level1"]["max_rounds"],
         "l2MaxRounds": rules["level2"]["max_rounds"],
         "graceRounds": rules["level1"]["grace_full_rounds"],
@@ -51,6 +59,11 @@ def main():
           "})(typeof window !== 'undefined' ? window : globalThis);\n")
     with open(OUT, "w", encoding="utf-8") as fh:
         fh.write(js)
+    if rules.get("gameplay_mode") == "succession-v1":
+        from tools.succession_content import rulebook_html
+        with open("web/rules.js", "w", encoding="utf-8") as fh:
+            fh.write("// Generated from " + RULES + ". Do not edit.\n" +
+                     "window.DIOCLET_RULES = " + json.dumps(rulebook_html(rules)) + ";\n")
     walkable = b.width * b.height - len(blocked)
     print(f"wrote {OUT}: {b.width}x{b.height}, {walkable} street spaces")
 

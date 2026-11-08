@@ -1,0 +1,30 @@
+{
+  "version": "succession-research-v1",
+  "rules": "rules_v08_succession.json",
+  "cycles": 3,
+  "games_per_suite": 96,
+  "screen_seed_base": 20000,
+  "holdout_seed_base": 90000,
+  "agent_budget_usd_per_cycle": 0.50,
+  "agent_timeout_seconds": 180,
+  "live_budget_usd_total": 0.75,
+  "live_request_cap_total": 1200,
+  "profiles": ["collector", "early_support", "prestige_farmer", "counterleader"],
+  "allowed_changes": {
+    "succession.contest_cost": [0, 1, 2],
+    "glory.cap": [null, 2, 3, 4],
+    "succession.support_in_city": [true, false],
+    "succession.support_cost": [1, 2],
+    "succession.challenge_bonus": [0, 1, 2],
+    "succession.reset_positions": [true, false],
+    "level1.grace_full_rounds": [0, 1, 2]
+  },
+  "promotion": {
+    "maximum_draw_increase": 0.02,
+    "minimum_draw_improvement": 0.05,
+    "minimum_cancellation_reduction": 0.20,
+    "minimum_claims_challenged_fraction": 0.15,
+    "minimum_winning_profiles": 2,
+    "maximum_median_round_increase": 4
+  }
+}

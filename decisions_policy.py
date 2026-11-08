@@ -128,6 +128,14 @@ def set_pricing(pricing_config):
 
 def _rank_key(c):
     """Mock ranking: objective priority, then exact odds, then ids."""
+    if "distance_to_peristyle_after" in c["features"]:
+        f = c["features"]
+        priority = {"proclaim": 0, "maintain_claim": 1, "gain_support": 3,
+                    "claim_checkpoint": 4, "explore": 5, "guard_post": 6,
+                    "duel": 7, "move": 8}
+        rank = 2 if f.get("would_cancel_claim_if_won") else priority.get(c["kind"], 9)
+        odds = f.get("duel_win_probability_exact", f.get("prestige_probability_exact", 0))
+        return (rank, -odds, f.get("distance_to_peristyle_after", 0), c["action_id"])
     priority = {"attack_emperor": 0, "attempt_seal": 1, "claim_checkpoint": 2,
                 "explore": 3, "guard_post": 4, "duel": 5, "move": 6}
     feats = c["features"]
@@ -201,19 +209,36 @@ class LiveProvider:
         self.model = model
 
     def build_request(self, projection, candidates):
+        succession = projection.get("gameplay_mode") == "succession-v1"
+        evidence = projection
+        instructions = PROJECTION_INSTRUCTIONS
+        if succession:
+            evidence = dict(projection)
+            evidence["candidate_features"] = [{key: c[key] for key in (
+                "action_id", "kind", "destination", "features")} for c in candidates]
+            instructions = (
+                "You are a player in a four-player imperial succession game. "
+                "Choose the legal action that maximizes your eventual chance "
+                "of being acclaimed emperor. Use the supplied objective and "
+                "response-window rules, not an Emperor boss-fight objective. "
+                "Consider collection, support, Prestige spending, routes, and "
+                "stopping a pending rival claim. If you are the final rival "
+                "to respond, unrelated action can hand the claimant victory. "
+                "Only public evidence is supplied. Exact contest odds describe "
+                "one roll, not eventual win probabilities. Return one supplied action id.")
         return {
             "model": self.model,
             "input": [{
                 "role": "user",
                 "content": [
                     {"type": "input_text", "text": INTRO_TEXT},
-                    {"type": "input_json", "data": projection},
+                    {"type": "input_json", "data": evidence},
                 ],
             }],
             "questions": [{
                 "type": "choice",
                 "name": QUESTION_NAME,
-                "instructions": PROJECTION_INSTRUCTIONS,
+                "instructions": instructions,
                 "choices": [
                     {"value": c["action_id"],
                      "description": c["description"]}
@@ -229,6 +254,8 @@ class LiveProvider:
     def decide(self, projection, candidates, config, budget=None):
         legal_ids = {c["action_id"] for c in candidates}
         request = self.build_request(projection, candidates)
+        if config.get("strict_budget"):
+            return self._strict_decide(request, legal_ids, config, budget)
         est_tokens = self.estimate_input_tokens(request)
         if budget is not None:
             budget.check_before(est_tokens)
@@ -257,8 +284,50 @@ class LiveProvider:
                           decision.metadata.get("estimated_cost_usd", 0.0))
         return decision
 
+    def _strict_decide(self, request, legal_ids, config, budget):
+        """Reserve each transmitted request, including failures and retries.
+
+        UTF-8 byte length plus framing is a conservative text-token bound.
+        The reserve also allows a multiplier for cache writes or regional
+        premiums. Recorded successful usage remains an input-cost estimate.
+        """
+        reserve_tokens = len(json.dumps(request, ensure_ascii=False).encode("utf-8")) + 2048
+        reserve_multiplier = float(config.get("budget_reserve_multiplier", 5.0))
+        if not math.isfinite(reserve_multiplier) or reserve_multiplier < 1:
+            raise ValueError("budget_reserve_multiplier must be finite and at least one")
+        reserve_cost = reserve_tokens * PRICING["uncached_input_usd_per_mtok"] / 1_000_000 * reserve_multiplier
+        attempts = int(config.get("max_retries", 0)) + 1
+        timeout = float(config.get("timeout_seconds", 20))
+        for attempt in range(attempts):
+            if budget is not None:
+                # Check using the inflated reserve without altering pricing.
+                budget.check_before(reserve_tokens * reserve_multiplier)
+                budget.record(reserve_tokens, reserve_cost)
+            started = time.monotonic()
+            try:
+                response = self._call(request, timeout)
+            except Exception as exc:
+                if attempt + 1 == attempts:
+                    raise LiveUnavailableError(f"decisions call failed; request reserve retained: {exc}") from None
+                continue
+            latency = round((time.monotonic() - started) * 1000, 1)
+            # Parse failures retain the reservation: the request was sent.
+            decision = self._parse(response, latency, legal_ids, reserve_tokens)
+            usage = decision.metadata.get("usage") or {}
+            actual_tokens = usage.get("input_tokens")
+            if budget is not None and actual_tokens is not None:
+                budget.input_tokens_seen += actual_tokens - reserve_tokens
+                budget.spent_estimate_usd += decision.metadata["estimated_cost_usd"] - reserve_cost
+            decision.metadata["budget_accounting"] = "request-reserved; successful usage estimated at uncached input rate"
+            return decision
+        raise LiveUnavailableError("no Decisions request attempted")
+
     def _call(self, request, timeout):
-        return self.client.decisions.create(**request)
+        client = self.client
+        if hasattr(client, "with_options"):
+            # Retries are visible to our budget rather than hidden in the SDK.
+            client = client.with_options(timeout=timeout, max_retries=0)
+        return client.decisions.create(**request)
 
     def _parse(self, response, latency_ms, legal_ids, est_tokens):
         answers = getattr(response, "answers", None) or []

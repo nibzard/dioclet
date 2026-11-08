@@ -37,7 +37,7 @@ REQUIRED_KEYS = {
     "movement", "glory", "combat", "level1", "level2", "logging",
 }
 # Optional keys: absent from the baseline, defaulted when missing.
-OPTIONAL_KEYS = {"turns"}
+OPTIONAL_KEYS = {"turns", "gameplay_mode", "succession"}
 
 
 def rules_hash(rules):
@@ -61,6 +61,11 @@ def validate_rules(rules):
     """Reject invalid configurations with clear errors (SPEC §8)."""
     if not isinstance(rules, dict):
         raise EngineError("invalid_rules", "rules must be a JSON object")
+    if rules.get("gameplay_mode") == "succession-v1":
+        import succession
+        return succession.validate_rules(rules)
+    if rules.get("gameplay_mode") is not None or "succession" in rules:
+        raise EngineError("invalid_rules", "unknown or incomplete gameplay mode")
     unknown = set(rules) - REQUIRED_KEYS - OPTIONAL_KEYS
     _require(not unknown, f"unknown top-level keys: {sorted(unknown)}")
     missing = REQUIRED_KEYS - set(rules)
@@ -247,6 +252,9 @@ def _load_rng(state_blob):
 
 def new_game(rules, seed, game_id, policies=None):
     """Create a fresh game state with the first turn's die already rolled."""
+    if rules.get("gameplay_mode") == "succession-v1":
+        import succession
+        return succession.new_game(rules, seed, game_id, policies)
     validate_rules(rules)
     board = Board(rules)
     rngs = {name: _rng_from_seed(seed, name) for name in STREAMS}
@@ -355,6 +363,9 @@ KIND_ORDER = sorted(["move", "explore", "duel", "guard_post", "claim_checkpoint"
 
 def legal_actions(state):
     """Enumerate every legal action for the active player this turn."""
+    if state.get("gameplay_mode") == "succession-v1":
+        import succession
+        return succession.legal_actions(state)
     rules = state["rules"]
     board = Board(rules)
     pid = state["active_player"]
@@ -474,6 +485,9 @@ def _add_emperor_actions(state, add, dest):
 
 def observe(state, player):
     """Side-effect-free public observation for one player (SPEC §4)."""
+    if state.get("gameplay_mode") == "succession-v1":
+        import succession
+        return succession.observe(state, player)
     if state["status"] != "in_progress":
         raise EngineError("game_over", "the game has finished; no observation")
     if player != state["active_player"]:
@@ -551,6 +565,9 @@ def observe(state, player):
 
 def apply_action(state, player, turn_id, action_id, reason=None):
     """Resolve one legal action for the active player; returns the record."""
+    if state.get("gameplay_mode") == "succession-v1":
+        import succession
+        return succession.apply_action(state, player, turn_id, action_id, reason)
     if state["status"] != "in_progress":
         raise EngineError("game_over", "the game has finished; no actions")
     if player != state["active_player"]:
@@ -932,6 +949,9 @@ def load_run(run_dir):
 
 def result(state):
     """Terminal summary computed from the event log (SPEC §11)."""
+    if state.get("gameplay_mode") == "succession-v1":
+        import succession
+        return succession.result(state)
     rules = state["rules"]
     board = Board(rules)
     turns_l1 = [r for r in state["events"] if r["phase"] == 1]
@@ -1068,6 +1088,9 @@ def result(state):
 
 def check_invariants(state):
     """Raise AssertionError if the state breaks a core invariant (SPEC §14)."""
+    if state.get("gameplay_mode") == "succession-v1":
+        import succession
+        return succession.check_invariants(state)
     rules = state["rules"]
     board = Board(rules)
     cap = rules["glory"]["cap"]

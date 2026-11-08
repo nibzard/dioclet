@@ -235,3 +235,16 @@ button.text-button:hover { color: #92703b; }
 #choice-context { margin: 0 0 20px; font-size: 12px; }
 #choice-actions { display: flex; flex-direction: column; gap: 10px; }
 #choice-actions button { min-height: 46px; }
+
+/* Succession keeps player identity separate from a starting gate. */
+[hidden] { display: none !important; }
+.gate-settings { display: grid; gap: 6px; margin: 0 0 14px; font-size: 11px; }
+.gate-settings select { width: 100%; padding: 8px; background: var(--card); border: 1px solid var(--line); color: var(--ink); }
+.gate-preview { display: block; margin-top: 7px; font-size: 9px; color: var(--muted); }
+#setup-error { font-size: 11px; color: var(--red); margin: 0 0 10px; }
+#setup-error:empty { display: none; }
+button:disabled { opacity: .45; cursor: default; }
+.support-list { margin-top: 8px; font-size: 10px; line-height: 1.6; color: var(--muted); overflow-wrap: anywhere; }
+.support-list strong { color: var(--ink); font-weight: 500; }
+.claim-status { padding: 14px 16px; border: 1px solid #b9ad85; background: #f2ecd9; font-size: 12px; line-height: 1.7; }
+@media (max-width: 620px) { .gate-settings select { font-size: 16px; } }
