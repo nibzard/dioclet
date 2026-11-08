@@ -2,8 +2,8 @@
 """Generate web/board-data.js from the adopted rules JSON.
 
 The web board is generated, never hand-copied, so it always mirrors
-the measured ruleset (rules_v071_realgates.json: the six-block board
-with every gate opening onto a street)."""
+the measured ruleset (rules_v072_cardo.json: the real street plan,
+cardo and decumanus, six buildings one card each)."""
 
 import json
 import os
@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import engine  # noqa: E402
 from board import Board  # noqa: E402
 
-RULES = "rules_v071_realgates.json"
+RULES = "rules_v072_cardo.json"
 OUT = "web/board-data.js"
 
 
@@ -25,6 +25,7 @@ def main():
         "width": b.width,
         "height": b.height,
         "blocked": blocked,
+        "buildings": rules["board"].get("buildings", []),
         "gates": {p: list(c) for p, c in b.gates.items()},
         "districts": {n: list(c) for n, c in b.districts.items()},
         "checkpoint": list(b.checkpoint),

@@ -184,3 +184,17 @@ checkpoint 9/9/9/9, card tour 66/90/66/90, cheapest two seals
 19.9/21.9/19.1/22.4. Tests: `tests/test_board_v061.py` (gates on
 street columns, all gates 9 from the checkpoint, Emperor and
 retreat placement).
+
+### V0.7.2: the real two-street plan (current)
+
+Designer correction (2026-11-08, D35): cardo and decumanus both
+exist and the four doors sit at their ends. The cardo (x=9) returns
+with gates at `[9,0]` and `[9,12]`; the decumanus keeps the east and
+west gates. The middle buildings are declared as single blocks
+pierced by the cardo lane, so the board has six buildings and six
+cards. Entries: A `[3,0]`, C `[15,0]` north street; D `[3,12]`,
+F `[15,12]` south street; B `[9,3]`, E `[9,9]` on the cardo lane.
+Emperor at the south door, retreat one step north `[9,11]`.
+Game content is identical to the V0.6 p3 audit above (verified by
+100 paired games); all of its numbers apply, including the distance
+matrix and the random x4 mirror (23/24/22/23). Streets: 107 spaces.

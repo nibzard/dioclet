@@ -71,13 +71,73 @@ const districtLabels = () => [...document.querySelectorAll('[id^="district-"]')]
 check("six hidden district cards", districtLabels().length === 6 &&
   districtLabels().every(n => n.textContent === "Hidden treasure"));
 
+// --- take a treasure as a human -------------------------------------
+for (const id of ["P0", "P1", "P2", "P3"]) {
+  document.getElementById("kind-" + id).value = "human";
+}
+document.getElementById("startbtn").click();
+const treasureCell = Object.values(window.DIOCLET_BOARD.districts)
+  .map(c => document.querySelector(`[data-k="${c.join(",")}"]`))
+  .find(c => c.classList.contains("reachable"));
+check("a treasure is reachable in the test turn", Boolean(treasureCell));
+if (treasureCell) {
+  check("treasure click area covers its visible marker and border",
+    Number(treasureCell.getAttribute("r")) > 16.5 + 2.5 / 2);
+  const playerIndex = [...document.querySelectorAll(".pcard")].findIndex(c => c.classList.contains("active"));
+  treasureCell.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+  check("treasure collects without a pointless choice",
+    document.getElementById("choice-dialog").classList.contains("hidden"));
+  await sleep(50);
+  check("human collects the treasure",
+    document.querySelectorAll(".pcard")[playerIndex].querySelector(".pstats").textContent.includes("1/6"));
+}
+// A rival at the entry creates a real choice: collect or duel.
+const engine = window.DIOCLET_ENGINE;
+const newGame = engine.newGame;
+let choiceGame, choiceDestination;
+engine.newGame = (...args) => {
+  choiceGame = newGame(...args);
+  choiceDestination = engine.legalActions(choiceGame).find(a => a.kind === "explore").dest;
+  choiceGame.players.find(p => p.id !== engine.active(choiceGame).id).pos = choiceDestination;
+  return choiceGame;
+};
+document.getElementById("startbtn").click();
+engine.newGame = newGame;
+const rivalCell = document.querySelector(`[data-k="${choiceDestination}"]`);
+rivalCell.focus();
+rivalCell.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+const choiceDialog = document.getElementById("choice-dialog");
+check("competing actions open a modal", !choiceDialog.classList.contains("hidden"));
+check("treasure modal omits the walk action", !document.getElementById("choice-actions").textContent.includes("Just walk"));
+check("treasure modal offers collection and a duel",
+  document.getElementById("choice-actions").textContent.includes("Take the treasure") &&
+  document.getElementById("choice-actions").textContent.includes("Duel"));
+check("modal focuses its first action", document.activeElement === document.querySelector("#choice-actions button"));
+document.dispatchEvent(new window.KeyboardEvent("keydown", {key: "Escape"}));
+check("Escape cancels the choice and restores board focus", choiceDialog.classList.contains("hidden") && document.activeElement === rivalCell);
+check("canceling does not spend the turn", engine.active(choiceGame).equipment.length === 0);
+rivalCell.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+document.getElementById("choice-cancel").click();
+check("Cancel button closes the modal", choiceDialog.classList.contains("hidden"));
+rivalCell.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+const collector = engine.active(choiceGame);
+[...document.querySelectorAll("#choice-actions button")].find(b => b.textContent.includes("Take the treasure")).click();
+await sleep(50);
+check("modal selection collects the treasure and closes", collector.equipment.length === 1 && choiceDialog.classList.contains("hidden"));
+
+// Restore the normal human-and-bots table for the full game below.
+document.getElementById("kind-P1").value = "balanced";
+document.getElementById("kind-P2").value = "balanced";
+document.getElementById("kind-P3").value = "greedy";
+
 // --- start a game ---------------------------------------------------
 document.getElementById("seed").value = "2026";
 document.getElementById("startbtn").click();
 await sleep(50);
 check("setup overlay hidden after start",
   document.getElementById("setup").classList.contains("hidden"));
-check("97 street circles", document.querySelectorAll(".cell").length === 97);
+check("all board street spaces render", document.querySelectorAll(".cell").length ===
+  window.DIOCLET_BOARD.width * window.DIOCLET_BOARD.height - window.DIOCLET_BOARD.blocked.length);
 check("4 pawns placed", document.querySelectorAll(".pawn").length === 4);
 const zoom = document.getElementById("zoom-board");
 zoom.click();
@@ -125,7 +185,7 @@ while (document.getElementById("gameover")
     }
     await sleep(20);
     // If a choice menu appeared, take the first button.
-    const btn = document.querySelector("#actionbox button.choice");
+    const btn = !choiceDialog.classList.contains("hidden") && document.querySelector("#choice-actions button.choice");
     if (btn) { btn.click(); await sleep(20); }
     await sleep(150);
   } else {
@@ -152,4 +212,6 @@ check("replay restores pawn positions", Object.entries(board.gates).every(([id, 
 if (failures) { console.error(failures + " failures"); process.exit(1); }
 console.log("all UI smoke tests pass");
 
-dom.window.close();
+// No dom.window.close(): a pending bot timer can fire after the
+// window tears down and crash the run after all checks passed.
+

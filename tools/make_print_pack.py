@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate the printable V0.6.1 playtest pack (playtest/playtest-pack.html).
 
-Reads rules_v071_realgates.json and renders: the board (all 97
+Reads rules_v072_cardo.json and renders: the board (all 107
 street spaces and the six building blocks), equipment cards, token
 sheets, the player rulebook, a quick-reference sheet, a five-minute
 teaching script, and a feedback form. Print with a browser at 100%
@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import engine  # noqa: E402
 from board import Board  # noqa: E402
 
-RULES_FILE = "rules_v071_realgates.json"
+RULES_FILE = "rules_v072_cardo.json"
 OUT_FILE = "playtest/playtest-pack.html"
 
 CELL = 44
@@ -39,14 +39,15 @@ def board_svg(rules):
     parts.append(f'<rect width="{w}" height="{h}" fill="#f6efe2"/>')
     parts.append(f'<rect x="10" y="10" width="{w-20}" height="{h-20}" rx="14" '
                  f'fill="none" stroke="#9c8a64" stroke-width="5"/>')
-    # building blocks
-    for x in range(b.width):
-        for y in range(b.height):
-            if (x, y) in b.blocked:
-                px, py = PAD + x * CELL, PAD + y * CELL
-                parts.append(
-                    f'<rect x="{px+2}" y="{py+2}" width="{CELL-4}" height="{CELL-4}" '
-                    f'rx="5" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>')
+    # building blocks: one footprint per declared building, so a
+    # block pierced by the cardo lane still reads as one building
+    for bld in rules["board"].get("buildings", []):
+        px, py = PAD + bld["x0"] * CELL, PAD + bld["y0"] * CELL
+        pw = (bld["x1"] - bld["x0"] + 1) * CELL
+        ph = (bld["y1"] - bld["y0"] + 1) * CELL
+        parts.append(
+            f'<rect x="{px+2}" y="{py+2}" width="{pw-4}" height="{ph-4}" '
+            f'rx="10" fill="#c96b4f" stroke="#9c4a33" stroke-width="1.5"/>')
     # street circles
     for x in range(b.width):
         for y in range(b.height):
@@ -219,7 +220,7 @@ HTML = """<!DOCTYPE html>
   one per player.</p>
   <h2>What is in the pack</h2>
   <ol>
-    <li>The board (all 97 street spaces; its page prints landscape,
+    <li>The board (all 107 street spaces; its page prints landscape,
     and A3 paper makes the pieces comfortable).</li>
     <li>Six treasure location cards.</li>
     <li>Tokens: Glory, seals, Emperor hits, pawns.</li>
@@ -229,8 +230,8 @@ HTML = """<!DOCTYPE html>
     <li>Five-minute teaching script.</li>
     <li>Feedback form.</li>
   </ol>
-  <p class="small">Rules version: V0.7.1 real board, six blocks and
-  street gates, 2d6 movement.
+  <p class="small">Rules version: V0.7.2 real board, cardo and decumanus,
+  six blocks one card each, 2d6 movement.
   Level 2 site placements on this board are the design team's current
   tested choice, not final artwork.</p>
 </div>

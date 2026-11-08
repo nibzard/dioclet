@@ -245,3 +245,25 @@ practical. No baseline rule values were changed.
   mirror 24.2/28.2/25.5/22.1, random x4 mirror 19.9/21.9/19.1/22.4
   with 167 draws. The frozen-schedule gate split tightened to
   29.5/19.6/20.9/30 and remains the D32 tie-break artifact.
+- **D35 Cardo and decumanus restored (V0.7.2, designer correction
+  2026-11-08).** The real palace has two main streets, cardo and
+  decumanus, and the four doors sit at their ends, symmetric: north
+  and south doors on the cardo, east and west on the decumanus.
+  V0.7.1 had put the north and south doors on different internal
+  streets. `rules_v072_cardo.json` restores the full cardo (column
+  x=9) with gates P0 `[9,0]`, P2 `[9,12]` and the Emperor at the
+  south door, retreat one step north on the cardo `[9,11]`. The
+  six-buildings rule stands: the board now declares the two middle
+  buildings as single blocks pierced by the cardo lane (new optional
+  `board.buildings` list, engine-ignored), so there are six
+  buildings and six cards, one per building, with entries B `[9,3]`
+  and E `[9,9]` on the lane through them. Game content is identical
+  to `rules_v06_realboard_p3.json` (verified: 100 paired games on
+  seeds 1000-1099 reproduce identical winners, rounds, and status),
+  so the full V0.6 p3 measurements carry over unchanged: Level 1
+  timeouts 162 per 1,000, median 26 rounds (18 city, 8 palace),
+  5.71 collected, 68% comebacks, first challenger 181/152/175/152,
+  random x4 mirror 23/24/22/23. The known frozen-schedule gate skew
+  (31/16/21/32) remains the D32 northwest tie-break artifact. This
+  closes the board cycle: six blocks (D33), doors on streets
+  (D34), and the real two-street plan (D35) are now one geometry.

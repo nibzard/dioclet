@@ -61,37 +61,26 @@
   function buildBoard() {
     const w = PAD * 2 + B.width * CELL, h = PAD * 2 + B.height * CELL;
     svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-    el("rect", { width: w, height: h, fill: "#efecdf", rx: 5 });
-    el("rect", { x: 8, y: 8, width: w - 16, height: h - 16, rx: 3,
+    el("rect", { width: w, height: h, fill: "#efecdf", rx: 0 });
+    el("rect", { x: 8, y: 8, width: w - 16, height: h - 16, rx: 0,
                  fill: "none", stroke: "#bdbea6", "stroke-width": 1.5 });
-    el("rect", { x: 14, y: 14, width: w - 28, height: h - 28, rx: 2,
+    el("rect", { x: 14, y: 14, width: w - 28, height: h - 28, rx: 0,
                  fill: "none", stroke: "#cfd0b9", "stroke-width": .8 });
-    // Find each connected city block from the authoritative board data.
-    const remaining = new Set(B.blocked.map(c => K(...c)));
-    const blocks = [];
-    while (remaining.size) {
-      const first = remaining.values().next().value;
-      remaining.delete(first);
-      const group = [at(first)];
-      for (let i = 0; i < group.length; i++) {
-        const [x, y] = group[i];
-        for (const [nx, ny] of [[x-1,y], [x+1,y], [x,y-1], [x,y+1]]) {
-          if (remaining.delete(K(nx, ny))) group.push([nx, ny]);
-        }
-      }
-      blocks.push(group);
-    }
-    blocks.sort((a, b) => Math.min(...a.map(c => c[1])) - Math.min(...b.map(c => c[1])) ||
-      Math.min(...a.map(c => c[0])) - Math.min(...b.map(c => c[0])));
-    const districts = Object.entries(B.districts).sort((a, b) => a[1][1] - b[1][1] || a[1][0] - b[1][0]);
-    blocks.forEach((cells, i) => {
-      const left = PAD + Math.min(...cells.map(c => c[0])) * CELL + 3;
-      const top = PAD + Math.min(...cells.map(c => c[1])) * CELL + 3;
-      const width = (Math.max(...cells.map(c => c[0])) - Math.min(...cells.map(c => c[0])) + 1) * CELL - 6;
-      const height = (Math.max(...cells.map(c => c[1])) - Math.min(...cells.map(c => c[1])) + 1) * CELL - 6;
-      const district = districts[i];
+    // Six buildings from the authoritative board data. The two
+    // middle blocks are pierced by the cardo lane; each building
+    // keeps exactly one treasure at its entry.
+    const districts = Object.entries(B.districts)
+      .sort((a, b) => a[1][1] - b[1][1] || a[1][0] - b[1][0]);
+    B.buildings.forEach(bld => {
+      const left = PAD + bld.x0 * CELL + 3;
+      const top = PAD + bld.y0 * CELL + 3;
+      const width = (bld.x1 - bld.x0 + 1) * CELL - 6;
+      const height = (bld.y1 - bld.y0 + 1) * CELL - 6;
+      const district = districts.find(([, c]) =>
+        c[0] >= bld.x0 - 1 && c[0] <= bld.x1 + 1 &&
+        c[1] >= bld.y0 - 1 && c[1] <= bld.y1 + 1);
       const group = el("g", { "pointer-events": "none", "aria-hidden": "true" });
-      el("rect", { x: left, y: top, width, height, rx: 4, fill: "#d9d5c2", stroke: "#b7b89d", "stroke-width": 1.3 }, group);
+      el("rect", { x: left, y: top, width, height, rx: 0, fill: "#d9d5c2", stroke: "#b7b89d", "stroke-width": 1.3 }, group);
       // Inset masonry gives the blocks an architectural plan treatment.
       for (let x = left + 12; x < left + width - 8; x += CELL) {
         el("path", { d: `M${x} ${top + 7}v${height - 14}`, stroke: "#c7c7af", "stroke-width": 1 }, group);
@@ -99,15 +88,15 @@
       for (let y = top + 12; y < top + height - 8; y += CELL) {
         el("path", { d: `M${left + 7} ${y}h${width - 14}`, stroke: "#c7c7af", "stroke-width": 1 }, group);
       }
-      el("rect", { x: left + 20, y: top + 20, width: width - 40, height: height - 40, rx: 2,
+      el("rect", { x: left + 20, y: top + 20, width: width - 40, height: height - 40, rx: 0,
         fill: "#e9e6d7", stroke: "#bbbea3", "stroke-width": 1 }, group);
-      el("rect", { x: left + 26, y: top + 26, width: width - 52, height: height - 52, rx: 1,
+      el("rect", { x: left + 26, y: top + 26, width: width - 52, height: height - 52, rx: 0,
         fill: "none", stroke: "#d0d1ba", "stroke-width": .8 }, group);
       if (district) {
         const midX = left + width / 2, midY = top + height / 2;
         el("text", { x: midX, y: midY - 43, "text-anchor": "middle", fill: "#7f866e",
           "font-family": "Verdana, sans-serif", "font-size": 8, "letter-spacing": 2 }, group, "DISTRICT " + district[0]);
-        el("rect", { x: midX - 20, y: midY - 30, width: 40, height: 48, rx: 19,
+        el("rect", { x: midX - 20, y: midY - 30, width: 40, height: 48, rx: 0,
           fill: "#f3f0e4", stroke: "#a7af93", "stroke-width": 1 }, group);
         el("text", { id: "treasure-" + K(...district[1]), x: midX, y: midY + 3,
           "text-anchor": "middle", fill: "#8c977b", "font-family": "Georgia, serif", "font-size": 29 }, group, "?");
@@ -138,6 +127,11 @@
     // a chip owns the pointer and carries the tooltip.
     const chip = (k, fill, text) => {
       const [x, y] = at(k);
+      // The interactive circle must cover the whole marker. Its outer
+      // edge also keeps the available-move highlight visible.
+      const target = svg.querySelector(`[data-k="${k}"]`);
+      target.setAttribute("r", "20");
+      target.classList.add("site-cell");
       el("circle", { cx: cx(x), cy: cy(y), r: 16.5, fill,
                      stroke: "#3a2d20", "stroke-width": 2.5,
                      "pointer-events": "none" });
@@ -381,18 +375,29 @@
     const p = E.active(g);
     if (p.kind !== "human") return;
     const k = c.getAttribute("data-k");
-    const list = byDest.get(k);
-    if (!list) return;
+    const legal = byDest.get(k);
+    if (!legal) return;
+    // Collecting has no cost. Walking past an available treasure adds
+    // no useful option; keep alternatives such as dueling a rival.
+    const list = legal.some(a => a.kind === "explore")
+      ? legal.filter(a => a.kind !== "move") : legal;
     if (list.length === 1) { humanAct(list[0]); return; }
-    const box = document.getElementById("actionbox");
-    box.innerHTML = `<div class="hint">Choose what to do at ${k}:</div>`;
+    const box = document.getElementById("choice-actions");
+    box.replaceChildren();
+    document.getElementById("choice-context").textContent =
+      c.querySelector("title")?.textContent || "Street space " + k;
     for (const a of list) {
       const b = document.createElement("button");
       b.className = "choice";
       b.innerHTML = describe(a);
-      b.onclick = () => humanAct(a);
+      b.onclick = () => {
+        hideOverlay("choice-dialog");
+        humanAct(a);
+      };
       box.appendChild(b);
     }
+    showOverlay("choice-dialog");
+    box.querySelector("button").focus();
   }
 
   function describe(a) {
@@ -542,8 +547,16 @@
   rulesOverlay.addEventListener("click", ev => {
     if (ev.target === rulesOverlay) hideOverlay("rules");
   });
+  const choiceDialog = document.getElementById("choice-dialog");
+  document.getElementById("choice-cancel").onclick = () => hideOverlay("choice-dialog");
+  choiceDialog.addEventListener("click", ev => {
+    if (ev.target === choiceDialog) hideOverlay("choice-dialog");
+  });
   document.addEventListener("keydown", ev => {
-    if (ev.key === "Escape" && !rulesOverlay.classList.contains("hidden")) hideOverlay("rules");
+    if (ev.key === "Escape") {
+      if (!rulesOverlay.classList.contains("hidden")) hideOverlay("rules");
+      else if (!choiceDialog.classList.contains("hidden")) hideOverlay("choice-dialog");
+    }
     if (ev.key !== "Tab") return;
     const dialogs = [...document.querySelectorAll(".overlay:not(.hidden)")];
     const top = dialogs.find(d => d.id === "rules") || dialogs.at(-1);

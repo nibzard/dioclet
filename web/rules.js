@@ -1,8 +1,8 @@
 /* The full rulebook for the web board, matching the repository's
- * measured ruleset (rules_v071_realgates.json: the six-block board,
- * one card per block, every gate opening onto a street) and the
- * print pack rulebook word for word where they overlap. Rendered
- * into an overlay by app.js. */
+ * measured ruleset (rules_v072_cardo.json: the real street plan,
+ * cardo and decumanus, doors at their ends, six buildings one card
+ * each) and the print pack rulebook word for word where they
+ * overlap. Rendered into an overlay by app.js. */
 (function (global) {
   "use strict";
 
@@ -19,9 +19,12 @@ first to land <b>two hits</b> on the Emperor wins.</p>
   together).</li>
   <li>One six-sided die for <b>every fight and trial</b>: guard
   posts, duels, seals, Emperor strikes.</li>
-  <li>The board: 97 street circles and six building blocks. Each
-  block holds exactly one treasure card at its blue entry. Nobody
-  walks through the city blocks.</li>
+  <li>The board: 107 street circles and six building blocks, the
+  plan of the real palace. Two main streets cross at the center:
+  the north-south cardo and the east-west decumanus. The four doors
+  sit at their ends. The two middle blocks are pierced by the cardo
+  lane; each block still holds exactly one treasure card at its
+  blue entry. Nobody walks through the buildings.</li>
 </ul>
 
 <h2>Setup</h2>
@@ -140,8 +143,8 @@ and the next roll.</p>
 exception: in measured play the player who was behind at the gate
 wins most games. If you trail, fight for Glory; it is the currency
 that decides the Emperor.</p>
-<p class="provenance">These rules are the measured V0.7.1 ruleset:
-six blocks, one card each, every gate on a street. Every number here
-was tested across tens of thousands of simulated games before it was
-written down.</p>`;
+<p class="provenance">These rules are the measured V0.7.2 ruleset:
+the real street plan, cardo and decumanus, six blocks with one card
+each. Every number here was tested across tens of thousands of
+simulated games before it was written down.</p>`;
 })(typeof window !== "undefined" ? window : globalThis);

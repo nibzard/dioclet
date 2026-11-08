@@ -200,3 +200,20 @@ one step north `[6,11]`. Same protocol, seeds 1000-1999:
 - Both fairness probes sit in the same even band as V0.7; the
   frozen-schedule spread tightened from 37/15/26/22 to
   29.5/19.6/20.9/30.
+
+## V0.7.2: the real two-street plan (2026-11-08)
+
+Third designer correction: the real palace has cardo and decumanus,
+and the four doors sit at their ends, symmetric. V0.7.2 restores the
+cardo and puts the north and south doors at its ends. The
+six-buildings rule stands: the two middle buildings are declared as
+single blocks pierced by the cardo lane, one card each at entries
+B `[9,3]` and E `[9,9]`. Game content equals the V0.6 p3 ruleset
+(100 paired games verified identical), so its measurements carry
+over: 162 city timeouts per 1,000, median 26 rounds (18 city, 8
+palace), 5.71 collected, 68% comebacks, first challenger
+181/152/175/152, random x4 mirror 23/24/22/23, balanced_se probe
+flips the schedule skew as in D32. The trade versus V0.7/V0.7.1
+(121 to 129 timeouts, 23 to 24 median rounds) buys board fidelity:
+the real street plan with symmetric doors, exactly as the palace
+stands in Split.

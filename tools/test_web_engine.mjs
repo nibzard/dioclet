@@ -16,32 +16,16 @@ function check(name, cond) {
 }
 
 // --- board facts ---------------------------------------------------
-check("97 street spaces",
-  B.width * B.height - B.blocked.length === 97);
-check("six blocks of 5x5",
-  (() => {
-    const blocked = new Set(B.blocked.map(c => c.join(",")));
-    const seen = new Set(); let blocks = 0; let all5x5 = true;
-    for (const c of blocked) {
-      if (seen.has(c)) continue;
-      blocks++;
-      const group = new Set(); const q = [c];
-      while (q.length) {
-        const cur = q.pop();
-        if (group.has(cur)) continue;
-        group.add(cur); seen.add(cur);
-        const [x, y] = cur.split(",").map(Number);
-        for (const n of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
-          if (blocked.has(n.join(","))) q.push(n.join(","));
-        }
-      }
-      const xs = [...group].map(k => +k.split(",")[0]);
-      const ys = [...group].map(k => +k.split(",")[1]);
-      if (Math.max(...xs) - Math.min(...xs) !== 4 ||
-          Math.max(...ys) - Math.min(...ys) !== 4) all5x5 = false;
-    }
-    return blocks === 6 && all5x5;
-  })());
+check("107 street spaces",
+  B.width * B.height - B.blocked.length === 107);
+check("six declared buildings, one card each",
+  (B.buildings || []).length === 6 &&
+  Object.keys(B.districts).length === 6);
+check("cardo and decumanus run end to end",
+  Array.from({ length: B.height }, (_, y) => y).every(
+    y => !B.blocked.some(c => c[0] === 9 && c[1] === y)) &&
+  Array.from({ length: B.width }, (_, x) => x).every(
+    x => !B.blocked.some(c => c[0] === x && c[1] === 6)));
 check("no blocked special",
   [...Object.values(B.gates), ...Object.values(B.districts),
    B.checkpoint, ...B.gloryPosts, ...Object.values(B.level2)]

@@ -1,9 +1,9 @@
-"""Board regression tests: six-block board facts and balanced_se.
+"""Board regression tests: the real street plan and balanced_se.
 
-The adopted board is rules_v071_realgates.json (V0.7.1, 2026-11-07):
-the designer's six blocks, one card per block, streets on the
-perimeter, two internal vertical streets, one central east-west
-street, and every gate opening onto a street."""
+The adopted board is rules_v072_cardo.json (V0.7.2, 2026-11-08): the
+real palace plan. Cardo and decumanus cross at the center; the four
+doors sit at their ends; six buildings hold one card each, the two
+middle buildings pierced by the cardo lane."""
 
 import os
 import sys
@@ -18,44 +18,75 @@ import policies  # noqa: E402
 
 def load_board_rules():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return engine.load_rules(os.path.join(root, "rules_v071_realgates.json"))
+    return engine.load_rules(os.path.join(root, "rules_v072_cardo.json"))
 
 
-class TestBoardFactsV07(unittest.TestCase):
+class TestBoardFactsV072(unittest.TestCase):
     def test_counts(self):
         b = board.Board(load_board_rules())
         walkable = b.width * b.height - len(b.blocked)
         self.assertEqual((b.width, b.height), (19, 13))
-        self.assertEqual(len(b.blocked), 150)
-        self.assertEqual(walkable, 97)
+        self.assertEqual(len(b.blocked), 140)
+        self.assertEqual(walkable, 107)
 
-    def test_exactly_six_blocks(self):
-        # The design rule: six blocks (3 columns by 2 rows), each
-        # 5x5, one card per block. The V0.6 cardo split the middle
-        # column into four strips; V0.7 removes it.
+    def test_six_buildings_cover_every_blocked_cell(self):
+        # The blocked strips form eight cell groups, but the board
+        # declares six buildings: the two middle ones are pierced by
+        # the cardo lane, so their strips belong to one building.
+        rules = load_board_rules()
+        b = board.Board(rules)
+        buildings = rules["board"]["buildings"]
+        self.assertEqual(len(buildings), 6)
+        self.assertEqual(len([x for x in buildings if x.get("pierced_by")]), 2)
+        covered = set()
+        for bld in buildings:
+            for x in range(bld["x0"], bld["x1"] + 1):
+                for y in range(bld["y0"], bld["y1"] + 1):
+                    covered.add((x, y))
+        lane = {(9, y) for y in range(1, 12) if y != 6}
+        self.assertEqual(covered, set(b.blocked) | lane)
+
+    def test_cardo_and_decumanus_run_end_to_end(self):
         b = board.Board(load_board_rules())
-        seen, blocks = set(), []
-        for cell in b.blocked:
-            if cell in seen:
-                continue
-            group, queue = set(), [cell]
-            while queue:
-                cur = queue.pop()
-                if cur in group:
-                    continue
-                group.add(cur)
-                x, y = cur
-                for n in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-                    if n in b.blocked:
-                        queue.append(n)
-            seen |= group
-            blocks.append(group)
-        self.assertEqual(len(blocks), 6)
-        for group in blocks:
-            xs = [x for x, _ in group]
-            ys = [y for _, y in group]
-            self.assertEqual((max(xs) - min(xs) + 1,
-                              max(ys) - min(ys) + 1), (5, 5))
+        for y in range(b.height):
+            self.assertNotIn((9, y), b.blocked)
+        for x in range(b.width):
+            self.assertNotIn((x, 6), b.blocked)
+
+    def test_doors_on_the_two_main_streets(self):
+        # As in the real palace: north and south doors at the ends
+        # of the cardo, east and west doors at the ends of the
+        # decumanus. The Emperor keeps the south door; the retreat
+        # hall is one step north on the cardo.
+        b = board.Board(load_board_rules())
+        self.assertEqual(b.gates["P0"], (9, 0))
+        self.assertEqual(b.gates["P2"], (9, 12))
+        self.assertEqual(b.gates["P1"], (18, 6))
+        self.assertEqual(b.gates["P3"], (0, 6))
+        for gate in b.gates.values():
+            self.assertNotIn(gate, b.blocked)
+        self.assertEqual(b.emperor, b.gates["P2"])
+        self.assertEqual(b.retreat, (9, 11))
+        self.assertEqual(b.distance(b.emperor, b.retreat), 1)
+
+    def test_checkpoint_distances(self):
+        # The checkpoint sits at the crossing. The board is a
+        # rectangle, so north and south walk 6 and east and west 9.
+        b = board.Board(load_board_rules())
+        self.assertEqual(b.distance(b.gates["P0"], b.checkpoint), 6)
+        self.assertEqual(b.distance(b.gates["P2"], b.checkpoint), 6)
+        self.assertEqual(b.distance(b.gates["P1"], b.checkpoint), 9)
+        self.assertEqual(b.distance(b.gates["P3"], b.checkpoint), 9)
+
+    def test_entry_travel_sums_balance(self):
+        # North and south gates hold the shorter card tour (60
+        # versus 84); east and west hold the shorter checkpoint
+        # walk. The tension trades off between the seat pairs.
+        b = board.Board(load_board_rules())
+        for p, expect in (("P0", 60), ("P1", 84), ("P2", 60), ("P3", 84)):
+            total = sum(b.distance(b.gates[p], e)
+                        for e in b.districts.values())
+            self.assertEqual(total, expect, p)
 
     def test_every_gate_reaches_every_street_cell(self):
         b = board.Board(load_board_rules())
@@ -71,43 +102,6 @@ class TestBoardFactsV07(unittest.TestCase):
         self.assertEqual(b.seal_sites["peristyle"], b.checkpoint)
         self.assertEqual(b.emperor, b.gates["P2"])
         self.assertEqual(b.distance(b.emperor, b.retreat), 1)
-
-    def test_checkpoint_distances(self):
-        # Gates on the vertical streets (V0.7.1): every gate is
-        # exactly 9 from the checkpoint.
-        b = board.Board(load_board_rules())
-        for gate in b.gates.values():
-            self.assertEqual(b.distance(gate, b.checkpoint), 9)
-
-    def test_gates_open_onto_streets(self):
-        # As in the real palace: the north and south doors stand on
-        # the internal vertical streets, the east and west doors on
-        # the central east-west street. No gate faces a block wall.
-        b = board.Board(load_board_rules())
-        self.assertEqual(b.gates["P0"], (12, 0))
-        self.assertEqual(b.gates["P2"], (6, 12))
-        self.assertIn(b.gates["P0"][0], (6, 12))
-        self.assertIn(b.gates["P2"][0], (6, 12))
-        for p in ("P1", "P3"):
-            self.assertEqual(b.gates[p][1], 6)
-        for gate in b.gates.values():
-            self.assertNotIn(gate, b.blocked)
-        # The Emperor keeps the south gate; the retreat hall is one
-        # step north on the same street.
-        self.assertEqual(b.emperor, b.gates["P2"])
-        self.assertEqual(b.retreat, (6, 11))
-        self.assertEqual(b.distance(b.emperor, b.retreat), 1)
-
-    def test_entry_travel_sums_balance(self):
-        # The structural tension: north and south gates sit closer to
-        # the cards (sum 66 each), east and west closer to the
-        # checkpoint, and the cheapest two-seal tour costs the same
-        # from every gate.
-        b = board.Board(load_board_rules())
-        for p, expect in (("P0", 66), ("P1", 90), ("P2", 66), ("P3", 90)):
-            total = sum(b.distance(b.gates[p], e)
-                        for e in b.districts.values())
-            self.assertEqual(total, expect, p)
 
     def test_no_path_crosses_a_building(self):
         b = board.Board(load_board_rules())

@@ -52,7 +52,7 @@
     <section id="logbox" aria-labelledby="log-heading"><div class="section-heading"><h2 id="log-heading">Chronicle</h2><span class="live-dot">Live</span></div><div id="log" tabindex="0" aria-label="Game chronicle"><p class="empty-state">Every great story starts with a first move.</p></div></section>
   </aside>
 </main>
-<footer class="site-footer"><span>Diocletian’s Palace <span aria-hidden="true">/</span> Six treasures</span><span>Split, 305 AD · Board edition 0.7.1</span></footer>
+<footer class="site-footer"><span>Diocletian’s Palace <span aria-hidden="true">/</span> Six treasures</span><span>Split, 305 AD · Board edition 0.7.2</span></footer>
 <div id="rules" class="overlay hidden" role="dialog" aria-modal="true" aria-label="How to play" tabindex="-1">
   <div class="panel rulespanel">
     <button id="rulesclose" class="ghost close">✕ Close</button>
@@ -87,6 +87,15 @@
       </div>
       <p class="setup-help">New to the palace? <button id="setup-rulesbtn" class="text-button">Read how to play <span aria-hidden="true">↗</span></button></p>
     </div>
+  </div>
+</div>
+<div id="choice-dialog" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="choice-title" aria-describedby="choice-context" tabindex="-1">
+  <div class="panel choice-panel">
+    <button id="choice-cancel" class="ghost choice-cancel">Cancel</button>
+    <span class="eyebrow">Your turn</span>
+    <h2 id="choice-title">Choose your action</h2>
+    <p id="choice-context" class="muted"></p>
+    <div id="choice-actions"></div>
   </div>
 </div>
 <div id="gameover" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="overline" tabindex="-1">
