@@ -1,0 +1,135 @@
+{
+  "alternative_positions": 2,
+  "games_per_variant": 384,
+  "notes": "Gate permutations are covered in blocks of 24; policy identities rotate between blocks. Use at least 96 games for one full profile/gate rotation.",
+  "policy_version": "succession-probes-0.8.0",
+  "profiles": [
+    "collector",
+    "early_support",
+    "prestige_farmer",
+    "counterleader"
+  ],
+  "provider": "offline-bots",
+  "rules_hash": "8bc693e98583e086c2deeaf95de239e8f3ae90bfa8e7bcf4c0f98e5f663a2a15",
+  "schema": "succession-experiments-1",
+  "seed_base": 600000,
+  "split": "holdout",
+  "variants": {
+    "base": {
+      "avoidable_treasure_walks": 23,
+      "challenged_claim_fraction": 0.9945828819068255,
+      "challenged_claims": 2754,
+      "choice_rich_turns": 24829,
+      "claim_statistics_scope": "finished_games",
+      "counterclaim_attempts": 3782,
+      "draw_fraction": 0.020833333333333332,
+      "draws": 8,
+      "finished_games": 384,
+      "first_collector_games": 384,
+      "first_collector_wins": 194,
+      "gate_rates": {
+        "P0": {
+          "games": 384,
+          "rate": 0.3229166666666667,
+          "wilson_95": [
+            0.27810177546251125,
+            0.3712394774980826
+          ],
+          "wins": 124
+        },
+        "P1": {
+          "games": 384,
+          "rate": 0.140625,
+          "wilson_95": [
+            0.10940447023888908,
+            0.17896454312231622
+          ],
+          "wins": 54
+        },
+        "P2": {
+          "games": 384,
+          "rate": 0.23958333333333334,
+          "wilson_95": [
+            0.19960536939241139,
+            0.2847200026084621
+          ],
+          "wins": 92
+        },
+        "P3": {
+          "games": 384,
+          "rate": 0.2760416666666667,
+          "wilson_95": [
+            0.23371437042225293,
+            0.32280544949849826
+          ],
+          "wins": 106
+        }
+      },
+      "incomplete_games": 0,
+      "interpretation": "Diagnostic measures for mechanical incentives; none alone measures human fun.",
+      "median_rounds": 24.0,
+      "resource_and_claim_totals": {
+        "claims_cancelled": 2390,
+        "claims_made": 2769,
+        "equipment_collected": 7408,
+        "idle_moves": 11065,
+        "prestige_earned": 10110,
+        "prestige_spent": 8329,
+        "prestige_wasted_at_cap": 701,
+        "response_turns": 2815,
+        "support_gained": 2932
+      },
+      "strategy_rates": {
+        "collector": {
+          "games": 384,
+          "rate": 0.3307291666666667,
+          "wilson_95": [
+            0.2855528536275318,
+            0.37925863817303584
+          ],
+          "wins": 127
+        },
+        "counterleader": {
+          "games": 384,
+          "rate": 0.23697916666666666,
+          "wilson_95": [
+            0.19718434087615216,
+            0.28198428484473
+          ],
+          "wins": 91
+        },
+        "early_support": {
+          "games": 384,
+          "rate": 0.2864583333333333,
+          "wilson_95": [
+            0.24352901686828624,
+            0.33361778817242993
+          ],
+          "wins": 110
+        },
+        "prestige_farmer": {
+          "games": 384,
+          "rate": 0.125,
+          "wilson_95": [
+            0.09559140706781283,
+            0.1618371286134449
+          ],
+          "wins": 48
+        }
+      },
+      "turns_observed": 38316,
+      "wins_by_gate": {
+        "P0": 124,
+        "P1": 54,
+        "P2": 92,
+        "P3": 106
+      },
+      "wins_by_strategy": {
+        "collector": 127,
+        "counterleader": 91,
+        "early_support": 110,
+        "prestige_farmer": 48
+      }
+    }
+  }
+}

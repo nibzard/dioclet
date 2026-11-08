@@ -1,0 +1,38 @@
+{
+  "version": "autoresearch-v08-fee1-ar1",
+  "rules": "rules_v08_succession.json",
+  "cycles": 8,
+  "games_per_suite": 96,
+  "screen_seed_base": 200000,
+  "holdout_seed_base": 400000,
+  "confirmation_seed_base": 600000,
+  "agent_budget_usd_per_cycle": 0.0,
+  "agent_timeout_seconds": 0,
+  "profiles": ["collector", "early_support", "prestige_farmer", "counterleader"],
+  "allowed_changes": {
+    "succession.contest_cost": [0, 1, 2],
+    "glory.cap": [null, 2, 3, 4],
+    "succession.support_in_city": [true, false],
+    "succession.support_cost": [1, 2],
+    "succession.challenge_bonus": [0, 1, 2],
+    "succession.reset_positions": [true, false],
+    "level1.grace_full_rounds": [0, 1, 2]
+  },
+  "promotion": {
+    "maximum_draw_increase": 0.02,
+    "minimum_draw_improvement": 0.05,
+    "minimum_cancellation_reduction": 0.20,
+    "minimum_claims_challenged_fraction": 0.15,
+    "minimum_winning_profiles": 2,
+    "maximum_median_round_increase": 4
+  },
+  "counterplay_veto": {
+    "minimum_contest_offered_rate": 0.50,
+    "minimum_claims_with_contest_option": 0.70,
+    "minimum_can_afford_rate": 0.60,
+    "maximum_claims_crowned_without_legal_contest": 0.25,
+    "minimum_baseline_afford_at_candidate_fee": 0.60,
+    "rationale": "A contest most responders cannot legally pay for is a coronation, not counterplay. Offered rates and purse shares come from tools/contest_audit.py re-runs of every suite game. The baseline-purse guard asks: of the response purses observed under the fee-1 incumbent, what share could pay the candidate's contest fee? Fee 2 failed live play exactly here (responders held 0 or 1 Prestige)."
+  },
+  "notes": "Experiment-local copy of experiments/v08-programme.json for the autoresearch/ar-fee1-20261108 run. Fresh, nonoverlapping seed ranges: screen 200000+, holdouts 401000+ per cycle (stride 1000), confirmation 600000+. No paid proposal agents; hypotheses come from the research agent and run offline through tools/autoresearch_run.py, which reuses tools/run_programme.py functions unchanged."
+}

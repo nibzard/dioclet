@@ -1,0 +1,254 @@
+{
+  "candidate_hash": "fb7a41feab56e9ceeabbfd4e78220bb8b88466df31720c42f44add28553c6fac",
+  "conclusion": "existing mechanical checks alone would promote this known-bad variant",
+  "counterplay_veto": {
+    "holdout": [
+      {
+        "check": "contest_offered_floor",
+        "detail": "offered rate 0.32840236686390534 vs floor 0.5",
+        "passed": false
+      },
+      {
+        "check": "claims_with_contest_option_floor",
+        "detail": "claims with a legal contest 0.7670682730923695 vs floor 0.7",
+        "passed": true
+      },
+      {
+        "check": "responder_afford_floor",
+        "detail": "responders able to pay the fee 0.4408284023668639 vs floor 0.6",
+        "passed": false
+      },
+      {
+        "check": "no_poverty_coronation",
+        "detail": "claims crowned with no legal contest 0.23293172690763053 vs ceiling 0.25",
+        "passed": true
+      },
+      {
+        "check": "baseline_purse_affords_candidate_fee",
+        "detail": "share of baseline response purses able to pay fee 2 is 0.34328358208955223 vs floor 0.6",
+        "passed": false
+      }
+    ],
+    "screen": [
+      {
+        "check": "contest_offered_floor",
+        "detail": "offered rate 0.3429003021148036 vs floor 0.5",
+        "passed": false
+      },
+      {
+        "check": "claims_with_contest_option_floor",
+        "detail": "claims with a legal contest 0.8166666666666667 vs floor 0.7",
+        "passed": true
+      },
+      {
+        "check": "responder_afford_floor",
+        "detail": "responders able to pay the fee 0.4607250755287009 vs floor 0.6",
+        "passed": false
+      },
+      {
+        "check": "no_poverty_coronation",
+        "detail": "claims crowned with no legal contest 0.18333333333333332 vs ceiling 0.25",
+        "passed": true
+      },
+      {
+        "check": "baseline_purse_affords_candidate_fee",
+        "detail": "share of baseline response purses able to pay fee 2 is 0.34328358208955223 vs floor 0.6",
+        "passed": false
+      }
+    ]
+  },
+  "key": "succession.contest_cost",
+  "mechanical": {
+    "holdout": {
+      "checks": [
+        {
+          "check": "draws_not_materially_worse",
+          "detail": "candidate 0.000 vs incumbent 0.031, allowed increase 0.02",
+          "passed": true
+        },
+        {
+          "check": "rounds_not_longer",
+          "detail": "candidate 21.0 vs incumbent 24.5 median rounds, allowed increase 4",
+          "passed": true
+        },
+        {
+          "check": "counterplay_exists",
+          "detail": "candidate challenged 0.767 of claims, floor 0.15",
+          "passed": true
+        },
+        {
+          "check": "profile_diversity",
+          "detail": "winning profiles ['collector', 'counterleader', 'early_support', 'prestige_farmer'], minimum 2",
+          "passed": true
+        },
+        {
+          "check": "cancellation_reduction",
+          "detail": "incumbent cancels 7.1 claims per game; candidate 1.6 must reach 5.7",
+          "passed": true
+        }
+      ],
+      "mechanical_promotion": true
+    },
+    "screen": {
+      "checks": [
+        {
+          "check": "draws_not_materially_worse",
+          "detail": "candidate 0.000 vs incumbent 0.021, allowed increase 0.02",
+          "passed": true
+        },
+        {
+          "check": "rounds_not_longer",
+          "detail": "candidate 21.0 vs incumbent 24.0 median rounds, allowed increase 4",
+          "passed": true
+        },
+        {
+          "check": "counterplay_exists",
+          "detail": "candidate challenged 0.817 of claims, floor 0.15",
+          "passed": true
+        },
+        {
+          "check": "profile_diversity",
+          "detail": "winning profiles ['collector', 'counterleader', 'early_support', 'prestige_farmer'], minimum 2",
+          "passed": true
+        },
+        {
+          "check": "cancellation_reduction",
+          "detail": "incumbent cancels 6.7 claims per game; candidate 1.5 must reach 5.3",
+          "passed": true
+        }
+      ],
+      "mechanical_promotion": true
+    }
+  },
+  "suites": {
+    "holdout": {
+      "contest_audit": {
+        "afford_at_fee": {
+          "0": 1.0,
+          "1": 0.8520710059171598,
+          "2": 0.4408284023668639,
+          "3": 0.27514792899408286
+        },
+        "blocked_by_position_share": 0.11242603550295859,
+        "blocked_by_purse_share": 0.5591715976331361,
+        "boost_offered_rate": 0.20118343195266272,
+        "can_afford_fee_rate": 0.4408284023668639,
+        "chosen_contest_rate": 0.32840236686390534,
+        "chosen_given_offered": 1.0,
+        "claims": 249,
+        "claims_canceled": 0.6144578313253012,
+        "claims_contested": 0.7670682730923695,
+        "claims_crowned_without_legal_contest": 0.23293172690763053,
+        "claims_with_contest_option": 0.7670682730923695,
+        "claims_won_by_acclamation": 0.3855421686746988,
+        "contest_fee": 2,
+        "contest_offered_rate": 0.32840236686390534,
+        "contest_win_rate_when_chosen": 0.6891891891891891,
+        "games_replay_verified": 96,
+        "games_total": 96,
+        "interpretation": "Offered means a legal contest action existed on the response turn (within reach and purse). Not offered splits into purse-blocked and position-blocked. Cross-fee rows are counterfactual affordability of the observed purses, not replays under that fee.",
+        "response_prestige_median": 1.0,
+        "response_prestige_p25": 1,
+        "response_prestige_p75": 3,
+        "response_prestige_share": {
+          "0": 0.14792899408284024,
+          "1": 0.41124260355029585,
+          "2": 0.16568047337278108,
+          "3": 0.27514792899408286
+        },
+        "response_prestige_share_4plus": 0.0,
+        "response_turns": 676,
+        "rules_hash": "fb7a41feab56e9ceeabbfd4e78220bb8b88466df31720c42f44add28553c6fac"
+      },
+      "exit_code": 0,
+      "games": 96,
+      "label": "diagnostic-holdout",
+      "metrics": {
+        "cancellation_rate": 0.6144578313253012,
+        "cancellations_per_game": 1.59375,
+        "challenged_claim_fraction": 0.7670682730923695,
+        "claims_cancelled": 153,
+        "claims_made": 249,
+        "draw_fraction": 0.0,
+        "finished_games": 96,
+        "incomplete_games": 0,
+        "median_rounds": 21.0,
+        "wins_by_strategy": {
+          "collector": 22,
+          "counterleader": 25,
+          "early_support": 28,
+          "prestige_farmer": 21
+        }
+      },
+      "out": "results/autoresearch-ar1-001/diagnostic/holdout",
+      "rules_hash": "fb7a41feab56e9ceeabbfd4e78220bb8b88466df31720c42f44add28553c6fac",
+      "seconds": 7.7,
+      "seed_base": 400000
+    },
+    "screen": {
+      "contest_audit": {
+        "afford_at_fee": {
+          "0": 1.0,
+          "1": 0.8534743202416919,
+          "2": 0.4607250755287009,
+          "3": 0.26132930513595165
+        },
+        "blocked_by_position_share": 0.11782477341389729,
+        "blocked_by_purse_share": 0.5392749244712991,
+        "boost_offered_rate": 0.18126888217522658,
+        "can_afford_fee_rate": 0.4607250755287009,
+        "chosen_contest_rate": 0.3429003021148036,
+        "chosen_given_offered": 1.0,
+        "claims": 240,
+        "claims_canceled": 0.6,
+        "claims_contested": 0.8166666666666667,
+        "claims_crowned_without_legal_contest": 0.18333333333333332,
+        "claims_with_contest_option": 0.8166666666666667,
+        "claims_won_by_acclamation": 0.4,
+        "contest_fee": 2,
+        "contest_offered_rate": 0.3429003021148036,
+        "contest_win_rate_when_chosen": 0.6343612334801763,
+        "games_replay_verified": 96,
+        "games_total": 96,
+        "interpretation": "Offered means a legal contest action existed on the response turn (within reach and purse). Not offered splits into purse-blocked and position-blocked. Cross-fee rows are counterfactual affordability of the observed purses, not replays under that fee.",
+        "response_prestige_median": 1.0,
+        "response_prestige_p25": 1,
+        "response_prestige_p75": 3,
+        "response_prestige_share": {
+          "0": 0.14652567975830816,
+          "1": 0.39274924471299094,
+          "2": 0.19939577039274925,
+          "3": 0.26132930513595165
+        },
+        "response_prestige_share_4plus": 0.0,
+        "response_turns": 662,
+        "rules_hash": "fb7a41feab56e9ceeabbfd4e78220bb8b88466df31720c42f44add28553c6fac"
+      },
+      "exit_code": 0,
+      "games": 96,
+      "label": "diagnostic-screen",
+      "metrics": {
+        "cancellation_rate": 0.6,
+        "cancellations_per_game": 1.5,
+        "challenged_claim_fraction": 0.8166666666666667,
+        "claims_cancelled": 144,
+        "claims_made": 240,
+        "draw_fraction": 0.0,
+        "finished_games": 96,
+        "incomplete_games": 0,
+        "median_rounds": 21.0,
+        "wins_by_strategy": {
+          "collector": 34,
+          "counterleader": 27,
+          "early_support": 23,
+          "prestige_farmer": 12
+        }
+      },
+      "out": "results/autoresearch-ar1-001/diagnostic/screen",
+      "rules_hash": "fb7a41feab56e9ceeabbfd4e78220bb8b88466df31720c42f44add28553c6fac",
+      "seconds": 7.0,
+      "seed_base": 200000
+    }
+  },
+  "value": 2
+}

@@ -1,0 +1,95 @@
+{
+  "arms": {
+    "bonus1_candidate_finished_games_only": {
+      "afford_at_fee": {
+        "0": 1.0,
+        "1": 0.3181818181818182,
+        "2": 0.0
+      },
+      "blocked_by_position_share": 0.0,
+      "blocked_by_purse_share": 0.6818181818181818,
+      "boost_share_of_contests": 0.0,
+      "cancellations_per_game": 0.75,
+      "challenge_cost": 1,
+      "chosen_contest_rate": 0.3181818181818182,
+      "chosen_given_offered": 1.0,
+      "claims": 8,
+      "claims_canceled": 0.375,
+      "claims_challenged": 0.75,
+      "claims_crowned_without_legal_contest": 0.25,
+      "claims_with_contest_option": 0.75,
+      "claims_won_by_acclamation": 0.5,
+      "contest_fee": 1,
+      "contest_offered_rate": 0.3181818181818182,
+      "contest_win_rate_when_chosen": 0.42857142857142855,
+      "draws": 0,
+      "finished": 4,
+      "games_total": 5,
+      "incomplete": 1,
+      "interpretation": "Live Decisions games are recorded evidence, not replays. Offered means the counterclaim category appeared in the responder's public legal categories.",
+      "median_rounds": 19.0,
+      "provider": "live-decisions",
+      "response_prestige_share": {
+        "0": 0.6818181818181818,
+        "1": 0.3181818181818182,
+        "2": 0.0,
+        "3": 0.0
+      },
+      "response_turns": 22,
+      "rules_hash": "8bc693e98583e086c2deeaf95de239e8f3ae90bfa8e7bcf4c0f98e5f663a2a15"
+    },
+    "plus2_incumbent": {
+      "afford_at_fee": {
+        "0": 1.0,
+        "1": 0.4666666666666667,
+        "2": 0.016666666666666666
+      },
+      "blocked_by_position_share": 0.0,
+      "blocked_by_purse_share": 0.5333333333333333,
+      "boost_share_of_contests": 0.14285714285714285,
+      "cancellations_per_game": 3.8333333333333335,
+      "challenge_cost": 1,
+      "chosen_contest_rate": 0.4666666666666667,
+      "chosen_given_offered": 1.0,
+      "claims": 28,
+      "claims_canceled": 0.8214285714285714,
+      "claims_challenged": 0.8928571428571429,
+      "claims_crowned_without_legal_contest": 0.10714285714285714,
+      "claims_with_contest_option": 0.8928571428571429,
+      "claims_won_by_acclamation": 0.17857142857142858,
+      "contest_fee": 1,
+      "contest_offered_rate": 0.4666666666666667,
+      "contest_win_rate_when_chosen": 0.8214285714285714,
+      "draws": 1,
+      "finished": 6,
+      "games_total": 6,
+      "incomplete": 0,
+      "interpretation": "Live Decisions games are recorded evidence, not replays. Offered means the counterclaim category appeared in the responder's public legal categories.",
+      "median_rounds": 32.0,
+      "provider": "live-decisions",
+      "response_prestige_share": {
+        "0": 0.5333333333333333,
+        "1": 0.45,
+        "2": 0.016666666666666666,
+        "3": 0.0
+      },
+      "response_turns": 60,
+      "rules_hash": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+    }
+  },
+  "budget": {
+    "calls": 1172,
+    "caps": {
+      "calls": 1500,
+      "usd": 0.75
+    },
+    "note": "arm B game 5 stopped mid-game at the call cap; recorded incomplete, never a draw",
+    "spent_usd": 0.4243055
+  },
+  "caveat": "Four to six games per arm. The failure is directional, not total (fee 2 showed 0 contests offered). The consistency across boost use, contest success, cancellations, acclamations, and game length, all in the same direction, is the evidence; no single rate is precise at this n.",
+  "date": "2026-11-08",
+  "design": "two arms, four live gpt-6-luna seats per game, seeds 700000+ (plus2) and 710000+ (bonus1), shared ledger",
+  "recommendation": "KEEP V0.8 (fee 1, boost +2). BEST_CANDIDATE.json is retained as an archived rejected artifact.",
+  "verdict": "REJECT CANDIDATE",
+  "why": "Against live play the +1 boost is never bought (0 of 3 contests versus 14 percent at +2), unboosted contests beat a fully equipped claimant only 43 percent of the time (82 percent at +2), cancellations nearly vanish (0.25 versus 3.83 per game), half the claims are crowned by acclamation, and the first challenger won all four finished games. The offline improvement was an artifact of scripted bots auto-purchasing the boost; live-style play exposes the coronation drift. The counterplay veto numbers were within floors, so this is a judgment the numbers alone did not force: the mechanism is consistent across every counterplay measure and matches the cycle-1 bot direction that the amendment had set aside."
+}

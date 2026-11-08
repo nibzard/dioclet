@@ -1,0 +1,23 @@
+{"event": "init", "incumbent": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6", "seeds": {"holdout": 400000, "screen": 200000}, "time": "2026-11-08T12:52:17Z"}
+{"event": "baseline_done", "holdout_draws": 0.03125, "screen_draws": 0.020833333333333332, "time": "2026-11-08T12:52:47Z"}
+{"event": "diagnostic", "key": "succession.contest_cost", "mechanical_promotion": [true, true], "time": "2026-11-08T12:53:23Z", "value": "2"}
+{"candidate": "8bc693e98583e086c2deeaf95de239e8f3ae90bfa8e7bcf4c0f98e5f663a2a15", "cycle": 1, "event": "cycle_start", "parent": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6", "proposal": "succession.challenge_bonus", "time": "2026-11-08T12:55:09Z", "value": 1}
+{"cycle": 1, "event": "cycle_suites_done", "failed": {"holdout": [], "screen": []}, "gates_passed": true, "time": "2026-11-08T12:55:50Z"}
+{"cycle": 1, "event": "decision", "status": "discard", "time": "2026-11-08T12:56:44Z"}
+{"candidate": "29ef5103f968ce7215fa232f09421213f44d0c319ed97ad085835443d358494e", "cycle": 2, "event": "cycle_start", "parent": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6", "proposal": "succession.reset_positions", "time": "2026-11-08T12:56:53Z", "value": true}
+{"cycle": 2, "event": "cycle_suites_done", "failed": {"holdout": ["draws_not_materially_worse", "cancellation_reduction"], "screen": ["draws_not_materially_worse", "cancellation_reduction"]}, "gates_passed": false, "time": "2026-11-08T12:57:38Z"}
+{"cycle": 2, "event": "decision", "status": "discard", "time": "2026-11-08T12:58:14Z"}
+{"candidate": "2a7b8826c1cf9336c8f975fa44a542d63b7f7bee83e18142931b67a77043dbd1", "cycle": 3, "event": "cycle_start", "parent": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6", "proposal": "glory.cap", "time": "2026-11-08T13:00:01Z", "value": 4}
+{"cycle": 3, "event": "cycle_suites_done", "failed": {"holdout": ["draws_not_materially_worse", "cancellation_reduction"], "screen": ["draws_not_materially_worse", "cancellation_reduction"]}, "gates_passed": false, "time": "2026-11-08T13:00:46Z"}
+{"cycle": 3, "event": "decision", "status": "discard", "time": "2026-11-08T13:01:23Z"}
+{"candidate": "47f278873ddcb3d5a7e772dd8f51a4f8df0096d78044c355dc99eca8e13ea25c", "cycle": 4, "event": "cycle_start", "parent": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6", "proposal": "glory.cap", "time": "2026-11-08T13:01:23Z", "value": 2}
+{"cycle": 4, "event": "cycle_suites_done", "failed": {"holdout": ["cancellation_reduction"], "screen": ["cancellation_reduction"]}, "gates_passed": false, "time": "2026-11-08T13:02:07Z"}
+{"cycle": 4, "event": "decision", "status": "discard", "time": "2026-11-08T13:02:55Z"}
+{"candidate": "a29ff051921962774054274c28456f5d3bea4e7a10c7857f80672cfd3c3d4d75", "cycle": 5, "event": "cycle_start", "parent": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6", "proposal": "succession.support_cost", "time": "2026-11-08T13:02:55Z", "value": 2}
+{"cycle": 5, "event": "cycle_suites_done", "failed": {"holdout": ["draws_not_materially_worse", "cancellation_reduction"], "screen": ["cancellation_reduction"]}, "gates_passed": false, "time": "2026-11-08T13:03:44Z"}
+{"cycle": 5, "event": "decision", "status": "discard", "time": "2026-11-08T13:04:10Z"}
+{"candidate": "d241e6059f9dbc1a82a800ebfd73cfc1ab072ba882edfc2a8c9f588bfeb7fa21", "cycle": 6, "event": "cycle_start", "parent": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6", "proposal": "level1.grace_full_rounds", "time": "2026-11-08T13:04:10Z", "value": 0}
+{"cycle": 6, "event": "cycle_suites_done", "failed": {"holdout": ["cancellation_reduction"], "screen": ["draws_not_materially_worse", "cancellation_reduction"]}, "gates_passed": false, "time": "2026-11-08T13:04:56Z"}
+{"cycle": 6, "event": "decision", "status": "discard", "time": "2026-11-08T13:05:49Z"}
+{"time": "2026-11-08T00:00:00Z", "event": "verdict_amended", "cycle": 1, "from": "discard", "to": "keep", "reason": "paired-comparison correction; 384-game fresh confirmation passed all preregistered gates", "artifact": "results/autoresearch-ar1-001/cycles/01/verdict-amendment.json"}
+{"time": "2026-11-08T00:00:00Z", "event": "live_verdict", "verdict": "REJECT CANDIDATE", "recommendation": "KEEP V0.8", "spent_usd": 0.4243055, "calls": 1172}

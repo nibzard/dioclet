@@ -1,0 +1,349 @@
+{
+  "baseline": {
+    "hash": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6",
+    "holdout": {
+      "contest_audit": {
+        "afford_at_fee": {
+          "0": 1.0,
+          "1": 0.7825255102040817,
+          "2": 0.3424744897959184,
+          "3": 0.1600765306122449
+        },
+        "blocked_by_position_share": 0.10331632653061225,
+        "blocked_by_purse_share": 0.21747448979591838,
+        "boost_offered_rate": 0.28125,
+        "can_afford_fee_rate": 0.7825255102040817,
+        "chosen_contest_rate": 0.6792091836734694,
+        "chosen_given_offered": 1.0,
+        "claims": 778,
+        "claims_canceled": 0.877892030848329,
+        "claims_contested": 0.993573264781491,
+        "claims_crowned_without_legal_contest": 0.0038560411311053984,
+        "claims_with_contest_option": 0.993573264781491,
+        "claims_won_by_acclamation": 0.11953727506426735,
+        "contest_fee": 1,
+        "contest_offered_rate": 0.6792091836734694,
+        "contest_win_rate_when_chosen": 0.6413145539906103,
+        "games_replay_verified": 96,
+        "games_total": 96,
+        "interpretation": "Offered means a legal contest action existed on the response turn (within reach and purse). Not offered splits into purse-blocked and position-blocked. Cross-fee rows are counterfactual affordability of the observed purses, not replays under that fee.",
+        "response_prestige_median": 1.0,
+        "response_prestige_p25": 1,
+        "response_prestige_p75": 2,
+        "response_prestige_share": {
+          "0": 0.21747448979591838,
+          "1": 0.44005102040816324,
+          "2": 0.18239795918367346,
+          "3": 0.1600765306122449
+        },
+        "response_prestige_share_4plus": 0.0,
+        "response_turns": 1568,
+        "rules_hash": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+      },
+      "exit_code": 0,
+      "games": 96,
+      "label": "baseline-holdout",
+      "metrics": {
+        "cancellation_rate": 0.877892030848329,
+        "cancellations_per_game": 7.114583333333333,
+        "challenged_claim_fraction": 0.993573264781491,
+        "claims_cancelled": 683,
+        "claims_made": 778,
+        "draw_fraction": 0.03125,
+        "finished_games": 96,
+        "incomplete_games": 0,
+        "median_rounds": 24.5,
+        "wins_by_strategy": {
+          "collector": 26,
+          "counterleader": 27,
+          "early_support": 24,
+          "prestige_farmer": 16
+        }
+      },
+      "out": "results/autoresearch-ar1-001/baseline-holdout",
+      "rules_hash": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6",
+      "seconds": 10.2,
+      "seed_base": 400000
+    },
+    "screen": {
+      "contest_audit": {
+        "afford_at_fee": {
+          "0": 1.0,
+          "1": 0.7822252374491181,
+          "2": 0.34328358208955223,
+          "3": 0.16010854816824965
+        },
+        "blocked_by_position_share": 0.12279511533242876,
+        "blocked_by_purse_share": 0.21777476255088196,
+        "boost_offered_rate": 0.27544097693351427,
+        "can_afford_fee_rate": 0.7822252374491181,
+        "chosen_contest_rate": 0.6594301221166893,
+        "chosen_given_offered": 1.0,
+        "claims": 736,
+        "claims_canceled": 0.8695652173913043,
+        "claims_contested": 0.9904891304347826,
+        "claims_crowned_without_legal_contest": 0.006793478260869565,
+        "claims_with_contest_option": 0.9904891304347826,
+        "claims_won_by_acclamation": 0.12771739130434784,
+        "contest_fee": 1,
+        "contest_offered_rate": 0.6594301221166893,
+        "contest_win_rate_when_chosen": 0.6584362139917695,
+        "games_replay_verified": 96,
+        "games_total": 96,
+        "interpretation": "Offered means a legal contest action existed on the response turn (within reach and purse). Not offered splits into purse-blocked and position-blocked. Cross-fee rows are counterfactual affordability of the observed purses, not replays under that fee.",
+        "response_prestige_median": 1.0,
+        "response_prestige_p25": 1,
+        "response_prestige_p75": 2,
+        "response_prestige_share": {
+          "0": 0.21777476255088196,
+          "1": 0.4389416553595658,
+          "2": 0.18317503392130258,
+          "3": 0.16010854816824965
+        },
+        "response_prestige_share_4plus": 0.0,
+        "response_turns": 1474,
+        "rules_hash": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+      },
+      "exit_code": 0,
+      "games": 96,
+      "label": "baseline-screen",
+      "metrics": {
+        "cancellation_rate": 0.8695652173913043,
+        "cancellations_per_game": 6.666666666666667,
+        "challenged_claim_fraction": 0.9904891304347826,
+        "claims_cancelled": 640,
+        "claims_made": 736,
+        "draw_fraction": 0.020833333333333332,
+        "finished_games": 96,
+        "incomplete_games": 0,
+        "median_rounds": 24.0,
+        "wins_by_strategy": {
+          "collector": 46,
+          "counterleader": 21,
+          "early_support": 21,
+          "prestige_farmer": 6
+        }
+      },
+      "out": "results/autoresearch-ar1-001/baseline-screen",
+      "rules_hash": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6",
+      "seconds": 8.8,
+      "seed_base": 200000
+    }
+  },
+  "config": "/home/agent/dioclet-autoresearch/ar-fee1-20261108/experiments/autoresearch-ar1.json",
+  "config_hash": "c79b35e300fd23ee19fb5526c8db2b4916a7b158afe47199e8d068bc3d715429",
+  "created": "2026-11-08T12:52:17Z",
+  "cycles": [
+    {
+      "amended": "see cycles/01/verdict-amendment.json (paired-comparison correction plus 384-game confirmation)",
+      "automated_gates_passed": true,
+      "candidate_hash": "8bc693e98583e086c2deeaf95de239e8f3ae90bfa8e7bcf4c0f98e5f663a2a15",
+      "cycle": 1,
+      "kept": true,
+      "proposal": {
+        "hypothesis": "At +2, the paid boost dominates every contest: 100% of responders who can afford fee plus boost buy it (baseline holdout audit), and boosted contests win 77% versus 55% plain, so any responder holding 2 Prestige converts to an almost-certain cancellation. That auto-purchase drives the cancellation churn of 7.1 canceled claims per game (88% of claims canceled). At +1 the boost no longer overwhelms the 0-2 equipment differential: challenge success falls toward the plain rate, claims survive more often, and paying for the boost becomes a judgment call a player could reasonably decline.",
+        "prediction": "Cancellations per finished game fall by at least 30% (from about 7.1 to at most 5.0) on both screen and holdout; boosted-contest win rate falls from 0.77 toward 0.65 or below; claims won by acclamation rise from 0.12 to at least 0.25; median rounds do not rise; contest_offered_rate and responder affordability stay at baseline levels (about 0.66 and 0.78); all four profiles still win.",
+        "refutation_evidence": "Cancellations per game fall by less than 30%; or the first challenger's win share rises above one half (the game becomes a first-proclaim race); or acclamations explode past about 0.6 while displacement comebacks vanish; or any mechanical or counterplay gate fails on either suite.",
+        "rule_path": "succession.challenge_bonus",
+        "value": 1
+      },
+      "status": "keep"
+    },
+    {
+      "automated_gates_passed": false,
+      "candidate_hash": "29ef5103f968ce7215fa232f09421213f44d0c319ed97ad085835443d358494e",
+      "cycle": 2,
+      "kept": false,
+      "proposal": {
+        "hypothesis": "The first challenger ends the city phase standing on the Peristyle crossing with full equipment, one bonus Prestige, and the officials faction at that same cell, while rivals are scattered mid-board; that positional carryover is a main reason the first challenger wins 37.5% of games (baseline holdout) instead of a fair quarter. Returning every pawn to its own gate at the phase transition makes succession a fresh race decided by equipment already collected, so late collectors keep a credible path and gate seats matter through route length rather than through one player's leftover head start.",
+        "prediction": "First-challenger win share falls from about 0.375 to at most 0.32 on both suites; comeback wins (first challenger loses) rise correspondingly; median rounds rise by at most two (gate-to-faction walking); cancellations, draws, contest availability, and the four winning profiles stay near baseline.",
+        "refutation_evidence": "First-challenger win share does not fall below its baseline value on both suites; or median rounds rise beyond the frozen guard; or the east gate (12 steps from the crossing) win share falls further below its baseline, showing the reset amplifies the known geometric disadvantage; or any mechanical or counterplay gate fails.",
+        "rule_path": "succession.reset_positions",
+        "value": true
+      },
+      "status": "discard"
+    },
+    {
+      "automated_gates_passed": false,
+      "candidate_hash": "2a7b8826c1cf9336c8f975fa44a542d63b7f7bee83e18142931b67a77043dbd1",
+      "cycle": 3,
+      "kept": false,
+      "proposal": {
+        "hypothesis": "A cap of 3 makes saving impossible at the decisive moment: a prepared responder needs 2 Prestige for fee plus boost, leaving no room to also hold a support purchase, and counterleader and prestige_farmer waste 0.65 and 0.46 Prestige per game at the cap (baseline holdout). A cap of 4 lets a planner bank fee plus boost plus one support, so banking Prestige for the endgame becomes a real alternative to spending it immediately instead of a forced conversion.",
+        "prediction": "Prestige wasted at cap falls by at least half; responder affordability rises above 0.80 and contest offerings do not fall; prestige_farmer and early_support win shares move toward a quarter; first-challenger win share stays within five points of baseline; draws and median rounds stay within the frozen guards.",
+        "refutation_evidence": "Wasted-at-cap does not fall by half; or cancellations per game rise (a richer field buying more boosts would show the banking plan merely purchases more churn); or the first challenger's share rises past baseline plus five points; or any mechanical or counterplay gate fails on either suite.",
+        "rule_path": "glory.cap",
+        "value": 4
+      },
+      "status": "discard"
+    },
+    {
+      "automated_gates_passed": false,
+      "candidate_hash": "47f278873ddcb3d5a7e772dd8f51a4f8df0096d78044c355dc99eca8e13ea25c",
+      "cycle": 4,
+      "kept": false,
+      "proposal": {
+        "hypothesis": "At cap 3, a claim survives only after several proclaim-contest-cancel cycles drain three rivals' purses, which is why fee 1 still averages 7 to 8 canceled claims per game. A cap of 2 exhausts rival reserves after roughly one bought contest each, so a claim resolves in fewer cycles while the mandatory fee of 1 stays payable from a typical purse of 1 or 2 and counterplay remains legal and real. The boost (fee plus cost = the whole pocket) becomes a deliberate all-in instead of a routine purchase.",
+        "prediction": "Cancellations per game fall by at least 20% on both suites (the frozen bar); claims per game fall; contest_offered_rate stays above 0.60 and can_afford above 0.65; claims crowned without a legal contest stay below 0.10; median rounds fall or stay flat; draws stay within the frozen 0.02 increase.",
+        "refutation_evidence": "Cancellations do not fall 20%; or responder affordability drops below the 0.60 floor / offered below 0.50 (poverty closing counterplay, the fee-2 failure mode in miniature); or draws rise past the guard; or the first challenger's win share passes one half; or fewer than three profiles win.",
+        "rule_path": "glory.cap",
+        "value": 2
+      },
+      "status": "discard"
+    },
+    {
+      "automated_gates_passed": false,
+      "candidate_hash": "a29ff051921962774054274c28456f5d3bea4e7a10c7857f80672cfd3c3d4d75",
+      "cycle": 5,
+      "kept": false,
+      "proposal": {
+        "hypothesis": "At one Prestige per faction, support purchases are pocket change next to the six-item collection goal, so support is an expense players barely weigh. At two Prestige, each faction meeting place becomes a real save-or-buy decision against holding fee plus boost for a contest, and claim assembly slows, which should thin the proclamation churn.",
+        "prediction": "Support acquisitions per game fall by at least a quarter; Prestige spent on support shifts toward contests; claims per game fall; cancellations per game fall at least 20% (the frozen bar); median rounds and draws stay within the frozen guards; all four profiles still win.",
+        "refutation_evidence": "Cancellations do not fall 20%; or median rounds rise past the guard and draws rise past 0.02 (support becomes a tax that stretches games); or the prestige farmer or early support collapses below one win in ten; or any mechanical or counterplay gate fails.",
+        "rule_path": "succession.support_cost",
+        "value": 2
+      },
+      "status": "discard"
+    },
+    {
+      "automated_gates_passed": false,
+      "candidate_hash": "d241e6059f9dbc1a82a800ebfd73cfc1ab072ba882edfc2a8c9f588bfeb7fa21",
+      "cycle": 6,
+      "kept": false,
+      "proposal": {
+        "hypothesis": "The extra full round after the first checkpoint claim is mostly dead time for a family game: the claimant already has a complete set, and median city phase is 18 rounds. Ending the city phase at the close of the claim round should shorten games by about one round while the collection race keeps its decisions, because players who want to finish sets must plan to be near their last districts before the claim, not after it.",
+        "prediction": "Median rounds fall by about one on both suites; transition equipment of non-claimants falls by at most half an item on average; draws, cancellations, contest availability, and the winning profiles stay near baseline; the first challenger's win share rises by at most five points.",
+        "refutation_evidence": "Median rounds do not fall; or non-claimant transition equipment collapses (the round carried real catch-up decisions); or the first challenger's share rises past baseline plus five points (the head start grows); or any mechanical or counterplay gate fails.",
+        "rule_path": "level1.grace_full_rounds",
+        "value": 0
+      },
+      "status": "discard"
+    }
+  ],
+  "final_incumbent": {
+    "note": "recommendation is TEST CANDIDATE WITH HUMANS; live rules unchanged",
+    "path": "results/autoresearch-ar1-001/cycles/01/candidate-rules.json",
+    "provisional": true
+  },
+  "frozen_hashes": {
+    "ai_driver.py": "6445df06fda718a36704b58742a72c05e81229915e4167073af71390653fdc24",
+    "board.py": "af3af63540177532463d4b544548007e89d225e109aeff5c70093dbd8fd21c27",
+    "candidate_actions.py": "0c2fd82777200e5266a106c3d3a27ab53e3956ce125016ad07ba2e723fd616b9",
+    "decisions_policy.py": "e588be08a7db5b1b5a6e527bd126f5114a811db41277e11d3ab2021b6b5f1d1c",
+    "engine.py": "8f8aababa88a23c7f62a3ad26b65d6966fabfa42369fa49ad8321c36285f7679",
+    "policies.py": "dd086cac118de7963c7fbbca1b7438750f959b3c6fa49dd3550f84eca90f5da1",
+    "programme.md": "4e7d30bc77e19f1fbddf69ba25f024f5fcc7a4eeabd39902c892364fc660a6df",
+    "rules_v073_sixblocks_cardo.json": "a690cd17b3ac2878a2349f01cdae781bfe89589d3b5e18e234d6142eebce9805",
+    "rules_v08_succession.json": "892a1f6419fa05aa8ed333c8258ee67bed6ea7add8fb38df71133ac708a192b2",
+    "succession.py": "1be8bc65b121e46d310f2dc11160b7fa219e0e264bdcd22f726494986f8a2dc9",
+    "tests/test_succession.py": "f00ba2a58d9c31bc31b763949741d07e0469c0f5acdd71e7a242c0c3f1b7abca",
+    "tests/test_succession_decisions.py": "ae78b5908526cd642d4972d9475b28a09f2deacc9b046512062a9d424fd51f75",
+    "tools/autoresearch_run.py": "e4cf5d40ded693ce4fe948f2dd572e55fc8a4fa6a02f7dd8ba9b6ceb1bbbcf0c",
+    "tools/contest_audit.py": "f347424c7a18fbd92ccb3be7fcd0f7a05f0115c7f61b117768f125becd5aec5d",
+    "tools/succession_experiments.py": "e6c80b0ca6598459ed14e87aa0360e783ea3e9d7e3403e2283183071819db448",
+    "web/succession-bots.js": "de16fd94a6e507c19cf2b69a5f5ca143a97bdeba29de4b7b366f62d46e39ced2",
+    "web/succession-engine.js": "95cc3351ecba8a883eb01122d41c09ee6ab08fa9278fa2281710c809534704f1"
+  },
+  "incumbent": {
+    "hash": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6",
+    "origin": "configured-incumbent",
+    "path": "/home/agent/dioclet-autoresearch/ar-fee1-20261108/rules_v08_succession.json",
+    "screen_suite": {
+      "contest_audit": {
+        "afford_at_fee": {
+          "0": 1.0,
+          "1": 0.7822252374491181,
+          "2": 0.34328358208955223,
+          "3": 0.16010854816824965
+        },
+        "blocked_by_position_share": 0.12279511533242876,
+        "blocked_by_purse_share": 0.21777476255088196,
+        "boost_offered_rate": 0.27544097693351427,
+        "can_afford_fee_rate": 0.7822252374491181,
+        "chosen_contest_rate": 0.6594301221166893,
+        "chosen_given_offered": 1.0,
+        "claims": 736,
+        "claims_canceled": 0.8695652173913043,
+        "claims_contested": 0.9904891304347826,
+        "claims_crowned_without_legal_contest": 0.006793478260869565,
+        "claims_with_contest_option": 0.9904891304347826,
+        "claims_won_by_acclamation": 0.12771739130434784,
+        "contest_fee": 1,
+        "contest_offered_rate": 0.6594301221166893,
+        "contest_win_rate_when_chosen": 0.6584362139917695,
+        "games_replay_verified": 96,
+        "games_total": 96,
+        "interpretation": "Offered means a legal contest action existed on the response turn (within reach and purse). Not offered splits into purse-blocked and position-blocked. Cross-fee rows are counterfactual affordability of the observed purses, not replays under that fee.",
+        "response_prestige_median": 1.0,
+        "response_prestige_p25": 1,
+        "response_prestige_p75": 2,
+        "response_prestige_share": {
+          "0": 0.21777476255088196,
+          "1": 0.4389416553595658,
+          "2": 0.18317503392130258,
+          "3": 0.16010854816824965
+        },
+        "response_prestige_share_4plus": 0.0,
+        "response_turns": 1474,
+        "rules_hash": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+      },
+      "exit_code": 0,
+      "games": 96,
+      "label": "baseline-screen",
+      "metrics": {
+        "cancellation_rate": 0.8695652173913043,
+        "cancellations_per_game": 6.666666666666667,
+        "challenged_claim_fraction": 0.9904891304347826,
+        "claims_cancelled": 640,
+        "claims_made": 736,
+        "draw_fraction": 0.020833333333333332,
+        "finished_games": 96,
+        "incomplete_games": 0,
+        "median_rounds": 24.0,
+        "wins_by_strategy": {
+          "collector": 46,
+          "counterleader": 21,
+          "early_support": 21,
+          "prestige_farmer": 6
+        }
+      },
+      "out": "results/autoresearch-ar1-001/baseline-screen",
+      "rules_hash": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6",
+      "seconds": 8.8,
+      "seed_base": 200000
+    }
+  },
+  "policy_version": "succession-probes-0.8.0",
+  "tested_changes": [
+    [
+      "succession.challenge_bonus",
+      "1",
+      "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+    ],
+    [
+      "succession.reset_positions",
+      "true",
+      "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+    ],
+    [
+      "glory.cap",
+      "4",
+      "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+    ],
+    [
+      "glory.cap",
+      "2",
+      "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+    ],
+    [
+      "succession.support_cost",
+      "2",
+      "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+    ],
+    [
+      "level1.grace_full_rounds",
+      "0",
+      "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+    ]
+  ]
+}

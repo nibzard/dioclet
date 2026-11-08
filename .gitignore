@@ -35,3 +35,11 @@ results/v05_exp3/games/
 
 # Transient ledger lock
 results/v08-live-budget.json.lock
+
+# Autoresearch ar1 bulk bot game logs: suite aggregates, audits,
+# proposals, and decisions stay in git; full per-game logs and turn
+# logs are regenerable from seeds (see FINDINGS_AUTORESEARCH.md).
+# Live games are few and are kept whole as the cited evidence.
+results/autoresearch-ar1-001/**/base/
+!results/autoresearch-ar1-001/live/**/base/
+results/autoresearch-ar1-001/live/budget.json.lock

@@ -1,0 +1,25 @@
+{
+  "amends": "verdict.json (discard) recorded 2026-11-08",
+  "error": "The discard verdict compared the candidate against baseline suites from different seeds (first challenger 37.5% on 400000, farmer 16.7% on 400000) instead of the paired same-seed incumbent suites. Programme section 8 names this exact confound. The driver's checks were paired and correct; this analyst layer was not.",
+  "corrected_paired_numbers": {
+    "first_challenger_wins": "screen 55/96 -> 52/96 (candidate lower); holdout 41/96 -> 49/96 (+8 points, inconsistent across suites)",
+    "prestige_farmer_wins": "screen 6 -> 5; holdout 7 -> 11 (better, not worse)",
+    "cancellations_per_game": "screen -30.3%, holdout -25.5% (both clear the frozen 20% bar)",
+    "draws": "screen 0.021 -> 0.000; holdout 0.042 -> 0.021 (both improve)"
+  },
+  "confirmation_384_paired_fresh_seeds_600000": {
+    "cancellations_per_game": "8.00 -> 6.22 (-22.2%)",
+    "draws": "0.0365 -> 0.0208",
+    "median_rounds": "25 -> 24",
+    "contest_offered_rate": "0.679 -> 0.680",
+    "can_afford_fee_rate": "0.793 -> 0.798",
+    "claims_with_contest_option": "0.995 -> 0.995",
+    "claims_crowned_without_legal_contest": "0.0038 -> 0.0043",
+    "first_challenger_wins": "191/384 (49.7%) -> 194/384 (50.5%)",
+    "wins_by_strategy": {"collector": [125, 127], "early_support": [116, 110], "counterleader": [90, 91], "prestige_farmer": [39, 48]},
+    "boosted_contest_win_rate": "0.77 -> 0.65",
+    "replay_verified": "384/384 both arms"
+  },
+  "amended_status": "keep",
+  "conditions": "Provisional. The live ruleset stays rules_v08_succession.json (bonus 2). Release requires the human playtest gate (playtest/protocol-v08.md); no deployment, no rulebook change. Cycles 02-06 tested other knobs against the pre-amendment incumbent; if this candidate survives human playtests, a follow-up run should re-test the most informative knobs against the bonus-1 base."
+}

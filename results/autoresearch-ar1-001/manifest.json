@@ -1,0 +1,111 @@
+{
+  "branch": "autoresearch/ar-fee1-20261108",
+  "budget": {
+    "authorized": "offline compute only; no external proposal agents, no live Decisions, no deployments",
+    "note": "Hypotheses are formulated by the research agent (this session) and executed offline, per programme section 9.",
+    "paid_api_calls": 0
+  },
+  "config": {
+    "confirmation_seeds": "600000+",
+    "copy_of": "experiments/v08-programme.json (original untouched)",
+    "counterplay_veto": {
+      "maximum_claims_crowned_without_legal_contest": 0.25,
+      "minimum_baseline_afford_at_candidate_fee": 0.6,
+      "minimum_can_afford_rate": 0.6,
+      "minimum_claims_with_contest_option": 0.7,
+      "minimum_contest_offered_rate": 0.5
+    },
+    "cycles": 8,
+    "file": "experiments/autoresearch-ar1.json",
+    "games_per_suite": 96,
+    "holdout_seeds": "cycle N uses 400000 + 1000*N (401000..408000 ranges), fresh per cycle, never reused",
+    "promotion_thresholds": "identical to experiments/v08-programme.json (frozen)",
+    "screen_seeds": "200000-200095 (paired for incumbent and candidate every cycle)"
+  },
+  "created": "2026-11-08",
+  "engine_version": "succession-0.8.0",
+  "fee2_diagnostic": {
+    "audit_contrast_fee1_vs_fee2": {
+      "baseline_purses_affording_fee_2": "0.34",
+      "can_afford_fee_rate": "0.78 vs 0.44-0.46",
+      "claims_crowned_without_legal_contest": "0.004-0.007 vs 0.18-0.23",
+      "contest_offered_rate": "0.66-0.68 vs 0.33-0.34"
+    },
+    "conclusion": "The frozen evaluation cannot incorrectly promote the previously rejected fee-2 variant: every promotion decision now requires the preregistered counterplay veto, which rejects fee 2 on both suites with wide margins. Fee 0 and fee 2 additionally remain negative controls that bot evidence alone may never promote (programme section 3).",
+    "mechanical_note": "The existing mechanical checks alone WOULD again promote the known-bad fee-2 variant (0 draws, median 21 rounds, 4 winning profiles, challenged fraction 0.77-0.82 above the 0.15 floor). Scoring without the counterplay layer is confirmed insufficient for unattended selection.",
+    "mechanical_promotion": {
+      "holdout": true,
+      "screen": true
+    },
+    "veto_result": {
+      "holdout": "rejected (same three checks)",
+      "screen": "rejected (contest_offered_floor, responder_afford_floor, baseline_purse_affords_candidate_fee)"
+    },
+    "when": "before any candidate cycle (programme section 4 step 6)"
+  },
+  "final_outcome": {
+    "best_candidate": {
+      "change": "succession.challenge_bonus 2 -> 1",
+      "file": "BEST_CANDIDATE.json (archived rejected artifact)",
+      "rules_hash": "8bc693e98583e086c2deeaf95de239e8f3ae90bfa8e7bcf4c0f98e5f663a2a15",
+      "status": "passed offline gates and 384-game confirmation; rejected on live Decisions evidence; live rules remain rules_v08_succession.json"
+    },
+    "budget_spent_usd": 0.0,
+    "cycles_not_spent": "7-8, deliberately: remaining allowed values are negative controls, a dead option, or dominated extremes of tested directions",
+    "cycles_run": 6,
+    "games_total": "96+96 baseline, 96+96 diagnostic, 4 suites x 96 x 6 cycles, 2 confirmations x 384; every game replay-verified",
+    "live_exercise": {
+      "arms": "6 games +2 incumbent (seeds 700000+), 4 finished + 1 incomplete +1 candidate (seeds 710000+)",
+      "authorized": "user-approved $0.75 / 1,500 calls, 2026-11-08",
+      "calls": 1172,
+      "detail": "live/comparison.json",
+      "spent_usd": 0.4243055,
+      "verdict": "REJECT CANDIDATE; live players never buy the +1 boost; contests win 0.43 vs 0.82; first challenger won 4/4 finished games"
+    },
+    "recommendation": "KEEP V0.8",
+    "verdicts": {
+      "01_challenge_bonus_1": "keep offline (amended), then REJECT on live evidence (live/comparison.json)",
+      "02_reset_positions_true": "discard",
+      "03_glory_cap_4": "discard",
+      "04_glory_cap_2": "discard",
+      "05_support_cost_2": "discard",
+      "06_grace_0": "discard"
+    }
+  },
+  "frozen_sources": "see run-state.json frozen_hashes; covers tools/run_programme.py FROZEN_SOURCES plus tools/contest_audit.py, tools/autoresearch_run.py, programme.md",
+  "incumbent": {
+    "contest_cost": 1,
+    "file": "rules_v08_succession.json",
+    "glory_cap": 3,
+    "origin": "V0.8 release, main 9ef8952",
+    "rules_hash": "f6fb69a15aadd6c536643889618c2aed61b6f5264e6a96e6ce0a7eb48d32e2b6"
+  },
+  "instrumentation": {
+    "frozen_before_search": true,
+    "one_time_setup_exception": "tools/contest_audit.py added BEFORE the first candidate cycle. It re-runs every suite game deterministically (replay-verified: winner, turns, outcome must match the evaluator record) and audits every claim-response turn from public state: contest offered, fee affordable, boost offered, chosen action, duel outcome, responder Prestige, distance to claimant. The frozen evaluator tools/succession_experiments.py and all engine/policy files are unmodified; their hashes in run-state.json prove it."
+  },
+  "live_exercise": {
+    "arms": {
+      "bonus1": "BEST_CANDIDATE.json seeds 710000+",
+      "plus2": "rules_v08_succession.json seeds 700000+"
+    },
+    "authorized": "2026-11-08, user-approved cap $0.75 / 1,500 requests total, 6 games per arm",
+    "frozen_before_live_run": true,
+    "ledger": "results/autoresearch-ar1-001/live/budget.json",
+    "tool": "tools/live_contest_audit.py",
+    "tool_sha256": "8b9ad5d527a6328b1592179f598a8a625f229ba6d5d57b65685a002e5d1195a1",
+    "validated_against": "results/v08-live-001 (fee 2: 0 offered, all purse-blocked) and results/v08-live-002 (fee 1: 13 claims, 12 challenged, 9 canceled) in the main repository, read-only"
+  },
+  "policy_version": "succession-probes-0.8.0",
+  "programme": "Programme.md (supplied) installed as worktree programme.md, sha256 4e7d30bc77e19f1fbddf69ba25f024f5fcc7a4eeabd39902c892364fc660a6df; supersedes repository programme.md 9e66403c... The runner tools/run_programme.py reads REPO/programme.md (verified line 66); this worktree's copy is the active programme.",
+  "repo_sha": "9ef895223976a311cf50be71688e81545a4da55d",
+  "run": "autoresearch-ar1-001",
+  "tests": {
+    "jsdom_web_ui": "pass (jsdom available at /tmp/dioclet-ui-check)",
+    "node_succession_engine": "pass",
+    "node_succession_parity": "pass (12 sequences, 781 turns)",
+    "node_web_engine": "pass",
+    "python_unittest": "188 passed (worktree)"
+  },
+  "worktree": "/home/agent/dioclet-autoresearch/ar-fee1-20261108"
+}
