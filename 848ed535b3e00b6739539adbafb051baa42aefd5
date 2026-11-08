@@ -1,0 +1,21 @@
+# Review Notes (AR1 merge review, resolved 2026-11-08)
+
+## Summary
+Merge review of 5be5dcc found two integrity gaps; both fixed in 848ed53.
+
+## Findings and resolutions
+- Old runner lacked the counterplay veto: promotion_checks alone
+  promoted fee 2 twice. Fixed: every run_programme cycle now audits
+  each suite and requires the frozen availability floors; config may
+  tighten but not remove them. Regression tests pin the recorded
+  fee-2 diagnostic numbers (mechanical pass, veto fail, gate reject).
+- live/comparison.json said 0.75 cancellations per game for the +1
+  candidate; FINDINGS said 0.25. Root cause: the audit counted the
+  stopped fifth game (3 claims, 2 cancellations) over a denominator
+  of finished games. Fixed: finished-games scope only, plus purse
+  reconstruction from all turns' Prestige events. Correct figure is
+  0.25. Boost clarification added: at +2 bought on 4 of 4 affordable
+  contests; at +1 never affordable (0 of 4 contests).
+
+## Verdict
+Resolved. KEEP V0.8 recommendation unchanged.
