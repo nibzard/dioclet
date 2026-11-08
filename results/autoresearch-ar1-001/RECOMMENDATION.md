@@ -6,9 +6,10 @@ phases, positions preserved, one grace round.
 
 Six offline one-change cycles found no promotable improvement. The
 single offline survivor (challenge bonus 2 to 1) was rejected by the
-authorized live Decisions comparison: live players never bought the
-+1 boost, contest success halved, and the endgame drifted toward
-first-claim coronation. Spent $0.4243 of the authorized $0.75.
+authorized live Decisions comparison: with live-thin purses the
+weaker boost could not carry contests (1 of 4 succeeded versus 23
+of 28 at +2), cancellations nearly vanished, and the endgame
+drifted toward first-claim coronation. Spent $0.4243 of the authorized $0.75.
 
 Next step is the unchanged game at the table: run
 `playtest/protocol-v08.md`. `PLAYTEST_COMPARISON.md` in this

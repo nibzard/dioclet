@@ -133,6 +133,81 @@ class PromotionChecks(unittest.TestCase):
         self.assertNotIn("cancellation_reduction", names)
 
 
+class CounterplayVeto(unittest.TestCase):
+    """The fee-2 regression: mechanical checks alone promoted it twice.
+
+    Audit literals below are the recorded AR1 values from
+    results/autoresearch-ar1-001 (2026-11-08): the fee-2 diagnostic
+    suites and the fee-1 baseline screen.
+    """
+
+    FEE2_SCREEN_AUDIT = {"contest_fee": 2, "contest_offered_rate": 0.3429003021144036,
+                         "claims_with_contest_option": 0.8166666666666667,
+                         "can_afford_fee_rate": 0.4607250755287009,
+                         "claims_crowned_without_legal_contest": 0.18333333333333332}
+    FEE2_HOLDOUT_AUDIT = {"contest_fee": 2, "contest_offered_rate": 0.32840236686390534,
+                          "claims_with_contest_option": 0.7670682730923695,
+                          "can_afford_fee_rate": 0.4408284023668639,
+                          "claims_crowned_without_legal_contest": 0.23293172690763053}
+    FEE1_BASELINE_AUDIT = {"contest_fee": 1, "contest_offered_rate": 0.6594301221166893,
+                           "claims_with_contest_option": 0.9904891304347826,
+                           "can_afford_fee_rate": 0.7822252374491181,
+                           "claims_crowned_without_legal_contest": 0.006793478260869565,
+                           "afford_at_fee": {"0": 1.0, "1": 0.7822252374491181,
+                                             "2": 0.34328358208955223,
+                                             "3": 0.16010854816824965}}
+
+    def metrics(self, draws, rounds, claims, cancelled, challenged):
+        return {"finished_games": 96, "incomplete_games": 0, "draw_fraction": draws,
+                "median_rounds": rounds,
+                "wins_by_strategy": {name: 10 for name in
+                                     ("collector", "early_support", "prestige_farmer", "counterleader")},
+                "claims_made": claims, "claims_cancelled": cancelled,
+                "challenged_claim_fraction": challenged,
+                "cancellation_rate": cancelled / claims,
+                "cancellations_per_game": cancelled / 96}
+
+    def test_defaults_match_the_frozen_ar1_config(self):
+        ar1 = json.loads(Path("experiments/autoresearch-ar1.json").read_text())
+        configured = {k: v for k, v in ar1["counterplay_veto"].items() if k != "rationale"}
+        self.assertEqual(rp.DEFAULT_COUNTERPLAY_VETO, configured)
+
+    def test_fee1_baseline_audit_passes_the_veto(self):
+        checks = rp.counterplay_veto(self.FEE1_BASELINE_AUDIT, self.FEE1_BASELINE_AUDIT)
+        self.assertTrue(all(c["passed"] for c in checks), checks)
+
+    def test_fee2_cannot_be_promoted_despite_passing_mechanical_checks(self):
+        promo = json.loads(Path("experiments/v08-programme.json").read_text())["promotion"]
+        # Recorded diagnostic suite metrics: the incumbent is the fee-1
+        # baseline, the candidate is fee 2.
+        suites = (("screen",
+                   self.metrics(0.0208, 24, 736, 640, 0.990),
+                   self.metrics(0.0, 21, 240, 144, 0.817),
+                   self.FEE2_SCREEN_AUDIT),
+                  ("holdout",
+                   self.metrics(0.03125, 25, 778, 683, 0.993),
+                   self.metrics(0.0, 21, 249, 153, 0.767),
+                   self.FEE2_HOLDOUT_AUDIT))
+        for label, incumbent, candidate, audit in suites:
+            mechanical = rp.promotion_checks(incumbent, candidate, promo)
+            self.assertTrue(all(c["passed"] for c in mechanical),
+                            (label, mechanical))  # the historical trap
+            veto = rp.counterplay_veto(audit, self.FEE1_BASELINE_AUDIT)
+            failed = {c["check"] for c in veto if not c["passed"]}
+            self.assertIn("contest_offered_floor", failed)
+            self.assertIn("responder_afford_floor", failed)
+            self.assertIn("baseline_purse_affords_candidate_fee", failed)
+            # The runner's gate is the conjunction; fee 2 cannot pass it.
+            self.assertFalse(all(c["passed"] for c in mechanical + veto))
+
+    def test_config_can_tighten_but_not_remove_the_veto(self):
+        strict = {"minimum_contest_offered_rate": 0.90}
+        checks = rp.counterplay_veto(self.FEE1_BASELINE_AUDIT, self.FEE1_BASELINE_AUDIT,
+                                     strict)
+        self.assertIn("contest_offered_floor",
+                      {c["check"] for c in checks if not c["passed"]})
+
+
 class ScriptedProposals(unittest.TestCase):
     def test_every_scripted_proposal_is_permitted_and_labeled(self):
         rules = {"succession": {"contest_cost": 0, "support_cost": 1, "challenge_bonus": 2},

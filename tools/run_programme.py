@@ -43,6 +43,14 @@ contradicts the paired counterplay floor: a candidate can keep 99%
 of claims challenged, cut cancellations per game by three quarters,
 and still fail. The revision to per-game volume was made before any
 model proposal cycle ran, and this note records the change.
+
+Counterplay veto (added 2026-11-08 after the AR1 review): the
+mechanical checks above promoted the known-bad fee-2 variant twice,
+because bots keep healthy metrics while no responder can legally
+afford a contest. Every cycle now also runs the replay-verified
+contest audit (tools/contest_audit.py) on each suite and applies the
+frozen availability floors in DEFAULT_COUNTERPLAY_VETO before a
+candidate may be promoted. See results/autoresearch-ar1-001.
 """
 
 import argparse
@@ -60,6 +68,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 import engine
+from tools import contest_audit
 from tools import succession_experiments
 
 CLAUDE = Path(os.environ.get("CLAUDE_BIN", "/home/agent/.local/bin/claude"))
@@ -200,6 +209,73 @@ def promotion_checks(incumbent, candidate, promo):
             f"incumbent cancels {incumbent['cancellations_per_game']:.1f} claims per game; "
             f"candidate {candidate['cancellations_per_game']:.1f} must reach {target:.1f}")
     return checks
+
+
+# Counterplay-availability veto, added after the AR1 review on
+# 2026-11-08. The mechanical checks above promoted the known-bad
+# fee-2 variant in results/v08-programme-001 cycle 2 and again in the
+# AR1 fee-2 diagnostic (results/autoresearch-ar1-001/diagnostic):
+# bot metrics stay healthy while no responder can legally afford a
+# contest. These floors were preregistered and frozen in the AR1 run
+# before any candidate cycle; a programme config may override them
+# through a "counterplay_veto" object with the same keys, but it
+# cannot remove the veto itself.
+DEFAULT_COUNTERPLAY_VETO = {
+    "minimum_contest_offered_rate": 0.50,
+    "minimum_claims_with_contest_option": 0.70,
+    "minimum_can_afford_rate": 0.60,
+    "maximum_claims_crowned_without_legal_contest": 0.25,
+    "minimum_baseline_afford_at_candidate_fee": 0.60,
+}
+
+
+def counterplay_veto(candidate_audit, baseline_audit, veto=None, contest_fee=None):
+    """Legal contest-availability veto; every check must pass.
+
+    ``candidate_audit`` is a contest-audit summary produced by
+    tools/contest_audit.py (offline suites, replay-verified) or
+    tools/live_contest_audit.py (live suites). ``baseline_audit`` is
+    the incumbent reference audit; its afford_at_fee table answers
+    which fee levels the incumbent's actual response purses could
+    pay, which is what caught fee 2.
+    """
+    floors = {**DEFAULT_COUNTERPLAY_VETO, **(veto or {})}
+    fee = contest_fee if contest_fee is not None else candidate_audit.get("contest_fee")
+    checks = []
+
+    def add(name, ok, detail):
+        checks.append({"check": name, "passed": bool(ok), "detail": detail})
+
+    offered = candidate_audit.get("contest_offered_rate")
+    add("contest_offered_floor",
+        offered is not None and offered >= floors["minimum_contest_offered_rate"],
+        f"contests offered on {offered} of response turns, floor {floors['minimum_contest_offered_rate']}")
+    claims_option = candidate_audit.get("claims_with_contest_option")
+    add("claims_with_contest_option_floor",
+        claims_option is not None and claims_option >= floors["minimum_claims_with_contest_option"],
+        f"{claims_option} of claims ever had a legal contest, floor {floors['minimum_claims_with_contest_option']}")
+    afford = candidate_audit.get("can_afford_fee_rate")
+    add("responder_afford_floor",
+        afford is not None and afford >= floors["minimum_can_afford_rate"],
+        f"responders able to pay the fee on {afford} of response turns, floor {floors['minimum_can_afford_rate']}")
+    crowned = candidate_audit.get("claims_crowned_without_legal_contest")
+    add("no_poverty_coronation",
+        crowned is not None and crowned <= floors["maximum_claims_crowned_without_legal_contest"],
+        f"{crowned} of claims crowned with no legal contest ever offered, ceiling "
+        f"{floors['maximum_claims_crowned_without_legal_contest']}")
+    if baseline_audit and fee is not None:
+        base_afford = baseline_audit.get("afford_at_fee", {}).get(str(fee))
+        add("baseline_purse_affords_candidate_fee",
+            base_afford is not None and base_afford >= floors["minimum_baseline_afford_at_candidate_fee"],
+            f"{base_afford} of incumbent response purses could pay fee {fee}, "
+            f"floor {floors['minimum_baseline_afford_at_candidate_fee']}")
+    return checks
+
+
+def audit_suite(suite):
+    """Attach a replay-verified contest audit to one suite record."""
+    suite["contest_audit"] = contest_audit.audit_suite(Path(suite["out"]) / "base")
+    return suite
 
 
 def turn_examples(choices_path, limit=10):
@@ -470,6 +546,9 @@ def main(argv=None):
     stopped = None
     history = []
     tested_changes = set()
+    baseline_audit = None   # configured incumbent's screen audit; the
+    # cross-fee affordability guard compares every candidate fee against
+    # the response purses actually observed under this baseline.
 
     def stop(cycle, reason, detail=None):
         nonlocal stopped
@@ -562,6 +641,10 @@ def main(argv=None):
                 stop(cycle_no, "incomplete_screen_suite", suite["label"])
         if stopped:
             break
+        for suite in (incumbent["screen_suite"], screen_candidate):
+            audit_suite(suite)
+        if baseline_audit is None:
+            baseline_audit = incumbent["screen_suite"]["contest_audit"]
 
         # 4. Fresh holdout seeds for every cycle; never tune on a seen holdout.
         holdout_seed = cfg["holdout_seed_base"] + (cycle_no - 1) * HOLDOUT_STRIDE
@@ -576,28 +659,44 @@ def main(argv=None):
                 stop(cycle_no, "incomplete_holdout_suite", suite["label"])
         if stopped:
             break
+        for suite in (holdout_incumbent, holdout_candidate):
+            audit_suite(suite)
         if source_hashes() != hashes:
             stop(cycle_no, "source_hashes_changed", "verified after the suites")
             break
 
-        # 5. Promotion checks on both suites.
+        # 5. Promotion checks on both suites: mechanical guards plus
+        #    the counterplay-availability veto on the candidate's
+        #    replay-verified audits.
         promo = cfg["promotion"]
+        veto_cfg = cfg.get("counterplay_veto")
+        candidate_fee = candidate_rules["succession"].get("contest_cost")
         screen_checks = promotion_checks(incumbent["screen_suite"]["metrics"],
                                          screen_candidate["metrics"], promo)
         holdout_checks = promotion_checks(holdout_incumbent["metrics"],
                                           holdout_candidate["metrics"], promo)
+        screen_veto = counterplay_veto(screen_candidate["contest_audit"],
+                                       baseline_audit, veto_cfg, candidate_fee)
+        holdout_veto = counterplay_veto(holdout_candidate["contest_audit"],
+                                        baseline_audit, veto_cfg, candidate_fee)
         evidence_ok = all(
             suite["metrics"]["finished_games"] == games and
             suite["metrics"]["incomplete_games"] == 0
             for suite in (incumbent["screen_suite"], screen_candidate,
-                          holdout_incumbent, holdout_candidate))
-        promoted = evidence_ok and all(c["passed"] for c in screen_checks + holdout_checks)
-        failed_screen = [c for c in screen_checks if not c["passed"]]
-        failed_holdout = [c for c in holdout_checks if not c["passed"]]
+                          holdout_incumbent, holdout_candidate)) and all(
+                suite["contest_audit"]["games_replay_verified"] ==
+                suite["contest_audit"]["games_total"]
+                for suite in (incumbent["screen_suite"], screen_candidate,
+                              holdout_incumbent, holdout_candidate))
+        promoted = (evidence_ok and
+                    all(c["passed"] for c in screen_checks + holdout_checks +
+                        screen_veto + holdout_veto))
+        failed_screen = [c for c in screen_checks + screen_veto if not c["passed"]]
+        failed_holdout = [c for c in holdout_checks + holdout_veto if not c["passed"]]
         if not evidence_ok:
             reason = "insufficient_evidence"
         elif promoted:
-            reason = "all binding promotion checks passed on screen and holdout"
+            reason = "all binding promotion and counterplay checks passed on screen and holdout"
         else:
             names = sorted({c["check"] for c in failed_screen + failed_holdout})
             reason = (f"failed {len(failed_screen)} screen and {len(failed_holdout)} "
@@ -605,7 +704,8 @@ def main(argv=None):
                       "(details in checks below)")
         decision = {"cycle": cycle_no, "agent": proposal["agent"], "proposal": proposal,
                     "promoted": promoted, "reason": reason,
-                    "checks": {"screen": screen_checks, "holdout": holdout_checks},
+                    "checks": {"screen": screen_checks + screen_veto,
+                               "holdout": holdout_checks + holdout_veto},
                     "metrics": {"screen": screen_candidate["metrics"],
                                 "holdout": holdout_candidate["metrics"],
                                 "incumbent_screen": incumbent["screen_suite"]["metrics"],

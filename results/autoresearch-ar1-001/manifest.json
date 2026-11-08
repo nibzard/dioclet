@@ -55,12 +55,13 @@
     "cycles_run": 6,
     "games_total": "96+96 baseline, 96+96 diagnostic, 4 suites x 96 x 6 cycles, 2 confirmations x 384; every game replay-verified",
     "live_exercise": {
+      "ar1_1_erratum": "claim statistics first included the stopped fifth game of the +1 arm; corrected to finished games only (0.75 -> 0.25 cancellations per game) and purse reconstruction now tracks defender awards; see live/comparison.json erratum block",
       "arms": "6 games +2 incumbent (seeds 700000+), 4 finished + 1 incomplete +1 candidate (seeds 710000+)",
       "authorized": "user-approved $0.75 / 1,500 calls, 2026-11-08",
       "calls": 1172,
       "detail": "live/comparison.json",
       "spent_usd": 0.4243055,
-      "verdict": "REJECT CANDIDATE; live players never buy the +1 boost; contests win 0.43 vs 0.82; first challenger won 4/4 finished games"
+      "verdict": "REJECT CANDIDATE; finished-game scope: contests won 1 of 4 vs 23 of 28 at +2; cancellations 0.25 vs 3.83 per game; acclamations 80% vs 18%; first challenger won 4/4"
     },
     "recommendation": "KEEP V0.8",
     "verdicts": {

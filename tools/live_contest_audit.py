@@ -32,39 +32,48 @@ sys.path.insert(0, str(REPO))
 import engine
 
 
-def audit_game(variant_dir, record, choices):
+def audit_game(variant_dir, record, choices, rules):
     game_id = record["game_id"]
     game_dir = variant_dir / game_id
+    fee = rules["succession"].get("contest_cost", 0)
+    boost_price = fee + rules["succession"]["challenge_cost"]
     events = [json.loads(line) for line in (game_dir / "events.jsonl").open(encoding="utf-8") if line.strip()]
-    turn_events = {e["turn_id"]: e for e in events}
-    last_purse = {pid: 0 for pid in ("P0", "P1", "P2", "P3")}
-    rows, claims = [], []
-    for choice in choices:
-        if choice["game_id"] != game_id:
-            continue
-        pending = choice.get("pending_claim")
-        turn = turn_events.get(choice["turn_id"])
-        if turn:
-            purse_before = last_purse[choice["player"]]
-            if turn.get("prestige_after") is not None:
-                last_purse[choice["player"]] = turn["prestige_after"]
-        if not pending or pending["player"] == choice["player"] or turn is None:
-            continue
-        action = turn.get("action", {})
-        duel_events = [e for e in turn.get("events", []) if e["type"] == "duel"]
-        my_duel = next((e for e in duel_events if e["attacker"] == choice["player"]), None)
-        chosen_contest = bool(action.get("kind") == "duel" and action.get("target") == pending["player"])
-        row = {
-            "game_id": game_id, "turn_id": choice["turn_id"], "responder": choice["player"],
-            "claim_id": pending["claim_id"], "claimant": pending["player"],
-            "responder_prestige_before": purse_before,
-            "contest_offered": "counterclaim" in choice["available_categories"],
-            "chosen_contest": chosen_contest,
-            "chosen_boost": bool(chosen_contest and action.get("spend_prestige")),
-            "contest_won": bool(my_duel and my_duel["winner"] == choice["player"]) if chosen_contest else None,
-            "claim_cancelled_this_turn": any(e["type"] == "claim_cancelled" for e in turn.get("events", [])),
-        }
-        rows.append(row)
+    choices_by_turn = {c["turn_id"]: c for c in choices if c["game_id"] == game_id}
+    # Walk the event log itself: Prestige changes on any turn (a
+    # defender wins a duel reward on the attacker's turn), so purses
+    # must advance on every evented turn, whether or not a choices
+    # row exists for it.
+    purse = {pid: 0 for pid in ("P0", "P1", "P2", "P3")}
+    rows = []
+
+    def apply_turn_prestige(turn):
+        for event in turn.get("events", []):
+            if event["type"] == "prestige_earned":
+                purse[event["player"]] += event["amount"]
+            elif event["type"] == "prestige_spent":
+                purse[event["player"]] -= event["amount"]
+
+    for turn in sorted(events, key=lambda e: e["turn_id"]):
+        choice = choices_by_turn.get(turn["turn_id"])
+        pending = (choice or {}).get("pending_claim")
+        if choice and pending and pending["player"] != choice["player"]:
+            action = turn.get("action", {})
+            duel_events = [e for e in turn.get("events", []) if e["type"] == "duel"]
+            my_duel = next((e for e in duel_events if e["attacker"] == choice["player"]), None)
+            chosen_contest = bool(action.get("kind") == "duel" and action.get("target") == pending["player"])
+            rows.append({
+                "game_id": game_id, "turn_id": turn["turn_id"], "responder": choice["player"],
+                "claim_id": pending["claim_id"], "claimant": pending["player"],
+                "responder_prestige_before": purse[choice["player"]],
+                "contest_offered": "counterclaim" in choice["available_categories"],
+                "can_afford_boost": purse[choice["player"]] >= boost_price,
+                "chosen_contest": chosen_contest,
+                "chosen_boost": bool(chosen_contest and action.get("spend_prestige")),
+                "contest_won": bool(my_duel and my_duel["winner"] == choice["player"]) if chosen_contest else None,
+                "claim_cancelled_this_turn": any(e["type"] == "claim_cancelled" for e in turn.get("events", [])),
+            })
+        apply_turn_prestige(turn)
+    claims = []
     for turn in events:
         for event in turn.get("events", []):
             if event["type"] == "claim_proclaimed":
@@ -104,6 +113,7 @@ def summarize(rows, claims, games, rules):
     rounds = [g["result"]["total_rounds"] for g in finished]
     return {
         "provider": "live-decisions",
+        "claim_statistics_scope": "finished_games",
         "games_total": len(games),
         "finished": len(finished),
         "incomplete": len(games) - len(finished),
@@ -119,8 +129,12 @@ def summarize(rows, claims, games, rules):
         "chosen_given_offered": (sum(1 for r in rows if r["chosen_contest"] and r["contest_offered"])
                                  / sum(1 for r in rows if r["contest_offered"]))
                                 if any(r["contest_offered"] for r in rows) else None,
+        "can_afford_boost_rate": rate(lambda r: r["can_afford_boost"]),
         "boost_share_of_contests": (sum(1 for r in rows if r["chosen_boost"]) / sum(1 for r in rows if r["chosen_contest"]))
                                    if any(r["chosen_contest"] for r in rows) else None,
+        "boost_affordable_share_of_contests": (sum(1 for r in rows if r["can_afford_boost"])
+                                               / sum(1 for r in rows if r["chosen_contest"]))
+                                              if any(r["chosen_contest"] for r in rows) else None,
         "contest_win_rate_when_chosen": (sum(1 for r in rows if r["contest_won"])
                                          / sum(1 for r in rows if r["chosen_contest"]))
                                         if any(r["chosen_contest"] for r in rows) else None,
@@ -135,7 +149,12 @@ def summarize(rows, claims, games, rules):
         "afford_at_fee": {str(f): (sum(1 for p in purses if p >= f) / len(purses)) if purses else None
                           for f in (0, 1, 2)},
         "interpretation": "Live Decisions games are recorded evidence, not replays. Offered means the "
-                          "counterclaim category appeared in the responder's public legal categories.",
+                          "counterclaim category appeared in the responder's public legal categories. "
+                          "Claim and cancellation statistics cover finished games only, matching the "
+                          "evaluator's claim_statistics_scope; rows from a stopped incomplete game are "
+                          "excluded (the AR1.1 erratum records why). A contested claim is a claim with "
+                          "at least one chosen contest; boost affordability is a separate question "
+                          "(responder Prestige at or above fee plus challenge cost).",
     }
 
 
@@ -144,9 +163,10 @@ def audit_suite(variant_dir, out_json=None):
     rules = engine.load_rules(str(variant_dir / "rules.json"))
     games = [json.loads(line) for line in (variant_dir / "games.jsonl").open(encoding="utf-8") if line.strip()]
     choices = [json.loads(line) for line in (variant_dir / "choices.jsonl").open(encoding="utf-8") if line.strip()]
+    finished_games = [g for g in games if g["status"] == "finished"]
     rows, claims = [], []
-    for record in games:
-        game_rows, game_claims = audit_game(variant_dir, record, choices)
+    for record in finished_games:
+        game_rows, game_claims = audit_game(variant_dir, record, choices, rules)
         rows.extend(game_rows)
         claims.extend(game_claims)
     summary = summarize(rows, claims, games, rules)

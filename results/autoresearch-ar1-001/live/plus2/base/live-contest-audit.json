@@ -2,15 +2,18 @@
   "afford_at_fee": {
     "0": 1.0,
     "1": 0.4666666666666667,
-    "2": 0.016666666666666666
+    "2": 0.06666666666666667
   },
   "blocked_by_position_share": 0.0,
   "blocked_by_purse_share": 0.5333333333333333,
+  "boost_affordable_share_of_contests": 0.14285714285714285,
   "boost_share_of_contests": 0.14285714285714285,
+  "can_afford_boost_rate": 0.06666666666666667,
   "cancellations_per_game": 3.8333333333333335,
   "challenge_cost": 1,
   "chosen_contest_rate": 0.4666666666666667,
   "chosen_given_offered": 1.0,
+  "claim_statistics_scope": "finished_games",
   "claims": 28,
   "claims_canceled": 0.8214285714285714,
   "claims_challenged": 0.8928571428571429,
@@ -24,13 +27,13 @@
   "finished": 6,
   "games_total": 6,
   "incomplete": 0,
-  "interpretation": "Live Decisions games are recorded evidence, not replays. Offered means the counterclaim category appeared in the responder's public legal categories.",
+  "interpretation": "Live Decisions games are recorded evidence, not replays. Offered means the counterclaim category appeared in the responder's public legal categories. Claim and cancellation statistics cover finished games only, matching the evaluator's claim_statistics_scope; rows from a stopped incomplete game are excluded (the AR1.1 erratum records why). A contested claim is a claim with at least one chosen contest; boost affordability is a separate question (responder Prestige at or above fee plus challenge cost).",
   "median_rounds": 32.0,
   "provider": "live-decisions",
   "response_prestige_share": {
     "0": 0.5333333333333333,
-    "1": 0.45,
-    "2": 0.016666666666666666,
+    "1": 0.4,
+    "2": 0.06666666666666667,
     "3": 0.0
   },
   "response_turns": 60,

@@ -10,8 +10,8 @@ offline game was re-run and replay-verified by the frozen audit tool.
 (fee 1, boost +2). The one offline survivor, `succession.challenge_bonus`
 2 to 1, passed every preregistered offline gate and a 384-game
 confirmation, then failed the live Decisions comparison
-(section 8): live players never buy a +1 boost, contests halve in
-effectiveness, and the endgame drifts toward first-claim coronation.
+(section 8): live contests stop succeeding under the same empty
+purses, and the endgame drifts toward first-claim coronation.
 `BEST_CANDIDATE.json` is retained as an archived rejected artifact.
 No rule change is recommended; the remaining questions go to human
 playtests of the unchanged game.
@@ -201,21 +201,45 @@ the run and validated against the published V0.8 live probes
 | Live measure, finished games | +2 incumbent | +1 candidate |
 | --- | ---: | ---: |
 | Claims per game | 4.67 | 1.25 |
-| Contests offered per response turn | 0.47 | 0.32 |
-| Contest win rate when chosen | 0.82 | 0.43 |
-| Boost purchases | 14% of contests | 0 of 3 |
+| Contests offered per response turn | 0.47 | 0.24 |
+| Contests chosen (turn level) | 28 | 4 |
+| Contest win rate when chosen | 0.82 | 0.25 |
+| Contests where the boost was affordable | 4 of 28 | 0 of 4 |
+| Boost purchases | 4 of 4 affordable | 0 of 0 affordable |
 | Cancellations per game | 3.83 | 0.25 |
-| Claims crowned by acclamation | 18% | 50% |
+| Claims crowned by acclamation | 18% | 80% |
 | First challenger won | 0 of 5 | 4 of 4 |
 | Median rounds | 32 | 19 |
 
-Every counterplay measure moved the same way. Live players hold thin
-purses (53 to 68% of response turns at zero Prestige) and rarely buy
-boosts; at +1 nobody did, so contests ran unboosted against a
-fully-equipped claimant and usually lost. The offline gain came from
-bots that auto-buy the boost on 82% of affordable turns. This is the
-fee-2 lesson again in miniature: scripted policies can mask an
-affordability-adjacent failure that live play exposes.
+Boost affordability is separate from contest volume: the boost costs
+fee 1 plus challenge cost 1 in both arms. At +2, the four responders
+who could afford it bought it every time — still an automatic
+purchase when affordable. At +1, no responder at a contest ever held
+2 Prestige, so the zero purchases reflect empty purses, not revealed
+preference against the weaker boost.
+
+**AR1.1 erratum.** The first version of this table and of
+`live/comparison.json` counted claims and cancellations from all
+games, including the +1 arm's stopped fifth game (which held 3
+claims and 2 cancellations), while dividing by finished games. That
+produced 0.75 cancellations per game instead of 0.25, and 50%
+acclamations instead of 80%. Claim statistics now cover finished
+games only, matching the evaluator's `claim_statistics_scope`.
+Response purses are also reconstructed from every turn's Prestige
+events; the first version missed rewards a defender earns on the
+attacker's turn. The verdict is unchanged; the incomplete game is
+preserved whole in `live/bonus1/base/`.
+
+Every counterplay measure moved the same way. Live response purses
+are thin (53% and 76% of turns at zero Prestige), so live contests
+almost always run unboosted; at +2 the few affordable boosts were
+bought and won, holding contest success at 82%. At +1 the same empty
+purses meet a weaker boost, contest success falls to 25%, and the
+first claim usually survives to acclamation. The offline gain came
+from bots that auto-buy the boost on 82% of affordable turns and
+hold richer purses than live players. This is the fee-2 lesson again
+in miniature: scripted policies can mask an affordability-adjacent
+failure that live play exposes.
 
 Why this is a rejection rather than a mechanical veto: the offline
 counterplay floors were calibrated on bot purses, and live purses are

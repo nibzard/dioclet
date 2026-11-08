@@ -3,54 +3,60 @@
     "bonus1_candidate_finished_games_only": {
       "afford_at_fee": {
         "0": 1.0,
-        "1": 0.3181818181818182,
+        "1": 0.23529411764705882,
         "2": 0.0
       },
       "blocked_by_position_share": 0.0,
-      "blocked_by_purse_share": 0.6818181818181818,
+      "blocked_by_purse_share": 0.7647058823529411,
+      "boost_affordable_share_of_contests": 0.0,
       "boost_share_of_contests": 0.0,
-      "cancellations_per_game": 0.75,
+      "can_afford_boost_rate": 0.0,
+      "cancellations_per_game": 0.25,
       "challenge_cost": 1,
-      "chosen_contest_rate": 0.3181818181818182,
+      "chosen_contest_rate": 0.23529411764705882,
       "chosen_given_offered": 1.0,
-      "claims": 8,
-      "claims_canceled": 0.375,
-      "claims_challenged": 0.75,
-      "claims_crowned_without_legal_contest": 0.25,
-      "claims_with_contest_option": 0.75,
-      "claims_won_by_acclamation": 0.5,
+      "claim_statistics_scope": "finished_games",
+      "claims": 5,
+      "claims_canceled": 0.2,
+      "claims_challenged": 0.6,
+      "claims_crowned_without_legal_contest": 0.4,
+      "claims_with_contest_option": 0.6,
+      "claims_won_by_acclamation": 0.8,
       "contest_fee": 1,
-      "contest_offered_rate": 0.3181818181818182,
-      "contest_win_rate_when_chosen": 0.42857142857142855,
+      "contest_offered_rate": 0.23529411764705882,
+      "contest_win_rate_when_chosen": 0.25,
       "draws": 0,
       "finished": 4,
       "games_total": 5,
       "incomplete": 1,
-      "interpretation": "Live Decisions games are recorded evidence, not replays. Offered means the counterclaim category appeared in the responder's public legal categories.",
+      "interpretation": "Live Decisions games are recorded evidence, not replays. Offered means the counterclaim category appeared in the responder's public legal categories. Claim and cancellation statistics cover finished games only, matching the evaluator's claim_statistics_scope; rows from a stopped incomplete game are excluded (the AR1.1 erratum records why). A contested claim is a claim with at least one chosen contest; boost affordability is a separate question (responder Prestige at or above fee plus challenge cost).",
       "median_rounds": 19.0,
       "provider": "live-decisions",
       "response_prestige_share": {
-        "0": 0.6818181818181818,
-        "1": 0.3181818181818182,
+        "0": 0.7647058823529411,
+        "1": 0.23529411764705882,
         "2": 0.0,
         "3": 0.0
       },
-      "response_turns": 22,
+      "response_turns": 17,
       "rules_hash": "8bc693e98583e086c2deeaf95de239e8f3ae90bfa8e7bcf4c0f98e5f663a2a15"
     },
     "plus2_incumbent": {
       "afford_at_fee": {
         "0": 1.0,
         "1": 0.4666666666666667,
-        "2": 0.016666666666666666
+        "2": 0.06666666666666667
       },
       "blocked_by_position_share": 0.0,
       "blocked_by_purse_share": 0.5333333333333333,
+      "boost_affordable_share_of_contests": 0.14285714285714285,
       "boost_share_of_contests": 0.14285714285714285,
+      "can_afford_boost_rate": 0.06666666666666667,
       "cancellations_per_game": 3.8333333333333335,
       "challenge_cost": 1,
       "chosen_contest_rate": 0.4666666666666667,
       "chosen_given_offered": 1.0,
+      "claim_statistics_scope": "finished_games",
       "claims": 28,
       "claims_canceled": 0.8214285714285714,
       "claims_challenged": 0.8928571428571429,
@@ -64,13 +70,13 @@
       "finished": 6,
       "games_total": 6,
       "incomplete": 0,
-      "interpretation": "Live Decisions games are recorded evidence, not replays. Offered means the counterclaim category appeared in the responder's public legal categories.",
+      "interpretation": "Live Decisions games are recorded evidence, not replays. Offered means the counterclaim category appeared in the responder's public legal categories. Claim and cancellation statistics cover finished games only, matching the evaluator's claim_statistics_scope; rows from a stopped incomplete game are excluded (the AR1.1 erratum records why). A contested claim is a claim with at least one chosen contest; boost affordability is a separate question (responder Prestige at or above fee plus challenge cost).",
       "median_rounds": 32.0,
       "provider": "live-decisions",
       "response_prestige_share": {
         "0": 0.5333333333333333,
-        "1": 0.45,
-        "2": 0.016666666666666666,
+        "1": 0.4,
+        "2": 0.06666666666666667,
         "3": 0.0
       },
       "response_turns": 60,
@@ -86,10 +92,28 @@
     "note": "arm B game 5 stopped mid-game at the call cap; recorded incomplete, never a draw",
     "spent_usd": 0.4243055
   },
-  "caveat": "Four to six games per arm. The failure is directional, not total (fee 2 showed 0 contests offered). The consistency across boost use, contest success, cancellations, acclamations, and game length, all in the same direction, is the evidence; no single rate is precise at this n.",
+  "caveat": "Four to six games per arm. The failure is directional, not total (fee 2 showed 0 contests offered). The consistency across contest success, cancellations, acclamations, and game length, all in the same direction, is the evidence; no single rate is precise at this n.",
+  "corrected": "AR1.1 erratum applied: claim statistics now cover finished games only (matching the evaluator's claim_statistics_scope), and response purses are reconstructed from every turn's prestige events (a defender earns duel rewards on the attacker's turn, which the first version missed).",
   "date": "2026-11-08",
   "design": "two arms, four live gpt-6-luna seats per game, seeds 700000+ (plus2) and 710000+ (bonus1), shared ledger",
+  "erratum": {
+    "as_first_recorded": {
+      "bonus1_cancellations_per_game": 0.75,
+      "bonus1_claims": 8,
+      "bonus1_claims_challenged": 0.75,
+      "bonus1_contest_win_rate": 0.43
+    },
+    "corrected_finished_games_only": {
+      "bonus1_cancellations_per_game": 0.25,
+      "bonus1_claims": 5,
+      "bonus1_claims_challenged": 0.6,
+      "bonus1_contest_win_rate": 0.25
+    },
+    "incomplete_game_content": "base-screen-710004 (stopped at the request cap) held 3 claims and 2 cancellations; it is preserved whole in this directory but excluded from claim statistics.",
+    "issue": "The first version counted claims and cancellations from ALL games, including the stopped incomplete fifth game of the +1 arm, but divided by finished games.",
+    "reviewer": "merge review of 5be5dcc, 2026-11-08"
+  },
   "recommendation": "KEEP V0.8 (fee 1, boost +2). BEST_CANDIDATE.json is retained as an archived rejected artifact.",
   "verdict": "REJECT CANDIDATE",
-  "why": "Against live play the +1 boost is never bought (0 of 3 contests versus 14 percent at +2), unboosted contests beat a fully equipped claimant only 43 percent of the time (82 percent at +2), cancellations nearly vanish (0.25 versus 3.83 per game), half the claims are crowned by acclamation, and the first challenger won all four finished games. The offline improvement was an artifact of scripted bots auto-purchasing the boost; live-style play exposes the coronation drift. The counterplay veto numbers were within floors, so this is a judgment the numbers alone did not force: the mechanism is consistent across every counterplay measure and matches the cycle-1 bot direction that the amendment had set aside."
+  "why": "Against live play the candidate's contests stop working: of four chosen contests (finished games) only one succeeded (25%, versus 82% at +2), one claim of five was canceled (0.25 versus 3.83 per game), four of five claims were crowned by acclamation, two of them with no responder ever offered a legal contest, and the first challenger won all four finished games. Boost clarification: the boost price is identical in both arms (fee 1 plus challenge cost 1). At +2, four contests were boost-affordable and the boost was bought all four times - an automatic purchase whenever affordable. At +1, no responder ever held the 2 Prestige it costs, so zero purchases reflect empty purses, not revealed preference against +1. The offline improvement was an artifact of scripted bots auto-purchasing the boost; live endgames run on empty purses, where contest strength, not purse management, decides the claim."
 }
