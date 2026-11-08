@@ -292,6 +292,23 @@ and `node tools/test_web_ui.mjs` (jsdom UI test; prints SKIP without
 jsdom installed). Deployed to Cloudflare via `npx wrangler deploy`
 (see `wrangler.jsonc`).
 
+## Print and play (V0.8.1 kit)
+
+A black-and-white A4 print-and-play kit lives in `print/`. One command
+regenerates every PDF from `rules_v08_succession.json`:
+
+```bash
+python3 tools/make_a4_print_kit.py
+```
+
+The kit contains the four-tile board (584 × 410 mm assembled,
+butt-join with dashed cut lines), player sheets, cards and tokens, a
+seven-page family rulebook, a quick reference, a teaching guide, a
+playtest form, and print instructions with a 100 mm calibration
+ruler. `print/kit-manifest.json` records every drawn position. The
+generator stops if the rules JSON drifts from the numbers printed in
+the prose. Tests: `tests/test_print_kit_v081.py`.
+
 ## V0.5 experiments (run)
 
 Three rule experiments, each with a bot baseline and a live AI

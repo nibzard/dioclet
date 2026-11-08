@@ -1,0 +1,211 @@
+"""Checks for the V0.8.1 black-and-white A4 print-and-play kit.
+
+The kit is generated art, so these tests pin the contract a family
+relies on when they print it: page sizes and counts, board geometry
+against the rules JSON, every symbol inside a printable area of at
+least one tile, tracker counts, and the printed prose matching the
+released V0.8 numbers.
+"""
+
+import json
+import sys
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from pypdf import PdfReader
+
+import engine
+from tools import make_a4_print_kit as kit
+
+REPO = Path(__file__).resolve().parents[1]
+PRINT = REPO / "print"
+A4_SHORT_PT = 595.2756   # 210 mm
+A4_LONG_PT = 841.8898    # 297 mm
+
+
+def page_text(name, page_index):
+    return PdfReader(PRINT / name).pages[page_index].extract_text()
+
+
+def whole_text(name):
+    return "\n".join(p.extract_text() for p in PdfReader(PRINT / name).pages)
+
+
+class BoardPages(unittest.TestCase):
+    FILE = "dioclet-board-4xA4-BW.pdf"
+
+    def test_four_a4_landscape_pages(self):
+        reader = PdfReader(PRINT / self.FILE)
+        self.assertEqual(len(reader.pages), 4)
+        for page in reader.pages:
+            self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
+            self.assertAlmostEqual(float(page.mediabox.height), A4_SHORT_PT, places=1)
+
+    def test_every_sheet_carries_its_page_number(self):
+        for index, expected in enumerate(("PAGE 1 OF 4", "PAGE 2 OF 4",
+                                          "PAGE 3 OF 4", "PAGE 4 OF 4")):
+            self.assertIn(expected, page_text(self.FILE, index))
+
+    def test_gate_names_printed_on_the_board(self):
+        text = whole_text(self.FILE)
+        for name in kit.GATE_NAMES.values():
+            for word in name.split(" - "):
+                self.assertIn(word, text)
+
+
+class DocumentPages(unittest.TestCase):
+    FILES = {
+        "dioclet-player-sheets-A4-BW.pdf": 2,
+        "dioclet-cards-tokens-A4-BW.pdf": 3,
+        "dioclet-rulebook-A4-BW.pdf": 7,
+        "dioclet-quick-reference-A4-BW.pdf": 1,
+        "dioclet-teaching-guide-A4-BW.pdf": 2,
+        "dioclet-playtest-form-A4-BW.pdf": 2,
+        "dioclet-print-instructions-A4-BW.pdf": 2,
+    }
+
+    def test_a4_portrait_page_counts(self):
+        for name, count in self.FILES.items():
+            reader = PdfReader(PRINT / name)
+            self.assertEqual(len(reader.pages), count, name)
+            for page in reader.pages:
+                self.assertAlmostEqual(float(page.mediabox.width), A4_SHORT_PT,
+                                       places=1, msg=name)
+                self.assertAlmostEqual(float(page.mediabox.height), A4_LONG_PT,
+                                       places=1, msg=name)
+
+    def test_combined_kit_starts_with_the_four_board_pages(self):
+        reader = PdfReader(PRINT / "dioclet-complete-print-kit-A4-BW.pdf")
+        expected = 4 + sum(self.FILES.values())
+        self.assertEqual(len(reader.pages), expected)
+        for page in reader.pages[:4]:
+            self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
+
+
+class BoardMatchesRules(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.rules = engine.load_rules(str(REPO / kit.RULES_FILE))
+        cls.L = kit.build_layout(cls.rules)
+        cls.board = cls.L["board"]
+        cls.manifest = json.loads((PRINT / "kit-manifest.json").read_text())
+
+    def test_counts(self):
+        blocked = {tuple(cell) for cell in self.rules["board"]["blocked"]}
+        spaces = {cell for cell, _ in self.L["spaces"]}
+        self.assertEqual(len(spaces), 97)
+        self.assertEqual(len(blocked), 150)
+        self.assertEqual(len(self.rules["board"]["buildings"]), 6)
+        # A cell is either walkable or blocked, never both.
+        self.assertFalse(spaces & blocked)
+        counts = self.manifest["counts"]
+        self.assertEqual(counts["street_spaces"], 97)
+        self.assertEqual(counts["blocked"], 150)
+        self.assertEqual(counts["buildings"], 6)
+        self.assertEqual(counts["gates"], len(self.board.gates))
+        self.assertEqual(counts["districts"], len(self.board.districts))
+        self.assertEqual(counts["glory_posts"], len(self.board.glory_posts))
+        self.assertEqual(self.rules["gameplay_mode"], "succession-v1")
+
+    def test_special_positions_match_rules(self):
+        layout = self.manifest["layout"]
+        for pid, cell in self.board.gates.items():
+            self.assertEqual(layout["specials_mm"]["gates"][pid],
+                             [round(v, 2) for v in self.L["pos"](tuple(cell))])
+        self.assertEqual(layout["specials_mm"]["checkpoint"],
+                         [round(v, 2) for v in self.L["pos"](tuple(self.board.checkpoint))])
+        self.assertEqual(sorted(layout["specials_mm"]["factions"]),
+                         sorted(self.rules["succession"]["factions"]))
+
+    def test_tiles_are_297_by_210_with_9mm_overlap_on_each_cut(self):
+        layout = self.manifest["layout"]
+        cut_x, cut_y = layout["cut_lines_mm"]["x"], layout["cut_lines_mm"]["y"]
+        overlap = layout["overlap_mm"]
+        self.assertEqual(layout["page_mm"], [kit.PAGE_W, kit.PAGE_H])
+        art = layout["art_bounds_mm"]
+        # The four windows tile the art 2x2: each cut line sits in the
+        # middle of a 9 mm band shared by two neighbouring pages.
+        self.assertAlmostEqual(art[2] - art[0], 2 * kit.PAGE_W - overlap, places=3)
+        self.assertAlmostEqual(art[3] - art[1], 2 * kit.PAGE_H - overlap, places=3)
+        self.assertAlmostEqual(cut_x, art[0] + kit.PAGE_W - overlap / 2, places=3)
+        self.assertAlmostEqual(cut_y, art[1] + kit.PAGE_H - overlap / 2, places=3)
+        xs = {x0 for x0, y0, _ in layout["tiles"].values()}
+        ys = {y0 for x0, y0, _ in layout["tiles"].values()}
+        self.assertEqual(len(xs), 2)
+        self.assertEqual(len(ys), 2)
+        self.assertAlmostEqual(min(xs) + kit.PAGE_W - overlap, max(xs), places=3)
+        self.assertAlmostEqual(min(ys) + kit.PAGE_H - overlap, max(ys), places=3)
+
+    def test_every_space_clears_the_safe_zone_on_some_tile(self):
+        layout = self.manifest["layout"]
+        safe = layout["safe_mm"]
+        tiles = [(x0, y0) for x0, y0, _ in layout["tiles"].values()]
+        specials = layout["specials_mm"]
+        # (center, drawn radius) per symbol kind, matching draw_board().
+        symbols = ([(tuple(v), 9.2) for v in layout["space_positions_mm"].values()]
+                   + [(tuple(v), 11.4) for v in specials["gates"].values()]
+                   + [(tuple(v), 10.6) for v in specials["districts"].values()]
+                   + [(tuple(specials["checkpoint"]), 11.2)]
+                   + [(tuple(v), 9.6) for v in specials["glory_posts"]]
+                   # faction badges sit offset from the meeting-place cell
+                   + [((v[0] + 13.2, v[1] + 11.8), 5.8)
+                      for v in specials["factions"].values()])
+        self.assertGreater(len(symbols), 100)
+        for (px, py), radius in symbols:
+            box = (px - radius, py - radius, px + radius, py + radius)
+            self.assertTrue(any(
+                box[0] - x0 >= safe and box[1] - y0 >= safe
+                and box[2] - x0 <= kit.PAGE_W - safe
+                and box[3] - y0 <= kit.PAGE_H - safe
+                for x0, y0 in tiles),
+                f"symbol at ({px},{py}) r{radius} has no tile with a printable copy")
+
+
+class PrintedRulesMatchV08(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.rules = engine.load_rules(str(REPO / kit.RULES_FILE))
+
+    def test_guarded_values_still_match_the_rules(self):
+        for (section, key), value in kit.PRINTED_RULES_VALUES.items():
+            self.assertEqual(self.rules[section][key], value,
+                             f"{section}.{key} drifted from the printed prose")
+
+    def test_rulebook_pins_the_economy_numbers(self):
+        text = whole_text("dioclet-rulebook-A4-BW.pdf")
+        self.assertIn("mandatory fee of 1 Prestige", text)          # contest fee
+        self.assertIn("pay 1 Prestige to add +2 to your roll", text)  # boost
+        self.assertIn("hold at most 3 Prestige", text)              # glory cap
+        self.assertIn("A 4, 5 or 6 earns 1 Prestige", text)         # guard post
+        self.assertIn("round 24", text)                             # round limits
+        self.assertIn("Two ordinary six-sided dice for movement", text)
+        self.assertIn("on a tie the attacker wins", text)
+
+    def test_player_sheets_list_all_trackers(self):
+        text = whole_text("dioclet-player-sheets-A4-BW.pdf")
+        for item in self.rules["equipment"]:
+            self.assertIn(item.upper().replace("_", " "), text.upper())
+        self.assertIn("PRESTIGE (hold at most 3", text)
+        for faction in ("Army", "Imperial officials", "City elites"):
+            self.assertIn(faction, text)
+
+    def test_cards_cover_the_six_items_and_identical_backs(self):
+        fronts = page_text("dioclet-cards-tokens-A4-BW.pdf", 0)
+        for item in self.rules["equipment"]:
+            self.assertIn(item.replace("_", " ").upper(), fronts.upper())
+        # Six backs, each the same two-line title (one string per line).
+        backs = page_text("dioclet-cards-tokens-A4-BW.pdf", 1)
+        self.assertEqual(backs.count("DIOCLETIAN'S"), 6)
+        self.assertEqual(backs.count("PALACE"), 6)
+
+    def test_tokens_page_matches_game_limits(self):
+        tokens = page_text("dioclet-cards-tokens-A4-BW.pdf", 2)
+        self.assertEqual(tokens.count("City phase (max 24 rounds):"), 1)
+        self.assertEqual(tokens.count("Succession phase (max 24 rounds):"), 1)
+        self.assertIn("PAWN", tokens.upper())  # fold-up pawns I-IV
+
+
+if __name__ == "__main__":
+    unittest.main()
