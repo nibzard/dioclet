@@ -1,0 +1,51 @@
+# Design: V0.8.1 A4 print-and-play kit
+
+## Problem
+V0.8 must reach real families for playtests, but the only
+artifacts were the web build and a V0.6.2 CSS print pack for a
+different board. The kit had to print on one basic
+black-and-white A4 printer with no color, no paid services, and
+zero drift from the released rules.
+
+## Approach
+One generator (tools/make_a4_print_kit.py) derives everything
+from rules_v08_succession.json via reportlab vector drawing.
+The board is a single 584 x 410 mm artwork tiled 2x2; every
+position is recorded in print/kit-manifest.json and cross-checked
+by tests. A 13-value guard in main() stops generation if the
+rules JSON no longer matches the numbers the prose prints.
+
+## Key trade-offs
+- Butt-join over lap-join: families cut every tile on BOTH dashed
+  lines and tape straight edges from the back. Lap-join saved
+  artwork duplication but forced per-tile furniture that collided
+  with the title and duplicated at the joins.
+- Overlap 10 mm (spec 8-10): gates sit just north of the
+  horizontal cut; 10 mm keeps every gate ring >= 6 mm from its
+  keeper page edge (9 mm left the east gate 0.15 mm short).
+- PERISTYLE label above the octagon: below it, the text top sat
+  0.4 mm from the cut line and a wandering cut would shave it.
+- Registration crosses at x=40/560 share x across the cut so
+  taping stacks them; the decumanus row (7.1 mm corridors)
+  cannot host a 9.6 mm crosshair anywhere.
+- Symbols distinguish by shape, not gray: open circles, double
+  circles, arch-in-ring gates, octagon Peristyle, stars with 4+.
+  The only grayscale (district letters) got white knockout
+  plates so cheap printers keep them crisp.
+- Verification is numeric first: /tmp audit recomputes every
+  drawn bbox (labels vs circles, cut clearance, safe zones, reg
+  marks vs circles) because the vision analyzer misreports
+  positions; renders then confirm joins and threshold survival.
+
+## Gotchas
+- pdftoppm prefix quirk: prefix "foo" yields foo-1.png, not
+  <pdfname>-1.png.
+- Analyzer text claims can hallucinate wholesale ("v0.6.3",
+  "De Prochylo's manureing"); verify quotes with pdftotext
+  before acting.
+- Physical assembly is UNVERIFIED: no printer on this machine.
+  Digital stitch, threshold simulation, and geometry checks only.
+
+## Related
+- print/kit-manifest.json, tests/test_print_kit_v081.py
+- README "Print and play (V0.8.1 kit)"
