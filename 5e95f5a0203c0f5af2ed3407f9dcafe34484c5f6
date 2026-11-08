@@ -1,0 +1,24 @@
+# Context
+
+## Background
+Repository tidy-up after a full-tree review on 2026-11-08. The root
+held 34 rules JSON files, 9 findings variants, and 3 one-off agent
+prompt documents; the review judged most of that sprawl deliberate.
+
+## Why This Way
+- Only files with zero inbound references moved: a repo-wide sweep
+  (excluding results/) found no importer or invocation of obs.py and
+  no reference to the three prompt docs outside the group itself.
+- rules_*.json and FINDINGS_*.md stayed put: findings cite exact
+  paths, so moving them would break the evidence trail for no gain.
+- Verified before commit: 210 Python unittests pass, all four Node
+  suites pass (web_ui SKIP without jsdom, as documented), and the
+  web board regenerates byte-identical.
+
+## Gotchas
+- The A4 print kit regenerates content-identical but not
+  byte-identical: ReportLab embeds CreationDate/ModDate and derives
+  the document /ID from them. Pinning an invariant date in
+  make_a4_print_kit.py would make regeneration byte-stable.
+- obs.py resolves sim.py relative to the working directory, so run
+  it from the repo root (true before the move as well).
