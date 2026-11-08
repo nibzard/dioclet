@@ -1,0 +1,33 @@
+# Context
+
+## Background
+Run autoresearch-ar1-001 tested the seven permitted rule knobs of the
+V0.8 succession game around the fee-1 incumbent, one change per cycle,
+with paired screens, fresh holdouts, and a preregistered
+counterplay-availability veto (tools/contest_audit.py). The fee-2
+diagnostic confirmed the veto was needed: the old mechanical checks
+alone still promote the known-bad fee-2 variant.
+
+## Why This Way
+V0.8 is kept unchanged because every tested direction failed a
+preregistered gate or the live check. The only offline survivor
+(challenge_bonus 2 to 1) passed all offline gates and a 384-game
+paired confirmation (cancellations -22.2%), but was rejected by the
+authorized live Decisions comparison: live players bought the +1
+boost 0 of 3 times (14% at +2), unboosted contests beat a full-set
+claimant only 43% (82% at +2), and the first challenger won 4 of 4
+finished games. The offline gain was an artifact of scripted bots
+auto-purchasing the boost.
+
+## Gotchas
+- Bot-calibrated counterplay floors do not transfer to live play:
+  live response purses sit at zero Prestige on 53-68% of turns.
+- Compare win shares only within paired same-seed suites; across-seed
+  96-game shares swing about 10 points (see the cycle-1 amendment).
+- cycles/01/verdict-amendment.json documents an analyst error and its
+  correction; the driver's paired checks were right all along.
+
+## Related
+- results/autoresearch-ar1-001/FINDINGS_AUTORESEARCH.md (full story)
+- results/autoresearch-ar1-001/live/comparison.json (live verdict)
+- BEST_CANDIDATE.json is an archived rejected artifact, not a rule change
