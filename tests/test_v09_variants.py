@@ -1,0 +1,346 @@
+"""V0.9 design experiment: start reveals and distinct equipment abilities."""
+import copy
+import json
+import os
+import random
+import unittest
+from unittest.mock import patch
+
+import engine
+import policies
+import succession
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROBES = ("collector", "early_support", "prestige_farmer", "counterleader")
+
+
+def rules_v08_raw():
+    return engine.load_rules(os.path.join(ROOT, "rules_v08_succession.json"))
+
+
+def rules_v09b_raw():
+    return engine.load_rules(os.path.join(ROOT, "rules_v09_reveal2.json"))
+
+
+def rules_v09c_raw():
+    return engine.load_rules(os.path.join(ROOT, "rules_v09_abilities.json"))
+
+
+def rules_v09c(start_reveals=0):
+    """Staged variant C: manual gates, free contests, chosen start reveals."""
+    value = rules_v09c_raw()
+    value["succession"]["gate_assignment"] = "manual"
+    value["succession"]["contest_cost"] = 0
+    value["start_reveals"] = start_reveals
+    return value
+
+
+def game(value=None):
+    state = engine.new_game(value or rules_v09c(), 2026, "v09-test", dict.fromkeys(succession.IDS, "balanced"))
+    state.update(turn_order=list(succession.IDS), round_start=0, turn_index=0, active_player="P1")
+    state["current_roll"], state["current_dice"] = 6, [3, 3]
+    return state
+
+
+def take(state, kind, **fields):
+    actions = engine.legal_actions(state)
+    action = next(a for a in actions if a["kind"] == kind and all(a.get(k) == v for k, v in fields.items()))
+    return engine.apply_action(state, state["active_player"], state["turn_id"], action["action_id"])
+
+
+def active(state, pid):
+    state["turn_index"] = engine.current_order(state).index(pid)
+    state["active_player"] = pid
+    state["current_roll"], state["current_dice"] = 6, [3, 3]
+
+
+def duel_staged(state, attacker, defender, attacker_pos=(6, 4), defender_pos=(6, 6)):
+    state["players"][attacker]["pos"] = list(attacker_pos)
+    state["players"][defender]["pos"] = list(defender_pos)
+    active(state, attacker)
+
+
+class TestV09RulesValidation(unittest.TestCase):
+    def test_variant_files_validate(self):
+        for loader in (rules_v09b_raw, rules_v09c_raw):
+            with self.subTest(loader=loader.__name__):
+                self.assertTrue(engine.validate_rules(loader()))
+
+    def test_start_reveals_bounds(self):
+        for value in (7, -1, "2", 2.0):
+            candidate = rules_v09b_raw()
+            candidate["start_reveals"] = value
+            with self.subTest(value=value), self.assertRaises(engine.EngineError):
+                engine.validate_rules(candidate)
+
+    def test_misspelled_top_level_knob_rejected(self):
+        candidate = rules_v09b_raw()
+        candidate["start_reveals_typo"] = 2
+        with self.assertRaisesRegex(engine.EngineError, "unknown top-level keys"):
+            engine.validate_rules(candidate)
+
+    def test_abilities_need_full_coverage_and_known_types(self):
+        base = rules_v09c()
+        partial = copy.deepcopy(base)
+        del partial["combat"]["abilities"]["gladius"]
+        with self.assertRaisesRegex(engine.EngineError, "one ability for each"):
+            engine.validate_rules(partial)
+        bad_type = copy.deepcopy(base)
+        bad_type["combat"]["abilities"]["gladius"]["type"] = "death_ray"
+        with self.assertRaisesRegex(engine.EngineError, "type must be one of"):
+            engine.validate_rules(bad_type)
+        bad_value = copy.deepcopy(base)
+        bad_value["combat"]["abilities"]["gladius"]["value"] = 4
+        with self.assertRaisesRegex(engine.EngineError, "integer from 0 to 3"):
+            engine.validate_rules(bad_value)
+
+    def test_count_tiers_are_zero_in_abilities_file(self):
+        rules = rules_v09c()
+        for count in range(7):
+            self.assertEqual(engine.equipment_bonus(count, rules), 0)
+
+    def test_abilities_may_not_stack_with_nonzero_tiers(self):
+        candidate = rules_v09c()
+        candidate["combat"]["equipment_bonus_tiers"] = [{"min_count": 3, "max_count": 6, "bonus": 1}]
+        with self.assertRaisesRegex(engine.EngineError, "replace the count tiers"):
+            engine.validate_rules(candidate)
+
+    def test_baseline_keeps_its_count_tier_bonus_in_duels(self):
+        # Guards the regression where the duel rewrite dropped the tier term
+        # for rules without an ability table.
+        state = game(rules_v09c())
+        state["rules"]["combat"].pop("abilities", None)
+        state["rules"]["combat"]["equipment_bonus_tiers"] = [
+            {"min_count": 0, "max_count": 2, "bonus": 0},
+            {"min_count": 3, "max_count": 5, "bonus": 1},
+            {"min_count": 6, "max_count": 6, "bonus": 2}]
+        state["players"]["P1"]["equipment"] = ["gladius", "scutum", "pilum", "pugio", "galea", "lorica_segmentata"]
+        duel_staged(state, "P1", "P2")
+        with patch.object(succession, "_die", side_effect=[3, 4, 3, 3]):
+            record = take(state, "duel", target="P2", spend_prestige=False)
+        duel = next(e for e in record["events"] if e["type"] == "duel")
+        self.assertEqual(duel["attacker_bonus"], 2)  # six-item tier, and no ability table present
+
+
+class TestV09StartReveals(unittest.TestCase):
+    def test_matched_seed_keeps_every_shared_stream_identical(self):
+        a = engine.new_game(rules_v08_raw(), 300000, "a")
+        b = engine.new_game(rules_v09b_raw(), 300000, "b")
+        c = engine.new_game(rules_v09c_raw(), 300000, "c")
+        for field in ("gate_assignments", "turn_order", "district_equipment", "current_dice"):
+            self.assertEqual(a[field], b[field], field)
+            self.assertEqual(b[field], c[field], field)
+        for stream in ("gates", "order", "movement", "combat"):
+            self.assertEqual(a["rng"][stream], b["rng"][stream], stream)
+        self.assertEqual(a["revealed"], {})
+        self.assertEqual(b["revealed"], c["revealed"])
+        self.assertEqual(len(b["revealed"]), 2)
+        self.assertEqual(b["setup_reveals"], sorted(b["revealed"]))
+        for name, item in b["revealed"].items():
+            self.assertEqual(b["district_equipment"][name], item)
+
+    def test_start_reveals_are_public_and_exploitable(self):
+        state = game(rules_v09c(start_reveals=2))
+        obs = engine.observe(state, state["active_player"])
+        self.assertEqual(obs["revealed_districts"], state["revealed"])
+        self.assertEqual(len(obs["revealed_districts"]), 2)
+        revealed_item = next(iter(state["revealed"].values()))
+        self.assertIn(revealed_item, state["district_equipment"].values())
+        # A player standing in a start-revealed district may explore it like any
+        # revealed district, and hidden districts keep normal explore legality.
+        district = next(iter(state["revealed"]))
+        cell = state["rules"]["board"]["districts"][district]
+        state["players"]["P1"]["pos"] = list(cell)
+        active(state, "P1")
+        self.assertTrue(any(a["kind"] == "explore" and a["destination"] == cell
+                            for a in engine.legal_actions(state)))
+        state["players"]["P1"]["equipment"] = [state["revealed"][district]]
+        self.assertFalse(any(a["kind"] == "explore" and a["destination"] == cell
+                             for a in engine.legal_actions(state)))
+
+    def test_hidden_districts_still_hidden_in_variant_b(self):
+        state = engine.new_game(rules_v09b_raw(), 300000, "b")
+        hidden = [n for n in state["rules"]["board"]["districts"] if n not in state["revealed"]]
+        state["district_equipment"][hidden[0]] = "PRIVATE-SENTINEL"
+        obs = engine.observe(state, state["active_player"])
+        self.assertNotIn("PRIVATE-SENTINEL", json.dumps(obs))
+        self.assertTrue(all("item" not in a for a in obs["legal_actions"]))
+
+
+class TestV09Abilities(unittest.TestCase):
+    def test_gladius_flips_a_lost_duel(self):
+        state = game()
+        state["players"]["P1"]["equipment"] = ["gladius"]
+        duel_staged(state, "P1", "P2")
+        with patch.object(succession, "_die", side_effect=[4, 5, 3, 3]):
+            record = take(state, "duel", target="P2", spend_prestige=False)
+        duel = next(e for e in record["events"] if e["type"] == "duel")
+        self.assertEqual(duel["attacker_bonus"], 1)
+        self.assertEqual(duel["winner"], "P1")  # 4+1 vs 5 ties, and ties go to the attacker
+        self.assertEqual(state["players"]["P1"]["stats"]["attack_bonus_uses"], 1)
+
+    def test_scutum_saves_the_defender(self):
+        state = game()
+        state["players"]["P2"]["equipment"] = ["scutum"]
+        duel_staged(state, "P1", "P2")
+        with patch.object(succession, "_die", side_effect=[5, 5, 3, 3]):
+            record = take(state, "duel", target="P2", spend_prestige=False)
+        duel = next(e for e in record["events"] if e["type"] == "duel")
+        self.assertEqual(duel["defender_bonus"], 1)
+        self.assertEqual(duel["winner"], "P2")  # 5 vs 5+1; without scutum the tie goes to the attacker
+        self.assertEqual(state["players"]["P2"]["stats"]["defense_bonus_uses"], 1)
+
+    def test_pilum_applies_only_against_the_claimant(self):
+        state = game()
+        state["phase"] = 2
+        state["players"]["P1"]["equipment"] = ["pilum"]
+        duel_staged(state, "P1", "P2")
+        with patch.object(succession, "_die", side_effect=[4, 5, 3, 3]):
+            record = take(state, "duel", target="P2", spend_prestige=False)
+        self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["attacker_bonus"], 0)
+        # Now P2 proclaims and becomes the claimant.
+        state["players"]["P2"].update(pos=[6, 6], support=["army", "elites"])
+        active(state, "P2")
+        take(state, "proclaim")
+        duel_staged(state, "P1", "P2", attacker_pos=(6, 4), defender_pos=(6, 6))
+        with patch.object(succession, "_die", side_effect=[4, 5, 3, 3]):
+            record = take(state, "duel", target="P2", spend_prestige=False)
+        self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["attacker_bonus"], 1)
+        self.assertEqual(state["players"]["P1"]["stats"]["pilum_uses"], 1)
+
+    def test_pugio_wins_ties_for_the_holder(self):
+        # The base rule gives ties to the attacker; a defending pugio flips it.
+        state = game()
+        duel_staged(state, "P1", "P2")
+        with patch.object(succession, "_die", side_effect=[4, 4, 3, 3]):
+            record = take(state, "duel", target="P2", spend_prestige=False)
+        self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["winner"], "P1")
+        state = game()
+        state["players"]["P2"]["equipment"] = ["pugio"]
+        duel_staged(state, "P1", "P2")
+        with patch.object(succession, "_die", side_effect=[4, 4, 3, 3]):
+            record = take(state, "duel", target="P2", spend_prestige=False)
+        self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["winner"], "P2")
+        self.assertEqual(state["players"]["P2"]["stats"]["pugio_tiebreaks"], 1)
+        self.assertTrue(any(e["type"] == "ability_used" and e.get("ability") == "pugio"
+                            for e in record["events"]))
+
+    def test_pugio_versus_pugio_falls_back_to_the_base_tie_rule(self):
+        state = game()
+        state["players"]["P1"]["equipment"] = ["pugio"]
+        state["players"]["P2"]["equipment"] = ["pugio"]
+        duel_staged(state, "P1", "P2")
+        with patch.object(succession, "_die", side_effect=[4, 4, 3, 3]):
+            record = take(state, "duel", target="P2", spend_prestige=False)
+        self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["winner"], "P1")
+        self.assertEqual(state["players"]["P1"]["stats"]["pugio_tiebreaks"], 0)
+
+    def test_equipment_bonuses_do_not_stack(self):
+        state = game()
+        state["phase"] = 2
+        state["players"]["P2"].update(pos=[6, 6], support=["army", "elites"])
+        active(state, "P2")
+        take(state, "proclaim")
+        state["players"]["P1"]["equipment"] = ["gladius", "pilum"]
+        duel_staged(state, "P1", "P2", attacker_pos=(6, 4), defender_pos=(6, 6))
+        with patch.object(succession, "_die", side_effect=[3, 1, 3, 3]):
+            record = take(state, "duel", target="P2", spend_prestige=False)
+        duel = next(e for e in record["events"] if e["type"] == "duel")
+        self.assertEqual(duel["attacker_bonus"], 1)  # best of gladius/pilum, not the sum
+
+    def test_galea_reveals_publicly_once(self):
+        state = game()
+        state["players"]["P0"].update(equipment=["galea"], pos=[6, 6])
+        active(state, "P0")
+        inspects = [a for a in engine.legal_actions(state) if a["kind"] == "inspect"]
+        hidden = [n for n in state["rules"]["board"]["districts"] if n not in state["revealed"]]
+        self.assertEqual(sorted(a["district"] for a in inspects), sorted(hidden))
+        target = hidden[0]
+        item = state["district_equipment"][target]
+        record = take(state, "inspect", district=target)
+        self.assertEqual(state["revealed"][target], item)  # public for everyone
+        self.assertTrue(any(e["type"] == "district_revealed" and e["district"] == target
+                            for e in record["events"]))
+        self.assertEqual(state["players"]["P0"]["stats"]["galea_reveals"], 1)
+        obs = engine.observe(state, state["active_player"])
+        self.assertEqual(obs["revealed_districts"].get(target), item)
+        self.assertTrue(all(a["kind"] != "inspect" for a in obs["legal_actions"]))
+        engine.check_invariants(state)
+
+    def test_lorica_prevents_displacement_once(self):
+        state = game()
+        state["phase"] = 2
+        state["players"]["P0"].update(pos=[6, 6], support=["army", "elites"], equipment=["lorica_segmentata"])
+        active(state, "P0")
+        take(state, "proclaim")
+
+        def challenge_and_win():
+            state["players"]["P1"]["pos"] = [6, 8]
+            active(state, "P1")
+            with patch.object(succession, "_die", side_effect=[6, 1, 3, 3]):
+                take(state, "duel", target="P0", spend_prestige=False)
+
+        challenge_and_win()
+        self.assertIsNone(state["pending_claim"])  # the claim is still cancelled
+        self.assertEqual(state["players"]["P0"]["pos"], [6, 6])  # but the claimant stays
+        self.assertEqual(state["players"]["P0"]["stats"]["lorica_saves"], 1)
+        self.assertEqual(state["players"]["P0"]["stats"]["times_displaced"], 0)
+        active(state, "P0")
+        take(state, "proclaim")
+        challenge_and_win()
+        self.assertEqual(state["players"]["P0"]["pos"], state["players"]["P0"]["gate"])
+        self.assertEqual(state["players"]["P0"]["stats"]["times_displaced"], 1)
+
+    def test_zero_value_ability_is_disabled(self):
+        state = game()
+        state["rules"]["combat"]["abilities"]["gladius"]["value"] = 0
+        state["players"]["P1"]["equipment"] = ["gladius"]
+        duel_staged(state, "P1", "P2")
+        with patch.object(succession, "_die", side_effect=[4, 5, 3, 3]):
+            record = take(state, "duel", target="P2", spend_prestige=False)
+        self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["attacker_bonus"], 0)
+        self.assertEqual(state["players"]["P1"]["stats"]["attack_bonus_uses"], 0)
+
+
+class TestV09Games(unittest.TestCase):
+    def play(self, rules, seed):
+        state = engine.new_game(rules, seed, f"c-game-{seed}", dict(zip(succession.IDS, PROBES)))
+        rng = random.Random(f"probe:{seed}")
+        cap = 4 * (rules["level1"]["max_rounds"] + rules["level2"]["max_rounds"] + 3)
+        for _ in range(cap):
+            if engine.is_finished(state):
+                break
+            obs = engine.observe(state, state["active_player"])
+            action_id, reason = policies.act(state["policies"][state["active_player"]], obs, rng)
+            engine.apply_action(state, state["active_player"], obs["turn_id"], action_id, reason)
+        return state
+
+    def test_variant_c_game_finishes_with_invariants_and_ability_metrics(self):
+        state = self.play(rules_v09c_raw(), 300000)
+        self.assertTrue(engine.is_finished(state))
+        engine.check_invariants(state)
+        result = engine.result(state)
+        self.assertIn("ability_used", json.dumps(result["high_impact_events"]) if result["high_impact_events"] else "")
+        counters = [p["attack_bonus_uses"] + p["defense_bonus_uses"] + p["pilum_uses"]
+                    + p["pugio_tiebreaks"] + p["galea_reveals"] + p["lorica_saves"]
+                    for p in result["players"].values()]
+        self.assertGreater(sum(counters), 0)
+
+    def test_variant_c_is_deterministic_per_seed(self):
+        first = engine.result(self.play(rules_v09c_raw(), 300007))
+        second = engine.result(self.play(rules_v09c_raw(), 300007))
+        self.assertEqual(first, second)
+
+    def test_policy_uses_galea_when_nothing_is_known(self):
+        state = game()
+        state["players"]["P0"].update(equipment=["galea"], pos=[6, 6])
+        active(state, "P0")
+        obs = engine.observe(state, "P0")
+        action_id, reason = succession.choose_policy("collector", obs, random.Random(1))
+        action = next(a for a in obs["legal_actions"] if a["action_id"] == action_id)
+        self.assertEqual(action["kind"], "inspect")
+        self.assertIn("galea", reason)
+
+
+if __name__ == "__main__":
+    unittest.main()

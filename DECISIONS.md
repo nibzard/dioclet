@@ -323,3 +323,61 @@ practical. No baseline rule values were changed.
   challenged with 9 cancellations. The live probe, not bot
   screening, decided between fees 1 and 2. Full record:
   `FINDINGS_V08.md`.
+
+- **D39 Start reveals draw from the equipment stream (V0.9 trial,
+  2026-11-11).** `start_reveals` (0..6) publicly reveals that many
+  districts in `new_game`, after the district shuffle. The selection
+  draws from the `equipment` xorshift32 stream, which nothing else
+  consumes, so gates, turn order, the district mapping, and all dice
+  stay bit-identical across arms on matched seeds. Start reveals are
+  recorded in `state["revealed"]` and `state["setup_reveals"]`; they
+  do not emit turn records, because every record in
+  `state["events"]` must keep the turn-record shape that replay and
+  `result()` rely on.
+
+- **D40 Ability interpretations for the V0.9 trial (2026-11-11).**
+  The six abilities live in `combat.abilities` as data (one
+  `{type, value}` per equipment name, value 0..3, 0 disables), and
+  when present they replace the count-based tier bonus in duels; the
+  trial file zeroes `equipment_bonus_tiers` instead of deleting the
+  key, so the legacy validator stays unchanged. Pugio awards through
+  `_award` and is therefore subject to the Prestige cap with the
+  usual waste accounting (D15). Galea inspection is a stationary
+  action; the event records player, ability, and district but never
+  the item, and the item reaches only the inspecting seat through
+  the viewer-scoped `inspected_districts` observation field (D17).
+  Lorica prevents the position reset only: in V0.8 succession the
+  single displacement is a beaten claimant returning to their gate
+  (D37), so a lorica save still cancels the claim. The broader
+  reading of lorica has no mechanic to attach to and is not
+  implemented.
+
+- **D41 Frozen item preferences in the policy layer (V0.9 trial,
+  2026-11-11).** `succession.ITEM_PREFERENCES` gives each probe
+  profile two favored items (collector: lorica, scutum; early
+  support: galea, pugio; prestige farmer: gladius, pugio;
+  counterleader: pilum, gladius). Among districts whose item a seat
+  knows (publicly revealed or privately inspected), a favored item
+  wins the targeting race unless it costs more than four extra
+  street steps. The table applies identically in every arm,
+  including the baseline, so route-diversity differences measure
+  the rule change, not a policy swap. Bots use the galea inspection
+  when they still need equipment and no known district holds a
+  missing item.
+
+- **D42 Simplified ability set: one modifier per duel (V0.9 trial,
+  2026-11-11).** Supersedes the C1 ability mechanics of D40 within
+  the trial (C1's rules are preserved at
+  `results/v09-design-001/c1-abilities-rules.json`). Cards stay
+  one line each: gladius +1 attack, scutum +1 defense, pilum +1
+  attack against the claimant, pugio wins tied duels (both sides
+  checked; if both hold one, the base tie rule decides), galea
+  once per game publicly turns one hidden district face-up through
+  the ordinary `district_revealed` event (no private channel; the
+  viewer-scoped field from D40 is removed), lorica unchanged. In
+  any duel at most one equipment bonus applies per side: the best
+  applicable modifier, never the sum. Validation rejects an
+  ability table whose `equipment_bonus_tiers` carry nonzero
+  bonuses, so abilities replace the count system rather than stack
+  with it; rules without an ability table keep the count tiers,
+  and a regression test pins that behavior.
