@@ -1,0 +1,17 @@
+# Context
+
+## Why This Way
+The checkpoint gate was a hard-coded literal 6 at three mirror
+sites (legality, observation, policy). Making it rule data lets
+the same frozen policy ladder measure any threshold without code
+changes; the default keeps every existing rules file bit-identical
+in behavior (verified: baseline and C2 replay 0/480 winner drift).
+
+## Gotchas
+- Lowering the threshold implicitly shortens phase 1 through the
+  grace-round trigger: first claim at ~round 10 vs ~17 means the
+  whole game tempo changes, not just the gate. Any retry should
+  adjust grace_full_rounds together with the requirement.
+- The set-completion reward only fires for players who collect
+  all six; with phase 1 ending early, that is 64 awards in 480
+  games. A reward nobody reaches is not a trade-off.
