@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diocletian's Palace — version history, trials, and final rules</title>
+<meta name="description" content="Every version and trial of the Dioclet board-game design programme, 2026-11-06 to 2026-11-08, ending with the complete V0.8.1 game rules.">
+<style>
+.viz-root, body { color-scheme: light;
+  --page:   #f9f9f7;
+  --surface:#fcfcfb;
+  --ink:    #0b0b0b;
+  --ink-2:  #52514e;
+  --muted:  #898781;
+  --hairline:#e1e0d9;
+  --baseline:#c3c2b7;
+  --border: rgba(11,11,11,0.10);
+  --series-1:#2a78d6;
+  --series-2:#eb6834;
+  --good:   #0ca30c;
+  --critical:#d03b3b;
+  --street: #fcfcfb;
+  --block:  #e9e8e1;
+  --block-line:#d7d5cc;
+  --axis-tint: rgba(42,120,214,0.10);
+  --sec-tint: rgba(11,11,11,0.045);
+}
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]), body:not([data-theme="light"]) .viz-root { color-scheme: dark;
+    --page:   #0d0d0d;
+    --surface:#1a1a19;
+    --ink:    #ffffff;
+    --ink-2:  #c3c2b7;
+    --muted:  #898781;
+    --hairline:#2c2c2a;
+    --baseline:#383835;
+    --border: rgba(255,255,255,0.10);
+    --series-1:#3987e5;
+    --series-2:#d95926;
+    --street: #1a1a19;
+    --block:  #262624;
+    --block-line:#34342f;
+    --axis-tint: rgba(57,135,229,0.14);
+    --sec-tint: rgba(255,255,255,0.05);
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 0 20px 80px; }
+h1 { font-size: 30px; line-height: 1.2; margin: 28px 0 6px; letter-spacing: -0.01em; }
+h2 { font-size: 22px; margin: 54px 0 4px; letter-spacing: -0.01em; }
+h3 { font-size: 17px; margin: 30px 0 8px; }
+h4 { font-size: 14.5px; margin: 0 0 2px; }
+p  { margin: 8px 0; max-width: 76ch; }
+.sub, .src { color: var(--muted); font-size: 13px; }
+.src { display: block; margin-top: 6px; }
+a { color: var(--series-1); }
+nav.toc { position: sticky; top: 0; z-index: 5; background: var(--page);
+  border-bottom: 1px solid var(--hairline); padding: 9px 0; margin-bottom: 8px;
+  display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
+nav.toc a { color: var(--ink-2); text-decoration: none; }
+nav.toc a:hover { color: var(--series-1); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px; margin: 18px 0 6px; }
+.tile { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; }
+.tile .v { font-size: 24px; font-weight: 600; margin-top: 2px; }
+.tile .l { font-size: 12.5px; color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 18px; margin: 14px 0; }
+.ver { border-left: 3px solid var(--hairline); }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px;
+  font-weight: 600; padding: 2px 9px; border-radius: 999px;
+  border: 1px solid var(--border); color: var(--ink-2); vertical-align: middle; }
+.badge.adopted { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
+.badge.rejected { color: var(--critical); border-color: color-mix(in srgb, var(--critical) 40%, transparent); }
+.badge.neutral { color: var(--series-1); border-color: color-mix(in srgb, var(--series-1) 40%, transparent); }
+.vhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-bottom: 2px; }
+.vnum { font-size: 13px; font-weight: 700; letter-spacing: 0.06em;
+  color: var(--series-1); text-transform: uppercase; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 10px 0 4px; }
+th, td { text-align: left; padding: 6px 9px; border-bottom: 1px solid var(--hairline); }
+th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: none; }
+details.tbl { margin-top: 6px; font-size: 13px; }
+details.tbl summary { cursor: pointer; color: var(--muted); }
+.fig { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px 10px; margin: 14px 0; }
+.fig svg { width: 100%; height: auto; display: block; }
+.chart-svg .ch-lbl { fill: var(--ink-2); font-size: 12.5px; }
+.chart-svg .ch-val { fill: var(--ink); font-size: 12.5px; font-weight: 600; }
+.board-svg { max-width: 660px; }
+.board-svg .board-blk { fill: var(--muted); font-size: 13px; font-weight: 700; }
+.board-svg .board-lbl { fill: var(--ink-2); font-size: 11.5px; }
+.board-svg .board-gate { font-weight: 600; fill: var(--series-1); }
+.board-svg .board-ent { fill: var(--ink); font-size: 10.5px; font-weight: 700; }
+.board-svg .board-cp { fill: #fff; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12.5px;
+  color: var(--ink-2); margin-top: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.sq  { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.tl { list-style: none; margin: 14px 0; padding: 0; border-left: 2px solid var(--hairline); }
+.tl li { margin: 0 0 10px 0; padding: 2px 0 2px 18px; position: relative; font-size: 13.5px; }
+.tl li::before { content: ""; position: absolute; left: -6px; top: 9px; width: 10px;
+  height: 10px; border-radius: 50%; background: var(--series-1); border: 2px solid var(--page); }
+.tl .d { color: var(--muted); font-size: 12px; }
+.callout { border-left: 3px solid var(--series-2); background: var(--surface);
+  border-radius: 0 10px 10px 0; padding: 10px 16px; margin: 14px 0; }
+.callout p { margin: 4px 0; }
+ul.tight { margin: 6px 0; padding-left: 22px; }
+ul.tight li { margin: 3px 0; }
+ol.steps { margin: 6px 0; padding-left: 22px; }
+ol.steps li { margin: 4px 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+footer { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--hairline);
+  margin-top: 60px; padding-top: 14px; }
+@media print { nav.toc { display: none; } .card, .fig { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<main class="viz-root">
+
+<nav class="toc" aria-label="Report sections">
+  <a href="#overview">Overview</a><a href="#method">Method</a>
+  <a href="#timeline">Timeline</a><a href="#era1">I · Abstract board</a>
+  <a href="#era2">II · AI players</a><a href="#era3">III · Real board</a>
+  <a href="#era4">IV · Succession</a><a href="#playtests">Playtests</a>
+  <a href="#rejected">Rejected ledger</a><a href="#rules">Final rules</a>
+  <a href="#appendix">Appendix</a>
+</nav>
+
+<h1>Diocletian's Palace — every version, every trial</h1>
+<p class="sub">The full record of a board-game design programme run as a measured
+experiment series: 15 versions from the first abstract prototype to the released
+succession game, 2026-11-06 to 2026-11-08. Ends with the complete rules of the
+current game. Every number below cites the repository file that recorded it.</p>
+
+<section id="overview">
+<div class="stats">
+  <div class="tile"><div class="l">Versions</div><div class="v">15</div></div>
+  <div class="tile"><div class="l">Simulated games</div><div class="v">≈30,500</div></div>
+  <div class="tile"><div class="l">Live model games</div><div class="v">182</div></div>
+  <div class="tile"><div class="l">Live model spend</div><div class="v">≈$1.30</div></div>
+  <div class="tile"><div class="l">Tests today</div><div class="v">210</div></div>
+  <div class="tile"><div class="l">Human playtests</div><div class="v">0 run</div></div>
+</div>
+<p class="sub">Game counts: 27,210 games in the on-disk batch results plus about
+3,300 AI-era suite games; see the appendix for the breakdown. Live spend covers
+OpenAI Decisions and Claude proposal agents across five authorized runs; every
+run stayed under its cap. 210 Python tests pass today, plus four JavaScript
+suites. The report includes eight narrative agent playtests; no human session
+has been played yet — the protocols are written and waiting.</p>
+</section>
+
+<section id="method">
+<h2>How to read this report</h2>
+<div class="card">
+<ul class="tight">
+  <li>Every batch is deterministic: fixed seeds, one rule knob changed per
+    variant, and the same SPEC §13 policy schedule, so differences come from
+    the rule change.</li>
+  <li>Bot policies are frozen (DECISIONS.md D24): <em>balanced</em>,
+    <em>greedy</em>, <em>aggressive</em>, <em>random</em>, and the V0.4
+    <em>tactical</em> benchmark. Frozen bots are heuristics: differences under
+    about two points are noise, and 1,000 games resolve a 25% rate to about
+    ±3 points (FINDINGS.md §9).</li>
+  <li>Live AI play used OpenAI Decisions with the model <em>gpt-6-luna</em>,
+    budget caps enforced before every call, and full offline replay
+    verification. Mock-provider games are never counted as model results.</li>
+  <li>Qualitative sessions were role-playing agent tables, not humans; their
+    notes carry caveat banners where an engine bug was later fixed.</li>
+  <li>Nothing here is a fun score. The simulator screens mechanics and
+    strategies; whether the game is clear, tense, and worth replaying is a
+    table question the playtest protocols still have to answer.</li>
+</ul>
+</div>
+</section>
+
+<section id="timeline">
+<h2>Timeline</h2>
+<ul class="tl">
+  <li><strong>V0.1</strong> — Baseline on a 5×5 abstract board · <span class="d">Nov 6</span><br>Decisive but short; aggression a trap; turn order the real skew.</li>
+  <li><strong>V0.2</strong> — Combat and fairness knobs · <span class="d">Nov 6</span><br>Adopts attacker ties, grace 1, rotating first player.</li>
+  <li><strong>V0.3</strong> — Duel consequences · <span class="d">Nov 6–7</span><br>Theft backfires, displacement teleports, lost turn has teeth.</li>
+  <li><strong>V0.4</strong> — OpenAI Decisions player · <span class="d">Nov 7</span><br>AI seat joins the engine; budgeted, validated, piloted live.</li>
+  <li><strong>V0.4.1</strong> — 64-game AI tournament · <span class="d">Nov 7</span><br>Decision scorecards and five game studies.</li>
+  <li><strong>V0.5</strong> — Knobs under AI play · <span class="d">Nov 7</span><br>Adopts the Level 1 cap 16 guardrail; rejects the other two knobs.</li>
+  <li><strong>V0.6</strong> — Real board encoded · <span class="d">Nov 7</span><br>19×13 board, 2d6 movement adopted after a five-arm die race.</li>
+  <li><strong>V0.6.1</strong> — Board validation · <span class="d">Nov 7</span><br>Board fair; pacing and playability measured; print pack written.</li>
+  <li><strong>V0.6.2</strong> — Print pack fixes · <span class="d">Nov 7</span><br>Print CSS, pawns, trackers, move-first rule.</li>
+  <li><strong>V0.7</strong> — Six blocks · <span class="d">Nov 7</span><br>Designer correction: six 5×5 blocks, cardo street removed.</li>
+  <li><strong>V0.7.1</strong> — Real gates · <span class="d">Nov 7</span><br>Gates onto street ends; every gate 9 spaces from the crossing.</li>
+  <li><strong>V0.7.2</strong> — Cardo attempt · <span class="d">Nov 8</span><br>Rejected: a street through the blocks makes eight blocks.</li>
+  <li><strong>V0.7.3</strong> — Six intact blocks · <span class="d">Nov 8</span><br>Cardo on column 6, decumanus row 6; the active board.</li>
+  <li><strong>V0.8</strong> — Imperial succession · <span class="d">Nov 8</span><br>Contested claim endgame; contest fee 1 released after a 0/1/2 ladder.</li>
+  <li><strong>V0.8.1</strong> — A4 print kit · <span class="d">Nov 8</span><br>Nine-PDF black-and-white kit generated from the rules file.</li>
+</ul>
+</section>
+
+<section id="era1">
+<h2>Era I — the abstract board (V0.1 – V0.3)</h2>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.1</span><strong>Baseline measured</strong>
+<span class="badge neutral">build + measure</span><span class="sub">2026-11-06 · rules_baseline.json</span></div>
+<p>A headless, deterministic simulator for the four-player, two-level game on a
+5×5 board: six districts, d6 movement, duels, Glory, guard posts, two seals,
+and a two-hit Emperor fight. The 1,000-game baseline batch (seeds 1000–1999,
+SPEC §13 schedule) set every later comparison.</p>
+<table>
+  <tr><th>Measure</th><th class="n">Value</th><th>Reading</th></tr>
+  <tr><td>Decisive games</td><td class="n">1,000 of 1,000</td><td>No timeouts, no draws</td></tr>
+  <tr><td>Median full-game rounds</td><td class="n">15</td><td>Target band was 20–35</td></tr>
+  <tr><td>Items collected per player</td><td class="n">5.57 of 6</td><td>86.3% of seats need zero auto-grants</td></tr>
+  <tr><td>Duels per game</td><td class="n">5.80</td><td>Attacker wins 38.2%</td></tr>
+  <tr><td>Gate win rates P0–P3</td><td class="n">27.5 / 26.1 / 22.9 / 23.5%</td><td>All intervals overlap</td></tr>
+  <tr><td>Seat 1 vs seat 4</td><td class="n">30.3% vs 18.7%</td><td>Intervals do <em>not</em> overlap</td></tr>
+  <tr><td>First-challenger win / comebacks</td><td class="n">38.6% / 61.4%</td><td>Not a pure sprint</td></tr>
+</table>
+<span class="src">FINDINGS.md §1–§5</span>
+<div class="fig">
+<h4>Per-policy win rate, V0.1 baseline</h4>
+<p class="sub">2,750 balanced seat-games; 500 each for greedy and aggressive; 250 random.</p>
+<svg viewBox="0 0 620 134" role="img" class="chart-svg" preserveAspectRatio="xMinYMin meet"><text x="160" y="13.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">balanced</text><path d="M 170 3 h 370.00000000000006 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -370.00000000000006 z" fill="var(--series-1)"/><text x="552.0" y="13.0" dominant-baseline="central" class="ch-val">31.4%</text><text x="160" y="45.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">greedy</text><path d="M 170 35 h 224.687898089172 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -224.687898089172 z" fill="var(--series-1)"/><text x="406.687898089172" y="45.0" dominant-baseline="central" class="ch-val">19.2%</text><text x="160" y="77.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">aggressive</text><path d="M 170 67 h 67.46496815286625 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -67.46496815286625 z" fill="var(--series-1)"/><text x="249.46496815286625" y="77.0" dominant-baseline="central" class="ch-val">6.0%</text><text x="160" y="109.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">random</text><path d="M 170 99 h 43.64331210191083 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -43.64331210191083 z" fill="var(--series-1)"/><text x="225.64331210191082" y="109.0" dominant-baseline="central" class="ch-val">4.0%</text><line x1="170" y1="0" x2="170" y2="134" stroke="var(--baseline)" stroke-width="1"/></svg>
+<details class="tbl"><summary>Table view</summary>
+<table><tr><th>Policy</th><th class="n">Win rate</th><th class="n">95% CI</th></tr>
+<tr><td>balanced</td><td class="n">31.4%</td><td class="n">29.7–33.2</td></tr>
+<tr><td>greedy</td><td class="n">19.2%</td><td class="n">16.0–22.9</td></tr>
+<tr><td>aggressive</td><td class="n">6.0%</td><td class="n">4.2–8.4</td></tr>
+<tr><td>random</td><td class="n">4.0%</td><td class="n">2.2–7.2</td></tr></table>
+<span class="src">FINDINGS.md §4 table</span></details>
+</div>
+<div class="callout">
+<p><strong>Engine bug found and fixed during the study.</strong> A failed
+Emperor attack set the retreat position, then overwrote it with the action
+destination, so misses cost no tempo. Three independent playtest agents found
+it by reading logs; the original unit test passed because it returned early on
+wins. Fixed, covered by a stronger test, and every batch in the findings was
+re-run (FINDINGS.md §0).</p>
+</div>
+<p><strong>Verdict.</strong> The baseline stands as the reference: gates fair
+within noise, dice not dominant, comebacks common — and turn order, not gates,
+is the real inequality. Aggression does not pay: the defender-biased tie rule
+plus lost tempo beats the 1-Glory duel reward.</p>
+</div>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.2</span><strong>Combat and fairness knobs</strong>
+<span class="badge adopted">✓ package adopted</span><span class="sub">2026-11-06 · rules_v02_*.json</span></div>
+<p>Seven 1,000-game batches on identical seeds, one knob each. The adopted
+package — attacker wins ties, grace 1, rotating first player — became
+rules_v03_base.json, verified by diff as exactly three knobs changed.</p>
+<table>
+  <tr><th>Arm (1,000 games each)</th><th class="n">Med. rounds</th><th class="n">Duels</th><th class="n">Atk %</th><th class="n">Aggr %</th><th class="n">Seat 1/4</th><th>Verdict</th></tr>
+  <tr><td>baseline</td><td class="n">15</td><td class="n">5.80</td><td class="n">38</td><td class="n">6</td><td class="n">30/19</td><td>reference</td></tr>
+  <tr><td>attacker wins ties</td><td class="n">15</td><td class="n">4.86</td><td class="n">56</td><td class="n">11</td><td class="n">29/19</td><td><span class="badge adopted">✓ adopted</span></td></tr>
+  <tr><td>glory cap 3</td><td class="n">15</td><td class="n">7.01</td><td class="n">38</td><td class="n">6</td><td class="n">30/20</td><td><span class="badge rejected">✕ rejected</span></td></tr>
+  <tr><td>three Emperor hits</td><td class="n">17</td><td class="n">6.49</td><td class="n">38</td><td class="n">4</td><td class="n">30/21</td><td><span class="badge rejected">✕ rejected</span></td></tr>
+  <tr><td>rotating first player</td><td class="n">15</td><td class="n">5.74</td><td class="n">39</td><td class="n">5</td><td class="n">30/22</td><td><span class="badge adopted">✓ adopted</span></td></tr>
+  <tr><td>grace 1</td><td class="n">14</td><td class="n">5.46</td><td class="n">39</td><td class="n">6</td><td class="n">30/20</td><td><span class="badge adopted">✓ adopted</span></td></tr>
+  <tr><td>ties + rotation combo</td><td class="n">15</td><td class="n">4.86</td><td class="n">56</td><td class="n">11</td><td class="n">31/20</td><td><span class="badge adopted">✓ core of package</span></td></tr>
+</table>
+<span class="src">FINDINGS_V02.md comparison table</span>
+<p><strong>Scorecard:</strong> two of five targets met, one partially, two not.
+The two unmet targets share one root cause, confirmed by counters and
+personas: <em>a duel takes nothing from the loser and pays only Glory, which
+guard posts already provide.</em> That sentence steered the next three
+versions. Glory cap 3 was rejected as "more fighting, no more winning"; three
+Emperor hits moved duration but nothing else.</p>
+</div>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.3</span><strong>Duel consequences</strong>
+<span class="badge neutral">one adopt candidate</span><span class="sub">rules_v03_*.json</span></div>
+<p>Three ways to make losing a duel matter, each one knob on the adopted
+package, 1,000 games each with frozen bots.</p>
+<div class="fig">
+<h4>Aggressive seat win share across duel consequences</h4>
+<p class="sub">1,000 games per arm; aggressive CI at theft: 0.0–0.7%.</p>
+<svg viewBox="0 0 620 134" role="img" class="chart-svg" preserveAspectRatio="xMinYMin meet"><text x="160" y="13.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">base (adopted pkg)</text><path d="M 170 3 h 289.85714285714283 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -289.85714285714283 z" fill="var(--series-1)"/><text x="471.85714285714283" y="13.0" dominant-baseline="central" class="ch-val">11%</text><text x="160" y="45.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">glory theft</text><path d="M 170 35 h -2.0 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h 2.0 z" fill="var(--series-1)"/><text x="180.0" y="45.0" dominant-baseline="central" class="ch-val">0.0%</text><text x="160" y="77.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">displacement</text><path d="M 170 67 h 289.85714285714283 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -289.85714285714283 z" fill="var(--series-1)"/><text x="471.85714285714283" y="77.0" dominant-baseline="central" class="ch-val">11%</text><text x="160" y="109.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">lost turn</text><path d="M 170 99 h 370.0 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -370.0 z" fill="var(--series-1)"/><text x="552.0" y="109.0" dominant-baseline="central" class="ch-val">14%</text><line x1="170" y1="0" x2="170" y2="134" stroke="var(--baseline)" stroke-width="1"/></svg>
+<details class="tbl"><summary>Table view</summary>
+<table><tr><th>Arm</th><th class="n">Aggressive</th><th class="n">Greedy</th><th class="n">Duels/game</th><th class="n">Med. rounds</th></tr>
+<tr><td>base (adopted package)</td><td class="n">11%</td><td class="n">26%</td><td class="n">4.57</td><td class="n">14</td></tr>
+<tr><td>glory theft</td><td class="n">0.0%</td><td class="n">36%</td><td class="n">9.16</td><td class="n">15</td></tr>
+<tr><td>displacement</td><td class="n">11%</td><td class="n">26%</td><td class="n">4.63</td><td class="n">14</td></tr>
+<tr><td>lost turn</td><td class="n">14%</td><td class="n">27%</td><td class="n">4.29</td><td class="n">15</td></tr></table>
+<span class="src">FINDINGS_V03.md</span></details>
+</div>
+<ul class="tight">
+  <li><strong>Glory theft — the most counter-intuitive result of the study.</strong>
+    Zero-sum transfer punished exactly the strategy it was meant to reward:
+    aggressive fell to 0 wins in 500 seat-games while the never-dueling
+    greedy policy soared to 36%. A duel against a Glory-empty victim pays
+    nothing; pacifists win the Glory war.</li>
+  <li><strong>Displacement — falsified by geometry.</strong> The loser drops
+    on the retreat node, one step from the Emperor chamber: a doorstep
+    teleport. In the narr8 playtest the door-guarder refused to kick a
+    two-seal rival for exactly that reason, and losing a duel became win-win.
+    Across 1,000 bot games, 108 chamber evictions delayed zero Emperor
+    attempts.</li>
+  <li><strong>Lost turn — the only consequence with teeth.</strong> Losing a
+    duel costs tempo, the resource the race actually spends; aggressive
+    reached its best result anywhere (14%). Adopt candidate, with one
+    caution: a lost turn is the harshest-feeling consequence for children —
+    a question only humans can settle.</li>
+</ul>
+<p><strong>Carried base result:</strong> the adopted package shortened games
+(median 14 rounds), raised comebacks to 70%, cut the first-challenger edge to
+30%, and narrowed the seat gap to 28/21.</p>
+</div>
+</section>
+
+<section id="era2">
+<h2>Era II — AI players join (V0.4 – V0.5)</h2>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.4</span><strong>OpenAI Decisions player intelligence</strong>
+<span class="badge adopted">✓ adopted</span><span class="sub">2026-11-07 · ai_driver.py, decisions_policy.py</span></div>
+<p>An observation-only AI seat: the model sees only the public observation and
+a audited candidate shortlist (2–24 options; winning attacks, seals, explores,
+and every distinct duel target always kept; exact d6×d6 odds only — no
+invented long-horizon probabilities). A hidden sentinel planted in engine
+state never appeared in any request. Call, cost, token, and wall-clock caps
+are enforced before each request; exhaustion marks the game incomplete, never
+a draw.</p>
+<ul class="tight">
+  <li><strong>Tactical benchmark bot</strong> (frozen as tactical-v04.1): 31.6%
+    over 2,750 seat-games — competent but not dominant; it fixes the
+    aggressive trap by ranking winning Emperor attacks above duels.</li>
+  <li><strong>Contract checks</strong> (3 live calls): schema matched exactly;
+    the endgame fixture chose the winning attack at 0.91 confidence while
+    early turns sat honestly at 0.25.</li>
+  <li><strong>Live pilots</strong> (3 games, ≈$0.0135 total): legal, clean,
+    win-seeking play; per-turn cost about $0.0001 and 0.2 s median after
+    warm-up. Explicitly labeled pilots, not performance estimates.</li>
+</ul>
+<span class="src">FINDINGS_V04.md</span>
+</div>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.4.1</span><strong>AI tournament and decision analysis</strong>
+<span class="badge neutral">measured, nothing adopted</span><span class="sub">2026-11-07 · 64 live games, $0.319 of $1.00</span></div>
+<p>Sixty-four live gpt-6-luna games (32 mirror + 32 mixed), 2,845 decisions,
+zero refusals, zero invalid answers, all replay-verified offline.</p>
+<ul class="tight">
+  <li><strong>Strength:</strong> tactical 15/48 vs decisions 12/48 mixed
+    seat-wins — overlapping intervals. Decisions plays at roughly tactical's
+    strength; both exploit the same two edges.</li>
+  <li><strong>Clean play:</strong> winning-attack utilization 92/92 = 100%;
+    zero unproductive explores; the main leak is Glory hoarding (19% of
+    losses held unspent Glory).</li>
+  <li><strong>One blind spot:</strong> one guard-post attempt across all 176
+    decisions seat-games (0.006 per seat) while slates offered them
+    constantly — and it cost games (see tb202).</li>
+  <li><strong>Confidence is choice uncertainty:</strong> mean 0.27; 0.19 in
+    Level 1 vs 0.44 in Level 2; low confidence never produced an erratic
+    pick in 2,845 tries.</li>
+</ul>
+<p><strong>Five game studies</strong> (notes/v041/):</p>
+<ul class="tight">
+  <li><strong>ta05 — the stall.</strong> 26 rounds; four AI players
+    simultaneously failed to rank the one progress action for ten rounds
+    while all sat capped at 5 of 6 items. Motivated the Level 1 cap.</li>
+  <li><strong>ta07 — combat without conversion.</strong> 14 duels, all at the
+    best edge on offer; P2 and P3 won five duels between them and attempted
+    the Emperor zero times. The best duelist lost; the selective one won.</li>
+  <li><strong>ta14 — the close endgame.</strong> Five attacks, five hits; the
+    42% unboosted winner took the crown. Verdict line: initiative first,
+    skill second, dice third.</li>
+  <li><strong>tb202 — the window failure.</strong> The decisions seats never
+    built Glory, so they got 1 Emperor swing to tactical's 4; their failed
+    interference duels funded the winner's seals.</li>
+  <li><strong>tb209 — the Glory engine.</strong> A dominant decisions win:
+    5–0 in duels, perfect Emperor conversion, Glory timing lifting attacks
+    from 42% to 72%.</li>
+</ul>
+<span class="src">FINDINGS_V041.md; notes/v041/*.md</span>
+</div>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.5</span><strong>Rule experiments under Decisions play</strong>
+<span class="badge adopted">✓ one guardrail adopted</span><span class="sub">2026-11-07 · 96 live games, $0.2214 of $5.00</span></div>
+<p>Three knobs, each with a free 1,000-game bot baseline plus a 32-game live
+AI tournament (16 rotation + 16 pairs), all frozen artifacts, all 96 games
+replay-verified with zero refusals or timeouts.</p>
+<table>
+  <tr><th>Experiment</th><th>Key evidence</th><th>Verdict (FINDINGS_V05.md)</th></tr>
+  <tr><td>Duel lost turn</td><td>Duels aimed at an Emperor-hit holder stayed flat: 25.0% → 26.3%; auto-grants +32%</td>
+      <td><span class="badge rejected">✕ fires but aims nowhere</span> — duel value, not duel cost, is the broken half</td></tr>
+  <tr><td>Peristyle seal costs 2</td><td>Buys fell 56 → 39 per 32 games (−30%); guard posts still ignored (1 attempt in 48 seat-games)</td>
+      <td><span class="badge rejected">✕ a wall, not a tension</span> — keeps Glory-poor seats out of the guaranteed buy</td></tr>
+  <tr><td>Level 1 capped at 16 rounds</td><td>Bot baseline byte-identical to base; AI games never exceeded Level 1 round 10; bounds the 6% worst stalls</td>
+      <td><span class="badge adopted">✓ inert insurance</span> — adopted as a guardrail; measured cost zero</td></tr>
+</table>
+<p>Cross-experiment: no knob crowned the AI players; tactical's pairs edge
+persisted four-for-four; the balanced bot topped two seat tables — friction
+knobs may favor a steady script, though 16 seat-games cannot establish it.</p>
+</div>
+</section>
+<section id="era3">
+<h2>Era III — the real board (V0.6 – V0.7.3)</h2>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.6</span><strong>The physical board encoded</strong>
+<span class="badge adopted">✓ 2d6 adopted</span><span class="sub">2026-11-07 · rules_v06_realboard*.json</span></div>
+<p>The designer's board enters the simulator: 19×13 grid, 247 cells, six city
+blocks, gates at the middle of each wall. Five movement systems raced on the
+same seeds — and the entry-placement arms proved a second lever.</p>
+<div class="fig">
+<h4>Level 1 timeouts per 1,000 games, by movement die</h4>
+<p class="sub">1,000 games per arm, seeds 1000–1999. 1d12 needs a specialty die and gains only 72 timeouts over 2d6.</p>
+<svg viewBox="0 0 620 166" role="img" class="chart-svg" preserveAspectRatio="xMinYMin meet"><text x="160" y="13.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">1d6</text><path d="M 170 3 h 370.0 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -370.0 z" fill="var(--series-1)"/><text x="552.0" y="13.0" dominant-baseline="central" class="ch-val">939</text><text x="160" y="45.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">1d8</text><path d="M 170 35 h 222.6304579339723 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -222.6304579339723 z" fill="var(--series-1)"/><text x="404.6304579339723" y="45.0" dominant-baseline="central" class="ch-val">569</text><text x="160" y="77.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">1d10</text><path d="M 170 67 h 131.81895633652823 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -131.81895633652823 z" fill="var(--series-1)"/><text x="313.81895633652823" y="77.0" dominant-baseline="central" class="ch-val">341</text><text x="160" y="109.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">1d12</text><path d="M 170 99 h 31.846645367412144 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -31.846645367412144 z" fill="var(--series-1)"/><text x="213.84664536741215" y="109.0" dominant-baseline="central" class="ch-val">90</text><text x="160" y="141.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">2d6 (adopted)</text><path d="M 170 131 h 60.52396166134186 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -60.52396166134186 z" fill="var(--series-1)"/><text x="242.52396166134184" y="141.0" dominant-baseline="central" class="ch-val">162</text><line x1="170" y1="0" x2="170" y2="166" stroke="var(--baseline)" stroke-width="1"/></svg>
+<details class="tbl"><summary>Table view — all seven measured arms</summary>
+<table>
+<tr><th>Arm</th><th class="n">L1 timeouts</th><th class="n">Med. rounds</th><th class="n">Collected</th><th class="n">Auto</th><th class="n">Duels</th><th class="n">Gate wins P0/P1/P2/P3</th><th class="n">Comebacks</th></tr>
+<tr><td>small board (v03, 25 spaces)</td><td class="n">0</td><td class="n">14</td><td class="n">5.62</td><td class="n">0.39</td><td class="n">4.6</td><td class="n">27/26/24/23</td><td class="n">70%</td></tr>
+<tr><td>real, 1d6, entries on W/E streets</td><td class="n">939</td><td class="n">34</td><td class="n">4.02</td><td class="n">1.98</td><td class="n">9.7</td><td class="n">6/44/5/44</td><td class="n">5%</td></tr>
+<tr><td>real, 1d8, same</td><td class="n">569</td><td class="n">32</td><td class="n">5.19</td><td class="n">0.81</td><td class="n">9.2</td><td class="n">8/40/9/43</td><td class="n">33%</td></tr>
+<tr><td>real, 1d10, same</td><td class="n">341</td><td class="n">30</td><td class="n">5.52</td><td class="n">0.48</td><td class="n">8.6</td><td class="n">12/34/12/42</td><td class="n">51%</td></tr>
+<tr><td>real, 1d10, entries N/S/cardo</td><td class="n">340</td><td class="n">31</td><td class="n">5.67</td><td class="n">0.33</td><td class="n">8.9</td><td class="n">32/13/16/40</td><td class="n">49%</td></tr>
+<tr><td>real, 2d6, entries N/S/cardo</td><td class="n">162</td><td class="n">27</td><td class="n">5.71</td><td class="n">0.29</td><td class="n">8.2</td><td class="n">30/17/20/34</td><td class="n">68%</td></tr>
+<tr><td>real, 2d6, seal triangle (p3)</td><td class="n">162</td><td class="n">26</td><td class="n">5.71</td><td class="n">0.29</td><td class="n">8.1</td><td class="n">31/16/21/32</td><td class="n">68%</td></tr>
+</table>
+<span class="src">notes/board-comparison.md, V0.6 table; FINDINGS_V061.md §2</span></details>
+</div>
+<div class="callout">
+<p><strong>Two findings.</strong> Single d6 cannot finish the city phase on
+the real board (94% timeouts). And <em>content placement is a fairness lever
+as strong as any rule</em>: entries on the west and east streets hand those
+gates 44% each; spreading entries equalizes the first-challenger race, but
+clustering both roll-seal sites on the north street then hands north the
+Level 2 race — hence the seal triangle (cellars northwest, barracks
+southeast, Peristyle center).</p>
+</div>
+<p><strong>Encoding audit.</strong> All 107 street spaces reachable from
+every gate; no special square blocked; blocked cells verified unreachable;
+distances and the no-shortcut property regression-tested
+(BOARD_VALIDATION_V061.md). Caveat kept: three placements are the design
+team's measured choices, not the designer's artwork, and Level 2 has no
+artwork yet.</p>
+</div>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.6.1</span><strong>Board validation and family playability</strong>
+<span class="badge neutral">measured, no rule change</span><span class="sub">rules_v06_realboard_p3.json · 124 tests</span></div>
+<ul class="tight">
+  <li><strong>The board is fair; the skew was in the bots.</strong> Four
+    1,000-game mirror probes: random×4 splits gates 23/24/22/23, while the
+    frozen scripted bots break ties toward the northwest — the balanced_se
+    probe (ties southeast) flips the skew with them. Humans and reasoning
+    players show no fixed direction.</li>
+  <li><strong>Pacing.</strong> 48.1% of turns are pure movement on the big
+    board (4.6% on the old small board); median steps used: 4 of an average
+    7; the median gap between eventful turns anywhere is one turn. Whether
+    that reads as racing or dead time is a table question.</li>
+  <li><strong>Level 1 cap kept at 24.</strong> 162 of 1,000 games time out;
+    a cap-28 arm rescues 26 of them and extends the worst case by four
+    rounds. Timeouts are unlucky treasure spreads, not systematic
+    inefficiency; the cap is the designed safety valve.</li>
+  <li><strong>Playability scorecard.</strong> Teaching script: eight
+    sentences; three exceptions in the rules; seven action types; no powers,
+    phases, elimination, or lost turns. Main open risk: walking share and
+    total table time. Two measured winning routes: full collection vs the
+    Glory engine. One depth gap: a duel still cannot slow a leader.</li>
+  <li><strong>Print-and-play pack and protocol written</strong> (board,
+    cards, tokens, rulebook, quick reference, teaching script, feedback
+    form; four playtest groups). No human session played.</li>
+</ul>
+<span class="src">FINDINGS_V061.md; PLAYABILITY_SCORECARD_V061.md</span>
+</div>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.6.2</span><strong>Print pack fixes</strong>
+<span class="badge adopted">✓ print-and-play ready</span><span class="sub">2026-11-07</span></div>
+<p>Review-driven corrections, no rules change: unescaped print CSS, 7 mm pawns
+with a landscape board page, four equipment tracker sheets, an explicit
+move-first rule for guard posts and duels, and real policy dispatch in
+tools/mirror_batch.py.</p>
+</div>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.7 → V0.7.3</span><strong>Four designer corrections to the board</strong>
+<span class="sub">2026-11-07 to 11-08 · DECISIONS.md D33–D36</span></div>
+<div class="fig">
+<h4>Level 1 timeouts per 1,000 games, by board iteration</h4>
+<p class="sub">Same seeds and schedule; the V0.7.2 cardo arm carries V0.6 content (verified identical on 100 paired games).</p>
+<svg viewBox="0 0 620 102" role="img" class="chart-svg" preserveAspectRatio="xMinYMin meet"><text x="160" y="13.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">V0.6 eight-block</text><path d="M 170 3 h 370.0 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -370.0 z" fill="var(--series-1)"/><text x="552.0" y="13.0" dominant-baseline="central" class="ch-val">162</text><text x="160" y="45.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">V0.7 six-block</text><path d="M 170 35 h 293.81481481481484 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -293.81481481481484 z" fill="var(--series-1)"/><text x="475.81481481481484" y="45.0" dominant-baseline="central" class="ch-val">129</text><text x="160" y="77.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">V0.7.1 real gates</text><path d="M 170 67 h 275.34567901234567 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -275.34567901234567 z" fill="var(--series-1)"/><text x="457.34567901234567" y="77.0" dominant-baseline="central" class="ch-val">121</text><line x1="170" y1="0" x2="170" y2="102" stroke="var(--baseline)" stroke-width="1"/></svg>
+<details class="tbl"><summary>Table view</summary>
+<table><tr><th>Board</th><th class="n">L1 timeouts</th><th class="n">Med. rounds</th><th class="n">Collected</th><th class="n">Comebacks</th></tr>
+<tr><td>V0.6 eight-block (p3)</td><td class="n">162</td><td class="n">26</td><td class="n">5.71</td><td class="n">68%</td></tr>
+<tr><td>V0.7 six blocks, no cardo</td><td class="n">129</td><td class="n">24</td><td class="n">5.70</td><td class="n">70%</td></tr>
+<tr><td>V0.7.1 real gates</td><td class="n">121</td><td class="n">23</td><td class="n">5.66</td><td class="n">70%</td></tr>
+<tr><td>V0.7.2 cardo (rejected)</td><td class="n">162*</td><td class="n">26*</td><td class="n">5.71*</td><td class="n">68%*</td></tr></table>
+<span class="src">DECISIONS.md D33–D35; *carried over from identical V0.6 content</span></details>
+</div>
+<ul class="tight">
+  <li><strong>V0.7 — six blocks.</strong> The point of the layout is six
+    blocks with one card each; the V0.6 central street had split the middle
+    column into strips. Removing it cut timeouts 162 → 129 and two rounds
+    off the median, collection and comebacks unchanged. Fairness probes sit
+    in the same even band (balanced_se 25.1/22.1/25.2/27.6; random×4
+    211/178/204/208).</li>
+  <li><strong>V0.7.1 — real gates.</strong> The north and south doors must
+    open onto a vertical street, as in the real palace. Side effect: every
+    gate exactly 9 spaces from the checkpoint; gate spread tightened to
+    29.5/19.6/20.9/30.0. Superseded later by a correction, not by any
+    measurement.</li>
+  <li><strong>V0.7.2 — the cardo attempt, rejected.</strong> Restoring the
+    real central street (column 9) pierces the two middle blocks: eight
+    physical blocks, whatever the metadata calls them. Rejected for the
+    active layout, retained for old replays.</li>
+  <li><strong>V0.7.3 — six intact blocks, adopted.</strong> The cardo reuses
+    column 6 and the decumanus row 6; gates end the streets; the checkpoint
+    is the crossing (6,6). Both generators now validate six connected
+    blocks, complete footprints, one entry per block, and gate endpoints —
+    the rejected layout fails that contract. Gate-to-crossing distances
+    6/12/6/6; the cardo is off-center on purpose.</li>
+</ul>
+<p><strong>Honest caveat, carried in the sources:</strong> the 6/12/6/6
+values describe routes, not win rates. "This layout needs new balance
+measurements" (README) — and random gate assignment shares access to
+positions; it does not prove equal gate strength.</p>
+</div>
+</section>
+
+<section id="era4">
+<h2>Era IV — imperial succession (V0.8 – V0.8.1)</h2>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.8</span><strong>The redesign and its motivation</strong>
+<span class="sub">2026-11-08 · docs/intervention-plan.md</span></div>
+<p><strong>Why redesign.</strong> The user found seals complicated and weakly
+motivated, and asked for meaning drawn from the Tetrarchy and the struggle
+after Diocletian's retirement (notes/faction-support.md, with historical
+sources on the Tetrarchy and Constantine's proclamation by his troops). The
+working rule from the history notes: <em>a fact sticks when play makes it
+happen</em> — relabeling the same three tests would not answer the request.
+A separate incentive analysis (notes/treasure-incentives.md) showed free
+transition equipment weakens the collection race: the auto-grant made a
+2-item kit identical to a 6-item kit at the transition.</p>
+<p><strong>What changed.</strong> Seals became faction support (visit a
+meeting place, pay 1 Prestige; two of three factions qualify a claim).
+Glory became Prestige with spending options, capped at 3. Equipment
+persists through the whole game; no free grants; collection stays legal in
+succession. The Emperor boss fight became a contested claim at the Peristyle
+that every rival answers. Challenging an active claimant costs a fee, paid
+before the roll. The board is the V0.7.3 six-block layout, with named
+players and seeded gate assignment.</p>
+<p>The palace contest between four claimants is fiction inspired by real
+history — the notes say so explicitly, and the rulebook carries the same
+honesty.</p>
+</div>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.8</span><strong>The contest-fee ladder</strong>
+<span class="badge adopted">✓ fee 1 released</span><span class="sub">results/v08-contestcost-001, v08-programme-001, v08-live-001/002</span></div>
+<div class="grid2">
+<div class="fig">
+<h4>Draw fraction (holdout, 96 games per arm)</h4>
+<p class="sub">Offline bots, four profiles rotated across all 24 gate permutations.</p>
+<svg viewBox="0 0 620 102" role="img" class="chart-svg" preserveAspectRatio="xMinYMin meet"><text x="160" y="13.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">fee 0</text><path d="M 170 3 h 370.00000000000006 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -370.00000000000006 z" fill="var(--series-1)"/><text x="552.0" y="13.0" dominant-baseline="central" class="ch-val">57.3%</text><text x="160" y="45.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">fee 1 (released)</text><path d="M 170 35 h 36.46771378708552 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -36.46771378708552 z" fill="var(--series-1)"/><text x="218.46771378708553" y="45.0" dominant-baseline="central" class="ch-val">6.2%</text><text x="160" y="77.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">fee 2</text><path d="M 170 67 h -2.0 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h 2.0 z" fill="var(--series-1)"/><text x="180.0" y="77.0" dominant-baseline="central" class="ch-val">0.0%</text><line x1="170" y1="0" x2="170" y2="102" stroke="var(--baseline)" stroke-width="1"/></svg>
+</div>
+<div class="fig">
+<h4>Canceled claims per game (holdout)</h4>
+<p class="sub">Fee 0 loops: claim, free challenge, cancel, repeat.</p>
+<svg viewBox="0 0 620 102" role="img" class="chart-svg" preserveAspectRatio="xMinYMin meet"><text x="160" y="13.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">fee 0</text><path d="M 170 3 h 370.00000000000006 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -370.00000000000006 z" fill="var(--series-1)"/><text x="552.0" y="13.0" dominant-baseline="central" class="ch-val">25.4</text><text x="160" y="45.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">fee 1 (released)</text><path d="M 170 35 h 125.57480314960631 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -125.57480314960631 z" fill="var(--series-1)"/><text x="307.5748031496063" y="45.0" dominant-baseline="central" class="ch-val">8.8</text><text x="160" y="77.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">fee 2</text><path d="M 170 67 h 23.976377952755907 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -23.976377952755907 z" fill="var(--series-1)"/><text x="205.9763779527559" y="77.0" dominant-baseline="central" class="ch-val">1.9</text><line x1="170" y1="0" x2="170" y2="102" stroke="var(--baseline)" stroke-width="1"/></svg>
+</div>
+</div>
+<details class="tbl"><summary>Table view — fee ladder, holdout suite</summary>
+<table><tr><th>Measure</th><th class="n">Fee 0</th><th class="n">Fee 1</th><th class="n">Fee 2</th></tr>
+<tr><td>Draw fraction</td><td class="n">0.573</td><td class="n">0.062</td><td class="n">0.000</td></tr>
+<tr><td>Median rounds</td><td class="n">40</td><td class="n">26</td><td class="n">21</td></tr>
+<tr><td>Claims per game</td><td class="n">26.1</td><td class="n">9.7</td><td class="n">—</td></tr>
+<tr><td>Canceled claims per game</td><td class="n">25.4</td><td class="n">8.8</td><td class="n">1.9</td></tr>
+<tr><td>Claims challenged (fraction)</td><td class="n">0.99</td><td class="n">0.99</td><td class="n">0.83</td></tr></table>
+<span class="src">results/v08-contestcost-001/report.md; programme cycles 01–02 decision.json</span></details>
+<p><strong>Fee 0</strong> lost to a free-denial loop: 99% of claims drawn,
+25.4 cancellations per game, 57% draws, 40-round medians.
+<strong>Fee 1</strong> broke the loop while keeping counterplay alive — every
+profile's win rate rose (collector 17% → 33%, counterleader 14% → 31%).</p>
+<div class="fig">
+<h4>Claims challenged in the live probes</h4>
+<p class="sub">Four all-live gpt-6-luna games per fee.</p>
+<svg viewBox="0 0 620 70" role="img" class="chart-svg" preserveAspectRatio="xMinYMin meet"><text x="160" y="13.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">fee 2 · live, 4 games</text><path d="M 170 3 h -2.0 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h 2.0 z" fill="var(--series-1)"/><text x="180.0" y="13.0" dominant-baseline="central" class="ch-val">0 of 4</text><text x="160" y="45.0" text-anchor="end" dominant-baseline="central" class="ch-lbl">fee 1 · live, 4 games</text><path d="M 170 35 h 370.0 a 4 4 0 0 1 4 4 v 12 a 4 4 0 0 1 -4 4 h -370.0 z" fill="var(--series-1)"/><text x="552.0" y="45.0" dominant-baseline="central" class="ch-val">12 of 13</text><line x1="170" y1="0" x2="170" y2="70" stroke="var(--baseline)" stroke-width="1"/></svg>
+<details class="tbl"><summary>Table view — live probes</summary>
+<table><tr><th>Measure</th><th class="n">Fee 2 live</th><th class="n">Fee 1 live</th></tr>
+<tr><td>Claims proclaimed</td><td class="n">4</td><td class="n">13</td></tr>
+<tr><td>Claims challenged</td><td class="n">0</td><td class="n">12 (92%)</td></tr>
+<tr><td>Claims canceled by a challenge</td><td class="n">0</td><td class="n">9</td></tr>
+<tr><td>Games won by acclamation</td><td class="n">4 of 4</td><td class="n">— (all contested)</td></tr>
+<tr><td>Cost of the run</td><td class="n">$0.1316</td><td class="n">$0.3198 (shared ledger)</td></tr></table>
+<span class="src">results/v08-live-001, v08-live-002; FINDINGS_V08.md</span></details>
+</div>
+<p><strong>Fee 2's rejection is the sharpest lesson in the programme.</strong>
+Its bot numbers were excellent — 0 draws, median 21 rounds, four winning
+profiles — and the proposal programme promoted it on those mechanical
+checks. Then four live games produced <em>zero</em> contests: no responder
+could legally pay; response logs show the contest option never even appeared.
+The bot purses and the live purses are different economies. Mechanical
+promotion checks are guards, not judges.</p>
+</div>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.8</span><strong>Autoresearch ar1 and the counterplay veto</strong>
+<span class="badge adopted">✓ KEEP V0.8</span><span class="sub">results/autoresearch-ar1-001</span></div>
+<p>The fee-2 lesson was then encoded as a guard: a frozen contest audit
+replays every suite game and measures, from public state, whether contests
+were offered and affordable. A preregistered veto rejects any candidate
+below floors of 0.50 offered and 0.60 able-to-pay — fee 0 and fee 2 became
+permanent negative controls that bot evidence alone can never promote.</p>
+<table>
+  <tr><th>Cycle (one key changed)</th><th>Result</th></tr>
+  <tr><td>challenge bonus 2 → 1</td><td>Passed every offline gate and a 384-game paired confirmation; rejected on live evidence (below)</td></tr>
+  <tr><td>reset positions at transition → true</td><td><span class="badge rejected">✕ failed both suites</span> draws up to 7–8%, cancellations ~9/game</td></tr>
+  <tr><td>Prestige cap 3 → 4</td><td><span class="badge rejected">✕ failed both suites</span> cancellations 9.25/game, draws doubled</td></tr>
+  <tr><td>Prestige cap 3 → 2</td><td><span class="badge rejected">✕ failed both suites</span> churn is proclamation-limited, not purse-limited</td></tr>
+  <tr><td>support cost 1 → 2</td><td><span class="badge rejected">✕ failed both suites</span> a tax, not a choice; median 29 rounds</td></tr>
+  <tr><td>grace rounds 1 → 0</td><td><span class="badge rejected">✕ failed both suites</span> less transition gear, total rounds flat or higher</td></tr>
+</table>
+<p><strong>The live comparison that settled the survivor.</strong> Boost +2
+(incumbent) vs +1 (candidate), eleven live games: contest win rate 0.82 vs
+0.25, cancellations 3.83 vs 0.25 per game, acclamations 18% vs 80% — the
+fee-2 lesson again in miniature. Final recommendation: <strong>KEEP V0.8
+exactly as released</strong> — fee 1, boost +2 for 1 Prestige, cap 3,
+support cost 1, positions preserved, one grace round. Spending for the
+whole autoresearch run: $0.4243 of $0.75 over 1,172 of 1,500 calls; two
+Claude proposal agents completed (58 s, 106 s), the third hit its 180 s
+timeout and was recorded as a failure, never substituted.</p>
+<span class="src">FINDINGS_AUTORESEARCH.md; RECOMMENDATION.md</span>
+</div>
+
+<div class="card ver">
+<div class="vhead"><span class="vnum">V0.8.1</span><strong>A4 print kit and the release</strong>
+<span class="badge adopted">✓ released</span><span class="sub">2026-11-08 · print/, PR #8</span></div>
+<p>Released state: the browser game is live with the fee-1 rulebook; a full
+Chromium session played a game to game over with zero console errors; 188
+Python tests and four JavaScript suites passed at release (210 Python tests
+today after the kit fix pass). The black-and-white A4 print kit holds nine
+PDFs — four-tile board (580 × 406 mm assembled, butt-join with dashed cut
+lines), player sheets, cards and tokens, a six-page family rulebook, quick
+reference, teaching guide, playtest form, and print instructions with a
+100 mm calibration ruler. One command regenerates every PDF from
+rules_v08_succession.json, and the generator stops if the rules drift from
+the printed numbers. The fix pass kept cut guides inside the print margin,
+corrected the building hatching and the duel example, and cut two pages.</p>
+</div>
+</section>
+
+<section id="playtests">
+<h2>Playtests — the qualitative record</h2>
+<p>Eight narrative games were played by role-playing agent tables through the
+same CLI loop, one action per turn, observations only. They are qualitative
+signal, not measurement. Games 1–5 ran on the engine with the retreat bug;
+their notes carry caveat banners.</p>
+<div class="grid2">
+<div class="card"><h4>narr1 — the pacifist table</h4>
+<p>Zero duels in 55 turns; once everyone holds the same tier, a duel is a
+coin flip the defender wins. Seat order, not skill, broke the endgame tie.</p></div>
+<div class="card"><h4>narr2 — the duelists</h4>
+<p>Smart aggression beat pure aggression: arming to three items first, then
+bullying. The Glory cap was the loudest complaint — the best brawler's wins
+paid nothing.</p></div>
+<div class="card"><h4>narr3 — four personas, one bug</h4>
+<p>Ties to the defender decided three of eleven duels, all against one
+player. This table found the emperor-miss retreat bug by reading the
+logs.</p></div>
+<div class="card"><h4>narr4 — the flattened race</h4>
+<p>A player who explored nothing entered Level 2 identical to one who
+explored everything: the auto-grant erased the whole Level 1 scorecard.</p></div>
+<div class="card"><h4>narr5 — the endgame window</h4>
+<p>The seal race was fast and clean; the miss-retreat never fired (the bug);
+the tense part was the race to two hits, decided 9–5.</p></div>
+<div class="card"><h4>narr6 — the fix bites</h4>
+<p>On the corrected engine a miss costs Glory, position, and a full turn of
+tempo. "The Emperor window feels earned rather than a free re-roll
+lottery."</p></div>
+<div class="card"><h4>narr7 — interference hunger</h4>
+<p>Every persona independently refused to duel a leader: duels take nothing
+from the loser and only pay the winner. The last three turns were watched,
+not played.</p></div>
+<div class="card"><h4>narr8 — the doorstep teleport</h4>
+<p>Under displacement, players farmed the kick that was meant to punish
+them, because the drop point is one step from the goal. Falsified the
+geometry.</p></div>
+</div>
+<p><strong>Protocols, written and waiting.</strong> The V0.6.1 protocol
+prescribes four groups (children 6–9 with a facilitator, a mixed-age family,
+adult strategy players, older non-gamers) with timed teaching, solo feedback
+forms, and recorded observations only — predictions never written into
+recorded fields. The V0.8 protocol adds a goal check (each player explains
+unaided how someone wins) and a four-game gate rotation. A session counts
+as positive evidence only if players can state the goal, name a real choice
+they made, and want another game. No human session has been recorded.</p>
+<span class="src">notes/narrative-game-1..8.md; playtest/protocol.md; playtest/protocol-v08.md</span>
+</section>
+
+<section id="rejected">
+<h2>Rejected ideas — the measured ledger</h2>
+<table>
+  <tr><th>Idea</th><th>Tried in</th><th>Measured reason</th></tr>
+  <tr><td>Glory cap 3</td><td>V0.2</td><td>Duels rise to 7.01/game; aggressive still 6%. "More fighting, no more winning."</td></tr>
+  <tr><td>Three Emperor hits</td><td>V0.2</td><td>Lengthens games; does nothing for combat or fairness.</td></tr>
+  <tr><td>Grace 0</td><td>V0.1/0.2</td><td>Compresses collection; auto-grants up to 0.70/player.</td></tr>
+  <tr><td>Glory theft</td><td>V0.3</td><td>Aggressive 0 wins in 500 seat-games; greedy (never duels) 36%. Pacifists win the Glory war.</td></tr>
+  <tr><td>Displacement to the retreat node</td><td>V0.3</td><td>Doorstep teleport; 108 chamber evictions delayed zero attempts; falsified by narr8.</td></tr>
+  <tr><td>Duel lost turn (under AI play)</td><td>V0.3/V0.5</td><td>Real and cheap, but aims nowhere: duels at hit-holders stayed flat (25.0% → 26.3%).</td></tr>
+  <tr><td>Peristyle seal cost 2</td><td>V0.5</td><td>Purchases fell 30%; a wall, not a tension.</td></tr>
+  <tr><td>1d6 on the real board</td><td>V0.6</td><td>94% city timeouts; cannot finish the phase.</td></tr>
+  <tr><td>1d12 movement</td><td>V0.6.1</td><td>Fewer timeouts than 2d6 (90 vs 162) but needs a specialty die; 2d6 adopted.</td></tr>
+  <tr><td>Level 1 cap 28</td><td>V0.6.1</td><td>Rescues 26 of 162 timeouts, extends worst case four rounds. Cap 24 kept.</td></tr>
+  <tr><td>Cardo through the blocks</td><td>V0.7.2</td><td>Eight physical blocks regardless of labels; fails the generator contract.</td></tr>
+  <tr><td>Contest fee 0</td><td>V0.8</td><td>Free-denial loop: 57% draws, 25.4 cancellations/game, 40-round medians.</td></tr>
+  <tr><td>Contest fee 2</td><td>V0.8</td><td>Perfect bot numbers; zero contests in four live games — no responder could pay.</td></tr>
+  <tr><td>Challenge boost +1</td><td>V0.8</td><td>Passed every offline gate; live contest win rate fell 0.82 → 0.25, acclamations 80%.</td></tr>
+  <tr><td>Reset positions at transition</td><td>V0.8</td><td>Draws up to 7–8%; claim cycles stretch.</td></tr>
+  <tr><td>Prestige cap 4 / cap 2</td><td>V0.8</td><td>More churn, not deeper choices / barely dents proclamation-limited churn.</td></tr>
+  <tr><td>Support cost 2</td><td>V0.8</td><td>A tax, not a choice; median 29 rounds.</td></tr>
+  <tr><td>Grace rounds 0 (succession)</td><td>V0.8</td><td>Less transition gear; total rounds flat or higher.</td></tr>
+</table>
+</section>
+
+<section id="rules">
+<h2>The final game — V0.8.1 rules in full</h2>
+<p class="sub">The current game on the V0.7.3 six-block board, released with a
+contest fee of 1 Prestige. Everything below is read from
+rules_v08_succession.json and the shared rulebook text in
+tools/succession_content.py.</p>
+
+<div class="card">
+<h3>Overview and goal</h3>
+<p>Diocletian has retired. Four rivals prepare a claim to imperial power:
+collect equipment, earn Prestige, secure faction support. When succession
+begins, reach the Peristyle with two supporters and proclaim your claim. If
+it survives one response turn from every rival, you are acclaimed emperor.
+The rulebook's own provenance line: "Succession prototype V0.8. The starting
+economy is experimental."</p>
+</div>
+
+<div class="card">
+<h3>Setup</h3>
+<ol class="steps">
+  <li>Lay out the six-block board: six 5×5 blocks on a 19×13 grid, six
+    shuffled equipment cards, one per block, face down.</li>
+  <li>Give each player a pawn, a player sheet, and a name and color. Names
+    belong to players, not gates.</li>
+  <li>Assign gates: seeded random (default), manual choice of four distinct
+    gates, or rotate gates across four repeated games. Golden north, Silver
+    east, Bronze south, Iron west.</li>
+  <li>Place Prestige counters and the tracker cards in reach.</li>
+</ol>
+</div>
+
+<div class="card">
+<h3>A turn</h3>
+<ol class="steps">
+  <li>Roll two six-sided dice for movement.</li>
+  <li>Move along street circles up to the total; you may stop early and pass
+    other pawns.</li>
+  <li>Take one action at your destination. Collecting equipment, gaining
+    support, and fighting are actions; a guard action or a duel also needs
+    at least one space of movement.</li>
+</ol>
+<p>The first player rotates every round. The city phase ends when a player
+with all six equipment types opens the checkpoint (finish that round plus one
+full grace round), or after 24 city rounds. At the transition, every pawn
+keeps its position and everything it holds; nothing is granted for free.</p>
+</div>
+
+<div class="card">
+<h3>Actions</h3>
+<table>
+  <tr><th>Action</th><th>How it works</th></tr>
+  <tr><td>Collect equipment</td><td>Stop on a district entry and take that block's card, revealed to everyone. Each type once per player. Legal in both phases.</td></tr>
+  <tr><td>Stand a guard post</td><td>End a move on a post and roll: 4+ earns 1 Prestige.</td></tr>
+  <tr><td>Duel a rival</td><td>End your move within two street spaces of them; see duels below.</td></tr>
+  <tr><td>Gain faction support</td><td>Reach a faction's meeting place and pay 1 Prestige. No roll.</td></tr>
+  <tr><td>Open the checkpoint</td><td>First player with all six types earns 1 Prestige and starts the transition.</td></tr>
+  <tr><td>Proclaim a claim</td><td>During succession, at the Peristyle with two supporters. Stationary.</td></tr>
+  <tr><td>Maintain a claim</td><td>Stay at the Peristyle while your claim is pending. Leaving voluntarily cancels it.</td></tr>
+  <tr><td>Challenge a claimant</td><td>A duel against the active claimant; pay the contest fee first. See below.</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h3>Duels and the contest fee</h3>
+<ul class="tight">
+  <li>Each side rolls one die and adds its equipment bonus: 0–2 items +0,
+    3–5 items +1, all six +2. The attacker wins ties.</li>
+  <li>The winner earns 1 Prestige. No one loses equipment or support in a
+    duel.</li>
+  <li>Before rolling, the attacker may pay 1 Prestige for +2 on the roll —
+    paid even on a loss, and separate from the fee below.</li>
+  <li><strong>Challenging an active claimant costs 1 Prestige, paid before
+    the roll, win or lose.</strong> An ordinary duel against a player with
+    no active claim is free. A winning challenge still earns the normal
+    reward.</li>
+  <li>Why the fee exists, in one line of history: fee 0 collapsed into a
+    free-denial loop; fee 2 silenced all counterplay in live games; fee 1
+    kept 12 of 13 live claims contested.</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>Prestige — one currency, three spends</h3>
+<table>
+  <tr><th></th><th>Rule</th></tr>
+  <tr><td>Cap</td><td>Hold at most 3; extra rewards are lost</td></tr>
+  <tr><td>Earn</td><td>Guard post success (4+) · duel win · first complete collector at the checkpoint</td></tr>
+  <tr><td>Spend</td><td>1 for faction support · 1 for the +2 duel boost · 1 as the contest fee</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h3>Faction support</h3>
+<table>
+  <tr><th>Faction</th><th>Meeting place</th></tr>
+  <tr><td>The Army</td><td>Barracks at District F (southeast)</td></tr>
+  <tr><td>Imperial officials</td><td>The Peristyle, main crossing</td></tr>
+  <tr><td>City elites</td><td>Civic meeting place at District A (northwest)</td></tr>
+</table>
+<p>One rule for all three: reach the meeting place, pay 1 Prestige, gain the
+support — no roll, both phases, yours for the rest of the game. Every
+faction can back every player. Two different supporters qualify a claim;
+rivals do not need to endorse you.</p>
+</div>
+
+<div class="card">
+<h3>The claim and the win</h3>
+<ol class="steps">
+  <li>During succession, reach the Peristyle with two supporters and
+    proclaim your claim. Only one claim can be pending.</li>
+  <li>Every rival gets one response turn: challenge you, prepare their own
+    position, or act otherwise. Declining to challenge is a valid
+    response.</li>
+  <li>A winning challenge cancels your claim and returns your pawn to your
+    assigned gate; your equipment and support remain.</li>
+  <li>If all three rivals finish their responses with your claim intact, you
+    are acclaimed emperor and win.</li>
+</ol>
+<p>If nobody wins within 24 succession rounds, the game is a draw.</p>
+</div>
+
+<div class="card">
+<h3>The board</h3>
+<svg viewBox="0 0 724 430" role="img" aria-label="The six-block Dioclet board: 19 by 13 grid, six solid 5x5 blocks, cardo and decumanus crossing at the Peristyle checkpoint, four gates at the street ends" class="board-svg"><rect x="96" y="40" width="532" height="364" rx="8" fill="var(--street)" stroke="var(--hairline)"/><rect x="264" y="40" width="28" height="364" fill="var(--axis-tint)"/><rect x="96" y="208" width="532" height="28" fill="var(--axis-tint)"/><rect x="432" y="40" width="28" height="364" fill="var(--sec-tint)"/><rect x="126" y="70" width="136" height="136" rx="5" fill="var(--block)" stroke="var(--block-line)"/><text x="194.0" y="138.0" text-anchor="middle" dominant-baseline="central" class="board-blk">A</text><rect x="294" y="70" width="136" height="136" rx="5" fill="var(--block)" stroke="var(--block-line)"/><text x="362.0" y="138.0" text-anchor="middle" dominant-baseline="central" class="board-blk">B</text><rect x="462" y="70" width="136" height="136" rx="5" fill="var(--block)" stroke="var(--block-line)"/><text x="530.0" y="138.0" text-anchor="middle" dominant-baseline="central" class="board-blk">C</text><rect x="126" y="238" width="136" height="136" rx="5" fill="var(--block)" stroke="var(--block-line)"/><text x="194.0" y="306.0" text-anchor="middle" dominant-baseline="central" class="board-blk">D</text><rect x="294" y="238" width="136" height="136" rx="5" fill="var(--block)" stroke="var(--block-line)"/><text x="362.0" y="306.0" text-anchor="middle" dominant-baseline="central" class="board-blk">E</text><rect x="462" y="238" width="136" height="136" rx="5" fill="var(--block)" stroke="var(--block-line)"/><text x="530.0" y="306.0" text-anchor="middle" dominant-baseline="central" class="board-blk">F</text><circle cx="278.0" cy="54.0" r="9" fill="var(--series-1)" stroke="var(--street)" stroke-width="2"/><text x="278.0" y="26" text-anchor="middle" dominant-baseline="central" class="board-lbl board-gate">Golden · north</text><circle cx="614.0" cy="222.0" r="9" fill="var(--series-1)" stroke="var(--street)" stroke-width="2"/><text x="638" y="222.0" text-anchor="start" dominant-baseline="central" class="board-lbl board-gate">Silver · east</text><circle cx="278.0" cy="390.0" r="9" fill="var(--series-1)" stroke="var(--street)" stroke-width="2"/><text x="278.0" y="420" text-anchor="middle" dominant-baseline="central" class="board-lbl board-gate">Bronze · south</text><circle cx="110.0" cy="222.0" r="9" fill="var(--series-1)" stroke="var(--street)" stroke-width="2"/><text x="86" y="222.0" text-anchor="end" dominant-baseline="central" class="board-lbl board-gate">Iron · west</text><circle cx="194.0" cy="54.0" r="8.5" fill="var(--street)" stroke="var(--series-1)" stroke-width="2"/><text x="194.0" y="54.0" text-anchor="middle" dominant-baseline="central" class="board-ent">A</text><circle cx="362.0" cy="54.0" r="8.5" fill="var(--street)" stroke="var(--series-1)" stroke-width="2"/><text x="362.0" y="54.0" text-anchor="middle" dominant-baseline="central" class="board-ent">B</text><circle cx="530.0" cy="54.0" r="8.5" fill="var(--street)" stroke="var(--series-1)" stroke-width="2"/><text x="530.0" y="54.0" text-anchor="middle" dominant-baseline="central" class="board-ent">C</text><circle cx="194.0" cy="390.0" r="8.5" fill="var(--street)" stroke="var(--series-1)" stroke-width="2"/><text x="194.0" y="390.0" text-anchor="middle" dominant-baseline="central" class="board-ent">D</text><circle cx="362.0" cy="390.0" r="8.5" fill="var(--street)" stroke="var(--series-1)" stroke-width="2"/><text x="362.0" y="390.0" text-anchor="middle" dominant-baseline="central" class="board-ent">E</text><circle cx="530.0" cy="390.0" r="8.5" fill="var(--street)" stroke="var(--series-1)" stroke-width="2"/><text x="530.0" y="390.0" text-anchor="middle" dominant-baseline="central" class="board-ent">F</text><circle cx="278.0" cy="222.0" r="10" fill="var(--series-2)" stroke="var(--street)" stroke-width="2"/><text x="278.0" y="222.0" text-anchor="middle" dominant-baseline="central" class="board-ent board-cp">CP</text><circle cx="278.0" cy="390.0" r="8.5" fill="var(--ink-2)" stroke="var(--street)" stroke-width="2"/><text x="278.0" y="390.0" text-anchor="middle" dominant-baseline="central" class="board-ent board-cp">EM</text><circle cx="278.0" cy="362.0" r="8.5" fill="var(--ink-2)" stroke="var(--street)" stroke-width="2"/><text x="278.0" y="362.0" text-anchor="middle" dominant-baseline="central" class="board-ent board-cp">RT</text><rect x="104.0" y="104.0" width="12" height="12" rx="3" fill="var(--street)" stroke="var(--ink-2)" stroke-width="2"/><rect x="608.0" y="104.0" width="12" height="12" rx="3" fill="var(--street)" stroke="var(--ink-2)" stroke-width="2"/><rect x="104.0" y="328.0" width="12" height="12" rx="3" fill="var(--street)" stroke="var(--ink-2)" stroke-width="2"/><rect x="608.0" y="328.0" width="12" height="12" rx="3" fill="var(--street)" stroke="var(--ink-2)" stroke-width="2"/></svg>
+<div class="legend">
+  <span><span class="dot" style="background:var(--series-1)"></span>gates (N/E/S/W start)</span>
+  <span><span class="dot" style="background:var(--surface);outline:2px solid var(--series-1)"></span>district entries A–F</span>
+  <span><span class="dot" style="background:var(--series-2)"></span>checkpoint · Peristyle (6,6)</span>
+  <span><span class="dot" style="background:var(--ink-2)"></span>emperor site / retreat</span>
+  <span><span class="sq" style="background:var(--surface);outline:2px solid var(--ink-2)"></span>glory posts</span>
+  <span><span class="sq" style="background:var(--axis-tint)"></span>cardo and decumanus</span>
+</div>
+<p class="sub">Generated from rules_v08_succession.json — never hand-copied.
+Gate-to-crossing distances: north 6, east 12, south 6, west 6; the cardo is
+off-center to keep six equal blocks. Board facts: 19×13, 150 blocked cells
+in six 5×5 blocks, 97 connected street spaces; secondary north-south street
+on column 12; army meets at F, officials at the Peristyle, elites at A.</p>
+</div>
+
+<div class="card">
+<h3>Exact values (from the rules file)</h3>
+<details class="tbl" open><summary>Complete settings table</summary>
+<table>
+  <tr><th>Setting</th><th class="n">Value</th></tr>
+  <tr><td>Gameplay mode / rules version</td><td class="n">succession-v1 · 0.8</td></tr>
+  <tr><td>Players</td><td class="n">4</td></tr>
+  <tr><td>Prestige cap</td><td class="n">3</td></tr>
+  <tr><td>Duel win reward / guard post reward / guard post min roll</td><td class="n">1 · 1 · 4+</td></tr>
+  <tr><td>First complete collector (checkpoint) reward</td><td class="n">1</td></tr>
+  <tr><td>Support cost / required support</td><td class="n">1 · 2 of 3 factions</td></tr>
+  <tr><td>Support in city phase</td><td class="n">yes</td></tr>
+  <tr><td>Optional duel boost</td><td class="n">+2 for 1 Prestige</td></tr>
+  <tr><td>Contest fee (challenge an active claimant)</td><td class="n">1 Prestige, before the roll</td></tr>
+  <tr><td>Equipment bonus tiers</td><td class="n">0–2 → +0 · 3–5 → +1 · 6 → +2</td></tr>
+  <tr><td>Attacker wins duel ties</td><td class="n">yes</td></tr>
+  <tr><td>Movement</td><td class="n">2d6, max steps, early stop, pass through</td></tr>
+  <tr><td>Duel range</td><td class="n">2 street spaces</td></tr>
+  <tr><td>City phase cap / grace rounds after checkpoint</td><td class="n">24 · 1</td></tr>
+  <tr><td>Auto-equip at transition</td><td class="n">no</td></tr>
+  <tr><td>Succession phase cap</td><td class="n">24 rounds, then a draw</td></tr>
+  <tr><td>Rotate first player each round</td><td class="n">yes</td></tr>
+  <tr><td>Gate assignment</td><td class="n">seeded random (manual / rotation optional)</td></tr>
+  <tr><td>Board</td><td class="n">19×13 · 150 blocked · 97 street</td></tr>
+  <tr><td>Gates N/E/S/W</td><td class="n">(6,0) · (18,6) · (6,12) · (0,6)</td></tr>
+  <tr><td>Checkpoint / Peristyle</td><td class="n">(6,6)</td></tr>
+  <tr><td>Glory posts</td><td class="n">(0,2) · (18,2) · (0,10) · (18,10)</td></tr>
+  <tr><td>District entries A–F</td><td class="n">(3,0) · (9,0) · (15,0) · (3,12) · (9,12) · (15,12)</td></tr>
+</table>
+<span class="src">rules_v08_succession.json</span></details>
+</div>
+
+<div class="card">
+<h3>Where to play it</h3>
+<ul class="tight">
+  <li>In the browser (hot-seat, with bot players): the deployed site — see
+    the repository README for the current URL.</li>
+  <li>On paper: <code>python3 tools/make_a4_print_kit.py</code> regenerates
+    the full A4 kit from the rules file.</li>
+  <li>In simulation: <code>python3 sim.py batch --rules
+    rules_v08_succession.json …</code> — deterministic, replay-verified.</li>
+</ul>
+</div>
+</section>
+
+<section id="appendix">
+<h2>Appendix</h2>
+<div class="card">
+<h3>Game counts</h3>
+<table>
+  <tr><th>Set</th><th class="n">Games</th></tr>
+  <tr><td>Bot batches on disk (29 results directories, games.csv rows)</td><td class="n">27,210</td></tr>
+  <tr><td>V0.4 pilots · V0.4.1 tournament · V0.5 tournaments</td><td class="n">3 · 64 · 96</td></tr>
+  <tr><td>V0.8 contest-cost suites (4 × 96)</td><td class="n">384</td></tr>
+  <tr><td>V0.8 proposal programme (6 suites × 96)</td><td class="n">576</td></tr>
+  <tr><td>V0.8 alternative-play audit suites (2 × 24)</td><td class="n">48</td></tr>
+  <tr><td>Autoresearch cycles (6 × 192 + 192 baseline) and 384-per-arm confirmation</td><td class="n">1,344 · 768</td></tr>
+  <tr><td>Live games: V0.8 fee probes 8 · autoresearch comparison 11</td><td class="n">19</td></tr>
+  <tr><td><strong>Total</strong></td><td class="n"><strong>≈30,500</strong></td></tr>
+</table>
+<p class="sub">"Live model games: 182" counts every game with at least one
+live Decisions seat: 3 pilots + 64 tournament + 96 V0.5 + 8 probes + 11
+comparison.</p>
+</div>
+<div class="card">
+<h3>Live spend</h3>
+<table>
+  <tr><th>Run</th><th class="n">Spent</th><th class="n">Cap</th></tr>
+  <tr><td>V0.4 contract checks + pilots</td><td class="n">≈$0.0135</td><td class="n">$0.50 / game</td></tr>
+  <tr><td>V0.4.1 tournament</td><td class="n">$0.319</td><td class="n">$1.00</td></tr>
+  <tr><td>V0.5 tournaments</td><td class="n">$0.2214</td><td class="n">$5.00</td></tr>
+  <tr><td>V0.8 live fee probes</td><td class="n">$0.3198</td><td class="n">$0.75</td></tr>
+  <tr><td>Autoresearch live comparison + proposal agents</td><td class="n">$0.4243</td><td class="n">$0.75 + $0.50/cycle</td></tr>
+  <tr><td><strong>Total recorded</strong></td><td class="n"><strong>≈$1.30</strong></td><td class="n">every run under cap</td></tr>
+</table>
+</div>
+<div class="card">
+<h3>Known source discrepancies, recorded not resolved</h3>
+<ul class="tight">
+  <li>V0.1 balanced wins appear as 862/2,750 (CI 29.6–33.1) in FINDINGS.md
+    §3 and 864 (CI 29.7–33.2) in the §4 table.</li>
+  <li>V0.2 grace-1 median full-game rounds: 14 in the comparison table,
+    "median 15" in the experiment 5 text.</li>
+  <li>V0.8 live game rounds: FINDINGS_V08 lists 9/23/16/14 per game while
+    summary.json records median_rounds 32.5 — different round definitions.</li>
+  <li>The V0.8 shared ledger prints 904 requests / $0.3198; whether that
+    number is the fee-1 run alone or cumulative with the fee-2 run is not
+    stated in any file.</li>
+</ul>
+</div>
+<div class="card">
+<h3>Sources and reproduction</h3>
+<p>Primary: FINDINGS.md, FINDINGS_V02–V08.md, BOARD_VALIDATION_V061.md,
+PLAYABILITY_SCORECARD_V061.md, DECISIONS.md (D1–D38),
+notes/ (board-comparison, board-design, faction-support, treasure-incentives,
+v05-experiment-plan, narrative-game-1..8, v041/*),
+docs/intervention-plan.md, programme.md,
+results/v08-contestcost-001, v08-programme-001, v08-live-001/002,
+v08-altaudit-fee1/fee2, autoresearch-ar1-001, and rules_v08_succession.json.
+Bulk log artifacts: v041-tournament-logs and v05-tournament-logs releases.</p>
+<p>Reproduce any batch deterministically, for example:</p>
+<p><code>python3 sim.py batch --rules rules_baseline.json --games 1000
+--seed-base 1000 --schedule experiment --out results/v01_baseline</code></p>
+<p><code>python3 -m unittest discover -s tests</code> ·
+<code>node tools/test_succession_engine.mjs</code></p>
+</div>
+</section>
+
+<footer>
+<p>Compiled 2026-11-08 from the dioclet repository at commit
+4a20476 (plus the working tree of that date). Every metric cites its source
+file; nothing was measured for this report. The board diagram is generated
+from rules_v08_succession.json.</p>
+</footer>
+
+</main>
+</body>
+</html>
