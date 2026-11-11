@@ -75,6 +75,12 @@ def validate_rules(rules):
     start_reveals = rules.get("start_reveals", 0)
     if type(start_reveals) is not int or not 0 <= start_reveals <= 6:
         _error("invalid_rules", "start_reveals must be an integer from 0 to 6")
+    required = rules["level1"].get("claim_required_equipment", 6)
+    if type(required) is not int or not 1 <= required <= 6:
+        _error("invalid_rules", "level1.claim_required_equipment must be an integer from 1 to 6")
+    set_reward = rules["glory"].get("set_completion_reward", 0)
+    if type(set_reward) is not int or set_reward < 0:
+        _error("invalid_rules", "glory.set_completion_reward must be a nonnegative integer")
     abilities = rules["combat"].get("abilities")
     if abilities is not None:
         _validate_abilities(rules, abilities)
@@ -215,7 +221,7 @@ def _stats():
         "claims_cancelled", "claims_cancelled_by", "claims_survived", "response_turns",
         "idle_moves", "challenge_boosts", "times_displaced", "checkpoint_claims", "contest_prestige_spent",
         "attack_bonus_uses", "defense_bonus_uses", "pilum_uses", "pugio_tiebreaks",
-        "galea_reveals", "lorica_saves")}
+        "galea_reveals", "lorica_saves", "set_completion_awards")}
 
 
 def new_game(rules, seed, game_id, policies=None):
@@ -249,7 +255,7 @@ def new_game(rules, seed, game_id, policies=None):
         state["players"][pid] = {"gate_id": gateid, "gate": gate, "pos": gate[:],
                                   "equipment": [], "prestige": 0, "support": [],
                                   "turns": 0, "stats": _stats(),
-                                  "abilities_used": {}}
+                                  "abilities_used": {}, "set_rewarded": False}
     state["turn_order"] = _shuffle(state, IDS, "order")
     equipment = _shuffle(state, rules["equipment"], "equipment")
     state["district_equipment"] = dict(zip(sorted(rules["board"]["districts"]), equipment))
@@ -310,7 +316,8 @@ def legal_actions(state):
                     if tuple(location) == dest and faction not in me["support"] and me["prestige"] >= config["support_cost"]:
                         add("gain_support", dest, faction=faction)
             if dest == b.checkpoint:
-                if state["phase"] == 1 and len(me["equipment"]) == 6 and state["first_challenger"] is None:
+                if (state["phase"] == 1 and state["first_challenger"] is None
+                        and len(me["equipment"]) >= rules["level1"].get("claim_required_equipment", 6)):
                     add("claim_checkpoint", dest)
                 if state["phase"] == 2 and state["pending_claim"] is None and len(me["support"]) >= config["required_support"]:
                     add("proclaim", dest)
@@ -365,7 +372,10 @@ def observe(state, player):
                         "prestige": pdata["prestige"], "support": sorted(pdata["support"]),
                         "turns": pdata["turns"]}
     progress = {"first_challenger": state["first_challenger"],
-                "players_with_full_equipment": [p for p in IDS if len(state["players"][p]["equipment"]) == 6],
+                "players_with_full_equipment": [p for p in IDS
+                                                if len(state["players"][p]["equipment"]) >= rules["level1"].get("claim_required_equipment", 6)],
+                "claim_required_equipment": rules["level1"].get("claim_required_equipment", 6),
+                "set_completion_reward": rules["glory"].get("set_completion_reward", 0),
                 "level1_max_rounds": rules["level1"]["max_rounds"],
                 "level2_max_rounds": rules["level2"]["max_rounds"],
                 "grace_full_rounds": rules["level1"]["grace_full_rounds"],
@@ -462,6 +472,11 @@ def apply_action(state, player, turn_id, action_id, reason=None):
             me["equipment"].append(item)
             me["stats"]["equipment_collected"] += 1
             events.append({"type": "equipment_collected", "player": player, "district": district, "item": item})
+            if (len(me["equipment"]) == 6 and not me["set_rewarded"]
+                    and rules["glory"].get("set_completion_reward", 0) > 0):
+                me["set_rewarded"] = True
+                me["stats"]["set_completion_awards"] += 1
+                _award(state, player, rules["glory"]["set_completion_reward"], "set_completion", events)
         else:
             me["stats"]["explore_no_gain"] += 1
             events.append({"type": "explore_no_gain", "player": player, "district": district})
@@ -804,7 +819,12 @@ def choose_policy(policy_name, obs, rng=None):
     aggressive = policy_name == "aggressive"
     supports_needed = len(me["support"]) < progress["required_support"]
     faction_accessible = obs["phase"] == 2 or progress["support_in_city"]
-    gear_needed = len(me["equipment"]) < (6 if collector else 3)
+    # Gear targets read the rule parameters (D41/D43): collectors rush to the
+    # checkpoint requirement; other profiles complete the set only when the
+    # completion reward exists, and otherwise stop at three items as before.
+    claim_requirement = progress.get("claim_required_equipment", 6)
+    set_target = 6 if progress.get("set_completion_reward", 0) else 3
+    gear_needed = len(me["equipment"]) < (claim_requirement if collector else set_target)
     explores = bykind("explore")
     public_dist = _public_distances(obs, me["position"])
     revealed, owned = obs["revealed_districts"], set(me["equipment"])

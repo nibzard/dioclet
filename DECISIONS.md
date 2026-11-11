@@ -381,3 +381,18 @@ practical. No baseline rule values were changed.
   bonuses, so abilities replace the count system rather than stack
   with it; rules without an ability table keep the count tiers,
   and a regression test pins that behavior.
+
+- **D43 Checkpoint requirement and set reward as rule data (V0.9
+  trial, 2026-11-11).** `level1.claim_required_equipment` (1..6,
+  default 6) replaces the hard-coded six-item gate, and
+  `glory.set_completion_reward` (nonnegative, default 0) pays one
+  time when a player collects the sixth distinct item, through the
+  ordinary award path with waste-at-cap accounting. Policies read
+  both from `progress`: collectors gear up to the checkpoint
+  requirement, other profiles complete the set only when a reward
+  exists and otherwise keep the historical three-item target, so
+  behavior differences across arms come from rule values only.
+  Trial D measured requirement 3 with reward 1: the game shortens
+  (median 18 rounds) but the early claimant converts 30.6% versus
+  44.1% at baseline, draws double, and players end with 2.3 items,
+  so the released direction keeps the requirement at six.
