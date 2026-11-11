@@ -184,6 +184,47 @@ C2 is the recommended candidate for human playtesting: same rule
 count as V0.8.1 plus two start reveals, six card lines, and one
 stacking cap.
 
+## Trial D: the three-equipment checkpoint
+
+The planned follow-up (`rules_v09_checkpoint3.json`,
+`results/v09-design-003`): C2 plus
+`level1.claim_required_equipment: 3` and
+`glory.set_completion_reward: 1` (one Prestige, once, for the
+full set). Policies read both knobs (D43): collectors rush to the
+requirement, other profiles complete the set only when the reward
+exists. Baseline and C2 replay identically to run 002 (0 of 480
+winners differ), so the arms are comparable.
+
+| Measure | A baseline | C2 | D checkpoint 3 |
+|---|---|---|---|
+| Draws of 480 | 12 | 25 | 49 |
+| Median total rounds | 26 | 26 | **18** |
+| Median phase-1 rounds | 18 | 18 | **10** |
+| First-claimant win share | 44.1% | 36.7% | **30.6%** |
+| Items held per player at end | 4.7 | 4.7 | **2.3** |
+| Set completions (all players) | 0 | 0 | 64 |
+| Collector win share | 34.0% | 25.4% | 30.4% |
+| Gate spread (win-conditional) | 18.4 pts | 14.3 pts | 16.9 pts |
+
+- **The rush works and shortens the game**: phase 1 ends at a
+  median of 10 rounds. Median total rounds fall from 26 to 18.
+- **Early claiming is a weak move**: the first claimant converts
+  only 30.6% of the time versus 44.1% at baseline — the claim
+  opens while Prestige economies are thin and everyone is
+  close enough to contest.
+- **Card identity gets expressed less, not more**: players end
+  with 2.3 items on average. The set-completion reward fires in
+  only 64 of 480 games; collecting six before the phase-1 clock
+  ends is not realistic, so the trade-off resolves to rush under
+  bot play.
+- Draws double versus C2 (10.2% versus 5.2%); gates stay near the
+  baseline skew.
+
+**Conclusion**: keep the checkpoint at six items for now. If a
+lower threshold is wanted, pair it with a longer grace period (so
+rivals can answer an early claim) and re-measure — the runner
+makes that one rules-file edit away.
+
 ## Limitations
 
 - Four fixed probe policies with a frozen preference table (D41);

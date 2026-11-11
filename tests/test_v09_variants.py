@@ -302,6 +302,58 @@ class TestV09Abilities(unittest.TestCase):
         self.assertEqual(state["players"]["P1"]["stats"]["attack_bonus_uses"], 0)
 
 
+class TestV09Checkpoint(unittest.TestCase):
+    def rules_d(self):
+        value = engine.load_rules(os.path.join(ROOT, "rules_v09_checkpoint3.json"))
+        value["succession"]["gate_assignment"] = "manual"
+        return value
+
+    def test_checkpoint_requirement_is_rule_driven(self):
+        state = game(self.rules_d())
+        state["players"]["P1"].update(pos=[6, 6], equipment=["gladius", "scutum", "pilum"])
+        active(state, "P1")
+        self.assertTrue(any(a["kind"] == "claim_checkpoint" for a in engine.legal_actions(state)))
+        state["players"]["P1"]["equipment"] = ["gladius", "scutum"]
+        self.assertFalse(any(a["kind"] == "claim_checkpoint" for a in engine.legal_actions(state)))
+        obs = engine.observe(state, "P1")
+        self.assertEqual(obs["progress"]["claim_required_equipment"], 3)
+        self.assertEqual(obs["progress"]["players_with_full_equipment"], ["P1"] if len(state["players"]["P1"]["equipment"]) >= 3 else [])
+
+    def test_default_rules_still_require_six(self):
+        state = game()
+        state["players"]["P1"].update(pos=[6, 6], equipment=["gladius", "scutum", "pilum"])
+        active(state, "P1")
+        self.assertFalse(any(a["kind"] == "claim_checkpoint" for a in engine.legal_actions(state)))
+
+    def test_set_completion_reward_pays_once(self):
+        state = game()
+        state["rules"]["glory"]["set_completion_reward"] = 1
+        district = next(n for n in sorted(state["rules"]["board"]["districts"]))
+        cell = state["rules"]["board"]["districts"][district]
+        missing = state["district_equipment"][district]
+        five = [i for i in state["rules"]["equipment"] if i != missing][:5]
+        state["players"]["P1"].update(pos=list(cell), equipment=five)
+        active(state, "P1")
+        record = take(state, "explore")
+        self.assertEqual(len(state["players"]["P1"]["equipment"]), 6)
+        self.assertEqual(state["players"]["P1"]["stats"]["set_completion_awards"], 1)
+        self.assertTrue(any(e["type"] == "prestige_earned" and e["cause"] == "set_completion"
+                            for e in record["events"]))
+        self.assertEqual(state["players"]["P1"]["prestige"], 1)
+
+    def test_new_knobs_are_validated(self):
+        for field, value in (("claim_required_equipment", 0), ("claim_required_equipment", 7),
+                             ("claim_required_equipment", "3")):
+            candidate = self.rules_d()
+            candidate["level1"][field.split(".", 1)[1] if "." in field else field] = value
+            with self.subTest(value=value), self.assertRaises(engine.EngineError):
+                engine.validate_rules(candidate)
+        candidate = self.rules_d()
+        candidate["glory"]["set_completion_reward"] = -1
+        with self.assertRaises(engine.EngineError):
+            engine.validate_rules(candidate)
+
+
 class TestV09Games(unittest.TestCase):
     def play(self, rules, seed):
         state = engine.new_game(rules, seed, f"c-game-{seed}", dict(zip(succession.IDS, PROBES)))

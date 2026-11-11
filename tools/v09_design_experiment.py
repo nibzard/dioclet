@@ -32,11 +32,11 @@ IDS = succession.IDS
 PROFILES = ("collector", "early_support", "prestige_farmer", "counterleader")
 GAMES_PER_ARM = 480
 SEED_BASE = 300000
-OUT_ROOT = os.path.join(ROOT, "results", "v09-design-002")
+OUT_ROOT = os.path.join(ROOT, "results", "v09-design-003")
 ARMS = (
     ("a-baseline", "rules_v08_succession.json"),
-    ("b-reveal2", "rules_v09_reveal2.json"),
     ("c-abilities", "rules_v09_abilities.json"),
+    ("d-checkpoint3", "rules_v09_checkpoint3.json"),
 )
 ITEMS = ("gladius", "scutum", "pilum", "pugio", "galea", "lorica_segmentata")
 
@@ -105,6 +105,7 @@ def game_row(state):
         "winner_gate": result["players"][winner]["gate_id"] if winner else None,
         "winner_profile": state["policies"][winner] if winner else None,
         "end_reason": result["end_reason"],
+        "rounds_level1": result["rounds_level1"],
         "total_rounds": result["total_rounds"], "total_turns": result["total_turns"],
         "first_challenger": result["first_challenger"],
         "first_challenger_won": result["first_challenger_won"],
@@ -123,6 +124,7 @@ def game_row(state):
             "pugio_tiebreaks": result["players"][pid]["pugio_tiebreaks"],
             "galea_reveals": result["players"][pid]["galea_reveals"],
             "lorica_saves": result["players"][pid]["lorica_saves"],
+            "set_completion_awards": result["players"][pid]["set_completion_awards"],
             "duels_initiated": result["players"][pid]["duels_initiated"],
             "claims_made": result["players"][pid]["claims_made"],
             "claims_cancelled": result["players"][pid]["claims_cancelled"],
