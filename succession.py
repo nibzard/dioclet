@@ -11,12 +11,25 @@ import time
 from board import Board, validate_six_block_layout
 
 MODE = "succession-v1"
-VERSION = "succession-0.8.0"
-POLICY_VERSION = "succession-policies-0.8.0"
+VERSION = "succession-0.9.1-experiment"
+POLICY_VERSION = "succession-policies-0.9.0"
+# V0.9 simplified ability set (C2): every card is one line, and at most one
+# equipment bonus applies per duel side (the best one, never the sum).
+ABILITY_TYPES = ("attack_bonus", "defense_bonus", "attack_vs_claimant",
+                 "win_ties", "reveal_district", "prevent_displacement")
 POLICY_NAMES = ("balanced", "balanced_se", "greedy", "aggressive", "random",
                 "tactical", "collector", "early_support", "prestige_farmer", "counterleader")
 SALTS = {"gates": 0xA5A5A5A5, "order": 0x243F6A88,
          "equipment": 0x9E3779B9, "movement": 0xB7E15162, "combat": 0xDEADBEEF}
+# Frozen per-profile item preferences for the V0.9 design experiment. Applied
+# identically in every arm so revealed item identity can steer routing. Weight
+# 1 means: prefer this item unless it costs more than four extra street steps.
+ITEM_PREFERENCES = {
+    "collector": {"lorica_segmentata": 1, "scutum": 1},
+    "early_support": {"galea": 1, "pugio": 1},
+    "prestige_farmer": {"gladius": 1, "pugio": 1},
+    "counterleader": {"pilum": 1, "gladius": 1},
+}
 IDS = ("P0", "P1", "P2", "P3")
 _BOARDS = {}
 
@@ -26,12 +39,28 @@ def _error(code, message):
     raise EngineError(code, message)
 
 
+def _validate_abilities(rules, abilities):
+    if not isinstance(abilities, dict):
+        _error("invalid_rules", "combat.abilities must be an object keyed by equipment name")
+    if set(abilities) != set(rules["equipment"]):
+        _error("invalid_rules", "combat.abilities must define one ability for each equipment name")
+    for item, spec in sorted(abilities.items()):
+        if not isinstance(spec, dict) or set(spec) != {"type", "value"}:
+            _error("invalid_rules", f"combat.abilities.{item} must be an object with type and value")
+        if spec["type"] not in ABILITY_TYPES:
+            _error("invalid_rules",
+                   f"combat.abilities.{item}.type must be one of: {', '.join(ABILITY_TYPES)}")
+        if type(spec["value"]) is not int or not 0 <= spec["value"] <= 3:
+            _error("invalid_rules", f"combat.abilities.{item}.value must be an integer from 0 to 3")
+
+
 def validate_rules(rules):
     """Validate shared fields through the unchanged legacy validator."""
     import engine
     legacy = copy.deepcopy(rules)
     legacy.pop("gameplay_mode", None)
     config = legacy.pop("succession", None)
+    legacy.pop("start_reveals", None)
     if rules.get("gameplay_mode") != MODE or not isinstance(config, dict):
         _error("invalid_rules", "succession-v1 needs a succession object")
     missing = engine.REQUIRED_KEYS - set(rules)
@@ -43,6 +72,16 @@ def validate_rules(rules):
     unknown = set(config) - allowed
     if unknown:
         _error("invalid_rules", f"unknown succession keys: {sorted(unknown)}")
+    start_reveals = rules.get("start_reveals", 0)
+    if type(start_reveals) is not int or not 0 <= start_reveals <= 6:
+        _error("invalid_rules", "start_reveals must be an integer from 0 to 6")
+    abilities = rules["combat"].get("abilities")
+    if abilities is not None:
+        _validate_abilities(rules, abilities)
+        nonzero_tiers = [t["bonus"] for t in rules["combat"]["equipment_bonus_tiers"] if t["bonus"]]
+        if nonzero_tiers:
+            _error("invalid_rules",
+                   "combat.abilities replace the count tiers; every equipment_bonus_tiers bonus must be 0")
     cap = legacy["glory"]["cap"]
     if cap is None:
         legacy["glory"]["cap"] = 0
@@ -142,6 +181,26 @@ def _die(state, stream):
     return 1 + int(_random(state, stream) * state["rules"]["movement"]["die_sides"])
 
 
+def _usable_ability(player, rules, ability_type):
+    """Return (item, spec) for an owned, unused, nonzero ability of this type."""
+    for item in player["equipment"]:
+        spec = rules["combat"].get("abilities", {}).get(item)
+        if (spec and spec["type"] == ability_type and spec["value"] > 0
+                and not player["abilities_used"].get(ability_type)):
+            return item, spec
+    return None, None
+
+
+def _ability_total(player, rules, ability_type):
+    """Public rule fact: total value of owned abilities of this type."""
+    total = 0
+    for item in player["equipment"]:
+        spec = rules["combat"].get("abilities", {}).get(item)
+        if spec and spec["type"] == ability_type and spec["value"] > 0:
+            total += spec["value"]
+    return total
+
+
 def current_order(state):
     start = state["round_start"] if state["rotate_first"] else 0
     return state["turn_order"][start:] + state["turn_order"][:start]
@@ -154,7 +213,9 @@ def _stats():
         "guard_post_successes", "duels_initiated", "duels_won_attacker",
         "duels_won_defender", "duels_defended", "support_gained", "claims_made",
         "claims_cancelled", "claims_cancelled_by", "claims_survived", "response_turns",
-        "idle_moves", "challenge_boosts", "times_displaced", "checkpoint_claims", "contest_prestige_spent")}
+        "idle_moves", "challenge_boosts", "times_displaced", "checkpoint_claims", "contest_prestige_spent",
+        "attack_bonus_uses", "defense_bonus_uses", "pilum_uses", "pugio_tiebreaks",
+        "galea_reveals", "lorica_saves")}
 
 
 def new_game(rules, seed, game_id, policies=None):
@@ -187,10 +248,22 @@ def new_game(rules, seed, game_id, policies=None):
         gate = list(rules["board"]["gates"][gateid])
         state["players"][pid] = {"gate_id": gateid, "gate": gate, "pos": gate[:],
                                   "equipment": [], "prestige": 0, "support": [],
-                                  "turns": 0, "stats": _stats()}
+                                  "turns": 0, "stats": _stats(),
+                                  "abilities_used": {}}
     state["turn_order"] = _shuffle(state, IDS, "order")
     equipment = _shuffle(state, rules["equipment"], "equipment")
     state["district_equipment"] = dict(zip(sorted(rules["board"]["districts"]), equipment))
+    # Start-of-game public reveals (variant B). Drawn from the equipment stream
+    # AFTER the district shuffle: no other code consumes that stream, so gates,
+    # turn order, the district mapping, and every die stay identical across
+    # arms on matched seeds.
+    reveal_count = rules.get("start_reveals", 0)
+    if reveal_count:
+        for name in _shuffle(state, sorted(rules["board"]["districts"]), "equipment")[:reveal_count]:
+            state["revealed"][name] = state["district_equipment"][name]
+        state["setup_reveals"] = sorted(state["revealed"])
+    else:
+        state["setup_reveals"] = []
     _start_turn(state)
     return state
 
@@ -254,6 +327,13 @@ def legal_actions(state):
                 add("duel", dest, target=other, spend_prestige=False, contest_cost=contest_cost)
                 if me["prestige"] >= config["challenge_cost"] + contest_cost:
                     add("duel", dest, target=other, spend_prestige=True, contest_cost=contest_cost)
+    # Galea: a stationary, once-per-game public reveal of any unexplored
+    # district. The offer never depends on the hidden item (DECISIONS.md D1).
+    if rules["movement"]["allow_stationary_special_actions"]:
+        if _usable_ability(me, rules, "reveal_district")[0]:
+            for name in sorted(rules["board"]["districts"]):
+                if name not in state["revealed"]:
+                    add("inspect", pos, district=name)
     pending = state["pending_claim"]
     if pending and pending["player"] == pid and pos == b.checkpoint:
         add("maintain_claim", pos)
@@ -279,6 +359,9 @@ def observe(state, player):
                         "position": list(pdata["pos"]), "equipment": sorted(pdata["equipment"]),
                         "equipment_count": len(pdata["equipment"]),
                         "equipment_bonus": equipment_bonus(len(pdata["equipment"]), rules),
+                        "attack_bonus": _ability_total(pdata, rules, "attack_bonus"),
+                        "defense_bonus": _ability_total(pdata, rules, "defense_bonus"),
+                        "attack_vs_claimant_bonus": _ability_total(pdata, rules, "attack_vs_claimant"),
                         "prestige": pdata["prestige"], "support": sorted(pdata["support"]),
                         "turns": pdata["turns"]}
     progress = {"first_challenger": state["first_challenger"],
@@ -382,6 +465,18 @@ def apply_action(state, player, turn_id, action_id, reason=None):
         else:
             me["stats"]["explore_no_gain"] += 1
             events.append({"type": "explore_no_gain", "player": player, "district": district})
+    elif kind == "inspect":
+        # Galea: turn one hidden district face-up for everyone. Uses the same
+        # reveal mechanic as exploration; no private channel exists.
+        district = action["district"]
+        item, _spec = _usable_ability(me, rules, "reveal_district")
+        state["revealed"][district] = state["district_equipment"][district]
+        me["abilities_used"]["reveal_district"] = item
+        me["stats"]["galea_reveals"] += 1
+        events.append({"type": "district_revealed", "district": district,
+                       "item": state["district_equipment"][district]})
+        events.append({"type": "ability_used", "player": player,
+                       "ability": item, "district": district})
     elif kind == "guard_post":
         me["stats"]["guard_post_attempts"] += 1
         roll = die()
@@ -421,10 +516,50 @@ def apply_action(state, player, turn_id, action_id, reason=None):
             _spend(state, player, config["challenge_cost"], "challenge", events)
             me["stats"]["challenge_boosts"] += 1
         attack_roll, defense_roll = die(), die()
-        attack_bonus = equipment_bonus(len(me["equipment"]), rules) + (config["challenge_bonus"] if paid else 0)
-        defense_bonus = equipment_bonus(len(them["equipment"]), rules)
+        abilities = rules["combat"].get("abilities", {})
+        # Count tiers apply when no ability table is present (baseline V0.8.1).
+        # With abilities, every tier bonus is zero by validation, and at most
+        # one ability modifier applies per side: the best one, never the sum
+        # (DECISIONS.md D42). The paid challenge boost is separate because it
+        # is not equipment.
+        tier_attack = equipment_bonus(len(me["equipment"]), rules)
+        tier_defense = equipment_bonus(len(them["equipment"]), rules)
+        attack_mods = []
+        for item in me["equipment"]:
+            spec = abilities.get(item)
+            if not spec or spec["value"] <= 0:
+                continue
+            if spec["type"] == "attack_bonus":
+                attack_mods.append(spec["value"])
+                me["stats"]["attack_bonus_uses"] += 1
+            elif (spec["type"] == "attack_vs_claimant" and state["pending_claim"]
+                    and state["pending_claim"]["player"] == target):
+                attack_mods.append(spec["value"])
+                me["stats"]["pilum_uses"] += 1
+        defense_mods = []
+        for item in them["equipment"]:
+            spec = abilities.get(item)
+            if spec and spec["type"] == "defense_bonus" and spec["value"] > 0:
+                defense_mods.append(spec["value"])
+                them["stats"]["defense_bonus_uses"] += 1
+        attack_bonus = tier_attack + (max(attack_mods) if attack_mods else 0) + (config["challenge_bonus"] if paid else 0)
+        defense_bonus = tier_defense + (max(defense_mods) if defense_mods else 0)
         attack_score, defense_score = attack_roll + attack_bonus, defense_roll + defense_bonus
-        won = attack_score > defense_score or (attack_score == defense_score and not rules["combat"]["tie_goes_to_defender"])
+        # Pugio: the holder wins tied duels. If both hold one, the base tie
+        # rule decides.
+        attacker_pugio = _ability_total(me, rules, "win_ties") > 0
+        defender_pugio = _ability_total(them, rules, "win_ties") > 0
+        if attack_score != defense_score:
+            won = attack_score > defense_score
+        elif attacker_pugio != defender_pugio:
+            won = attacker_pugio
+            state["players"][player if attacker_pugio else target]["stats"]["pugio_tiebreaks"] += 1
+            events.append({"type": "ability_used",
+                           "player": player if attacker_pugio else target,
+                           "ability": next(i for i in (me if attacker_pugio else them)["equipment"]
+                                           if abilities.get(i, {}).get("type") == "win_ties")})
+        else:
+            won = not rules["combat"]["tie_goes_to_defender"]
         winner = player if won else target
         state["players"][winner]["stats"]["duels_won_attacker" if won else "duels_won_defender"] += 1
         events.append({"type": "duel", "attacker": player, "defender": target,
@@ -435,8 +570,16 @@ def apply_action(state, player, turn_id, action_id, reason=None):
         _award(state, winner, rules["glory"]["duel_win_reward"], "duel", events)
         if won and state["pending_claim"] and state["pending_claim"]["player"] == target:
             _cancel(state, "challenge_won", events, attacker=player)
-            them["pos"] = them["gate"][:]
-            them["stats"]["times_displaced"] += 1
+            # Lorica: once per game the beaten claimant keeps their position.
+            # The claim is still cancelled; only the reset to the gate is saved.
+            lorica_item, _spec = _usable_ability(them, rules, "prevent_displacement")
+            if lorica_item:
+                them["abilities_used"]["prevent_displacement"] = lorica_item
+                them["stats"]["lorica_saves"] += 1
+                events.append({"type": "ability_used", "player": target, "ability": lorica_item})
+            else:
+                them["pos"] = them["gate"][:]
+                them["stats"]["times_displaced"] += 1
     else:
         _error("legal_action_error", f"unknown succession action {kind}")
 
@@ -508,6 +651,7 @@ def result(state):
         metrics[pid] = {**stats, "gate": player["gate"][:], "gate_id": player["gate_id"],
             "turns": player["turns"], "prestige_final": player["prestige"],
             "equipment_final": player["equipment"][:], "support": player["support"][:],
+            "abilities_used": dict(player["abilities_used"]),
             "equipment_at_transition": state["equipment_at_transition"].get(pid),
             "districts_explored": len(districts),
             # Explicit compatibility columns for the original CSV writer.
@@ -524,6 +668,7 @@ def result(state):
         "rules_hash": state["rules_hash"], "engine_version": VERSION, "policy_version": POLICY_VERSION,
         "outcome": "win" if state["winner"] else "draw", "winner": state["winner"],
         "end_reason": state["end_reason"], "first_challenger": first,
+        "setup_reveals": list(state.get("setup_reveals", [])),
         "first_challenger_won": first == state["winner"] if first else None,
         "comeback_win": first != state["winner"] if first and state["winner"] else None,
         "phase1_timeout": state["phase1_timeout"], "phase2_timeout": state["phase2_timeout"],
@@ -535,7 +680,7 @@ def result(state):
         "gate_assignments": dict(state["gate_assignments"]), "players": metrics,
         "high_impact_events": [{"turn_id": r["turn_id"], "round": r["round"], "phase": r["phase"], **ev}
             for r in state["events"] for ev in r["events"]
-            if ev["type"] in {"duel", "support_gained", "claim_proclaimed", "claim_cancelled", "claim_response", "game_won", "phase_transition", "game_draw"}]}
+            if ev["type"] in {"duel", "support_gained", "claim_proclaimed", "claim_cancelled", "claim_response", "game_won", "phase_transition", "game_draw", "ability_used"}]}
 
 
 def check_invariants(state):
@@ -548,6 +693,8 @@ def check_invariants(state):
         assert set(player["equipment"]) <= set(state["rules"]["equipment"]), "unknown equipment"
         assert len(set(player["support"])) == len(player["support"]), "duplicate support"
         assert set(player["support"]) <= set(state["rules"]["succession"]["factions"]), "unknown support"
+        assert set(player["abilities_used"]) <= set(ABILITY_TYPES), "unknown ability type used"
+        assert set(player["abilities_used"].values()) <= set(state["rules"]["equipment"]), "unknown ability item"
     assert sorted(state["gate_assignments"].values()) == list(IDS), "gate assignment not a permutation"
     pending = state["pending_claim"]
     if pending:
@@ -622,8 +769,11 @@ def choose_policy(policy_name, obs, rng=None):
 
     def duel_key(action):
         other = obs["players"][action["target"]]
-        bonus = me["equipment_bonus"] - other["equipment_bonus"] + (
-            progress["challenge_bonus"] if action["spend_prestige"] else 0)
+        edge = (me["equipment_bonus"] + me.get("attack_bonus", 0)
+                - other["equipment_bonus"] - other.get("defense_bonus", 0))
+        if pending and pending["player"] == action["target"]:
+            edge += me.get("attack_vs_claimant_bonus", 0)
+        bonus = edge + (progress["challenge_bonus"] if action["spend_prestige"] else 0)
         wins = sum(1 for a in range(1, 7) for d in range(1, 7) if a + bonus >= d)
         # Paid duels are useful against a claimant but not for farming.
         return (-wins, bool(action["spend_prestige"]), len(action["path"]), action["action_id"])
@@ -658,13 +808,16 @@ def choose_policy(policy_name, obs, rng=None):
     explores = bykind("explore")
     public_dist = _public_distances(obs, me["position"])
     revealed, owned = obs["revealed_districts"], set(me["equipment"])
-    district_targets = [cell for name, cell in obs["board"]["districts"].items()
-                        if name not in revealed or revealed[name] not in owned]
-    useful_targets = [cell for name, cell in obs["board"]["districts"].items()
-                      if name in revealed and revealed[name] not in owned]
-    if useful_targets:
-        district_targets = useful_targets
-    explore_target = min(district_targets, key=lambda c: (public_dist[tuple(c)], c)) if district_targets else None
+    useful = [(name, cell) for name, cell in obs["board"]["districts"].items()
+              if name in revealed and revealed[name] not in owned]
+    preferences = ITEM_PREFERENCES.get(policy_name, {})
+    if useful:
+        explore_target = min(useful, key=lambda t: (
+            public_dist[tuple(t[1])] - 4 * preferences.get(revealed[t[0]], 0), t[1], t[0]))[1]
+    else:
+        district_targets = [cell for name, cell in obs["board"]["districts"].items()
+                            if name not in revealed or revealed[name] not in owned]
+        explore_target = min(district_targets, key=lambda c: (public_dist[tuple(c)], c)) if district_targets else None
     factions = [(name, cell) for name, cell in obs["board"]["factions"].items() if name not in me["support"]]
     faction_target = min(factions, key=lambda f: (public_dist[tuple(f[1])], f[0]))[1] if factions else None
     guards = bykind("guard_post")
@@ -673,6 +826,13 @@ def choose_policy(policy_name, obs, rng=None):
     # Distinct probes stress the economy without changing the core rules.
     if policy_name == "early_support":
         gear_needed = False
+    inspects = bykind("inspect")
+    if inspects and gear_needed and not useful:
+        # Spend the galea on the nearest unknown district instead of
+        # blind-walking toward one.
+        district_cells = obs["board"]["districts"]
+        pick = min(inspects, key=lambda a: (public_dist[tuple(district_cells[a["district"]])], a["district"]))
+        return select(pick, "privately inspect a district with the galea")
     if policy_name == "counterleader" and duels and has_room:
         leader = max((pid for pid in obs["players"] if pid != obs["viewer"]),
                      key=lambda pid: (len(obs["players"][pid]["support"]), obs["players"][pid]["equipment_count"]))
