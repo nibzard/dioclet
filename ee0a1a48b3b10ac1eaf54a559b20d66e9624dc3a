@@ -1,0 +1,45 @@
+# Design: V0.9 treasure identity, C1 to C2 in one day
+
+## Problem
+The six treasures were six differently named progress tokens:
+identity never affected strategy. The user asked for distinct
+abilities but warned against rule bloat after seeing the first
+set.
+
+## Approach
+Matched-seed ladder (480 games per arm, seeds 300000+, V0.8 seat
+schedule): A baseline, B two start reveals, C distinct abilities.
+C1 implemented the abilities exactly as proposed (stacking
+modifiers, private galea inspection, pugio Prestige). C2 was the
+same-day simplification: one-line cards, at most one equipment
+modifier per duel side, public galea reveal, pugio as a
+tiebreaker.
+
+## Key findings
+- C1 drew 24.8% of games through a claim-recycling loop:
+  attack modifiers stacked (gladius + pilum + paid challenge vs
+  scutum alone) and pugio fed the claim economy. Claims doubled
+  to 17.2 per game.
+- C2 restored baseline claim flow (10.2 vs 9.5 per game) while
+  abilities fired in ~98% of games. The collector edge fell from
+  34% to 25%, which is the intent: set completion stopped being
+  the only plan.
+- B (reveal only) changed routing (35% of first explores target a
+  revealed district) but no outcome measure; bots cannot price
+  hidden information.
+
+## Gotchas
+- A duel-math rewrite briefly dropped the count-tier bonus for
+  rules without abilities, silently changing the baseline arm.
+  Caught by cross-run determinism (0/480 winners must repeat).
+  Regression test added: test_baseline_keeps_its_count_tier_bonus_in_duels.
+- The equipment RNG stream is used only by the district shuffle;
+  drawing start reveals from it keeps every other stream
+  bit-identical across arms on matched seeds.
+- Abilities and count tiers are made mutually exclusive by
+  validation (nonzero tiers + abilities = invalid rules).
+
+## References
+- FINDINGS_V09.md, notes/v09-experiment-plan.md
+- results/v09-design-001 (C1, with its rules snapshot),
+  results/v09-design-002 (C2)
