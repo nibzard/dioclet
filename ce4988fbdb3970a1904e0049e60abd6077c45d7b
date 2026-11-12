@@ -1,0 +1,29 @@
+# Design: the S-series simplification method
+
+## Problem
+V0.9 accumulated ~25 player-facing rules. The user asked for
+simplification without losing strategic challenge, so cuts needed
+evidence, not taste.
+
+## Approach
+A web research pass produced one test: a rule stays only if
+removing it changes measured play. Each suspect rule was screened
+by deletion on 96 matched seeds with the frozen gates, then the
+combined trim ran on 384 fresh seeds against 0.9.0.
+
+## Key Trade-offs
+- Duel boost and first-challenger bonus cut: identical metrics,
+  two fewer lines of text and two fewer incentive hooks.
+- Six abilities kept: collapsing them widens the strategy spread
+  (S1 collector 0.39 / farmer 0.10), so the identities carry
+  balance, exactly what the playtest wanted.
+- Contest fee kept: fee 0 returns 60% draws even with window and
+  shame - the strongest keep signal in the series.
+- Guard posts kept as income floor: cut pressure exists, but
+  zero-Prestige seats must keep a priced move (death-spiral and
+  kingmaking literature).
+
+## References
+- notes/v09-simplification-study.md (S1-S124 table, keep ledger)
+- notes/rules-elegance-research-2026-11-13.md (sources)
+- DECISIONS.md D46; FINDINGS_V09.md S-series section
