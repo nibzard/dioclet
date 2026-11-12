@@ -1,0 +1,34 @@
+# Design: consolidating bot, human, and model evidence
+
+## Problem
+Pick the V0.9 ruleset from three evidence sources that disagree:
+bots price hidden information at zero, humans love it, model
+players cannot search efficiently.
+
+## Approach
+Human redesign -> five default-off engine knobs. Hill-climb with
+frozen gates, then a contest-health audit (share of games ending
+in zero-cancellation crowns) that vetoes the climb's own winner,
+then 3-game live probes per arm under a shared $1.50 cap.
+
+## Key finding
+The climb's greedy optimum (1-round window, no blind support)
+crowns 48% of games unopposed - the same failure shape as the
+V0.8 fee-2 candidate that only live play had caught before.
+The audit veto reproduced that lesson without spending model
+budget. Loser-pays-shame is the load-bearing stabilizer: it
+turns the 2-round window from 16.7% draws to 1.8%.
+
+## Gotchas
+- challenge_radius >= duel_range never binds; duel legality
+  already enforces adjacency. The humans' radius ask is really
+  about arrival time, which the window handles.
+- candidate_actions' rule summary told models that responses
+  crown claims - wrong under window modes and confounding for
+  live play until fixed and re-run.
+- Greedy coordinate ascent misses interacting knobs; the audit
+  gate is what caught it.
+
+## References
+- FINDINGS_V09.md endgame section, results/v09-climb,
+  results/v09-live-*, playtest/human-session-001.md
