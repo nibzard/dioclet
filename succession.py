@@ -81,6 +81,9 @@ def validate_rules(rules):
             _error("invalid_rules", f"succession.{name} must be an integer from 0 to {ceiling}")
     if type(config.get("blind_support", False)) is not bool:
         _error("invalid_rules", "succession.blind_support must be boolean")
+    stacking = rules["combat"].get("ability_stacking", "best")
+    if stacking not in ("best", "sum"):
+        _error("invalid_rules", "combat.ability_stacking must be best or sum")
     start_reveals = rules.get("start_reveals", 0)
     if type(start_reveals) is not int or not 0 <= start_reveals <= 6:
         _error("invalid_rules", "start_reveals must be an integer from 0 to 6")
@@ -610,8 +613,9 @@ def apply_action(state, player, turn_id, action_id, reason=None):
             if spec and spec["type"] == "defense_bonus" and spec["value"] > 0:
                 defense_mods.append(spec["value"])
                 them["stats"]["defense_bonus_uses"] += 1
-        attack_bonus = tier_attack + (max(attack_mods) if attack_mods else 0) + (config["challenge_bonus"] if paid else 0)
-        defense_bonus = tier_defense + (max(defense_mods) if defense_mods else 0)
+        stacking = sum if rules["combat"].get("ability_stacking", "best") == "sum" else max
+        attack_bonus = tier_attack + (stacking(attack_mods) if attack_mods else 0) + (config["challenge_bonus"] if paid else 0)
+        defense_bonus = tier_defense + (stacking(defense_mods) if defense_mods else 0)
         attack_score, defense_score = attack_roll + attack_bonus, defense_roll + defense_bonus
         # Pugio: the holder wins tied duels. If both hold one, the base tie
         # rule decides.
