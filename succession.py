@@ -68,10 +68,19 @@ def validate_rules(rules):
         _error("invalid_rules", f"missing top-level keys: {sorted(missing)}")
     allowed = {"support_cost", "required_support", "support_in_city", "challenge_cost",
                "challenge_bonus", "contest_cost", "reset_positions", "gate_assignment",
-               "gate_order", "gate_rotation", "factions"}
+               "gate_order", "gate_rotation", "factions",
+               "claim_window_rounds", "challenge_radius", "duel_loser_cost",
+               "proclaim_cost", "blind_support"}
     unknown = set(config) - allowed
     if unknown:
         _error("invalid_rules", f"unknown succession keys: {sorted(unknown)}")
+    for name, ceiling in (("claim_window_rounds", 6), ("challenge_radius", 8),
+                          ("duel_loser_cost", 3), ("proclaim_cost", 3)):
+        value = config.get(name, 0)
+        if type(value) is not int or not 0 <= value <= ceiling:
+            _error("invalid_rules", f"succession.{name} must be an integer from 0 to {ceiling}")
+    if type(config.get("blind_support", False)) is not bool:
+        _error("invalid_rules", "succession.blind_support must be boolean")
     start_reveals = rules.get("start_reveals", 0)
     if type(start_reveals) is not int or not 0 <= start_reveals <= 6:
         _error("invalid_rules", "start_reveals must be an integer from 0 to 6")
@@ -221,7 +230,8 @@ def _stats():
         "claims_cancelled", "claims_cancelled_by", "claims_survived", "response_turns",
         "idle_moves", "challenge_boosts", "times_displaced", "checkpoint_claims", "contest_prestige_spent",
         "attack_bonus_uses", "defense_bonus_uses", "pilum_uses", "pugio_tiebreaks",
-        "galea_reveals", "lorica_saves", "set_completion_awards")}
+        "galea_reveals", "lorica_saves", "set_completion_awards",
+        "site_searches", "shame_prestige_paid", "proclaims_paid")}
 
 
 def new_game(rules, seed, game_id, policies=None):
@@ -238,6 +248,7 @@ def new_game(rules, seed, game_id, policies=None):
         "turn_id": 0, "round": 1, "phase": 1, "current_roll": None,
         "pending_claim": None, "first_challenger": None, "trigger_round": None,
         "district_equipment": {}, "revealed": {}, "equipment_at_transition": {},
+        "faction_sites": None, "faction_sites_revealed": None,
         "phase1_timeout": False, "phase2_timeout": False, "rounds_level1": None,
         "status": "in_progress", "winner": None, "end_reason": None,
         "event_seq": 0, "events": [], "policies": dict(policies or {}),
@@ -311,15 +322,29 @@ def legal_actions(state):
             if district is not None and (district not in state["revealed"] or
                     state["district_equipment"][district] not in me["equipment"]):
                 add("explore", dest)
-            if (state["phase"] == 2 or config["support_in_city"]):
-                for faction, location in sorted(config["factions"].items()):
-                    if tuple(location) == dest and faction not in me["support"] and me["prestige"] >= config["support_cost"]:
-                        add("gain_support", dest, faction=faction)
+            if (state["phase"] == 2
+                    or (config["support_in_city"] and not config.get("blind_support"))):
+                if state["phase"] == 2 and config.get("blind_support") and state["faction_sites"]:
+                    # Blind support sites: search unrevealed cells (the offer
+                    # never depends on the hidden faction - DECISIONS.md D1),
+                    # buy support only at revealed sites that hold a faction.
+                    key = f"{dest[0]},{dest[1]}"
+                    if key in state["faction_sites"] and key not in state["faction_sites_revealed"]:
+                        add("search_site", dest)
+                    revealed = state["faction_sites_revealed"]
+                    if revealed.get(key) and revealed[key] not in me["support"] and me["prestige"] >= config["support_cost"]:
+                        add("gain_support", dest, faction=revealed[key])
+                else:
+                    for faction, location in sorted(config["factions"].items()):
+                        if tuple(location) == dest and faction not in me["support"] and me["prestige"] >= config["support_cost"]:
+                            add("gain_support", dest, faction=faction)
             if dest == b.checkpoint:
                 if (state["phase"] == 1 and state["first_challenger"] is None
                         and len(me["equipment"]) >= rules["level1"].get("claim_required_equipment", 6)):
                     add("claim_checkpoint", dest)
-                if state["phase"] == 2 and state["pending_claim"] is None and len(me["support"]) >= config["required_support"]:
+                if (state["phase"] == 2 and state["pending_claim"] is None
+                        and len(me["support"]) >= config["required_support"]
+                        and me["prestige"] >= config.get("proclaim_cost", 0)):
                     add("proclaim", dest)
         if moved:
             if dest in b.glory_posts and (cap is None or me["prestige"] < cap):
@@ -328,6 +353,11 @@ def legal_actions(state):
                 if other == pid or _distances(b, dest)[tuple(target["pos"])] > rules["movement"]["duel_range"]:
                     continue
                 pending = state["pending_claim"]
+                # Human redesign: challenging the claimant requires standing
+                # within the painted radius of the Peristyle.
+                if (pending and pending["player"] == other and config.get("challenge_radius", 0)
+                        and _distances(b, dest)[tuple(target["pos"])] > config["challenge_radius"]):
+                    continue
                 contest_cost = config.get("contest_cost", 0) if pending and pending["player"] == other else 0
                 if me["prestige"] < contest_cost:
                     continue
@@ -382,6 +412,14 @@ def observe(state, player):
                 **{key: config[key] for key in ("support_cost", "required_support", "support_in_city",
                                                 "challenge_cost", "challenge_bonus")}}
     progress["contest_cost"] = config.get("contest_cost", 0)
+    progress["claim_window_rounds"] = config.get("claim_window_rounds", 0)
+    progress["challenge_radius"] = config.get("challenge_radius", 0)
+    progress["proclaim_cost"] = config.get("proclaim_cost", 0)
+    progress["duel_loser_cost"] = config.get("duel_loser_cost", 0)
+    if config.get("blind_support"):
+        # Blind support replaces city-phase support: the meeting places exist
+        # only as hidden palace-level sites.
+        progress["support_in_city"] = False
     if state["first_challenger"] is not None:
         progress["transition_after_round"] = min(state["trigger_round"] + rules["level1"]["grace_full_rounds"], rules["level1"]["max_rounds"])
     return {"gameplay_mode": MODE, "game_id": state["game_id"], "seed": state["seed"],
@@ -396,7 +434,11 @@ def observe(state, player):
                       "gates": {p: list(c) for p, c in b.gates.items()},
                       "districts": {n: list(c) for n, c in b.districts.items()},
                       "glory_posts": [list(c) for c in b.glory_posts],
-                      "checkpoint": list(b.checkpoint), "factions": copy.deepcopy(config["factions"])},
+                      "checkpoint": list(b.checkpoint),
+                      **({"factions": copy.deepcopy(config["factions"])}
+                         if not (state["phase"] == 2 and config.get("blind_support") and state["faction_sites"])
+                         else {"support_sites": {"candidates": [[int(x) for x in k.split(",")] for k in sorted(state["faction_sites"])],
+                                                  "revealed": {k: v for k, v in sorted(state["faction_sites_revealed"].items())}}})},
             "revealed_districts": dict(sorted(state["revealed"].items())),
             "prestige_cap": rules["glory"]["cap"], "equipment_names": sorted(rules["equipment"]),
             "players": players, "pending_claim": copy.deepcopy(state["pending_claim"]),
@@ -500,6 +542,13 @@ def apply_action(state, player, turn_id, action_id, reason=None):
         if success:
             me["stats"]["guard_post_successes"] += 1
             _award(state, player, rules["glory"]["guard_post_reward"], "guard_post", events)
+    elif kind == "search_site":
+        key = f"{me['pos'][0]},{me['pos'][1]}"
+        faction = state["faction_sites"][key]
+        state["faction_sites_revealed"][key] = faction
+        me["stats"]["site_searches"] += 1
+        events.append({"type": "support_site_revealed", "player": player,
+                       "cell": list(me["pos"]), "faction": faction})
     elif kind == "gain_support":
         _spend(state, player, config["support_cost"], "faction_support", events)
         me["support"].append(action["faction"])
@@ -513,7 +562,11 @@ def apply_action(state, player, turn_id, action_id, reason=None):
         _award(state, player, rules["glory"]["first_challenger_reward"], "checkpoint", events)
         events.append({"type": "first_challenger", "player": player})
     elif kind == "proclaim":
-        state["pending_claim"] = {"player": player, "claim_id": turn_id, "responded": []}
+        state["pending_claim"] = {"player": player, "claim_id": turn_id, "responded": [],
+                                  "round": state["round"]}
+        if config.get("proclaim_cost", 0):
+            _spend(state, player, config["proclaim_cost"], "proclaim", events)
+            me["stats"]["proclaims_paid"] += 1
         me["stats"]["claims_made"] += 1
         events.append({"type": "claim_proclaimed", "player": player, "claim_id": turn_id})
     elif kind == "maintain_claim":
@@ -583,6 +636,16 @@ def apply_action(state, player, turn_id, action_id, reason=None):
                        "attacker_score": attack_score, "defender_score": defense_score,
                        "spend_prestige": paid})
         _award(state, winner, rules["glory"]["duel_win_reward"], "duel", events)
+        # Human redesign option: the beaten duelist is shamed and pays the
+        # bank up to one Prestige of what they hold.
+        shame = config.get("duel_loser_cost", 0)
+        if shame:
+            loser = target if won else player
+            lplayer = state["players"][loser]
+            paid = min(shame, lplayer["prestige"])
+            if paid:
+                _spend(state, loser, paid, "duel_shame", events)
+                lplayer["stats"]["shame_prestige_paid"] += paid
         if won and state["pending_claim"] and state["pending_claim"]["player"] == target:
             _cancel(state, "challenge_won", events, attacker=player)
             # Lorica: once per game the beaten claimant keeps their position.
@@ -604,7 +667,9 @@ def apply_action(state, player, turn_id, action_id, reason=None):
             pending["responded"].append(player)
             me["stats"]["response_turns"] += 1
             events.append({"type": "claim_response", "player": player, "claim_id": pending["claim_id"]})
-        if len(set(pending["responded"])) == 3:
+        if len(set(pending["responded"])) == 3 and not config.get("claim_window_rounds", 0):
+            # Under a claim window the rivals must act inside the window
+            # (challenge or cancel); mere responses no longer crown.
             claimant = pending["player"]
             state["winner"], state["status"], state["end_reason"] = claimant, "finished", "acclamation"
             state["players"][claimant]["stats"]["claims_survived"] += 1
@@ -634,6 +699,20 @@ def _advance(state):
         if state["rotate_first"]:
             state["round_start"] = (state["round_start"] + 1) % 4
         rules = state["rules"]
+        window = rules["succession"].get("claim_window_rounds", 0)
+        pending = state["pending_claim"]
+        if (window and state["phase"] == 2 and pending
+                and state["round"] - pending["round"] >= window):
+            # Human redesign: a claim that survived the window unchallenged
+            # wins the game outright (end_reason survived_window). The event
+            # rides the last turn record, like phase_transition and game_draw.
+            claimant = pending["player"]
+            state["winner"], state["status"], state["end_reason"] = claimant, "finished", "survived_window"
+            state["players"][claimant]["stats"]["claims_survived"] += 1
+            state["events"][-1]["events"].append({"type": "game_won", "player": claimant,
+                                                  "cause": "survived_window"})
+            state["current_roll"] = None
+            return
         if state["phase"] == 1:
             end = rules["level1"]["max_rounds"]
             if state["first_challenger"] is not None:
@@ -646,6 +725,18 @@ def _advance(state):
                     for player in state["players"].values():
                         player["pos"] = player["gate"][:]
                 state["phase"], state["round"], state["round_start"] = 2, 1, 0
+                if rules["succession"].get("blind_support"):
+                    # Human redesign: on the palace level the three faction
+                    # meeting places are re-dealt blind onto the six district
+                    # entry cells - three hold a faction, three are decoys.
+                    # Drawn from the order stream, which nothing uses after
+                    # setup, so matched seeds stay aligned across arms.
+                    cells = sorted(list(c) for c in rules["board"]["districts"].values())
+                    state["faction_sites"] = {f"{c[0]},{c[1]}": None for c in cells}
+                    for cell, name in zip(_shuffle(state, cells, "order")[:3],
+                                          sorted(rules["succession"]["factions"])):
+                        state["faction_sites"][f"{cell[0]},{cell[1]}"] = name
+                    state["faction_sites_revealed"] = {}
                 state["events"][-1]["events"].append({"type": "phase_transition", "from_phase": 1,
                     "to_phase": 2, "auto_granted": {}, "phase1_timeout": state["phase1_timeout"]})
         elif state["round"] > rules["level2"]["max_rounds"]:
@@ -717,7 +808,19 @@ def check_invariants(state):
         assert pending["player"] not in pending["responded"], "claimant counted as responder"
         assert len(pending["responded"]) == len(set(pending["responded"])), "duplicate response"
     if state["winner"]:
-        assert state["end_reason"] == "acclamation" and pending and len(pending["responded"]) == 3, "incomplete acclamation"
+        if state["end_reason"] == "survived_window":
+            assert pending, "window win without a pending claim"
+            window = state["rules"]["succession"].get("claim_window_rounds", 0)
+            assert window and state["round"] - pending["round"] >= window, "claim window not actually survived"
+        else:
+            assert state["end_reason"] == "acclamation" and pending and len(pending["responded"]) == 3, "incomplete acclamation"
+    if state["faction_sites"]:
+        names = set(state["rules"]["succession"]["factions"])
+        held = sorted(f for f in state["faction_sites"].values() if f)
+        assert held == sorted(names), "blind support sites must hold each faction exactly once"
+        assert set(state["faction_sites_revealed"]) <= set(state["faction_sites"]), "revealed site is not a candidate"
+        for key, faction in state["faction_sites_revealed"].items():
+            assert state["faction_sites"][key] == faction, "revealed site mismatches the hidden deal"
     for record in state["events"]:
         assert len(record["action"]["path"]) - 1 <= record["movement_die"], "movement exceeds roll"
     return True
@@ -838,8 +941,21 @@ def choose_policy(policy_name, obs, rng=None):
         district_targets = [cell for name, cell in obs["board"]["districts"].items()
                             if name not in revealed or revealed[name] not in owned]
         explore_target = min(district_targets, key=lambda c: (public_dist[tuple(c)], c)) if district_targets else None
-    factions = [(name, cell) for name, cell in obs["board"]["factions"].items() if name not in me["support"]]
+    if "support_sites" in obs["board"]:
+        # Blind palace-level sites: target revealed faction sites, else hunt
+        # the nearest unrevealed candidate cell.
+        sites = obs["board"]["support_sites"]
+        revealed = sites["revealed"]
+        useful_sites = [(tuple(int(v) for v in k.split(",")), f)
+                        for k, f in revealed.items() if f and f not in me["support"]]
+        factions = [(f, list(c)) for c, f in useful_sites]
+        unknown_sites = [tuple(c) for c in sites["candidates"]
+                         if f"{c[0]},{c[1]}" not in revealed]
+    else:
+        factions = [(name, cell) for name, cell in obs["board"]["factions"].items() if name not in me["support"]]
+        unknown_sites = []
     faction_target = min(factions, key=lambda f: (public_dist[tuple(f[1])], f[0]))[1] if factions else None
+    search_target = min(unknown_sites, key=lambda c: (public_dist[c], c)) if unknown_sites else None
     guards = bykind("guard_post")
     duels = [a for a in bykind("duel") if not a["spend_prestige"]]
     guard_target = min(obs["board"]["glory_posts"], key=lambda c: (public_dist[tuple(c)], c))
@@ -871,6 +987,10 @@ def choose_policy(policy_name, obs, rng=None):
     if supports_needed and faction_accessible and not (farmer and want_funding):
         if bykind("gain_support"):
             return select(nearest(bykind("gain_support")), "secure a distinct faction's support")
+        if bykind("search_site"):
+            return select(nearest(bykind("search_site")), "search a support site")
+        if search_target:
+            return toward(search_target, "hunt a hidden meeting place")
         if prestige >= progress["support_cost"] and faction_target:
             return toward(faction_target, "visit a faction meeting place")
     if want_funding:

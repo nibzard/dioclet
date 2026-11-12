@@ -1,7 +1,8 @@
 # Human playtest protocol (V0.8 succession)
 
-Status: prepared, not yet run. No human session has been recorded.
-Update this file with actual sessions only; keep predictions in a
+Status: prepared. First session recorded 2026-11-12 with live rule
+changes: see `human-session-001.md`. Update this file with actual
+sessions only; keep predictions in a
 separate notes column, never in the recorded fields.
 
 This protocol tests the V0.8 succession prototype: persistent

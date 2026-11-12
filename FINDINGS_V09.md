@@ -242,3 +242,76 @@ makes that one rules-file edit away.
   untouched. The trial lives in `rules_v09_reveal2.json`,
   `rules_v09_abilities.json` (C2), `succession.py`, and
   `tools/v09_design_experiment.py`.
+
+## The endgame: hill-climb, live probes, and the V0.9 candidate
+
+Date: 2026-11-12. Sources: `results/v09-climb/` (hill-climb, screens
+700000+, confirmation 800000+), `results/v09-live-{f4,f3,f1}/`
+(OpenAI Decisions, gpt-6-luna, shared cap $1.50 / 2400 calls,
+actually spent about $0.87, ledger `results/v09-live-budget.json`).
+
+### From playtest to engine
+
+The human session's level-2 redesign entered the engine as five
+default-off knobs (DECISIONS.md D44): claim survival window,
+challenge radius, blind support sites, duel loser shame cost,
+proclaim cost, plus the officials-off-Peristyle bug fix. E0
+(window 2, radius 3, blind support) drew 16.7% under bots; the
+climb then screened one knob at a time on 96 matched seeds with
+programme.md gates plus predeclared claim-health gates.
+
+### What the climb found
+
+- **Window length is the master switch.** One round: 0% draws but
+  trivial crowns. Two rounds with shame: the balanced point. Three
+  rounds: 40-62% draws - the playtest's "three is a lot" confirmed
+  quantitatively.
+- **The challenge radius knob is inert** at or above duel_range
+  (duel legality already requires adjacency); the humans' real
+  problem was arrival time, which the window itself addresses.
+- **Loser shame is the stabilizer.** It converts the window-2
+  recycling loop (16.7% draws) into 1.8% by draining re-contest
+  budgets.
+- **Greedy ascent chose wrong**: it promoted window-1 and dropped
+  blind support, but the contest audit showed that combination
+  crowns 48% of games with zero cancellations - the fee-2 failure
+  shape. Coordinate-wise scores missed the combination.
+
+### Live probes (3 games per arm, 4 model seats)
+
+| Arm | Bots: draws / free crowns | Live: finished / claims contested |
+|---|---|---|
+| F4 window2+shame+public support | 0% / 13.5% | 2 of 3 / 2 of 4 |
+| F3 window2+shame+blind support | 1.8% / 37.5% | 0 of 3 (all timeout, no claims) |
+| F1 window1+public support | 0% / 48% | 3 of 3 / 2 of 5 |
+
+F4's live median (25 rounds) matches its bot median (24). F3's
+blind support, the playtest's favorite idea, is unreachable for
+model players: they cannot find two hidden faction sites inside
+24 palace rounds. Blind support stays available as a knob
+(`rules_v09f_court.json`) for groups who want a long hunt, but it
+cannot be the default.
+
+### The candidate: `rules_v09_succession.json` (0.9.0-court)
+
+Everything learned, in one file:
+
+- C2's six one-line equipment abilities, one modifier per duel
+  side; count tiers zeroed; two districts revealed at start.
+- Claim window of two rounds: rivals must cancel a claim inside
+  the window or it crowns; responses no longer crown.
+- Duel loser pays 1 Prestige to the bank (shame).
+- Officials moved off the Peristyle (the exploited bug).
+- Public support cells, city support allowed, contest fee 1.
+
+Measured on 384 fresh seeds: 1.8% draws (V0.8.1: 3.4%), median 25
+rounds, 3.7 claims and 2.7 cancellations per game (fewer,
+contested claims instead of V0.8.1's 9.2-made/8.2-cancelled
+recycling), first-claimant win 43.5%, and the tightest strategy
+spread of any version (16.9% to 31.8% across the four profiles).
+Under model play it finishes at bot speed with contested claims.
+
+Open for the release pass: browser JavaScript parity, the print
+kit, and a second human session on this candidate. The board
+geometry sweeps the playtest asked for (nobody crosses the
+middle) remain unrun - the runner now supports them.

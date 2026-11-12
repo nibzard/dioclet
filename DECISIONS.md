@@ -396,3 +396,40 @@ practical. No baseline rule values were changed.
   (median 18 rounds) but the early claimant converts 30.6% versus
   44.1% at baseline, draws double, and players end with 2.3 items,
   so the released direction keeps the requirement at six.
+
+- **D44 Palace-level redesign knobs (V0.9 trial, 2026-11-12).** The human
+  session's level-2 redesign enters the engine as five succession keys,
+  each defaulting to the V0.8 behavior: `claim_window_rounds` (a pending
+  claim wins outright after surviving that many full rounds; while a
+  window is set, three mere responses no longer crown - rivals must
+  cancel the claim inside the window), `challenge_radius` (duels against
+  the claimant additionally require standing within R steps; values at or
+  above duel_range never bind, because duel legality already requires
+  adjacency), `blind_support` (at the phase transition the three faction
+  meeting places are re-dealt onto the six district entry cells - three
+  factions, three decoys - hidden until a player ends movement there and
+  searches; blind support also disables city-phase support, so the
+  printed faction cells stop existing as such; the deal draws from the
+  order stream, which nothing uses after setup), `duel_loser_cost` (the
+  beaten duelist pays the bank up to that much Prestige - the playtest's
+  shame rule), and `proclaim_cost` (Prestige paid to proclaim). The
+  officials faction moves off the Peristyle in the trial files, fixing
+  the exploited meeting-place-on-checkpoint bug; released V0.8.1 files
+  are unchanged.
+
+- **D45 Hill-climb verdict over the redesign (V0.9, 2026-11-12).**
+  Screens used 96 matched seeds (700000+) per candidate with the frozen
+  gates from programme.md plus predeclared claim-health gates;
+  confirmation used 384 fresh seeds (820000+). Greedy coordinate ascent
+  promoted a one-round window and dropped blind support, but the
+  follow-up audit showed that combination crowns 48% of games with zero
+  cancellations - the fee-2 failure shape, vetoed. The confirmed
+  finalist keeps the human redesign intact: two-round window, blind
+  support, loser shame, C2 abilities, two start reveals, officials off
+  the Peristyle (`rules_v09f_court.json`): 1.8% draws over 384 games
+  (V0.8.1: 3.4%), median 25 rounds, 3.7 claims and 2.7 cancellations per
+  game (V0.8.1: 9.2 and 8.2 - fewer, contested claims instead of
+  recycling), 5.9 blind searches per game, and the tightest strategy
+  spread measured for any version (16.9% to 31.8% across the four
+  profiles). The bot-optimal fast-crown variant is preserved at
+  `rules_v09g_fastcrown.json` as the live-probe alternative.
