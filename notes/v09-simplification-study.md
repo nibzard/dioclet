@@ -46,7 +46,7 @@ live OpenAI Decisions probes.
 |---|---|---|
 | S1 collapse six abilities to 3 attack / 3 defense, summed | rejected | healthy flow but strategy spread widens (collector 0.39, farmer 0.10; compounds to farmer 0.08 with trims) - the six identities are doing balance work |
 | S2 drop the challenge boost (+2 for 1 Prestige) | adopted | metrics identical to incumbent; the boost is never the deciding choice under window+shame |
-| S3 drop the contest fee | rejected | 60% draws, 24 claims per game - the denial loop returns even with window+shame; the fee is load-bearing (reconfirms D38) |
+| S3 drop the contest fee | rejected | 60% draws, 24 claims per game - the denial loop returns even with window+shame; the fee does systemic work (reconfirms D38) |
 | S4 drop the first-challenger Prestige bonus | adopted | healthy; removes a salad source and an incentive line |
 | S24 = S2 + S4 | adopted | 384-game confirmation: 1 draw, median 24, 4.62 claims and 3.62 cancellations per game, tightest spread measured (0.138-0.326) |
 
