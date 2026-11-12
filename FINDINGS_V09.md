@@ -315,3 +315,29 @@ Open for the release pass: browser JavaScript parity, the print
 kit, and a second human session on this candidate. The board
 geometry sweeps the playtest asked for (nobody crosses the
 middle) remain unrun - the runner now supports them.
+
+## Simplification pass (S-series, 2026-11-13)
+
+A rules-design literature sweep (`notes/rules-elegance-research-2026-11-13.md`,
+`notes/v09-simplification-study.md`) gave a test method: every
+rule must change a real decision or leave; prefer cuts that
+remove text, not choices. Screens ran on 96 matched seeds
+(900000+) with the frozen gates.
+
+| Screen | Change | Verdict |
+|---|---|---|
+| S1 | six abilities collapsed to 3 attack / 3 defense, summed | rejected: strategy spread widens (collector 0.39, farmer 0.10) |
+| S2 | drop the optional duel boost | adopted: metrics identical, the boost is never chosen under window+shame |
+| S3 | drop the contest fee | rejected: 60% draws, 24 claims per game - the denial loop returns |
+| S4 | drop the first-challenger bonus | adopted: healthy, one salad source removed |
+| S124 | S1+S2+S4 | rejected: compounds S1's spread damage |
+
+S24 (S2+S4) is `rules_v091_succession.json` ("0.9.1-trim"),
+confirmed on 384 fresh seeds (920000+): 1 draw, median 24 rounds,
+4.62 claims and 3.62 cancellations per game, 17% free crowns, and
+a slightly tighter strategy spread than 0.9.0 (collector 25.5%,
+early support 32.6%, farmer 13.8%, counterleader 27.9%). The
+0.9.0 file remains the promoted court candidate; 0.9.1-trim is
+the recommended next print. The Prestige economy is now two
+sources (duel wins, guard posts) and two sinks (support, contest
+fee) plus the bounded shame cost.

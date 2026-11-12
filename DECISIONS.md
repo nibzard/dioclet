@@ -433,3 +433,27 @@ practical. No baseline rule values were changed.
   spread measured for any version (16.9% to 31.8% across the four
   profiles). The bot-optimal fast-crown variant is preserved at
   `rules_v09g_fastcrown.json` as the live-probe alternative.
+
+- **D46 Simplification verdict (V0.9, 2026-11-13).** After the web
+  research pass (notes above), each suspect rule was screened by
+  removal on 96 matched seeds (900000+) with the frozen gates.
+  Two rules are dead under the window+shame court and are cut in
+  `rules_v091_succession.json` ("0.9.1-trim"): the optional duel
+  boost (pay 1 Prestige for +2; S2 metrics identical to incumbent)
+  and the first-challenger Prestige bonus (S4 healthy without it).
+  Three cuts were vetoed by evidence: collapsing the six equipment
+  abilities into summed attack/defense types widens the strategy
+  spread (S1: collector 0.39, farmer 0.10; S124 compounds it), so
+  the six identities stay; removing the contest fee resurrects the
+  denial loop (S3: 58 of 96 draws, 24 claims per game) even with
+  window+shame, reconfirming D38; guard posts stay as the income
+  floor that keeps zero-Prestige seats participant rather than
+  walking-dead kingmakers (playtest and live-probe evidence).
+  Confirmation on 384 fresh seeds (920000+): 0.9.1-trim draws 1,
+  median 24, 4.62 claims and 3.62 cancellations per game, 17% free
+  crowns, spread 0.138-0.326 - equal or better than 0.9.0 on every
+  gate with two fewer player-facing rules. 0.9.0 stays promoted
+  until a human session validates the trim; the research-grounded
+  V1.0 roadmap (equipment-as-action-system, board-derived
+  standings) lives in the simplification note as future design
+  experiments, not pending edits.
