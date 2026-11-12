@@ -394,24 +394,42 @@ def _is_succession(obs=None, rules=None):
 
 def _succession_rule_summary(rules):
     cfg = rules["succession"]
-    return {
+    window = cfg.get("claim_window_rounds", 0)
+    summary = {
         "prestige_cap": rules["glory"]["cap"],
         "support_cost": cfg["support_cost"],
         "required_support": cfg["required_support"],
-        "support_in_city": cfg["support_in_city"],
+        "support_in_city": (cfg["support_in_city"] and not cfg.get("blind_support")),
         "challenge_cost": cfg["challenge_cost"],
         "challenge_bonus": cfg["challenge_bonus"],
         "contest_cost": cfg.get("contest_cost", 0),
         "support_is_permanent": True,
         "equipment_is_persistent": True,
         "free_equipment_at_transition": False,
-        "claim_response_rule": "Each distinct rival completes one response turn.",
         "successful_challenge": "Cancel the claim; claimant returns to their own assigned gate.",
         "duel_tie_goes_to": "defender" if rules["combat"]["tie_goes_to_defender"] else "attacker",
         "guard_success_min_roll": rules["glory"]["guard_post_success_min_roll"],
         "duel_range": rules["movement"]["duel_range"],
         "grace_full_rounds": rules["level1"]["grace_full_rounds"],
     }
+    if window:
+        summary["claim_response_rule"] = (
+            f"The claim wins after surviving {window} full round(s) uncancelled; "
+            "responses do not crown it - rivals must cancel it inside the window.")
+    else:
+        summary["claim_response_rule"] = "Each distinct rival completes one response turn."
+    if cfg.get("duel_loser_cost"):
+        summary["duel_loser_cost"] = cfg["duel_loser_cost"]
+    if cfg.get("proclaim_cost"):
+        summary["proclaim_cost"] = cfg["proclaim_cost"]
+    if cfg.get("blind_support"):
+        summary["support_sites"] = ("Palace level only: the three faction meeting places "
+                                    "are hidden among six candidate cells; end movement on "
+                                    "one and search to reveal it.")
+    abilities = rules["combat"].get("abilities")
+    if abilities:
+        summary["equipment_abilities"] = {item: spec["type"] for item, spec in sorted(abilities.items())}
+    return summary
 
 
 def _project_succession(obs, rules):
@@ -447,7 +465,12 @@ def _project_succession(obs, rules):
         "pending_claim": obs.get("pending_claim"),
         "public_locations": {key: obs["board"][key] for key in (
             "width", "height", "blocked", "gates", "districts", "glory_posts",
-            "checkpoint", "factions")},
+            "checkpoint") if key in obs["board"]},
+        # Blind palace-level support sites replace the printed faction cells;
+        # only candidates and already-revealed sites are public (D17/D25).
+        **({"support_sites": obs["board"]["support_sites"]}
+           if "support_sites" in obs["board"] else
+           {"factions": obs["board"]["factions"]}),
         "gate_assignments": obs["gate_assignments"],
         "revealed_districts": dict(obs["revealed_districts"]),
         "equipment_names": list(obs["equipment_names"]),
@@ -476,9 +499,13 @@ def _succession_goals(obs, rules):
         revealed = obs["revealed_districts"].get(name)
         if revealed is None or revealed not in me["equipment"]:
             goals["collection"].append(cell)
-    for name, cell in board["factions"].items():
-        if name not in me["support"]:
+    if "support_sites" in board:  # blind palace-level sites
+        for cell in board["support_sites"]["candidates"]:
             goals["support"].append(cell)
+    else:
+        for name, cell in board["factions"].items():
+            if name not in me["support"]:
+                goals["support"].append(cell)
     pending = obs.get("pending_claim")
     if pending and pending["player"] != obs["viewer"]:
         goals["counterclaim"] = [obs["players"][pending["player"]]["position"]]

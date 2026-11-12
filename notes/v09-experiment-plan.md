@@ -5,7 +5,10 @@ Status: complete. Results: [FINDINGS_V09](../FINDINGS_V09.md),
 `results/v09-design-002/` (C2, the simplified set the same
 direction produced after review; recommended), and
 `results/v09-design-003/` (trial D: checkpoint at three items,
-measured and not recommended). Approved design experiment (user direction,
+measured and not recommended). The endgame - hill-climb, live
+OpenAI Decisions probes, and the promoted candidate
+`rules_v09_succession.json` - is recorded in FINDINGS_V09.md with
+`results/v09-climb/` and `results/v09-live-*/`. Approved design experiment (user direction,
 2026-11-11). Outside the programme.md mutation space by design: programme.md
 forbids equipment powers inside hyperparameter search and requires a separate
 approved experiment for them. This note is that experiment.

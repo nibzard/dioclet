@@ -396,3 +396,120 @@ class TestV09Games(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestV09Court(unittest.TestCase):
+    def rules_f3(self):
+        value = engine.load_rules(os.path.join(ROOT, "rules_v09f_court.json"))
+        value["succession"].update(gate_assignment="manual", contest_cost=0)
+        return value
+
+    def test_new_knobs_are_validated(self):
+        for field, value in (("claim_window_rounds", 7), ("claim_window_rounds", -1),
+                             ("challenge_radius", 9), ("duel_loser_cost", -1),
+                             ("proclaim_cost", "1"), ("blind_support", "yes")):
+            candidate = self.rules_f3()
+            candidate["succession"][field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(engine.EngineError):
+                engine.validate_rules(candidate)
+
+    def test_claim_survives_the_window_instead_of_acclamation(self):
+        state = game(self.rules_f3())
+        state["phase"] = 2
+        state["players"]["P0"].update(pos=[6, 6], support=["army", "elites"])
+        active(state, "P0")
+        take(state, "proclaim")
+        for pid in ("P1", "P2", "P3"):  # all three rivals answer; no crown yet
+            active(state, pid)
+            take(state, "move")
+        self.assertEqual(state["status"], "in_progress")
+        state["players"]["P0"]["pos"] = [6, 6]
+        for _ in range(16):  # let the rounds roll; nobody challenges
+            if engine.is_finished(state):
+                break
+            actions = engine.legal_actions(state)
+            kind = "maintain_claim" if any(a["kind"] == "maintain_claim" for a in actions) else "move"
+            take(state, kind)
+        self.assertEqual(state["winner"], "P0")
+        self.assertEqual(state["end_reason"], "survived_window")
+        engine.check_invariants(state)
+
+    def test_window_zero_keeps_acclamation(self):
+        state = game(self.rules_f3())
+        state["rules"]["succession"]["claim_window_rounds"] = 0
+        state["phase"] = 2
+        state["players"]["P0"].update(pos=[6, 6], support=["army", "elites"])
+        active(state, "P0")
+        take(state, "proclaim")
+        for pid in ("P1", "P2", "P3"):
+            active(state, pid)
+            take(state, "move")
+        self.assertEqual(state["winner"], "P0")
+        self.assertEqual(state["end_reason"], "acclamation")
+
+    def test_duel_loser_pays_shame(self):
+        state = game(self.rules_f3())
+        state["players"]["P1"]["prestige"] = 2
+        state["players"]["P2"]["prestige"] = 1
+        duel_staged(state, "P1", "P2")
+        with patch.object(succession, "_die", side_effect=[6, 1, 3, 3]):
+            take(state, "duel", target="P2", spend_prestige=False)
+        # P2 lost: paid 1 shame; P1 won: earned the duel reward, no shame.
+        self.assertEqual(state["players"]["P2"]["prestige"], 0)
+        self.assertEqual(state["players"]["P2"]["stats"]["shame_prestige_paid"], 1)
+        self.assertEqual(state["players"]["P1"]["stats"]["shame_prestige_paid"], 0)
+        self.assertEqual(state["players"]["P1"]["prestige"], 3)  # 2 + duel reward, capped at 3
+
+    def test_blind_support_search_reveals_and_pays(self):
+        state = game(self.rules_f3())
+        state["faction_sites"] = {"2,2": "elites", "4,2": "officials", "6,8": "army"}
+        state["faction_sites_revealed"] = {}
+        state["phase"] = 2
+        state["players"]["P0"].update(pos=[6, 8], prestige=1)
+        active(state, "P0")
+        actions = engine.legal_actions(state)
+        self.assertTrue(any(a["kind"] == "search_site" for a in actions))
+        take(state, "search_site")
+        self.assertEqual(state["faction_sites_revealed"]["6,8"], "army")
+        active(state, "P0")
+        self.assertTrue(any(a["kind"] == "gain_support" and a.get("faction") == "army"
+                            for a in engine.legal_actions(state)))
+        take(state, "gain_support")
+        self.assertEqual(state["players"]["P0"]["support"], ["army"])
+        engine.check_invariants(state)
+
+    def test_blind_support_does_not_leak_the_deal(self):
+        state = game(self.rules_f3())
+        state["faction_sites"] = {"6,6": "PRIVATE-FACTION", "6,8": None}
+        state["faction_sites_revealed"] = {}
+        state["phase"] = 2
+        obs = engine.observe(state, state["active_player"])
+        blob = json.dumps(obs)
+        self.assertNotIn("PRIVATE-FACTION", blob)
+        self.assertIn("support_sites", obs["board"])
+        self.assertNotIn("factions", obs["board"])
+        self.assertTrue(all("faction" not in a or a.get("faction") is None
+                            or a["kind"] == "gain_support" for a in obs["legal_actions"]))
+
+    def test_blind_support_disables_city_support(self):
+        state = game(self.rules_f3())
+        cell = [7, 6]  # the officials meeting place
+        state["players"]["P0"].update(pos=cell, prestige=1)
+        active(state, "P0")
+        self.assertFalse(any(a["kind"] == "gain_support" for a in engine.legal_actions(state)))
+        state["rules"]["succession"]["blind_support"] = False
+        self.assertTrue(any(a["kind"] == "gain_support" for a in engine.legal_actions(state)))
+
+    def test_proclaim_cost_gates_the_claim(self):
+        state = game(self.rules_f3())
+        state["rules"]["succession"]["proclaim_cost"] = 1
+        state["phase"] = 2
+        state["players"]["P0"].update(pos=[6, 6], support=["army", "elites"], prestige=0)
+        active(state, "P0")
+        self.assertFalse(any(a["kind"] == "proclaim" for a in engine.legal_actions(state)))
+        state["players"]["P0"]["prestige"] = 1
+        self.assertTrue(any(a["kind"] == "proclaim" for a in engine.legal_actions(state)))
+
+    def test_officials_no_longer_sit_on_the_peristyle(self):
+        rules = self.rules_f3()
+        self.assertNotEqual(rules["succession"]["factions"]["officials"], rules["board"]["checkpoint"])
