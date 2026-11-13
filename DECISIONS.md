@@ -517,6 +517,31 @@ practical. No baseline rule values were changed.
   simplification study meant to produce. The playtest protocol and
   print kit now target 0.9.3.
 
+- **D50 Twin-board promotion (V0.9, 2026-11-13).** The user asked
+  to review faction placement (sites too close to gates) and to
+  print two boards; the playtest had already redesigned Level 2 at
+  the table the same way. Implemented as `board_level2` in the
+  engine: a separate 13x9 succession map (four blocks, gates
+  4/6/4/6 steps from the Peristyle crossing), a structural return
+  to gates at the phase transition, support only on the new map,
+  and twin-map validation. Meeting places were screened as three
+  sets (96 matched seeds, 1000000+) and confirmed at 384 fresh
+  seeds (1010000+): the triangle set (elites (6,3), officials
+  (3,4), army (9,4), one per street arm, every gate 3 to 5 steps
+  from its nearest site) is promoted in
+  `rules_v094_twinboard.json` ("0.9.4-twinboard"). Measured against
+  the 0.9.3 single board: every health gate green (2 draws of 384,
+  median 23 rounds - 15 collecting, 8 contesting - 4.45 claims per
+  game, first claimant .32) and the tightest gate balance measured
+  in this project (.266/.250/.242/.237; the single board's east
+  gate stays .193) - the seat-fairness complaint is solved
+  structurally, not by cell tweaks. Known cost, recorded: the
+  farmer profile weakens (.17 to .12) because the succession map
+  has no guard posts; duel wins are the only phase-2 income.
+  `board_level2.glory_posts` stays a validated knob for a human
+  follow-up. The ring set (twinA) also passed and is recorded in
+  `results/v09-twinboard/` as the alternative.
+
 - **D48 Challenge-radius verdict (V0.9, 2026-11-13).** The playtest
   proposed that a challenger must stand within three steps of the
   Peristyle to contest a claim. In the engine the claimant occupies

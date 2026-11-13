@@ -61,6 +61,7 @@ def validate_rules(rules):
     legacy.pop("gameplay_mode", None)
     config = legacy.pop("succession", None)
     legacy.pop("start_reveals", None)
+    legacy.pop("board_level2", None)
     if rules.get("gameplay_mode") != MODE or not isinstance(config, dict):
         _error("invalid_rules", "succession-v1 needs a succession object")
     missing = engine.REQUIRED_KEYS - set(rules)
@@ -146,26 +147,94 @@ def validate_rules(rules):
     factions = config.get("factions")
     if not isinstance(factions, dict) or set(factions) != {"army", "officials", "elites"}:
         _error("invalid_rules", "factions must define army, officials, and elites")
-    b = Board(rules)
+    b = Board(rules, "board_level2") if "board_level2" in rules else Board(rules)
     reachable = b.distances(b.gates["P0"])
     for name, cell in factions.items():
         if not isinstance(cell, list) or len(cell) != 2 or tuple(cell) not in reachable:
-            _error("invalid_rules", f"faction {name} must occupy a reachable street")
+            board_name = "board_level2" if "board_level2" in rules else "board"
+            _error("invalid_rules",
+                   f"faction {name} must occupy a reachable street on {board_name}")
     if len(set(map(tuple, factions.values()))) != 3:
         _error("invalid_rules", "faction meeting places must be distinct")
     if config["required_support"] > len(factions):
         _error("invalid_rules", "required_support exceeds the number of factions")
+    if "board_level2" in rules:
+        _validate_board_level2(rules, config)
     return True
 
 
-def _board(rules):
-    key = json.dumps(rules["board"], sort_keys=True, separators=(",", ":"))
+def _validate_board_level2(rules, config):
+    """A separate succession map: four gates, a checkpoint, optional
+    posts, no districts and no six-block contract (that layout is the
+    palace level's)."""
+    twin = rules["board_level2"]
+    if not isinstance(twin, dict):
+        _error("invalid_rules", "board_level2 must be an object")
+    for key in ("width", "height"):
+        value = twin.get(key)
+        if type(value) is not int or value < 5:
+            _error("invalid_rules", f"board_level2.{key} must be an integer of at least 5")
+    blocked = {tuple(c) for c in twin.get("blocked", [])}
+    def in_bounds(cell):
+        return (isinstance(cell, list) and len(cell) == 2
+                and all(isinstance(v, int) for v in cell)
+                and 0 <= cell[0] < twin["width"] and 0 <= cell[1] < twin["height"])
+    gates = twin.get("gates")
+    if not isinstance(gates, dict) or set(gates) != set(IDS):
+        _error("invalid_rules", "board_level2.gates must define P0..P3")
+    for pid, cell in gates.items():
+        if not in_bounds(cell) or tuple(cell) in blocked:
+            _error("invalid_rules", f"board_level2 gate {pid} out of bounds or blocked")
+    if len({tuple(c) for c in gates.values()}) != 4:
+        _error("invalid_rules", "board_level2 gates must be distinct")
+    if not in_bounds(twin.get("checkpoint")) or tuple(twin["checkpoint"]) in blocked:
+        _error("invalid_rules", "board_level2.checkpoint out of bounds or blocked")
+    if twin.get("districts"):
+        _error("invalid_rules", "board_level2 carries no districts; treasures live on the palace map")
+    posts = twin.get("glory_posts", [])
+    if not isinstance(posts, list):
+        _error("invalid_rules", "board_level2.glory_posts must be a list")
+    for cell in posts:
+        if not in_bounds(cell) or tuple(cell) in blocked:
+            _error("invalid_rules", "board_level2 glory post out of bounds or blocked")
+    if config.get("blind_support"):
+        _error("invalid_rules",
+               "blind_support re-deals the palace districts; it cannot combine with board_level2")
+    b = Board(rules, "board_level2")
+    if set(b.districts) or b.district_at:
+        _error("invalid_rules", "board_level2 must not declare districts")
+    for pid, gate in b.gates.items():
+        reach = b.distances(gate)
+        if b.checkpoint not in reach:
+            _error("invalid_rules", f"board_level2 checkpoint unreachable from gate {pid}")
+    reach = b.distances(b.gates["P0"])
+    for cell in b.glory_posts:
+        if cell not in reach:
+            _error("invalid_rules", "board_level2 glory post unreachable")
+    for name, cell in config["factions"].items():
+        if tuple(cell) == b.checkpoint:
+            _error("invalid_rules", f"faction {name} sits on the board_level2 checkpoint")
+
+
+def _board(rules, phase=1):
+    """The active Board: the level-1 palace map, or the separate
+    succession map in phase 2 when the rules declare one."""
+    section = "board_level2" if (phase == 2 and "board_level2" in rules) else "board"
+    key = json.dumps([section, rules.get(section)], sort_keys=True, separators=(",", ":"))
     if key not in _BOARDS:
-        b = Board(rules)
+        b = Board(rules, section)
         b._succ_distances = {}
         b._succ_paths = {}
         _BOARDS[key] = b
     return _BOARDS[key]
+
+
+def _gate_cell(state, player, phase=None):
+    """The player's gate on the ACTIVE board (twin-board games move
+    the gates to the succession map in phase 2)."""
+    phase = state["phase"] if phase is None else phase
+    section = "board_level2" if ("board_level2" in state["rules"] and phase == 2) else "board"
+    return list(state["rules"][section]["gates"][player["gate_id"]])
 
 
 def _distances(b, start):
@@ -314,7 +383,7 @@ def legal_actions(state):
         return []
     rules = state["rules"]
     config = rules["succession"]
-    b = _board(rules)
+    b = _board(rules, state["phase"])
     pid = state["active_player"]
     me = state["players"][pid]
     pos = tuple(me["pos"])
@@ -338,7 +407,8 @@ def legal_actions(state):
                     state["district_equipment"][district] not in me["equipment"]):
                 add("explore", dest)
             if (state["phase"] == 2
-                    or (config["support_in_city"] and not config.get("blind_support"))):
+                    or (config["support_in_city"] and not config.get("blind_support")
+                        and "board_level2" not in rules)):
                 if state["phase"] == 2 and config.get("blind_support") and state["faction_sites"]:
                     # Blind support sites: search unrevealed cells (the offer
                     # never depends on the hidden faction - DECISIONS.md D1),
@@ -404,7 +474,7 @@ def observe(state, player):
         _error("not_your_turn", f"it is {state['active_player']}'s turn, not {player}'s")
     rules = state["rules"]
     config = rules["succession"]
-    b = _board(rules)
+    b = _board(rules, state["phase"])
     players = {}
     for pid, pdata in sorted(state["players"].items()):
         players[pid] = {"gate": list(pdata["gate"]), "gate_id": pdata["gate_id"],
@@ -435,6 +505,9 @@ def observe(state, player):
         # Blind support replaces city-phase support: the meeting places exist
         # only as hidden palace-level sites.
         progress["support_in_city"] = False
+    if "board_level2" in rules and state["phase"] == 1:
+        # Twin-board game: no meeting places exist on the palace map.
+        progress["support_in_city"] = False
     if state["first_challenger"] is not None:
         progress["transition_after_round"] = min(state["trigger_round"] + rules["level1"]["grace_full_rounds"], rules["level1"]["max_rounds"])
     return {"gameplay_mode": MODE, "game_id": state["game_id"], "seed": state["seed"],
@@ -450,7 +523,8 @@ def observe(state, player):
                       "districts": {n: list(c) for n, c in b.districts.items()},
                       "glory_posts": [list(c) for c in b.glory_posts],
                       "checkpoint": list(b.checkpoint),
-                      **({"factions": copy.deepcopy(config["factions"])}
+                      **({"factions": ({} if ("board_level2" in rules and state["phase"] == 1)
+                                      else copy.deepcopy(config["factions"]))}
                          if not (state["phase"] == 2 and config.get("blind_support") and state["faction_sites"])
                          else {"support_sites": {"candidates": [[int(x) for x in k.split(",")] for k in sorted(state["faction_sites"])],
                                                   "revealed": {k: v for k, v in sorted(state["faction_sites_revealed"].items())}}})},
@@ -502,7 +576,7 @@ def apply_action(state, player, turn_id, action_id, reason=None):
         _error("legal_action_error", f"unknown or illegal action_id {action_id!r}")
     action = available[action_id]
     rules, config = state["rules"], state["rules"]["succession"]
-    b = _board(rules)
+    b = _board(rules, state["phase"])
     me = state["players"][player]
     events, dice_used = [], []
     pending_before = copy.deepcopy(state["pending_claim"])
@@ -672,7 +746,7 @@ def apply_action(state, player, turn_id, action_id, reason=None):
                 them["stats"]["lorica_saves"] += 1
                 events.append({"type": "ability_used", "player": target, "ability": lorica_item})
             else:
-                them["pos"] = them["gate"][:]
+                them["pos"] = _gate_cell(state, them)
                 them["stats"]["times_displaced"] += 1
     else:
         _error("legal_action_error", f"unknown succession action {kind}")
@@ -737,7 +811,15 @@ def _advance(state):
                 state["rounds_level1"] = state["round"] - 1
                 state["phase1_timeout"] = state["first_challenger"] is None
                 state["equipment_at_transition"] = {p: len(d["equipment"]) for p, d in state["players"].items()}
-                if rules["succession"]["reset_positions"]:
+                if "board_level2" in rules:
+                    # Twin-board game: the succession map takes over and every
+                    # seat returns to its gate on that map (the playtest's
+                    # table rule, now structural). Phase is set first so the
+                    # gate lookup sees the new map.
+                    state["phase"] = 2
+                    for player in state["players"].values():
+                        player["pos"] = _gate_cell(state, player)
+                elif rules["succession"]["reset_positions"]:
                     for player in state["players"].values():
                         player["pos"] = player["gate"][:]
                 state["phase"], state["round"], state["round_start"] = 2, 1, 0
@@ -806,10 +888,10 @@ def result(state):
 
 
 def check_invariants(state):
-    b = _board(state["rules"])
+    b = _board(state["rules"], state["phase"])
     cap = state["rules"]["glory"]["cap"]
     for pid, player in state["players"].items():
-        assert tuple(player["pos"]) in _distances(b, player["gate"]), f"{pid} outside street graph"
+        assert tuple(player["pos"]) in _distances(b, _gate_cell(state, player)), f"{pid} outside street graph"
         assert player["prestige"] >= 0 and (cap is None or player["prestige"] <= cap), "invalid Prestige"
         assert len(set(player["equipment"])) == len(player["equipment"]), "duplicate equipment"
         assert set(player["equipment"]) <= set(state["rules"]["equipment"]), "unknown equipment"
@@ -925,8 +1007,11 @@ def choose_policy(policy_name, obs, rng=None):
             if available_duels:
                 return select(min(available_duels, key=duel_key), "earn Prestige for a future contest")
             public_dist = _public_distances(obs, me["position"])
-            guard = min(obs["board"]["glory_posts"], key=lambda c: (public_dist[tuple(c)], c))
-            return toward(guard, "seek Prestige for a future contest")
+            posts = obs["board"]["glory_posts"]
+            if posts:
+                guard = min(posts, key=lambda c: (public_dist[tuple(c)], c))
+                return toward(guard, "seek Prestige for a future contest")
+            return toward(checkpoint, "approach the claimant")
         return toward(checkpoint, "approach the claimant")
     if bykind("proclaim"):
         return select(bykind("proclaim")[0], "proclaim a supported claim")
@@ -974,7 +1059,8 @@ def choose_policy(policy_name, obs, rng=None):
     search_target = min(unknown_sites, key=lambda c: (public_dist[c], c)) if unknown_sites else None
     guards = bykind("guard_post")
     duels = [a for a in bykind("duel") if not a["spend_prestige"]]
-    guard_target = min(obs["board"]["glory_posts"], key=lambda c: (public_dist[tuple(c)], c))
+    guard_target = (min(obs["board"]["glory_posts"], key=lambda c: (public_dist[tuple(c)], c))
+                    if obs["board"]["glory_posts"] else None)
     # Distinct probes stress the economy without changing the core rules.
     if policy_name == "early_support":
         gear_needed = False
@@ -1018,7 +1104,11 @@ def choose_policy(policy_name, obs, rng=None):
             return select(min(duels, key=duel_key), "earn Prestige from an available duel")
         if gear_needed and explores:
             return select(nearest(explores), "collect while seeking Prestige")
-        return toward(guard_target, "reach a source of Prestige")
+        if guard_target is not None:
+            return toward(guard_target, "reach a source of Prestige")
+        if obs["phase"] == 2:
+            return toward(checkpoint, "contest the succession at the Peristyle")
+        return toward(checkpoint, "converge on the Peristyle")
     if obs["phase"] == 2 and not supports_needed:
         return toward(checkpoint, "take supported authority to the Peristyle")
     if explores:

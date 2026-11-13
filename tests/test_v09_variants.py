@@ -594,3 +594,85 @@ class TestV093NoBoost(unittest.TestCase):
         state["rules"]["succession"]["challenge_bonus"] = 2
         active(state, "P0")
         self.assertTrue([a for a in engine.legal_actions(state) if a.get("spend_prestige")])
+
+
+class TestV094TwinBoard(unittest.TestCase):
+    def rules_twin(self):
+        return engine.load_rules(os.path.join(ROOT, "rules_v094_twinboard.json"))
+
+    def test_twin_file_validates_and_declares_its_map(self):
+        rules = self.rules_twin()
+        engine.validate_rules(rules)
+        twin = rules["board_level2"]
+        self.assertEqual(twin["gates"]["P0"], [6, 0])
+        self.assertEqual(twin["checkpoint"], [6, 4])
+        self.assertNotIn("districts", twin)
+
+    def test_transition_moves_every_seat_to_the_level2_gate(self):
+        import random
+        import policies
+        rules = self.rules_twin()
+        state = engine.new_game(rules, 7101, "twin-transition",
+                                dict.fromkeys(succession.IDS, "balanced"))
+        rng = random.Random("t:7101")
+        b2 = engine.Board(rules, "board_level2")
+        seen_phase2 = False
+        for _ in range(4 * (rules["level1"]["max_rounds"] + rules["level2"]["max_rounds"] + 3)):
+            if engine.is_finished(state):
+                break
+            obs = engine.observe(state, state["active_player"])
+            action_id, reason = policies.act(obs["policies"][state["active_player"]]
+                                             if obs.get("policies") else "balanced", obs, rng)
+            engine.apply_action(state, state["active_player"], obs["turn_id"], action_id, reason)
+            if state["phase"] == 2 and not seen_phase2:
+                seen_phase2 = True
+                for pid, player in state["players"].items():
+                    self.assertEqual(player["pos"], list(b2.gates[player["gate_id"]]),
+                                     f"{pid} did not return to the level 2 gate")
+        self.assertTrue(seen_phase2, "the game never reached the succession map")
+
+    def test_no_support_offers_on_the_palace_map(self):
+        rules = self.rules_twin()
+        state = game(rules)
+        state["phase"] = 1
+        cell = rules["succession"]["factions"]["elites"]
+        for player in state["players"].values():
+            player.update(pos=list(cell), prestige=3)
+        active(state, "P0")
+        for action in engine.legal_actions(state):
+            self.assertNotEqual(action["kind"], "gain_support")
+
+    def test_support_offers_on_the_succession_map(self):
+        rules = self.rules_twin()
+        state = game(rules)
+        state["phase"] = 2
+        cell = rules["succession"]["factions"]["elites"]
+        for player in state["players"].values():
+            player.update(pos=list(cell), prestige=3)
+        active(state, "P0")
+        self.assertTrue([a for a in engine.legal_actions(state) if a["kind"] == "gain_support"])
+
+    def test_phase2_displacement_lands_on_the_level2_gate(self):
+        rules = self.rules_twin()
+        state = game(rules)
+        state["phase"] = 2
+        state["players"]["P1"].update(pos=[6, 4], prestige=3, support=["army", "elites"])
+        state["players"]["P0"].update(pos=[6, 5], prestige=3)
+        state["players"]["P2"].update(pos=[6, 0], prestige=3)
+        state["players"]["P3"].update(pos=[0, 4], prestige=3)
+        state["pending_claim"] = {"player": "P1", "claim_id": state["turn_id"],
+                                  "round": state["round"], "responded": []}
+        active(state, "P0")
+        duels = [a for a in engine.legal_actions(state)
+                 if a["kind"] == "duel" and a["target"] == "P1"]
+        self.assertTrue(duels)
+        engine.apply_action(state, "P0", state["turn_id"], duels[0]["action_id"])
+        b2 = engine.Board(rules, "board_level2")
+        pos = state["players"]["P1"]["pos"]
+        # A beaten claimant returns to their gate ON THE SUCCESSION MAP;
+        # a claimant who held the duel keeps the Peristyle.
+        self.assertIn(pos, ([6, 4], list(b2.gates[state["players"]["P1"]["gate_id"]])))
+
+    def test_twin_game_runs_and_finishes(self):
+        result = engine.result(game(self.rules_twin()))
+        self.assertIn(result["outcome"], ("win", "draw"))

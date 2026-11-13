@@ -23,25 +23,24 @@ def cell_key(cell):
 class Board:
     """Graph view over the grid defined by a validated rules dict."""
 
-    def __init__(self, rules):
-        board = rules["board"]
+    def __init__(self, rules, section="board"):
+        board = rules[section]
+        self.section = section
         self.width = board["width"]
         self.height = board["height"]
         self.gates = {p: tuple(c) for p, c in board["gates"].items()}
-        self.districts = {name: tuple(c) for name, c in board["districts"].items()}
+        self.districts = {name: tuple(c) for name, c in board.get("districts", {}).items()}
         self.district_at = {tuple(c): name for name, c in self.districts.items()}
         self.checkpoint = tuple(board["checkpoint"])
-        self.glory_posts = [tuple(c) for c in board["glory_posts"]]
-        sites = board["level2_sites"]
+        self.glory_posts = [tuple(c) for c in board.get("glory_posts", [])]
+        sites = board.get("level2_sites", {})
         self.level2_sites = {name: tuple(c) for name, c in sites.items()}
-        self.seal_sites = {
-            "cellars": self.level2_sites["cellars"],
-            "guard_barracks": self.level2_sites["guard_barracks"],
-            "peristyle": self.level2_sites["peristyle"],
-        }
+        self.seal_sites = {name: self.level2_sites[name]
+                           for name in ("cellars", "guard_barracks", "peristyle")
+                           if name in self.level2_sites}
         self.seal_site_at = {cell: name for name, cell in self.seal_sites.items()}
-        self.emperor = self.level2_sites["emperor"]
-        self.retreat = self.level2_sites["retreat"]
+        self.emperor = self.level2_sites.get("emperor")
+        self.retreat = self.level2_sites.get("retreat")
         self.blocked = {tuple(c) for c in board.get("blocked", [])}
 
     def in_bounds(self, cell):
