@@ -224,7 +224,6 @@ class PrintedRulesMatchRelease(unittest.TestCase):
     def test_rulebook_pins_the_economy_numbers(self):
         text = whole_text("dioclet-rulebook-A4-BW.pdf")
         self.assertIn("mandatory fee of 1 Prestige", text)          # contest fee
-        self.assertIn("pay 1 Prestige to add +2 to your roll", text)  # boost
         self.assertIn("hold at most 3 Prestige", text)              # glory cap
         self.assertIn("A 4, 5 or 6 earns 1 Prestige", text)         # guard post
         self.assertIn("round 24", text)                             # round limits
@@ -243,6 +242,18 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("face up at random", text)                    # start reveals
         self.assertIn("one circle east of the Peristyle", text)     # officials
         self.assertNotIn("acclaimed emperor", text)                 # window replaced it
+
+    def test_no_boost_prose_survives_anywhere(self):
+        # 0.9.3 removed the optional +2 duel boost; if it ever comes
+        # back, the prose (and this check) must be rewritten on purpose.
+        for name in ("dioclet-rulebook-A4-BW.pdf",
+                     "dioclet-quick-reference-A4-BW.pdf",
+                     "dioclet-teaching-guide-A4-BW.pdf",
+                     "dioclet-player-sheets-A4-BW.pdf",
+                     "dioclet-cards-tokens-A4-BW.pdf"):
+            text = whole_text(name)
+            self.assertNotIn("boost", text.lower(), name)
+            self.assertNotIn("+2", text, name)
 
     def test_player_sheets_list_all_trackers(self):
         text = whole_text("dioclet-player-sheets-A4-BW.pdf")

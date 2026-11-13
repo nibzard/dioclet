@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the V0.9.2 black-and-white A4 print-and-play kit.
+"""Generate the V0.9.3 black-and-white A4 print-and-play kit.
 
 Everything prints on ordinary A4 paper with black ink only. The board
 is one complete vector drawing of the current succession board (19x13
@@ -35,9 +35,9 @@ from reportlab.pdfgen import canvas as pdfcanvas
 import engine  # noqa: E402
 from board import Board, validate_six_block_layout  # noqa: E402
 
-RULES_FILE = "rules_v092_succession.json"
+RULES_FILE = "rules_v093_succession.json"
 OUT_DIR = "print"
-KIT_VERSION = "V0.9.2 print kit (V0.9.2 crossflow rules)"
+KIT_VERSION = "V0.9.3 print kit (V0.9.3 crossflow rules)"
 
 # Faction meeting-place badges sit beside each faction's cell. Army
 # and elites share a cell with rim treasure entries, where the
@@ -669,7 +669,6 @@ def player_mat(c, x, y, w, h, numeral):
                  "Proclaim: at the Peristyle with 2 different backers.",
                  "Claim window: a claim that stands 2 full rounds wins.",
                  "Contest a claim: pay the 1 Prestige fee, then duel.",
-                 "Boost any duel: pay 1 more Prestige for +2 on the roll.",
                  "Duel loser: pay 1 Prestige to the bank (shame).",
                  "Setup: two treasure districts start revealed."):
         ty = para(c, line, col2, ty, w - (col2 - x) - 4, size=8.3, leading=4.9)
@@ -1019,12 +1018,8 @@ RULEBOOK_PAGES = [
               "pugio, whose holder then wins the tie. The winner earns 1 Prestige. "
               "The loser pays 1 Prestige to the bank as shame, as much as they "
               "hold. Nobody loses equipment or support."),
-        ("p", "Before rolling, the attacker may declare a boosted duel: pay 1 "
-              "Prestige to add +2 to your roll. You pay even if you lose. The "
-              "defender cannot pay for a bonus."),
         ("h", "Spending Prestige"),
         ("b", "1 Prestige: one faction's support (next page)."),
-        ("b", "1 Prestige: the +2 boost on a duel you attack in."),
         ("b", "1 Prestige: the mandatory fee to contest a proclaimed claim (next page)."),
     ]),
     ("Factions and the claim", [
@@ -1070,9 +1065,8 @@ RULEBOOK_PAGES = [
               "costs a mandatory fee of 1 Prestige, paid before you roll - even if "
               "you lose. Without at least 1 Prestige you cannot contest at all."),
         ("p", "The challenge itself is a normal duel: one die each, add your best "
-              "item bonus, the pugio wins ties. On top of the fee you may also "
-              "declare the boost: 1 further Prestige for +2 on your roll. With the "
-              "fee and the boost together, a full challenge costs 2 Prestige."),
+              "item bonus, the pugio wins ties. A full challenge costs only the "
+              "1 Prestige fee."),
         ("h", "What happens on each result"),
         ("b", "You win: the claim is canceled. The claimant's pawn returns to their "
               "gate - unless they have not used the lorica segmentata, which once "
@@ -1096,7 +1090,7 @@ RULEBOOK_PAGES = [
               "the game ends in a draw - the throne stays empty. This is rare."),
         ("h", "Remember"),
         ("b", "An ordinary duel is free. Challenging a claim always costs the "
-              "1 Prestige fee. The +2 boost is optional and costs 1 more."),
+              "1 Prestige fee."),
         ("b", "Everything is public: positions, items, Prestige, support, and who "
               "has claimed what. Only the four face-down cards and the next dice "
               "roll are hidden."),
@@ -1107,8 +1101,8 @@ RULEBOOK_PAGES = [
         ("q", "Do I have to use my whole roll? No. Stop anywhere up to the total."),
         ("q", "Can I duel the claimant for free while no claim stands? Yes. Between "
               "claims the claimant is an ordinary rival and duels are free."),
-        ("q", "Can the claimant boost their defense? No. Only the attacker may pay "
-              "for the +2 boost."),
+        ("q", "Can I challenge the same claim twice? Yes - a failed challenge does "
+              "not lock you out. Each attempt inside the window pays the fee again."),
         ("q", "What if both duelists hold the pugio? The normal tie rule applies: "
               "the attacker wins."),
         ("q", "Does the galea let me name an item? No. You name a district, not an "
@@ -1235,8 +1229,7 @@ def quick_reference_pdf(path):
             "Pugio wins ties · Galea once: reveal a district · Lorica once: stay "
             "when beaten."]),
         ("PRESTIGE (cap 3)", ["Earn: guard post 4+ · any duel win.",
-                              "Spend: 1 = faction support · 1 = +2 duel boost · "
-                              "1 = fee to contest a claim.",
+                              "Spend: 1 = faction support · 1 = fee to contest a claim.",
                               "Lose: 1 to the bank whenever you lose a duel."]),
         ("FACTIONS", ["Army (shield) at F · officials (column) one circle east of the "
                       "Peristyle · elites (laurel) at A.", "1 Prestige each, no roll, any "
@@ -1245,7 +1238,7 @@ def quick_reference_pdf(path):
                       "no other claim standing."]),
         ("CONTEST A CLAIM", ["Move within 2 circles of the claimant and duel them, "
                              "any turn inside the window.", "Mandatory fee: 1 Prestige "
-                             "before you roll. Optional boost: 1 more for +2.", "Win: claim "
+                             "before you roll.", "Win: claim "
                              "canceled, claimant returns to their gate (lorica: stay put "
                              "once), keeps everything."]),
         ("WINNING", ["A claim that stands two full rounds = emperor.",
@@ -1295,7 +1288,7 @@ def teaching_guide_pdf(path):
         ("Prestige (60 seconds)", "This coin symbol is Prestige - political clout. "
          "Earn it at a star space: stop there, roll one die, 4 or higher pays 1. "
          "Win a duel: also 1. Lose a duel: pay 1 back to the bank. You can hold "
-         "three. You will spend it on friends, boosts and challenges."),
+         "three. You will spend it on friends and on challenges."),
         ("Factions (45 seconds)", "Three groups can back you: the Army at F, the "
          "officials one circle east of the crossing, the elites at A. Walk to their "
          "meeting place and pay 1 Prestige - that faction now supports you for the "
@@ -1321,10 +1314,9 @@ def teaching_guide_pdf(path):
     y = para(c, "Ordinary turn: roll 8, walk eight circles to a star, roll one die - "
                 "a 5 - and take a Prestige. Done.", 19, y, PW - 38, size=9.4) - 1.4
     y = para(c, "Claim response: a rival proclaims at the Peristyle. On your turn, "
-                "move next to them, put 1 Prestige aside (the fee), say 'with boost' "
-                "and put a second aside if you want +2, then each roll one die and "
-                "add your one best item bonus. Higher total wins; the pugio wins "
-                "ties.",
+                "move next to them, put 1 Prestige aside (the fee), then each roll "
+                "one die and add your one best item bonus. Higher total wins; the "
+                "pugio wins ties.",
              19, y, PW - 38, size=9.4) - 1.4
     y = para(c, "Answer everything else when it comes up. Rare cases live in the "
                 "rulebook, not in the introduction.", 19, y, PW - 38, size=9.4,
@@ -1526,7 +1518,7 @@ def combine(paths, out):
 PRINTED_RULES_VALUES = {
     ("succession", "contest_cost"): 1,
     ("succession", "challenge_cost"): 1,
-    ("succession", "challenge_bonus"): 2,
+    ("succession", "challenge_bonus"): 0,
     ("succession", "claim_window_rounds"): 2,
     ("succession", "duel_loser_cost"): 1,
     ("succession", "proclaim_cost"): 0,
