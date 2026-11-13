@@ -45,3 +45,11 @@ results/autoresearch-ar1-001/**/base/
 !results/autoresearch-ar1-001/live/**/base/
 results/autoresearch-ar1-001/live/budget.json.lock
 .claude/worktrees/
+
+# Art renderer dependencies
+art/node_modules/
+
+# Art draft renders (scratch); the shipped assets in
+# art/build/assets/ and art/build/layout.json are committed so the
+# ART PDFs rebuild without Node.
+art/build/test/

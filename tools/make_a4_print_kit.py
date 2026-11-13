@@ -1125,6 +1125,101 @@ def cards_tokens_pdf(path):
 
 
 # ---------------------------------------------------------------------------
+# The drawn kit: the same geometry with the hand-drawn art from art/.
+# Assets are produced by:
+#   python3 art/export_layout.py
+#   cd art && npm ci && node render.mjs
+# and land in art/build/assets/. Missing assets fail loudly; the
+# black-and-white kit never depends on them.
+
+ART_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                       "art", "build", "assets")
+
+
+def art_asset(name):
+    path = os.path.join(ART_DIR, name)
+    if not os.path.exists(path):
+        raise SystemExit(
+            f"art asset {name} not found under {ART_DIR}. Build it first:\n"
+            "  python3 art/export_layout.py && (cd art && npm ci && node render.mjs)")
+    return path
+
+
+def art_board_pdf(path, L):
+    """The palace board with the drawn artwork under the same tiling."""
+    img = art_asset("palace-board.png")
+    ax0, ay0, ax1, ay1 = L["art"]
+    c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
+    c.setTitle("Diocletian's Palace - board (4 x A4, drawn art)")
+    c.setAuthor("dioclet print kit")
+    for page_no in ("1", "2", "3", "4"):
+        x0, y0, _ = L["tiles"][page_no]
+        c.saveState()
+        p = c.beginPath()
+        p.rect(0, 0, PAGE_W * mm, PAGE_H * mm)
+        c.clipPath(p, stroke=0, fill=0)
+        # The artwork's own origin is the top-left of the art bounds; the
+        # PNG row 0 is the north edge, so it maps directly onto the PDF
+        # rectangle from ay0 (south) to ay1 (north).
+        c.drawImage(img, ax0 * mm, ay0 * mm, width=(ax1 - ax0) * mm,
+                    height=(ay1 - ay0) * mm)
+        c.translate(-x0 * mm, -y0 * mm)
+        # Cut guides and registration crosses on top of the art, exactly
+        # where the black-and-white tiles print them.
+        draw_tile_furniture(c, L, page_no, (x0, y0))
+        c.restoreState()
+        c.showPage()
+    c.save()
+
+
+def art_succession_pdf(path):
+    img = art_asset("succession-map.png")
+    c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
+    c.setTitle("Diocletian's Palace - succession map (drawn art)")
+    c.setAuthor("dioclet print kit")
+    c.drawImage(img, 0, 0, width=PAGE_W * mm, height=PAGE_H * mm)
+    c.showPage()
+    c.save()
+
+
+def art_cards_tokens_pdf(path):
+    """Card fronts with bleed, identical art backs, and the token sheet."""
+    c = new_doc(path, "Diocletian's Palace - cards and tokens (drawn art)")
+    back = art_asset("card-back.png")
+    cards = [art_asset(f"card-{i + 1}-{icon}.png")
+             for i, (_n, icon, _t) in enumerate(CARDS)]
+
+    # Page 1: the six fronts. The PNGs carry a 2 mm bleed margin, so the
+    # image anchor sits 2 mm outside the cut rectangle.
+    doc_header(c, "TREASURE LOCATION CARDS", "cut on the dashed line - art backs on the next page")
+    x0, y0 = 16.0, PH - 32.5 - CARD_H
+    for i in range(6):
+        cx = x0 + (i % 3) * (CARD_W + 5.5)
+        cy = y0 - (i // 3) * (CARD_H + 5.0)
+        c.drawImage(cards[i], (cx - 2.0) * mm, (cy - 2.0) * mm,
+                    width=(CARD_W + 4.0) * mm, height=(CARD_H + 4.0) * mm)
+    doc_footer(c, 1)
+    c.showPage()
+
+    # Page 2: six identical backs, square to the fronts.
+    doc_header(c, "CARD BACKS", "glue or fold behind each card - all six are identical")
+    for i in range(6):
+        cx = x0 + (i % 3) * (CARD_W + 5.5)
+        cy = y0 - (i // 3) * (CARD_H + 5.0)
+        c.drawImage(back, (cx - 2.0) * mm, (cy - 2.0) * mm,
+                    width=(CARD_W + 4.0) * mm, height=(CARD_H + 4.0) * mm)
+    doc_footer(c, 2)
+    c.showPage()
+
+    # Page 3: the token sheet, cut guides drawn into the art.
+    doc_header(c, "TOKENS", "cut on the dashed lines - fold the pawns and tape them upright")
+    c.drawImage(art_asset("tokens-sheet.png"), 0, 0, width=PW * mm, height=PH * mm)
+    doc_footer(c, 3)
+    c.showPage()
+    c.save()
+
+
+# ---------------------------------------------------------------------------
 # Rulebook.
 
 RULEBOOK_PAGES = [
@@ -1831,6 +1926,7 @@ def main():
             raise SystemExit(
                 f"printed text assumes board_level2 {key} == {value}, "
                 f"rules say {actual}; update the kit prose")
+    build_art = "--art" in sys.argv
     L = build_layout(rules)
     os.makedirs(OUT_DIR, exist_ok=True)
     out = lambda name: os.path.join(OUT_DIR, name)
@@ -1858,6 +1954,21 @@ def main():
              files["rulebook"], files["quick"],
              files["teaching"], files["sheets"], files["cards"], files["form"]],
             out("dioclet-complete-print-kit-A4-BW.pdf"))
+    if build_art:
+        art_files = {
+            "art_board": out("dioclet-board-4xA4-ART.pdf"),
+            "art_succession": out("dioclet-succession-map-ART.pdf"),
+            "art_cards": out("dioclet-cards-tokens-ART.pdf"),
+        }
+        art_board_pdf(art_files["art_board"], L)
+        art_succession_pdf(art_files["art_succession"])
+        art_cards_tokens_pdf(art_files["art_cards"])
+        combine([art_files["art_board"], art_files["art_succession"],
+                 files["instructions"], files["rulebook"], files["quick"],
+                 files["teaching"], files["sheets"], art_files["art_cards"],
+                 files["form"]],
+                out("dioclet-complete-print-kit-A4-ART.pdf"))
+        files.update(art_files)
     b = L["board"]
     S = build_succession_layout(rules)
     manifest = {
@@ -1905,7 +2016,7 @@ def main():
     }
     with open(out("kit-manifest.json"), "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=2, sort_keys=True)
-    print(f"wrote {len(files) + 1} PDFs + kit-manifest.json into {OUT_DIR}/")
+    print(f"wrote {len(files) + 1} PDFs + kit-manifest.json into {OUT_DIR}/" + (" (art kit included)" if build_art else ""))
     for name, path in files.items():
         print(f"  {name}: {path} ({os.path.getsize(path) // 1024} KB)")
 

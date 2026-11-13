@@ -1,0 +1,13 @@
+import { writeFileSync } from "node:fs";
+import { Sheet } from "./lib/core.mjs";
+import { Artist } from "./lib/brush.mjs";
+import { text } from "./lib/letters.mjs";
+const s = new Sheet({ widthMm: 160, heightMm: 80, dpi: 300, seed: 11 });
+const a = new Artist(s);
+text(a, "DIOCLETIAN'S PALACE", 80, 20, 12, { style: "inscribed", medium: "charcoal" });
+text(a, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", 80, 36, 5, { style: "pencil" });
+text(a, "0123456789 +4 - · : / ( ) , .", 80, 46, 5, { style: "pencil" });
+text(a, "PORTA AUREA · GOLDEN GATE · NORTH", 80, 56, 2.6, { style: "pencil", medium: "charcoal" });
+text(a, "WINS TIED DUELS. +1 ATTACK VS THE CLAIMANT.", 80, 64, 2.0, { style: "pencil" });
+text(a, "PERISTYLE", 80, 76, 7, { style: "inscribed", medium: "graphite" });
+writeFileSync("build/test/letters.png", s.compose().toBuffer("image/png"));
