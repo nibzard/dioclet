@@ -231,6 +231,8 @@ def geo_metrics(rules, seed_base, games):
     return {
         "games": games, "draws": games - wins, "draw_rate": round((games - wins) / games, 4),
         "median_rounds": rounds[games // 2],
+        "median_rounds_level1": sorted(r["rounds_level1"] for r in results if r["rounds_level1"] is not None)[games // 2],
+        "median_rounds_level2": sorted(r["rounds_level2"] for r in results if r["rounds_level2"] is not None)[games // 2],
         "strategy_rates": {p: round(strategy_wins.get(p, 0) / strategy_games[p], 4)
                            for p in strategy_games},
         "claims_per_game": round(claims / games, 3),

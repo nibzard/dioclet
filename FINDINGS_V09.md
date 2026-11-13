@@ -391,3 +391,38 @@ A four-game live probe with four model seats
 finished, zero draws, 5 of 8 claims contested, 4 cancelled, median
 29 rounds, nothing wasted at the cap, first collector 1 of 4. The
 crossflow map does not deadlock model play.
+
+## Twin-board redesign (2026-11-13)
+
+The user's review and the playtest's table redesign, implemented:
+a separate succession map (`board_level2`, 13x9, four blocks,
+gates 4/6/4/6 steps from the crossing) replaces the palace board in
+phase 2, every seat returns to its gate on the new map, and the
+three meeting places sit one per street arm (elites (6,3),
+officials (3,4), army (9,4)) - every gate's nearest site 3 to 5
+steps out, none at a gate, none on the Peristyle. Support exists
+only on the succession map; the palace phase is pure collection.
+Engine: phase-aware board selection, twin-map validation, and
+phase-2 displacement to the new gates (`notes/v094-twinboard-2026-11-13.md`).
+
+Confirmed on 384 fresh seeds (1010000+) against the 0.9.3 single
+board: `rules_v094_twinboard.json` ("0.9.4-twinboard") holds every
+health gate - 2 draws, median 23 rounds (15 collecting, 8
+contesting), 4.45 claims per game, first claimant .32 - and gate
+rates of .266/.250/.242/.237. A hostile-review pass reproduced
+every number bit-exact and sharpened the statistics: the single
+board rejects gate uniformity (chi-square p = .041; east alone
+p = .0094) while the twin board is statistically indistinguishable
+from uniform (p = .87). The east-gate improvement itself is a
+point estimate (paired McNemar p = .061 at n = 384), so read it as
+"the skew is gone from the measurement", not as a proven effect.
+The reset also moves, not erases, phase-1 tilt: the first claimant
+now varies by seat (p = .022) where 0.9.3's did not, but that
+tilt no longer propagates to final wins. The cost is a weaker
+farmer profile (.17 to .12; the duel-win payment is the only
+phase-2 income) and a stronger collector (.28 to .35); both stay
+inside the predeclared bands. `board_level2.glory_posts` remains a
+validated knob if the human session finds the endgame starving.
+Open release blocker: the browser JavaScript engine does not
+implement `board_level2` yet (the parity suite passes on
+pre-twin functionality only).
