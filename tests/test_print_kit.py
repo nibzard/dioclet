@@ -1,10 +1,10 @@
-"""Checks for the V0.8.1 black-and-white A4 print-and-play kit.
+"""Checks for the V0.9.2 black-and-white A4 print-and-play kit.
 
 The kit is generated art, so these tests pin the contract a family
 relies on when they print it: page sizes and counts, board geometry
 against the rules JSON, every symbol inside a printable area of at
 least one tile, tracker counts, and the printed prose matching the
-released V0.8 numbers.
+released V0.9 numbers.
 """
 
 import json
@@ -74,7 +74,7 @@ class DocumentPages(unittest.TestCase):
     FILES = {
         "dioclet-player-sheets-A4-BW.pdf": 2,
         "dioclet-cards-tokens-A4-BW.pdf": 3,
-        "dioclet-rulebook-A4-BW.pdf": 6,
+        "dioclet-rulebook-A4-BW.pdf": 7,
         "dioclet-quick-reference-A4-BW.pdf": 1,
         "dioclet-teaching-guide-A4-BW.pdf": 1,
         "dioclet-playtest-form-A4-BW.pdf": 2,
@@ -176,8 +176,9 @@ class BoardMatchesRules(unittest.TestCase):
                    + [(tuple(specials["checkpoint"]), 11.2)]
                    + [(tuple(v), 9.6) for v in specials["glory_posts"]]
                    # faction badges sit offset from the meeting-place cell
-                   + [((v[0] + 13.2, v[1] + 11.8), 5.8)
-                      for v in specials["factions"].values()])
+                   + [((v[0] + kit.FACTION_BADGE_OFFSET[faction][0],
+                        v[1] + kit.FACTION_BADGE_OFFSET[faction][1]), 5.8)
+                      for faction, v in specials["factions"].items()])
         self.assertGreater(len(symbols), 100)
         for (px, py), radius in symbols:
             box = (px - radius, py - radius, px + radius, py + radius)
@@ -189,27 +190,70 @@ class BoardMatchesRules(unittest.TestCase):
                 f"symbol at ({px},{py}) r{radius} has no tile with a printable copy")
 
 
-class PrintedRulesMatchV08(unittest.TestCase):
+class PrintedRulesMatchRelease(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.rules = engine.load_rules(str(REPO / kit.RULES_FILE))
 
     def test_guarded_values_still_match_the_rules(self):
         for (section, key), value in kit.PRINTED_RULES_VALUES.items():
-            self.assertEqual(self.rules[section][key], value,
+            actual = self.rules[section].get(key)
+            if actual is None and value == 0:
+                actual = 0   # the engine reads absent cost keys as free
+            self.assertEqual(actual, value,
                              f"{section}.{key} drifted from the printed prose")
+        for key, value in kit.PRINTED_TOP_LEVEL.items():
+            self.assertEqual(self.rules.get(key), value)
+        abilities = self.rules["combat"].get("abilities")
+        self.assertEqual(abilities,
+                         {name: {"type": kind, "value": value}
+                          for name, (kind, value) in kit.PRINTED_ABILITIES.items()})
+
+    def test_refuse_to_build_guard_rejects_v081(self):
+        # The V0.8.1 rules pay a first-claim reward and carry no ability
+        # table; the guard must stop before printing the old game.
+        import subprocess
+        import sys as _sys
+        result = subprocess.run(
+            [_sys.executable, "tools/make_a4_print_kit.py",
+             "--rules", "rules_v08_succession.json"],
+            capture_output=True, text=True, cwd=str(REPO))
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("update the kit prose", result.stderr)
 
     def test_rulebook_pins_the_economy_numbers(self):
         text = whole_text("dioclet-rulebook-A4-BW.pdf")
         self.assertIn("mandatory fee of 1 Prestige", text)          # contest fee
-        self.assertIn("pay 1 Prestige to add +2 to your roll", text)  # boost
         self.assertIn("hold at most 3 Prestige", text)              # glory cap
         self.assertIn("A 4, 5 or 6 earns 1 Prestige", text)         # guard post
         self.assertIn("round 24", text)                             # round limits
         self.assertIn("Two ordinary six-sided dice for movement", text)
         self.assertIn("on a tie the attacker wins", text)
-        self.assertIn("Marcus still wins", text)
-        self.assertIn("leaving him with 2 Prestige", text)
+        self.assertIn("Marcus wins; the claim dies", text)          # example
+        self.assertIn("leaving him with 2", text)                   # example math
+
+    def test_rulebook_pins_the_v092_mechanics(self):
+        text = whole_text("dioclet-rulebook-A4-BW.pdf")
+        self.assertIn("at most one item bonus", text)               # ability cap
+        self.assertIn("never a sum", text)
+        self.assertIn("two full rounds", text)                      # claim window
+        self.assertIn("shame", text)                                # loser pays
+        self.assertIn("pugio", text)                                # tie winner
+        self.assertIn("face up at random", text)                    # start reveals
+        self.assertIn("one circle east of the Peristyle", text)     # officials
+        self.assertNotIn("acclaimed emperor", text)                 # window replaced it
+
+    def test_no_boost_prose_survives_anywhere(self):
+        # 0.9.3 removed the optional +2 duel boost; if it ever comes
+        # back, the prose (and this check) must be rewritten on purpose.
+        for name in ("dioclet-rulebook-A4-BW.pdf",
+                     "dioclet-quick-reference-A4-BW.pdf",
+                     "dioclet-teaching-guide-A4-BW.pdf",
+                     "dioclet-player-sheets-A4-BW.pdf",
+                     "dioclet-cards-tokens-A4-BW.pdf"):
+            text = whole_text(name)
+            self.assertNotIn("boost", text.lower(), name)
+            self.assertNotIn("+2", text, name)
 
     def test_player_sheets_list_all_trackers(self):
         text = whole_text("dioclet-player-sheets-A4-BW.pdf")
