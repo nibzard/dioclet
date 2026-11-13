@@ -486,3 +486,48 @@ practical. No baseline rule values were changed.
   with treasures). Promotion of any centered map later requires a fresh
   screen cycle on fresh seeds plus a deliberate call on whether a
   weaker first claimer is acceptable.
+
+- **D46a Erratum to D46 (V0.9, 2026-11-13).** The S2 and S24
+  screens in the simplification study never disabled the duel
+  boost: the patch set `combat.challenge_bonus` to 0, a key no code
+  reads, while the live knob `succession.challenge_bonus` stayed 2
+  in rules_v09/091/092. The arms were no-ops, so the "metrics
+  identical" evidence proved nothing about the boost, and the
+  recorded "boost removed" claim was false for every version through
+  0.9.2. The discovery came from the 0.9.2 print-kit rewrite: the
+  kit's refuse-to-build guard pinned the live boost and refused to
+  drop its prose. Corrective actions: succession validation now
+  rejects unknown combat keys (regression test added); the dead key
+  is removed from rules_v091/092 (no behavior change); the real cut
+  was screened (96 matched seeds, 995000+) and confirmed (384 fresh
+  seeds, 997000+): 1 draw, median 23 rounds, 4.81 claims per game,
+  east gate .158 to .182 - every predeclared gate green
+  (`results/v09-boost/`). The economy summary in D46 ("two sources,
+  two sinks") first becomes true with the boost actually removed.
+
+- **D49 Duel-boost removal and the 0.9.3 candidate (V0.9,
+  2026-11-13).** With the no-op discovered, the boost's real effect
+  measures small: at 384 matched-seed games the boost's presence
+  adds about 0.77 claims per game (5.57 versus 4.81) and slightly
+  worsens the east gate (.159 versus .182), with draws, medians,
+  spreads, and interior traffic flat. Under the simplification
+  study's rule the boost stays only if it earns a decision; it does
+  not. Promoted: `rules_v093_succession.json` ("0.9.3") = 0.9.2
+  crossflow with `succession.challenge_bonus` 0 - the file the
+  simplification study meant to produce. The playtest protocol and
+  print kit now target 0.9.3.
+
+- **D48 Challenge-radius verdict (V0.9, 2026-11-13).** The playtest
+  proposed that a challenger must stand within three steps of the
+  Peristyle to contest a claim. In the engine the claimant occupies
+  the checkpoint, so the radius is a distance-to-claimant gate, and
+  any value at or above duel_range (2) never binds - the painted
+  three-step zone is vacuous. The only binding arm, radius 1, was
+  screened on the 0.9.2 crossflow map (96 matched seeds, 980000+):
+  every gate passes but no metric moves beyond noise (east gate .18 to
+  .19, interior share flat, first claimant .27 to .32). Per the
+  simplification study's rule - a change must earn a decision - the
+  radius stays out of the rules. The two-round claim window remains
+  the answer to the unreachable-claimant complaint, and the residual
+  east-gate deficit is recorded as an accepted cost of the street
+  contract.

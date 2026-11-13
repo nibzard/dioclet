@@ -327,20 +327,25 @@ remove text, not choices. Screens ran on 96 matched seeds
 | Screen | Change | Verdict |
 |---|---|---|
 | S1 | six abilities collapsed to 3 attack / 3 defense, summed | rejected: strategy spread widens (collector 0.39, farmer 0.10) |
-| S2 | drop the optional duel boost | adopted: metrics identical, the boost is never chosen under window+shame |
+| S2 | drop the optional duel boost | **void**: the patch hit a dead `combat.challenge_bonus` key - a no-op arm, caught during the 0.9.2 kit rewrite |
 | S3 | drop the contest fee | rejected: 60% draws, 24 claims per game - the denial loop returns |
 | S4 | drop the first-challenger bonus | adopted: healthy, one salad source removed |
 | S124 | S1+S2+S4 | rejected: compounds S1's spread damage |
+| S2 real | `succession.challenge_bonus` 2 to 0 | adopted: 384-game confirmation green (1 draw, median 23, claims 4.81, east .158 to .182), `results/v09-boost/` |
 
 S24 (S2+S4) is `rules_v091_succession.json` ("0.9.1-trim"),
 confirmed on 384 fresh seeds (920000+): 1 draw, median 24 rounds,
 4.62 claims and 3.62 cancellations per game, 17% free crowns, and
 a slightly tighter strategy spread than 0.9.0 (collector 25.5%,
-early support 32.6%, farmer 13.8%, counterleader 27.9%). The
-0.9.0 file remains the promoted court candidate; 0.9.1-trim is
-the recommended next print. The Prestige economy is now two
-sources (duel wins, guard posts) and two sinks (support, contest
-fee) plus the bounded shame cost.
+early support 32.6%, farmer 13.8%, counterleader 27.9%). Because
+S2 was a no-op, that file's real content is the first-challenger
+cut alone; the duel boost stayed live in 0.9.0 through 0.9.2.
+The real boost removal was screened and confirmed after the
+discovery and ships as `rules_v093_succession.json` ("0.9.3"):
+the first version whose Prestige economy truly has two sources
+(duel wins, guard posts) and two sinks (support, contest fee)
+plus the bounded shame cost. Validation now rejects unknown
+combat keys so a mis-aimed patch cannot pass silently.
 
 ## Geometry sweep (G-series, 2026-11-13)
 
@@ -370,3 +375,19 @@ gate-to-site spread at 11.6 steps against 14.0 incumbent and 13.0 for
 the centered map. The centered-cardo map is parked with full data:
 the tightest gate balance measured (five-point spread) but a
 first-claimant win rate below the predeclared floor.
+
+The playtest's challenge-radius rule was then screened on the
+crossflow map (96 matched seeds, 980000+, `results/v09-geometry/
+radius_screen.json`): radius 1, the only value that binds (duel
+legality already covers the claimant's two-cell ring), passes every
+gate but moves nothing - east gate .18 to .19, interior share flat,
+first claimant .27 to .32, all inside noise. The rule earns no
+decision and stays out; the two-round window already carries the
+unreachable-claimant load. The playtest's painted three-step radius
+is vacuous in engine terms.
+
+A four-game live probe with four model seats
+(`results/v09-live-092/`, $0.17) matches the bot shape: 4 of 4
+finished, zero draws, 5 of 8 claims contested, 4 cancelled, median
+29 rounds, nothing wasted at the cap, first collector 1 of 4. The
+crossflow map does not deadlock model play.
