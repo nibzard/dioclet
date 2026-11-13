@@ -7,6 +7,13 @@
     "glory_posts": 4,
     "street_spaces": 97
   },
+  "counts_level2": {
+    "blocked": 60,
+    "blocks": 4,
+    "gates": 4,
+    "glory_posts": 0,
+    "street_spaces": 57
+  },
   "files": {
     "board": "print/dioclet-board-4xA4-BW.pdf",
     "cards": "print/dioclet-cards-tokens-A4-BW.pdf",
@@ -15,6 +22,7 @@
     "quick": "print/dioclet-quick-reference-A4-BW.pdf",
     "rulebook": "print/dioclet-rulebook-A4-BW.pdf",
     "sheets": "print/dioclet-player-sheets-A4-BW.pdf",
+    "succession": "print/dioclet-succession-map-A4-BW.pdf",
     "teaching": "print/dioclet-teaching-guide-A4-BW.pdf"
   },
   "layout": {
@@ -490,20 +498,6 @@
           48.75
         ]
       },
-      "factions": {
-        "army": [
-          445.25,
-          48.75
-        ],
-        "elites": [
-          139.25,
-          354.75
-        ],
-        "officials": [
-          241.25,
-          201.75
-        ]
-      },
       "gates": {
         "P0": [
           215.75,
@@ -541,6 +535,77 @@
         ]
       ]
     },
+    "succession_map_mm": {
+      "blocks": [
+        [
+          1,
+          5,
+          5,
+          7
+        ],
+        [
+          7,
+          5,
+          11,
+          7
+        ],
+        [
+          1,
+          1,
+          5,
+          3
+        ],
+        [
+          7,
+          1,
+          11,
+          3
+        ]
+      ],
+      "cell_mm": 16.5,
+      "grid_mm": [
+        214.5,
+        148.5
+      ],
+      "specials_mm": {
+        "checkpoint": [
+          148.5,
+          101.25
+        ],
+        "factions": {
+          "army": [
+            198.0,
+            101.25
+          ],
+          "elites": [
+            148.5,
+            117.75
+          ],
+          "officials": [
+            99.0,
+            101.25
+          ]
+        },
+        "gates": {
+          "P0": [
+            148.5,
+            167.25
+          ],
+          "P1": [
+            247.5,
+            101.25
+          ],
+          "P2": [
+            148.5,
+            35.25
+          ],
+          "P3": [
+            49.5,
+            101.25
+          ]
+        }
+      }
+    },
     "tiles": {
       "1": [
         15.0,
@@ -564,7 +629,7 @@
       ]
     }
   },
-  "rules_file": "rules_v093_succession.json",
-  "rules_hash": "6c3710743a92639f2aac1e037cf8b24a4b97f160171061d44dea3b579bf52c27",
-  "version": "V0.9.3 print kit (V0.9.3 crossflow rules)"
+  "rules_file": "rules_v094_twinboard.json",
+  "rules_hash": "d9c7067f7bf4f4ab66e558fd1803501e03dda05730574fa935ffcd7d17ebbdbe",
+  "version": "V0.9.4 print kit (V0.9.4 twin-board rules)"
 }
