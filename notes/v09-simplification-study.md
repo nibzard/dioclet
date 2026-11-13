@@ -45,17 +45,28 @@ live OpenAI Decisions probes.
 | Candidate | Verdict | Evidence |
 |---|---|---|
 | S1 collapse six abilities to 3 attack / 3 defense, summed | rejected | healthy flow but strategy spread widens (collector 0.39, farmer 0.10; compounds to farmer 0.08 with trims) - the six identities are doing balance work |
-| S2 drop the challenge boost (+2 for 1 Prestige) | adopted | metrics identical to incumbent; the boost is never the deciding choice under window+shame |
+| S2 drop the challenge boost (+2 for 1 Prestige) | **void** | the patch set a dead `combat.challenge_bonus` key; the engine reads `succession.challenge_bonus` (see Erratum) - the arm was a no-op, the metrics were identical because the rules were |
 | S3 drop the contest fee | rejected | 60% draws, 24 claims per game - the denial loop returns even with window+shame; the fee does systemic work (reconfirms D38) |
 | S4 drop the first-challenger Prestige bonus | adopted | healthy; removes a salad source and an incentive line |
-| S24 = S2 + S4 | adopted | 384-game confirmation: 1 draw, median 24, 4.62 claims and 3.62 cancellations per game, tightest spread measured (0.138-0.326) |
+| S24 = S2 + S4 | re-read as S4 | the 384-game confirmation validated the first-challenger cut alone; the boost stayed live the whole time |
+| S2 (real) succession.challenge_bonus 2 to 0 | adopted | screen 995000+ and confirmation 997000+ (384 games): 1 draw, median 23, claims 4.81 per game, east gate .158 to .182 - every gate green; recorded in `results/v09-boost/` |
 
-## The rule ledger for v0.9.1 (`rules_v091_succession.json`)
+## Erratum (2026-11-13, found during the 0.9.2 kit rewrite)
 
-Cut (two lines, zero measured cost):
+The S2 and S24 screens never disabled the duel boost. The patch
+wrote `combat.challenge_bonus: 0`; the duel math reads
+`succession.challenge_bonus` (`succession.py`), which stayed 2 in
+`rules_v091` and `rules_v092`. Validation accepted the unknown
+combat key, so the placebo arm ran cleanly. The "boost removed"
+claim in this note, in FINDINGS_V09, and in D46 was false until
+corrected: 0.9.0 through 0.9.2 all still had the +2-for-1-Prestige
+boost. The real cut was screened and confirmed after the discovery
+(rows above), and ships as `rules_v093_succession.json`. Validation
+now rejects unknown combat keys, so a mis-aimed patch fails loudly.
 
-- The optional duel boost (pay 1 Prestige for +2).
-- The first-challenger checkpoint bonus.
+Corrections to the ledger below: the Prestige economy had three
+sinks (support, contest fee, boost), not two, in every version up
+to and including 0.9.2.
 
 Kept, each with its evidence:
 
@@ -78,6 +89,19 @@ Net player-facing rules: about 23 down from 25, and the Prestige
 economy now has two sources (duel wins, guard posts) and two
 sinks (support, contest fee) plus the bounded shame cost - inside
 the two-currency guidance and out of point-salad territory.
+(This sentence first became true in 0.9.3; through 0.9.2 the boost
+was a third live sink - see the Erratum.)
+
+## Where each verdict now lives
+
+- 0.9.0 (`rules_v09_succession.json`): window, shame, public
+  support, C2 abilities, two reveals - the promoted court.
+- 0.9.1 (`rules_v091_succession.json`): the first-challenger cut
+  (the real content of the trim; the boost stayed live).
+- 0.9.2 (`rules_v092_succession.json`): the crossflow board.
+- 0.9.3 (`rules_v093_succession.json`): the duel boost finally
+  removed, the first version whose economy is really two sources
+  and two sinks.
 
 ## The V1.0 direction (research-backed, too big for a trial)
 

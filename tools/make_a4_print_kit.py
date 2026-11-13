@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the V0.8.1 black-and-white A4 print-and-play kit.
+"""Generate the V0.9.3 black-and-white A4 print-and-play kit.
 
 Everything prints on ordinary A4 paper with black ink only. The board
 is one complete vector drawing of the current succession board (19x13
@@ -19,7 +19,7 @@ Outputs into print/:
   dioclet-complete-print-kit-A4-BW.pdf (all of the above, board first)
   kit-manifest.json (layout facts used by the tests)
 
-Run: python3 tools/make_a4_print_kit.py
+Run: python3 tools/make_a4_print_kit.py [--rules RULES_FILE]
 """
 
 import json
@@ -35,9 +35,18 @@ from reportlab.pdfgen import canvas as pdfcanvas
 import engine  # noqa: E402
 from board import Board, validate_six_block_layout  # noqa: E402
 
-RULES_FILE = "rules_v08_succession.json"
+RULES_FILE = "rules_v093_succession.json"
 OUT_DIR = "print"
-KIT_VERSION = "V0.8.1 print kit (V0.8 Succession rules)"
+KIT_VERSION = "V0.9.3 print kit (V0.9.3 crossflow rules)"
+
+# Faction meeting-place badges sit beside each faction's cell. Army
+# and elites share a cell with rim treasure entries, where the
+# north-east offset lands on building hatch. The officials meet on
+# the decumanus one circle east of the Peristyle; the same offset
+# would collide with the next street circle, so their badge rises
+# straight north instead, clear of the PERISTYLE label.
+FACTION_BADGE_OFFSET = {"army": (13.2, 11.8), "elites": (13.2, 11.8),
+                        "officials": (0.0, 15.5)}
 
 # ---------------------------------------------------------------------------
 # Board layout, in millimetres. Y grows upward; north is at the top.
@@ -311,33 +320,33 @@ def draw_board(c, L):
         _arch(c, x * mm, (y + 0.8) * mm, 7.8 * mm)
         _centered(c, x, y + 13.4, GATE_NAMES[pid], "Helvetica-Bold", 6.8)
 
-    # Peristyle: octagon at the crossing. The Imperial officials meet
-    # here too, so their column glyph sits inside the octagon above the
-    # crossing mark; the one-line label fits the band below the cell.
+    # Peristyle: octagon at the crossing. The officials no longer meet
+    # here (their badge marks their own circle east of the crossing),
+    # so the octagon carries only the crossing mark.
     px, py = pos(tuple(b.checkpoint))
     c.setLineWidth(2.0)
     _octagon(c, px * mm, py * mm, 11.2 * mm)
     c.setLineWidth(0.8)
     _octagon(c, px * mm, py * mm, 8.2 * mm)
-    _centered(c, px, py - 3.6, "X", "Times-Bold", 10)
-    _column(c, px * mm, (py + 4.2) * mm, 2.5 * mm)
+    _centered(c, px, py - 1.6, "X", "Times-Bold", 10)
     # Label above the octagon: below it, the text top would sit 0.4 mm
     # from the horizontal cut line and a wandering cut would shave it.
     _centered(c, px, py + 13.4, "PERISTYLE", "Helvetica-Bold", 6.8)
 
-    # Faction meeting badges beside the treasure entries they share a
-    # cell with (army at F, city elites at A). The officials badge is
-    # the column inside the Peristyle octagon, so it is skipped here.
-    # The legend names each symbol; no tiny text labels on the board.
+    # Faction meeting badges beside each meeting-place cell: army at
+    # treasure entry F, city elites at entry A, officials one circle
+    # east of the Peristyle. The legend names each symbol; no tiny
+    # text labels on the board.
     for faction, cell in sorted(rules["succession"]["factions"].items()):
-        if faction == "officials":
-            continue
         x, y = pos(tuple(cell))
-        bx, by = x + 13.2, y + 11.8
+        dx, dy = FACTION_BADGE_OFFSET[faction]
+        bx, by = x + dx, y + dy
         c.setLineWidth(0.9)
         c.circle(bx * mm, by * mm, 5.8 * mm, stroke=1, fill=0)
         if faction == "army":
             _shield(c, bx * mm, (by - 0.3) * mm, 4.2 * mm)
+        elif faction == "officials":
+            _column(c, bx * mm, (by + 0.2) * mm, 3.8 * mm)
         else:
             _laurel(c, bx * mm, (by + 0.4) * mm, 4.2 * mm)
 
@@ -352,7 +361,7 @@ def draw_board(c, L):
                       ("octagon", "Peristyle - proclaim here"),
                       ("star", "guard post: roll 4+ for 1 Prestige")]),
         (by0 + 7.2, [("shield", "Army meeting place"),
-                     ("column", "Officials meeting place (at the Peristyle)"),
+                     ("column", "Officials meeting place"),
                      ("laurel", "City elites meeting place"),
                      ("hatch", "building - no entry")]),
     ]
@@ -604,8 +613,9 @@ def player_mat(c, x, y, w, h, numeral):
     c.setFont("Helvetica-Bold", 8.2)
     c.drawString(col1 * mm, ty * mm, "EQUIPMENT (mark each item you collect)")
     ty -= 6.2
-    items = [("Pugio", "dagger"), ("Pilum", "javelin"), ("Galea", "helmet"),
-             ("Scutum", "shield"), ("Gladius", "sword"), ("Lorica segmentata", "armor")]
+    items = [("Pugio", "wins tied duels"), ("Pilum", "+1 vs the claimant"),
+             ("Galea", "once: reveal a district"), ("Scutum", "+1 defense"),
+             ("Gladius", "+1 attack"), ("Lorica segmentata", "once: stay when beaten")]
     for name, hint in items:
         checkbox(c, col1, ty)
         c.setFont("Times-Bold", 9.5)
@@ -616,10 +626,10 @@ def player_mat(c, x, y, w, h, numeral):
         ty -= 7.2
     ty -= 1.4
     c.setFont("Helvetica-Bold", 8.2)
-    c.drawString(col1 * mm, ty * mm, "EQUIPMENT BONUS ON DUELS")
+    c.drawString(col1 * mm, ty * mm, "EQUIPMENT IN DUELS")
     ty -= 5.4
     c.setFont("Times-Roman", 8.8)
-    c.drawString(col1 * mm, ty * mm, "0-2 items +0   ·   3-5 items +1   ·   all 6 items +2")
+    c.drawString(col1 * mm, ty * mm, "Add your one best item bonus - never a sum.")
 
     ty = y + h - 22
     c.setFont("Helvetica-Bold", 8.2)
@@ -655,12 +665,12 @@ def player_mat(c, x, y, w, h, numeral):
     c.setFont("Helvetica-Bold", 8.2)
     c.drawString(col2 * mm, ty * mm, "SUCCESSION REMINDERS")
     ty -= 5.4
-    for line in ("Support: visit the meeting place, pay 1 Prestige. No roll.",
-                 "Proclaim: at the Peristyle with 2 different supporters.",
-                 "Contest a claim: pay the 1 Prestige fee before you roll.",
-                 "Boost any duel: pay 1 more Prestige for +2 on your roll.",
-                 "Cancel a claim: win the challenge; the claimant returns",
-                 "to their gate and keeps equipment and support."):
+    for line in ("Support: visit the meeting place, pay 1 Prestige.",
+                 "Proclaim: at the Peristyle with 2 different backers.",
+                 "Claim window: a claim that stands 2 full rounds wins.",
+                 "Contest a claim: pay the 1 Prestige fee, then duel.",
+                 "Duel loser: pay 1 Prestige to the bank (shame).",
+                 "Setup: two treasure districts start revealed."):
         ty = para(c, line, col2, ty, w - (col2 - x) - 4, size=8.3, leading=4.9)
 
 
@@ -682,12 +692,12 @@ def player_sheets_pdf(path):
 
 CARD_W, CARD_H = 55.0, 75.0
 CARDS = [
-    ("Pugio", "dagger", "A short dagger, easy to carry."),
-    ("Pilum", "pilum", "A throwing javelin."),
-    ("Galea", "helmet", "A legionary helmet."),
-    ("Scutum", "scutum", "A tall curved shield."),
-    ("Gladius", "gladius", "The Roman short sword."),
-    ("Lorica Segmentata", "armor", "Banded plate armor."),
+    ("Pugio", "dagger", "Wins tied duels."),
+    ("Pilum", "pilum", "+1 attack vs the claimant."),
+    ("Galea", "helmet", "Once a game: reveal any district."),
+    ("Scutum", "scutum", "+1 to your defense."),
+    ("Gladius", "gladius", "+1 to your attack."),
+    ("Lorica Segmentata", "armor", "Once: a beaten claimant stays put."),
 ]
 
 
@@ -794,8 +804,10 @@ def cards_tokens_pdf(path):
         _centered(c, cx + CARD_W / 2.0, cy + 5.5, "PALACE TREASURE - LOCATION CARD",
                   "Helvetica", 5.2)
     y = y0 - (CARD_H + 5.0) - 9.0
-    para(c, "Shuffle face down and deal one card to each treasure entry A-F; the first "
-            "player to stop there reveals it to everyone.", 16, y, PW - 32, size=8.4)
+    para(c, "Shuffle face down and deal one card to each treasure entry A-F. Then turn "
+            "two of the six face up at random - everyone sees those two treasures from "
+            "the start. Each card states its ability; in a duel count one best bonus "
+            "per side, never a sum.", 16, y, PW - 32, size=8.4)
     doc_footer(c, 1)
     c.showPage()
 
@@ -933,7 +945,8 @@ RULEBOOK_PAGES = [
         ("n", "Assemble the board (see the assembly sheet). Each player picks a pawn "
               "and a player sheet, and writes their name on it."),
         ("n", "Shuffle the six treasure cards face down. Place one on each treasure "
-              "entry, the double circles marked A to F. Nobody may look yet."),
+              "entry, the double circles marked A to F. Then turn two of the six "
+              "face up at random - everyone sees those two treasures from the start."),
         ("n", "Give each player a random gate: Golden (north), Silver (east), Bronze "
               "(south), or Iron (west). Put your pawn on your gate."),
         ("n", "Choose a starting player at random. The start moves one seat clockwise "
@@ -946,8 +959,9 @@ RULEBOOK_PAGES = [
               "south, east or west. You may stop before using the whole roll and you "
               "may pass through circles occupied by other pawns."),
         ("n", "Do one action where you stand - or do nothing. Taking treasure, "
-              "standing guard, duelling, gaining support and proclaiming are all "
-              "actions. You never do two of these on the same turn."),
+              "standing guard, duelling, gaining support, proclaiming and "
+              "revealing a district (with the galea) are all actions. You never "
+              "do two of these on the same turn."),
         ("h", "What counts as movement"),
         ("p", "The white circles are streets. The hatched blocks are buildings: "
               "nobody walks through them. All movement and all distances are counted "
@@ -963,17 +977,29 @@ RULEBOOK_PAGES = [
     ("Treasure and equipment", [
         ("h", "The six treasures"),
         ("p", "Each treasure entry (double circle, A to F) holds one face-down card: "
-              "pugio, pilum, galea, scutum, gladius, or lorica segmentata. End your "
-              "move on the entry to take that card's action: reveal the card to "
-              "everyone and mark the item on your player sheet."),
+              "pugio, pilum, galea, scutum, gladius, or lorica segmentata. Two of "
+              "the six start face up. End your move on an entry to take that "
+              "card's action: reveal the card to everyone and mark the item on "
+              "your player sheet."),
         ("p", "Every player can collect every item once. The cards stay on the board "
               "face up once revealed; they are never taken away, stolen, or lost. If "
               "you are the first to stop at an entry, you learn for everyone what "
               "waits there."),
-        ("h", "Why equipment matters"),
-        ("p", "Equipment makes you stronger in every duel for the rest of the game:"),
-        ("t", [["Items collected", "Bonus on your duel roll"], ["0 to 2", "+0"],
-               ["3 to 5", "+1"], ["all 6", "+2"]]),
+        ("h", "What each item does"),
+        ("p", "Every item carries one ability that lasts the whole game:"),
+        ("t", [["Item", "Mark", "Ability"],
+               ["Gladius", "sword", "+1 to your attack in any duel you start"],
+               ["Scutum", "shield", "+1 to your defense in any duel"],
+               ["Pilum", "javelin", "+1 to your attack against the standing claimant"],
+               ["Pugio", "dagger", "you win tied duels"],
+               ["Galea", "helmet", "once per game, as your action: reveal any one "
+                "face-down treasure card, wherever it is"],
+               ["Lorica segmentata", "armor", "once per game: when your claim is "
+                "beaten, keep your square instead of returning to your gate"]]),
+        ("p", "In a duel each side adds at most one item bonus - the best one that "
+              "applies, never a sum. If you hold both the gladius and the pilum and "
+              "attack the claimant, you still add only +1. Cross an item out on "
+              "your sheet when its once-per-game ability is used."),
         ("p", "You can keep collecting missing items during the succession phase. "
               "Nothing is ever granted for free - if you want it, walk and get it."),
     ]),
@@ -982,22 +1008,18 @@ RULEBOOK_PAGES = [
         ("b", "Guard post (star): end a move there and roll one die. A 4, 5 or 6 "
               "earns 1 Prestige."),
         ("b", "Win a duel: the winner of any duel earns 1 Prestige."),
-        ("b", "Open the checkpoint: the first player to complete the set of six and "
-              "claim at the Peristyle earns 1 Prestige."),
         ("p", "You can hold at most 3 Prestige. Any reward above three is lost - "
               "spend it or waste it."),
         ("h", "Duels"),
         ("p", "End your move within two street circles of a rival and you may duel "
               "them as your action. The attacker and the defender each roll one die "
-              "and add their equipment bonus. The higher total wins; on a tie the "
-              "attacker wins. The winner earns 1 Prestige. Nobody loses equipment, "
-              "support or Prestige (beyond what was declared below)."),
-        ("p", "Before rolling, the attacker may declare a boosted duel: pay 1 "
-              "Prestige to add +2 to your roll. You pay even if you lose. The "
-              "defender cannot pay for a bonus."),
+              "and add their best item bonus for that side. The higher total wins; "
+              "on a tie the attacker wins - unless exactly one side holds the "
+              "pugio, whose holder then wins the tie. The winner earns 1 Prestige. "
+              "The loser pays 1 Prestige to the bank as shame, as much as they "
+              "hold. Nobody loses equipment or support."),
         ("h", "Spending Prestige"),
         ("b", "1 Prestige: one faction's support (next page)."),
-        ("b", "1 Prestige: the +2 boost on a duel you attack in."),
         ("b", "1 Prestige: the mandatory fee to contest a proclaimed claim (next page)."),
     ]),
     ("Factions and the claim", [
@@ -1005,7 +1027,7 @@ RULEBOOK_PAGES = [
         ("p", "Three groups in the city can back your claim. Their meeting places "
               "are marked on the board with badges:"),
         ("t", [["Faction", "Badge", "Meeting place"], ["Army", "shield", "Treasure entry F"],
-               ["Imperial officials", "column", "the Peristyle crossing"],
+               ["Imperial officials", "column", "one circle east of the Peristyle"],
                ["City elites", "laurel", "Treasure entry A"]]),
         ("p", "Visit a meeting place and spend 1 Prestige to gain that faction's "
               "support. There is no roll. Every faction can support every player, but "
@@ -1014,8 +1036,8 @@ RULEBOOK_PAGES = [
         ("h", "From the city to the succession"),
         ("p", "The game has two phases. In the city phase everyone collects "
               "equipment and Prestige. The first player who owns all six items may "
-              "stand at the Peristyle and claim the checkpoint as their action: they "
-              "earn 1 Prestige. Finish that round, then one more full round, and the "
+              "stand at the Peristyle and claim the checkpoint as their action. "
+              "Finish that round, then one more full round, and the "
               "succession phase begins. If nobody claims by the end of round 24, the "
               "succession begins anyway."),
         ("p", "At the change, every pawn stays where it stands and keeps everything "
@@ -1026,50 +1048,51 @@ RULEBOOK_PAGES = [
               "two different factions."),
         ("n", "Use your action to proclaim your claim. Place the CLAIM marker on the "
               "Peristyle. Only one claim can stand at a time."),
-        ("n", "Every rival now gets one response turn, in normal turn order. On a "
-              "response turn a rival may contest you (below), or do anything else "
-              "they could normally do - move, collect, earn Prestige - which counts "
-              "as letting your claim stand for that turn."),
+        ("n", "Your claim now stands inside a two-round window. Rivals may cancel it "
+              "only by winning a challenge duel (next page). Turns that pass "
+              "without a challenge no longer crown anyone by themselves."),
         ("n", "If your turn comes while your claim stands and you are still at the "
               "Peristyle, you may maintain the claim as your action and stay put. "
               "Leaving the Peristyle by your own move cancels your claim."),
-        ("n", "If all three rivals finish their response with your claim intact, you "
-              "are acclaimed emperor and the game ends."),
+        ("n", "If no rival cancels your claim before two full rounds have passed, "
+              "you are emperor and the game ends."),
     ]),
     ("Contesting a claim", [
         ("h", "How to contest"),
         ("p", "A rival can stop a claim by winning a challenge duel against the "
-              "claimant. To do it, end your response turn's move within two street "
+              "claimant. To do it, end your move within two street "
               "circles of the claimant and duel them. Challenging a standing claim "
               "costs a mandatory fee of 1 Prestige, paid before you roll - even if "
               "you lose. Without at least 1 Prestige you cannot contest at all."),
-        ("p", "The challenge itself is a normal duel: one die each, add equipment "
-              "bonuses, attacker wins ties. On top of the fee you may also declare "
-              "the boost: 1 further Prestige for +2 on your roll. With the fee and "
-              "the boost together, a full challenge costs 2 Prestige."),
+        ("p", "The challenge itself is a normal duel: one die each, add your best "
+              "item bonus, the pugio wins ties. A full challenge costs only the "
+              "1 Prestige fee."),
         ("h", "What happens on each result"),
         ("b", "You win: the claim is canceled. The claimant's pawn returns to their "
-              "gate. They keep all equipment, Prestige and support - only the claim "
-              "is lost. The next claim may be proclaimed at any time."),
-        ("b", "You lose: the claim stands. Your Prestige is spent either way."),
+              "gate - unless they have not used the lorica segmentata, which once "
+              "per game lets a beaten claimant keep their square (the claim still "
+              "dies). They keep all equipment, Prestige and support either way. "
+              "The next claim may be proclaimed at any time."),
+        ("b", "You lose: the claim stands. Your Prestige is spent either way, and "
+              "as in any duel the loser pays 1 Prestige shame to the bank."),
         ("h", "An example challenge"),
         ("p", "Livia has proclaimed at the Peristyle with the Army and the elites "
-              "behind her. Marcus, holding 3 Prestige and four items, moves next to "
-              "the crossing. His response turn: he pays the 1 Prestige fee, declares "
-              "the boost for 1 more, and rolls 5 + 1 (equipment) + 2 (boost) = 8. "
-              "Livia rolls 4 + 2 (all six items) = 6. Marcus wins; the claim is "
-              "canceled and Livia's pawn goes back to her gate with everything she "
-              "owns. Even if Livia rolls 6, her total is 8: Marcus still wins "
-              "because the attacker wins ties. Marcus also earns 1 Prestige "
-              "for winning the duel, leaving him with 2 Prestige."),
+              "behind her. Marcus, holding 2 Prestige, the gladius and the pilum, "
+              "moves next to the crossing. He pays the 1 Prestige fee and duels. "
+              "His best item bonus is +1 - the pilum also applies against a "
+              "claimant, but one bonus only counts. He rolls 5 + 1 = 6. Livia "
+              "holds the scutum and rolls 4 + 1 = 5. Marcus wins; the claim dies "
+              "and Livia pays 1 Prestige shame. She has kept the lorica segmentata "
+              "unused, so she stays at the crossing instead of walking back to her "
+              "gate. Marcus earns 1 Prestige for the duel win, leaving him with 2."),
         ("h", "If nobody wins"),
         ("p", "If no claim survives by the end of round 24 of the succession phase, "
               "the game ends in a draw - the throne stays empty. This is rare."),
         ("h", "Remember"),
         ("b", "An ordinary duel is free. Challenging a claim always costs the "
-              "1 Prestige fee. The +2 boost is optional and costs 1 more."),
+              "1 Prestige fee."),
         ("b", "Everything is public: positions, items, Prestige, support, and who "
-              "has responded to a claim. Only the face-down cards and the next dice "
+              "has claimed what. Only the four face-down cards and the next dice "
               "roll are hidden."),
     ]),
     ("Common questions", [
@@ -1078,14 +1101,20 @@ RULEBOOK_PAGES = [
         ("q", "Do I have to use my whole roll? No. Stop anywhere up to the total."),
         ("q", "Can I duel the claimant for free while no claim stands? Yes. Between "
               "claims the claimant is an ordinary rival and duels are free."),
-        ("q", "Can the claimant boost their defense? No. Only the attacker may pay "
-              "for the +2 boost."),
+        ("q", "Can I challenge the same claim twice? Yes - a failed challenge does "
+              "not lock you out. Each attempt inside the window pays the fee again."),
+        ("q", "What if both duelists hold the pugio? The normal tie rule applies: "
+              "the attacker wins."),
+        ("q", "Does the galea let me name an item? No. You name a district, not an "
+              "item - the reveal turns up whatever card sits there."),
         ("q", "What if I have 3 Prestige and win a guard roll? Nothing happens - the cap is "
               "3. Spend some first."),
         ("q", "Can a faction support two different players? Yes - every faction can "
               "back every player once."),
         ("q", "Can I proclaim twice? Yes, if your first claim is canceled, walk "
               "back and proclaim again. Support is never lost."),
+        ("q", "Can a claim be canceled after the window closes? No. Two full rounds "
+              "unchallenged and the game is over."),
         ("q", "Do treasures run out? No. Every player can mark each of the six items."),
         ("q", "What if two players reach six items on the same round? The first to "
               "claim at the Peristyle in turn order is the first challenger."),
@@ -1194,22 +1223,26 @@ def quick_reference_pdf(path):
                        "3. Do ONE action (or none): take treasure · guard duty · duel · "
                        "gain support · claim the checkpoint · proclaim · maintain your claim."]),
         ("ROLLS", ["Movement: two dice summed.", "Guard post: one die - 4+ earns 1 Prestige.",
-                   "Duel: one die each + equipment bonus; attacker wins ties."]),
-        ("EQUIPMENT BONUS", ["0-2 items +0    ·    3-5 items +1    ·    all 6 items +2"]),
-        ("PRESTIGE (cap 3)", ["Earn: guard post 4+ · duel win · first checkpoint claim.",
-                              "Spend: 1 = faction support · 1 = +2 duel boost · "
-                              "1 = fee to contest a claim."]),
-        ("FACTIONS", ["Army (shield) at F · officials (column) at the Peristyle · "
-                      "elites (laurel) at A.", "1 Prestige each, no roll, any phase. "
-                      "Two different factions needed to proclaim."]),
+                   "Duel: one die each + your one best item bonus; the pugio wins ties."]),
+        ("EQUIPMENT (one best bonus per side)", [
+            "Gladius +1 attack · Scutum +1 defense · Pilum +1 vs the claimant.",
+            "Pugio wins ties · Galea once: reveal a district · Lorica once: stay "
+            "when beaten."]),
+        ("PRESTIGE (cap 3)", ["Earn: guard post 4+ · any duel win.",
+                              "Spend: 1 = faction support · 1 = fee to contest a claim.",
+                              "Lose: 1 to the bank whenever you lose a duel."]),
+        ("FACTIONS", ["Army (shield) at F · officials (column) one circle east of the "
+                      "Peristyle · elites (laurel) at A.", "1 Prestige each, no roll, any "
+                      "phase. Two different factions needed to proclaim."]),
         ("PROCLAIM", ["Succession phase, stand at the Peristyle, 2 supporters, "
                       "no other claim standing."]),
-        ("CONTEST A CLAIM", ["Move within 2 circles of the claimant on your response turn "
-                             "and duel them.", "Mandatory fee: 1 Prestige before you roll. "
-                             "Optional boost: 1 more for +2.", "Win: claim canceled, claimant "
-                             "returns to their gate, keeps everything."]),
-        ("WINNING", ["Claim survives all three response turns = emperor.",
-                     "No winner by succession round 24 = draw."]),
+        ("CONTEST A CLAIM", ["Move within 2 circles of the claimant and duel them, "
+                             "any turn inside the window.", "Mandatory fee: 1 Prestige "
+                             "before you roll.", "Win: claim "
+                             "canceled, claimant returns to their gate (lorica: stay put "
+                             "once), keeps everything."]),
+        ("WINNING", ["A claim that stands two full rounds = emperor.",
+                     "No claim standing by succession round 24 = draw."]),
     ]
     for title, lines in blocks:
         wrapped = [wrap_lines(c, line, 168.0, size=9.0, font="Helvetica") for line in lines]
@@ -1241,29 +1274,31 @@ def teaching_guide_pdf(path):
     y = PH - 36
     steps = [
         ("The goal (30 seconds)", "Diocletian has retired and the throne is empty. "
-         "You will collect gear, win friends, and try to crown yourself. The first "
-         "claim that your three rivals fail to stop wins the game."),
+         "You will collect gear, win friends, and try to crown yourself. The claim "
+         "your three rivals fail to stop inside two rounds wins the game."),
         ("Moving (30 seconds)", "On your turn, roll two dice and move up to the "
          "total along the white circles. Streets only - the hatched blocks are "
          "buildings. Stop anywhere. Then do one thing. That is a whole turn."),
-        ("Equipment (45 seconds)", "The double circles A to F each hide one piece of "
-         "gear. Stop on one and reveal it; mark it on your sheet. The more you hold, "
-         "the stronger you fight: three items make you +1, all six make you +2, "
-         "forever. Nobody can take them from you."),
+        ("Equipment (45 seconds)", "The double circles A to F each hold one piece "
+         "of gear - two start face up. Stop on one and mark it on your sheet. Each "
+         "piece does one thing forever: the sword adds +1 to attacks, the shield "
+         "+1 to defense, the javelin +1 against a claimant, the dagger wins ties, "
+         "the helmet reveals a district once, the armor saves you once. In a duel "
+         "you count your one best bonus - never a sum."),
         ("Prestige (60 seconds)", "This coin symbol is Prestige - political clout. "
          "Earn it at a star space: stop there, roll one die, 4 or higher pays 1. "
-         "Win a duel: also 1. You can hold three. You will spend it on friends and "
-         "on fights."),
+         "Win a duel: also 1. Lose a duel: pay 1 back to the bank. You can hold "
+         "three. You will spend it on friends and on challenges."),
         ("Factions (45 seconds)", "Three groups can back you: the Army at F, the "
-         "officials at the crossing, the elites at A. Walk to their meeting place "
-         "and pay 1 Prestige - that faction now supports you for the rest of the "
-         "game. Get two different factions behind you."),
+         "officials one circle east of the crossing, the elites at A. Walk to their "
+         "meeting place and pay 1 Prestige - that faction now supports you for the "
+         "rest of the game. Get two different factions behind you."),
         ("The endgame (60 seconds)", "When someone holds all six items they claim "
          "at the crossing - the Peristyle - and the succession begins: one more "
          "round, then the race to the throne. Stand at the Peristyle with two "
-         "supporters and proclaim. Now each rival gets one turn to stop you: move "
-         "next to you, pay 1 Prestige, and duel. Win the duel and the claim dies. "
-         "Survive all three and you are emperor."),
+         "supporters and proclaim. Your rivals now have two full rounds to stop "
+         "you: move next to you, pay 1 Prestige, and duel. Win the duel and the "
+         "claim dies. Nobody does it in time and you are emperor."),
         ("Start (15 seconds)", "Random gates, random start, start moves clockwise "
          "each round. Youngest player rolls first if you like. Let's play."),
     ]
@@ -1279,9 +1314,9 @@ def teaching_guide_pdf(path):
     y = para(c, "Ordinary turn: roll 8, walk eight circles to a star, roll one die - "
                 "a 5 - and take a Prestige. Done.", 19, y, PW - 38, size=9.4) - 1.4
     y = para(c, "Claim response: a rival proclaims at the Peristyle. On your turn, "
-                "move next to them, put 1 Prestige aside (the fee), say 'with boost' "
-                "and put a second aside if you want +2, then each roll one die and "
-                "add your item bonuses. Higher total wins; ties to the challenger.",
+                "move next to them, put 1 Prestige aside (the fee), then each roll "
+                "one die and add your one best item bonus. Higher total wins; the "
+                "pugio wins ties.",
              19, y, PW - 38, size=9.4) - 1.4
     y = para(c, "Answer everything else when it comes up. Rare cases live in the "
                 "rulebook, not in the introduction.", 19, y, PW - 38, size=9.4,
@@ -1296,7 +1331,7 @@ def playtest_form_pdf(path):
     for page in (1, 2):
         doc_header(c, "PLAYTEST RECORD", "observations only - no invented results")
         y = PH - 36
-        lines = [("", 8), ("Date ______________    Game version V0.8.1    "
+        lines = [("", 8), ("Date ______________    Game version V0.9.2    "
                            "Played before? yes / no", 9)]
         if page == 1:
             blocks = [
@@ -1308,8 +1343,8 @@ def playtest_form_pdf(path):
                 ("UNDERSTANDING (ask each player alone)", [
                     "Who could explain how someone wins, without help?  P1 / P2 / P3 / P4",
                     "Why does collecting equipment help later? ______________________",
+                    "Name one treasure and what it does: ___________________________",
                     "What is Prestige for? Name two ways to get it. __________________",
-                    "How do you earn faction support? ______________________________",
                     "A rival just proclaimed a claim. What can you do? ______________"]),
                 ("CLARITY", ["Rules clarifications needed (count): ______  Most asked:",
                              "(3 blank lines)", "Confusing spaces or symbols:",
@@ -1317,22 +1352,25 @@ def playtest_form_pdf(path):
             ]
         else:
             blocks = [
+                ("THE NEW BOARD", ["Did anyone cross the middle for B, E or the inner "
+                                   "stars? yes / hardly / no",
+                                   "Did the two start-revealed treasures change first "
+                                   "moves? yes / no",
+                                   "Gate distances felt fair? P0 ____ P1 ____ P2 ____ "
+                                   "P3 ____"]),
                 ("THE CLAIM", ["Claims proclaimed: ____  Challenged: ____  "
                                "Canceled: ____  Crowned: ____",
-                               "Did the response window feel tense or empty? "
+                               "Did the two-round claim window feel tense or empty? "
                                "______________________",
-                               "Was a canceled claimant frustrated or re-engaged? "
-                               "__________________"]),
-                ("ENGAGEMENT", ["Turns that felt repetitive or empty: __________________",
-                                "(2 blank lines)",
-                                "Did a player fall behind but stay involved? "
+                               "First completed set - prize or burden? ________ "
+                               "Best treasure: ____  Worst: ____"]),
+                ("ENGAGEMENT", ["Did a player fall behind but stay involved? "
                                 "yes / partly / no   Who: ______",
                                 "Waiting between turns: where and how long? "
                                 "____________________"]),
-                ("AGAIN?", ["Did players understand Prestige spending? yes / partly / no",
-                            "Want to play again? P1 yes/maybe/no  P2 ____  P3 ____  P4 ____",
+                ("AGAIN?", ["Want to play again? P1 yes/maybe/no  P2 ____  P3 ____  P4 ____",
                             "What would they try differently next time?",
-                            "(3 blank lines)",
+                            "(2 blank lines)",
                             "One thing to change: ___________________________________"]),
             ]
         for title, rows in blocks:
@@ -1480,13 +1518,17 @@ def combine(paths, out):
 PRINTED_RULES_VALUES = {
     ("succession", "contest_cost"): 1,
     ("succession", "challenge_cost"): 1,
-    ("succession", "challenge_bonus"): 2,
+    ("succession", "challenge_bonus"): 0,
+    ("succession", "claim_window_rounds"): 2,
+    ("succession", "duel_loser_cost"): 1,
+    ("succession", "proclaim_cost"): 0,
     ("succession", "required_support"): 2,
     ("succession", "support_cost"): 1,
     ("glory", "cap"): 3,
     ("glory", "guard_post_success_min_roll"): 4,
     ("glory", "guard_post_reward"): 1,
     ("glory", "duel_win_reward"): 1,
+    ("glory", "first_challenger_reward"): 0,
     ("movement", "dice_count"): 2,
     ("movement", "die_sides"): 6,
     ("movement", "duel_range"): 2,
@@ -1496,17 +1538,45 @@ PRINTED_RULES_VALUES = {
     ("combat", "tie_goes_to_defender"): False,
 }
 
+# Prose facts that do not fit the (section, key) shape above.
+PRINTED_TOP_LEVEL = {
+    "start_reveals": 2,
+}
+PRINTED_ABILITIES = {
+    "pugio": ("win_ties", 1),
+    "pilum": ("attack_vs_claimant", 1),
+    "galea": ("reveal_district", 1),
+    "scutum": ("defense_bonus", 1),
+    "gladius": ("attack_bonus", 1),
+    "lorica_segmentata": ("prevent_displacement", 1),
+}
+
 
 def main():
-    rules = engine.load_rules(RULES_FILE)
+    rules_file = (sys.argv[sys.argv.index("--rules") + 1]
+                  if "--rules" in sys.argv else RULES_FILE)
+    rules = engine.load_rules(rules_file)
     validate_six_block_layout(rules)
     if rules.get("gameplay_mode") != "succession-v1":
         raise SystemExit("this kit needs the succession-v1 ruleset")
     for (section, key), value in PRINTED_RULES_VALUES.items():
-        if rules[section][key] != value:
+        actual = rules[section].get(key)
+        if actual is None and value == 0:
+            actual = 0   # the engine reads absent cost keys as free
+        if actual != value:
             raise SystemExit(
                 f"printed text assumes {section}.{key} == {value}, "
-                f"rules say {rules[section][key]}; update the kit prose")
+                f"rules say {rules[section].get(key)}; update the kit prose")
+    for key, value in PRINTED_TOP_LEVEL.items():
+        if rules.get(key) != value:
+            raise SystemExit(
+                f"printed text assumes {key} == {value}, "
+                f"rules say {rules.get(key)}; update the kit prose")
+    abilities = rules["combat"].get("abilities")
+    if abilities != {name: {"type": kind, "value": value}
+                     for name, (kind, value) in PRINTED_ABILITIES.items()}:
+        raise SystemExit("printed text assumes the six one-line item "
+                         "abilities in PRINTED_ABILITIES; update the kit prose")
     L = build_layout(rules)
     os.makedirs(OUT_DIR, exist_ok=True)
     out = lambda name: os.path.join(OUT_DIR, name)
@@ -1534,7 +1604,7 @@ def main():
     b = L["board"]
     manifest = {
         "version": KIT_VERSION,
-        "rules_file": RULES_FILE,
+        "rules_file": rules_file,
         "rules_hash": engine.rules_hash(rules),
         "counts": {"street_spaces": len(L["spaces"]), "blocked": len(b.blocked),
                    "buildings": len(rules["board"]["buildings"]),
