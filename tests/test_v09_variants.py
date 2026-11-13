@@ -513,3 +513,45 @@ class TestV09Court(unittest.TestCase):
     def test_officials_no_longer_sit_on_the_peristyle(self):
         rules = self.rules_f3()
         self.assertNotEqual(rules["succession"]["factions"]["officials"], rules["board"]["checkpoint"])
+
+
+class TestV092Geometry(unittest.TestCase):
+    def rules_v092(self):
+        return engine.load_rules(os.path.join(ROOT, "rules_v092_succession.json"))
+
+    def test_crossflow_file_validates_with_interior_placements(self):
+        rules = self.rules_v092()
+        engine.validate_rules(rules)
+        self.assertEqual(rules["board"]["districts"]["B"], [12, 3])
+        self.assertEqual(rules["board"]["districts"]["E"], [6, 9])
+        self.assertEqual(rules["board"]["glory_posts"],
+                         [[6, 2], [12, 2], [6, 10], [12, 10]])
+
+    def test_interior_districts_still_enter_their_own_blocks(self):
+        rules = self.rules_v092()
+        buildings = {b["district"]: b for b in rules["board"]["buildings"]}
+        for name in ("B", "E"):
+            bx, by = rules["board"]["districts"][name]
+            block = buildings[name]
+            adjacent = any(
+                (bx + dx, by + dy) ==
+                (x, y)
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+                for x in range(block["x0"], block["x1"] + 1)
+                for y in range(block["y0"], block["y1"] + 1))
+            self.assertTrue(adjacent, f"district {name} lost contact with its block")
+
+    def test_east_gate_reaches_the_far_treasure_faster_than_before(self):
+        from board import Board
+        before = Board(engine.load_rules(os.path.join(ROOT, "rules_v091_succession.json")))
+        after = Board(self.rules_v092())
+        east = tuple(before.gates["P1"])
+        self.assertGreater(
+            before.distance(east, tuple(before.districts["B"])),
+            after.distance(east, tuple(after.districts["B"])))
+
+    def test_crossflow_game_runs_deterministically(self):
+        first = engine.result(game(self.rules_v092()))
+        second = engine.result(game(self.rules_v092()))
+        self.assertEqual((first["winner"], first["total_rounds"]),
+                         (second["winner"], second["total_rounds"]))

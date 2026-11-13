@@ -457,3 +457,32 @@ practical. No baseline rule values were changed.
   V1.0 roadmap (equipment-as-action-system, board-derived
   standings) lives in the simplification note as future design
   experiments, not pending edits.
+
+- **D47 Geometry verdict (V0.9, 2026-11-13).** The playtest's board
+  questions were screened as cell placements only (96 matched seeds,
+  940000+; confirmation and diagnostics on 384 fresh seeds, 950000+),
+  adding three metrics to the frozen gates: per-gate win rates with
+  Wilson intervals, street-class traffic shares, and per-district
+  exploration balance. Promoted: `rules_v092_succession.json`
+  ("0.9.2-crossflow") - district B to (12,3), district E to (6,9), and
+  the four guard posts onto the two interior columns - doubling
+  interior traffic (0.29 to 0.62) with all health gates green at 384
+  games, the east gate lifted to 19.8% (a point estimate; the paired
+  gain over the incumbent is not significant at n=384), and the best
+  mean gate-to-site spread of the audited maps (11.6 steps against
+  14.0 incumbent, 13.0 centered). An adversarial review pass
+  reproduced the confirmation bit-exact, replayed 576 fresh games per
+  arm, and confirmed the traffic gain is not a single-profile
+  artifact. The east-gate skew itself was re-measured, not assumed: at
+  384 games the 0.9.1 east gate wins 15.6% against 26.6-28.9% for the
+  others, so the two-round window forgives distance only partly.
+  Parked with full data: the centered-cardo map (crossing 6/9/6/9
+  steps from the gates, the smallest spread the street contract
+  allows;
+  tightest gate balance measured, 23.4-28.4%, but first-claimant win
+  19.5% below the predeclared 0.20 floor at both sample sizes) and the
+  posts-alone arm (east collapses to 11.5% because the post set is
+  symmetric while the faction sites are not; posts move only together
+  with treasures). Promotion of any centered map later requires a fresh
+  screen cycle on fresh seeds plus a deliberate call on whether a
+  weaker first claimer is acceptable.
