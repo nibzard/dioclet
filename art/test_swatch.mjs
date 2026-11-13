@@ -1,0 +1,15 @@
+import { writeFileSync } from "node:fs";
+import { Sheet } from "./lib/core.mjs";
+import { Artist, arcPoints } from "./lib/brush.mjs";
+const s = new Sheet({ widthMm: 120, heightMm: 70, dpi: 300, seed: 7 });
+const a = new Artist(s);
+for (let i = 0; i < 6; i++) a.line([8, 8 + i * 4], [55, 9 + i * 4], { width: 0.2 + i * 0.12, alpha: 0.85, medium: i < 3 ? "graphite" : "charcoal", grains: 3 + i });
+a.circle(80, 20, 9, { width: 0.5, alpha: 0.9, passes: 2 });
+a.rect(65, 38, 45, 25, { width: 0.45, alpha: 0.9 });
+a.hatch((c) => c.rect(66, 39, 43, 23), [66, 39, 43, 23], { gap: 0.9 });
+a.hatch((c) => c.rect(66, 39, 20, 23), [66, 39, 20, 23], { gap: 1.1, angle: -Math.PI / 4 });
+a.smudge((c) => c.ellipse(30, 50, 18, 10, 0, 0, Math.PI * 2), { alpha: 0.25, blur: 2 });
+a.stroke(arcPoints(30, 50, 18, 10, 0, 6.5), { medium: "charcoal", width: 0.8, alpha: 0.9, grains: 6 });
+a.smudge((c) => c.ellipse(26, 47, 6, 3, 0, 0, Math.PI * 2), { alpha: 0.7, blur: 1.5, medium: "chalk" });
+const out = s.compose();
+writeFileSync("build/test/swatch.png", out.toBuffer("image/png"));
