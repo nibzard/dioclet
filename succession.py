@@ -84,6 +84,18 @@ def validate_rules(rules):
     stacking = rules["combat"].get("ability_stacking", "best")
     if stacking not in ("best", "sum"):
         _error("invalid_rules", "combat.ability_stacking must be best or sum")
+    # The engine reads only these combat keys; anything else is a dead
+    # key that silently no-ops an experiment arm (the S2 screen set a
+    # nonexistent combat.challenge_bonus while the live knob sits under
+    # succession.challenge_bonus).
+    known_combat = {"equipment_bonus_tiers", "tie_goes_to_defender",
+                    "imperial_guard_bonus", "emperor_bonus", "glory_attack_bonus",
+                    "emperor_hits_to_win", "duel_displacement", "duel_glory_theft",
+                    "duel_lost_turn", "abilities", "ability_stacking"}
+    unknown_combat = set(rules["combat"]) - known_combat
+    if unknown_combat:
+        _error("invalid_rules",
+               f"unknown combat keys (nothing reads them): {sorted(unknown_combat)}")
     start_reveals = rules.get("start_reveals", 0)
     if type(start_reveals) is not int or not 0 <= start_reveals <= 6:
         _error("invalid_rules", "start_reveals must be an integer from 0 to 6")

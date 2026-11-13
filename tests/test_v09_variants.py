@@ -555,3 +555,27 @@ class TestV092Geometry(unittest.TestCase):
         second = engine.result(game(self.rules_v092()))
         self.assertEqual((first["winner"], first["total_rounds"]),
                          (second["winner"], second["total_rounds"]))
+
+
+class TestCombatKeyGuard(unittest.TestCase):
+    def test_unknown_combat_keys_are_rejected(self):
+        # The S2 screen once zeroed a nonexistent combat.challenge_bonus
+        # while the live knob (succession.challenge_bonus) stayed on:
+        # a silent no-op arm. Validation now refuses dead combat keys.
+        rules = engine.load_rules(os.path.join(ROOT, "rules_v092_succession.json"))
+        rules["combat"]["challenge_bonus"] = 0
+        with self.assertRaises(engine.EngineError):
+            engine.validate_rules(rules)
+
+
+class TestV093NoBoost(unittest.TestCase):
+    def test_v093_file_validates_without_the_duel_boost(self):
+        rules = engine.load_rules(os.path.join(ROOT, "rules_v093_succession.json"))
+        engine.validate_rules(rules)
+        self.assertEqual(rules["succession"]["challenge_bonus"], 0)
+        self.assertNotIn("challenge_bonus", rules["combat"])
+
+    def test_boost_purchase_never_appears_without_the_knob(self):
+        rules = engine.load_rules(os.path.join(ROOT, "rules_v093_succession.json"))
+        for action in engine.legal_actions(game(rules)):
+            self.assertNotIn("spend_prestige", action)
