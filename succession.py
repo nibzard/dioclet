@@ -377,7 +377,7 @@ def legal_actions(state):
                 if me["prestige"] < contest_cost:
                     continue
                 add("duel", dest, target=other, spend_prestige=False, contest_cost=contest_cost)
-                if me["prestige"] >= config["challenge_cost"] + contest_cost:
+                if config["challenge_bonus"] and me["prestige"] >= config["challenge_cost"] + contest_cost:
                     add("duel", dest, target=other, spend_prestige=True, contest_cost=contest_cost)
     # Galea: a stationary, once-per-game public reveal of any unexplored
     # district. The offer never depends on the hidden item (DECISIONS.md D1).
