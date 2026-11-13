@@ -1,0 +1,22 @@
+# Context
+
+## Why This Way
+The V0.8.1 kit prose taught count-tier equipment bonuses, a
+first-claim Prestige reward, response-turn acclamation, and officials
+on the Peristyle - all changed or removed by the 0.9.x line. The kit's
+own guard (PRINTED_RULES_VALUES) refused to build against v092 until
+the prose matched, which is by design.
+
+## Gotchas
+- The duel boost is NOT cut in v092: the engine reads
+  succession.challenge_bonus (still 2). combat.challenge_bonus is a
+  dead key. Zeroing it (as the v0.9.1 trim did) changes nothing, so
+  the kit keeps the boost text. See the fork report.
+- Movement is the SUM of two dice as the step budget (engine:
+  current_roll = sum(current_dice)), not the higher die.
+- "proclaim_cost" is absent in v092; the engine reads absent cost
+  keys as free, so the pin loop treats absent-as-zero.
+
+## Related
+- notes/v09-geometry-sweep-2026-11-13.md (crossflow map rationale)
+- DECISIONS.md D46, D47
