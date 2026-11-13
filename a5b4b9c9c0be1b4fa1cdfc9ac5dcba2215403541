@@ -1,0 +1,26 @@
+# Design: placement-only geometry changes
+
+## Problem
+The playtest complained: nobody crosses the middle, meeting-place
+distances unequal, near-gate claims unreachable. The fix had to add
+no rule text - the simplification study had just paid down the rule
+count.
+
+## Approach
+Treat board cells as the only free variables. Screen six placement
+arms on matched seeds with the frozen gates plus three new metrics
+(per-gate win rates, street-class traffic shares, per-district
+exploration). Confirm finalists on 384 fresh seeds, run the parked
+centered map as a diagnostic, then have three hostile reviewers
+reproduce everything and attack each conclusion.
+
+## Key Trade-offs
+- Treasures must move together with posts: posts alone collapse the
+  east gate (11.5%) because the faction sites stay asymmetric.
+- The centered cardo map equalizes seats best but drops the first
+  claimer below the predeclared floor - parked, not promoted.
+- Interior gain verified not to be a farmer shuttle artifact.
+
+## References
+- notes/v09-geometry-sweep-2026-11-13.md (full ledger + audit)
+- DECISIONS.md D47; FINDINGS_V09.md G-series section
