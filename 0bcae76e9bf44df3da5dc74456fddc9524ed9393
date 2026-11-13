@@ -1,0 +1,8 @@
+# Context addendum (0.9.3)
+
+The boosted duel is now truly gone: rules_v093 sets
+succession.challenge_bonus = 0 (the key the engine actually reads).
+Note succession.challenge_cost stays 1, so the engine still OFFERS a
+paid duel option that adds +0 - harmless but vestigial; the printed
+game never mentions it. The kit pins challenge_bonus == 0 so a
+future re-add trips the guard.
