@@ -341,3 +341,32 @@ early support 32.6%, farmer 13.8%, counterleader 27.9%). The
 the recommended next print. The Prestige economy is now two
 sources (duel wins, guard posts) and two sinks (support, contest
 fee) plus the bounded shame cost.
+
+## Geometry sweep (G-series, 2026-11-13)
+
+The playtest's board questions, run as a placement sweep
+(`notes/v09-geometry-sweep-2026-11-13.md`, runner
+`tools/v09_geometry_sweep.py`). No rule text changed anywhere in
+the series - every arm is cell placement only.
+
+| Arm | Interior share | East gate | First claimant | Verdict |
+|---|---|---|---|---|
+| 0.9.1 incumbent | 0.29 | 15.6% | 36.3% | - |
+| cardo12 | 0.30 | 32.3% (mirror) | 22.9% | passes, buys nothing |
+| centered cardo | 0.43 | 24.0% | 19.5% | fails 0.20 floor |
+| interior posts alone | 0.53 | 11.5% | 30.2% | fails: east collapses |
+| midpair | 0.36 | 20.1% | 32.0% | passes |
+| midpair_posts | 0.62 | 19.8% | 23.4% | passes, promoted |
+
+Confirmed on 384 fresh seeds (950000+): `rules_v092_succession.json`
+("0.9.2-crossflow") keeps every health gate green - 2 draws, median
+23 rounds, 5.41 claims per game, profiles at 17-36% - while doubling
+interior-street traffic (0.29 to 0.62) and lifting the east gate to
+19.8% (point estimate; the paired gain is not significant at n=384).
+A hostile-review pass reproduced the confirmation bit-exact, replayed
+576 fresh games per arm, and confirmed the traffic gain is not a
+farmer artifact. A static distance audit puts crossflow's mean
+gate-to-site spread at 11.6 steps against 14.0 incumbent and 13.0 for
+the centered map. The centered-cardo map is parked with full data:
+the tightest gate balance measured (five-point spread) but a
+first-claimant win rate below the predeclared floor.
