@@ -532,10 +532,14 @@ practical. No baseline rule values were changed.
   `rules_v094_twinboard.json` ("0.9.4-twinboard"). Measured against
   the 0.9.3 single board: every health gate green (2 draws of 384,
   median 23 rounds - 15 collecting, 8 contesting - 4.45 claims per
-  game, first claimant .32) and the tightest gate balance measured
-  in this project (.266/.250/.242/.237; the single board's east
-  gate stays .193) - the seat-fairness complaint is solved
-  structurally, not by cell tweaks. Known cost, recorded: the
+  game, first claimant .32) and gate rates .266/.250/.242/.237,
+  with the single board's east gate at .193 over the same seeds.
+  A hostile-review pass reproduced everything bit-exact and set
+  the statistical frame: 0.9.3 rejects gate uniformity (p = .041)
+  while 0.9.4 is indistinguishable from uniform (p = .87); the
+  east gain itself is a point estimate (McNemar p = .061). The
+  seat-fairness complaint is answered structurally, not by cell
+  tweaks. Known cost, recorded: the
   farmer profile weakens (.17 to .12) because the succession map
   has no guard posts; duel wins are the only phase-2 income.
   `board_level2.glory_posts` stays a validated knob for a human

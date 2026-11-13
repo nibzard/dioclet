@@ -2,24 +2,28 @@
 
 Status: prepared. Builds on `protocol-v08.md` and on everything
 session 001 (`human-session-001.md`) changed at the table. This file
-tests the V0.9.3 candidate: six distinct equipment abilities, two
-districts revealed at setup, the two-round claim window, the contest
-fee, duel loser shame, the crossflow board (two interior treasures,
-four interior guard posts), and no optional duel boost.
+tests the V0.9.4 candidate: six distinct equipment abilities, two
+districts revealed at setup, the crossflow palace board (two
+interior treasures, four interior guard posts), and a separate
+succession map for the endgame - everyone returns to their gate on
+the new board, buys faction support at three meeting places (one
+per street arm), and fights the claim window there with no guard
+posts (duel wins are the only Prestige income in the endgame).
 
 Record sessions in `human-session-00X.md` as observations only.
 Keep predictions in a separate notes column.
 
 ## Materials
 
-One printed 0.9.3 A4 kit from `print/` (tiled board, player mats,
-six ability cards, rulebook, quick reference, teaching guide,
-feedback form), two six-sided movement dice, one six-sided duel die,
-counters for Prestige, four pawns, a timer, and a pencil.
+One printed 0.9.4 A4 kit from `print/` (tiled palace board, the
+one-page succession map, player mats, six ability cards, rulebook,
+quick reference, teaching guide, feedback form), two six-sided
+movement dice, one six-sided duel die, counters for Prestige, four
+pawns, a timer, and a pencil.
 
-Record with each session: the date, `rules_v093_succession.json` and
+Record with each session: the date, `rules_v094_twinboard.json` and
 its hash, the seed and gate assignment used, and the number of
-rounds.
+rounds per board.
 
 ## Recommended groups
 
@@ -75,8 +79,16 @@ the others): note whether anyone feels it before they are told.
 - The six abilities: for each card, note if its holder used it, and
   whether any ability was never used across the session.
 - The first completed set: did that player experience the claim as a
-  prize or a burden? Simulation says they win about a quarter of
+  prize or a burden? Simulation says they win about a third of
   games; session 001 read it as a burden.
+- The board switch: was the move to the succession map clear? Did
+  the return to gates read as a fresh start or as lost position?
+- The meeting places: did any seat feel their nearest site was too
+  far, or too near a rival's? (Design: every gate 3 to 5 steps from
+  its nearest site.)
+- Phase-2 income: with no guard posts on the succession map, did
+  anyone run dry and stall? (Simulation shows the farmer profile
+  weakening; duel wins are the only endgame income.)
 - Alternative plays: ask each player for one turn where they wanted
   two different actions. Record the turn and both options.
 - Would they play again, and what would they try differently.
@@ -93,8 +105,10 @@ the others): note whether anyone feels it before they are told.
    players orbit the rim out of habit?
 5. Is the contest fee understood as the price of intervention, or a
    hidden rule that surprises someone mid-challenge?
-6. Does the east gate feel worse across the rotation before the
-   facilitator mentions the measurement?
+6. Does any seat feel disadvantaged on the succession map before
+   the facilitator mentions the measurements? (The single board had
+   a persistent east deficit; the twin board measures .266/.250/
+   .242/.237.)
 7. What one rule caused the most questions in every group?
 
 ## Scoring

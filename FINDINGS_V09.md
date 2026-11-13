@@ -408,11 +408,21 @@ phase-2 displacement to the new gates (`notes/v094-twinboard-2026-11-13.md`).
 Confirmed on 384 fresh seeds (1010000+) against the 0.9.3 single
 board: `rules_v094_twinboard.json` ("0.9.4-twinboard") holds every
 health gate - 2 draws, median 23 rounds (15 collecting, 8
-contesting), 4.45 claims per game, first claimant .32 - and posts
-the tightest gate balance measured in this project: .266/.250/
-.242/.237, the east gate exactly at the uniform rate (single
-board: .193). The cost is a weaker farmer profile (.17 to .12; the
-duel-win payment is the only phase-2 income) and a stronger
-collector (.28 to .35); both stay inside the predeclared bands.
-`board_level2.glory_posts` remains a validated knob if the human
-session finds the endgame starving.
+contesting), 4.45 claims per game, first claimant .32 - and gate
+rates of .266/.250/.242/.237. A hostile-review pass reproduced
+every number bit-exact and sharpened the statistics: the single
+board rejects gate uniformity (chi-square p = .041; east alone
+p = .0094) while the twin board is statistically indistinguishable
+from uniform (p = .87). The east-gate improvement itself is a
+point estimate (paired McNemar p = .061 at n = 384), so read it as
+"the skew is gone from the measurement", not as a proven effect.
+The reset also moves, not erases, phase-1 tilt: the first claimant
+now varies by seat (p = .022) where 0.9.3's did not, but that
+tilt no longer propagates to final wins. The cost is a weaker
+farmer profile (.17 to .12; the duel-win payment is the only
+phase-2 income) and a stronger collector (.28 to .35); both stay
+inside the predeclared bands. `board_level2.glory_posts` remains a
+validated knob if the human session finds the endgame starving.
+Open release blocker: the browser JavaScript engine does not
+implement `board_level2` yet (the parity suite passes on
+pre-twin functionality only).

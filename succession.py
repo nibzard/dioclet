@@ -203,6 +203,16 @@ def _validate_board_level2(rules, config):
     b = Board(rules, "board_level2")
     if set(b.districts) or b.district_at:
         _error("invalid_rules", "board_level2 must not declare districts")
+    claimed = [(name, tuple(cell)) for name, cell in config["factions"].items()]
+    claimed += [("glory post", tuple(cell)) for cell in twin.get("glory_posts", [])]
+    for pid, cell in gates.items():
+        occupied = tuple(cell)
+        if occupied == tuple(twin["checkpoint"]):
+            _error("invalid_rules", f"board_level2 gate {pid} sits on the checkpoint")
+        for name, site in claimed:
+            if occupied == site:
+                _error("invalid_rules",
+                       f"board_level2 gate {pid} sits on {name} - seats may not start on content")
     for pid, gate in b.gates.items():
         reach = b.distances(gate)
         if b.checkpoint not in reach:

@@ -676,3 +676,11 @@ class TestV094TwinBoard(unittest.TestCase):
     def test_twin_game_runs_and_finishes(self):
         result = engine.result(game(self.rules_twin()))
         self.assertIn(result["outcome"], ("win", "draw"))
+
+    def test_level2_gate_cannot_start_on_content(self):
+        rules = self.rules_twin()
+        for pid, cell in (("P0", [6, 4]), ("P1", [9, 4]), ("P2", [6, 3])):
+            candidate = engine.load_rules(os.path.join(ROOT, "rules_v094_twinboard.json"))
+            candidate["board_level2"]["gates"][pid] = cell
+            with self.subTest(gate=pid, cell=cell), self.assertRaises(engine.EngineError):
+                engine.validate_rules(candidate)
