@@ -515,9 +515,11 @@ def draw_succession_map(c, S):
     c.setLineWidth(0.4)
     c.rect(13.6 * mm, 10.6 * mm, (PAGE_W - 27.2) * mm, (PAGE_H - 21.2) * mm)
     c.setLineWidth(0.0)
-    _centered(c, PAGE_W / 2.0, PAGE_H - 22.0, "THE SUCCESSION MAP",
+    # The title band sits high: the north gate's name prints 13.5 mm
+    # above the gate (about y 180.8), right under the subtitle.
+    _centered(c, PAGE_W / 2.0, PAGE_H - 17.5, "THE SUCCESSION MAP",
               "Times-Bold", 24)
-    _centered(c, PAGE_W / 2.0, PAGE_H - 29.5,
+    _centered(c, PAGE_W / 2.0, PAGE_H - 24.5,
               "DIOCLETIAN'S PALACE  ·  THE CONTEST FOR THE THRONE", "Times-Roman", 10.5)
 
     # North indicator, top right.
@@ -656,7 +658,7 @@ def draw_succession_map(c, S):
             c.setLineWidth(0.8)
             c.rect(x * mm, (sy - 2.4) * mm, 4.8 * mm, 4.8 * mm)
             c.setLineWidth(0.25)
-            for d in (1.2, 2.6, 4.0):
+            for d in (2.1, 3.3, 4.5):     # every stroke stays inside the 4.8 mm box
                 c.line((x + d) * mm, (sy - 2.4) * mm, (x + d - 1.9) * mm, (sy + 2.4) * mm)
             x += 7.8
         c.setFont("Helvetica", 8.2)
@@ -670,7 +672,7 @@ def draw_succession_map(c, S):
         c.line((cx + 3 * dx) * mm, cy * mm, (cx + 8 * dx) * mm, cy * mm)
         c.line(cx * mm, (cy + 3 * dy) * mm, cx * mm, (cy + 8 * dy) * mm)
     c.setFont("Helvetica-Bold", 6.2)
-    c.drawRightString((PAGE_W - 10.0) * mm, 12.0 * mm,
+    c.drawRightString((PAGE_W - 16.0) * mm, 12.4 * mm,
                       "SUCCESSION MAP - PRINT AT 100% - NO CUTTING NEEDED")
 
 
@@ -1158,16 +1160,18 @@ def art_board_pdf(path, L):
         p = c.beginPath()
         p.rect(0, 0, PAGE_W * mm, PAGE_H * mm)
         c.clipPath(p, stroke=0, fill=0)
-        # The artwork's own origin is the top-left of the art bounds; the
-        # PNG row 0 is the north edge, so it maps directly onto the PDF
+        # Shift artwork coordinates into this tile's window first, as
+        # board_pdf does, so each page shows its own quarter. The PNG
+        # row 0 is the north edge, so it maps directly onto the
         # rectangle from ay0 (south) to ay1 (north).
+        c.translate(-x0 * mm, -y0 * mm)
         c.drawImage(img, ax0 * mm, ay0 * mm, width=(ax1 - ax0) * mm,
                     height=(ay1 - ay0) * mm)
-        c.translate(-x0 * mm, -y0 * mm)
-        # Cut guides and registration crosses on top of the art, exactly
-        # where the black-and-white tiles print them.
-        draw_tile_furniture(c, L, page_no, (x0, y0))
         c.restoreState()
+        # Cut guides and registration crosses on top of the art, exactly
+        # where the black-and-white tiles print them. The furniture
+        # takes page coordinates; it subtracts the tile origin itself.
+        draw_tile_furniture(c, L, page_no, (x0, y0))
         c.showPage()
     c.save()
 
