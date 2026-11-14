@@ -560,3 +560,36 @@ practical. No baseline rule values were changed.
   the answer to the unreachable-claimant complaint, and the residual
   east-gate deficit is recorded as an accepted cost of the street
   contract.
+
+- **D51 Big succession map with faction cards (V0.10, 2026-11-14).**
+  The designer asked whether level 2 was too small or too quick,
+  whether the faction sites were fair, and whether faction cards
+  (three factions and three blanks dealt face down, as the level 1
+  treasures are) would help. They also wanted the succession map at
+  the palace board's size, so that one real board flips over. Eight
+  arms were run at 1,536 games each (seeds 1030000+), and the
+  finalists again on a holdout (seeds 1040000+);
+  `notes/v10-level2-2026-11-14.md` has every number. Findings: no
+  arm ends level 2 in 4 rounds or fewer; map size alone does not
+  lengthen level 2; cards add 3 to 4 rounds. 0.9.4 rejects gate
+  uniformity in both runs (p = .023 and .007), because its gates
+  sit 4 or 6 steps from the Peristyle. This revises D50's
+  "indistinguishable from uniform" result, which had 384 games.
+  Fairness needs the whole route equal: pinwheel gates (every gate
+  the same distance from the Peristyle) fail with public sites, and
+  the palace grid flipped as it is fails worst (east .17). The
+  designer chose the big map. It is promoted as
+  `rules_v010_bigboard.json` ("0.10.0-bigboard"): a 19 x 13 map with
+  four blocks, pinwheel gates P0 (6,0), P1 (18,6), P2 (12,12),
+  P3 (0,6), all 9 steps from the Peristyle (9,6), and
+  `blind_support` on six sites that look the same after a half-turn
+  ((0,0), (4,6), (9,1), (9,11), (14,6), (18,12)). Every gate sees
+  the sites at 4, 6, 14, 14, 14 and 24 steps. Holdout: gates
+  .255/.236/.236/.245 (p = .67), level 2 median 12 rounds, total
+  median 27. Known costs: draws rise to 1.9 to 2.9%, and the
+  succession map still has no guard posts. Engine: the new
+  `board_level2.support_sites` key holds at least three distinct,
+  reachable street cells, none on a gate or the checkpoint.
+  `blind_support` with `board_level2` deals onto these sites, and
+  is rejected without them. The deal uses the same order stream as
+  the palace-level deal, so matched seeds stay aligned.

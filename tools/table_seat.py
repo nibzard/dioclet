@@ -42,6 +42,12 @@ def ascii_map(obs):
         grid[y][x] = name
     for name, (x, y) in b.get("factions", {}).items():
         grid[y][x] = FACTION_MARK.get(name, "f")
+    sites = b.get("support_sites") or {}
+    for x, y in sites.get("candidates", []):
+        grid[y][x] = "?"
+    for key, name in sites.get("revealed", {}).items():
+        x, y = (int(v) for v in key.split(","))
+        grid[y][x] = FACTION_MARK.get(name, "f") if name else "-"
     for x, y in b["gates"].values():
         grid[y][x] = "G"
     cx, cy = b["checkpoint"]
@@ -111,7 +117,8 @@ def view(run, player, out=sys.stdout):
           f"active {obs['active_player']} | your roll {obs.get('movement_dice')} "
           f"(total {obs.get('movement_die')})", file=out)
     print("\nMAP (# building, . street, G gate, X Peristyle, * guard post, "
-          "A-F treasure entries, a/o/e faction sites, 0-3 players):", file=out)
+          "A-F treasure entries, a/o/e faction sites, ? unsearched faction "
+          "card, - searched blank, 0-3 players):", file=out)
     print(ascii_map(obs), file=out)
     print("\nPLAYERS:", file=out)
     for pid, p in sorted(obs["players"].items()):

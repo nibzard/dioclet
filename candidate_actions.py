@@ -423,8 +423,10 @@ def _succession_rule_summary(rules):
     if cfg.get("proclaim_cost"):
         summary["proclaim_cost"] = cfg["proclaim_cost"]
     if cfg.get("blind_support"):
-        summary["support_sites"] = ("Palace level only: the three faction meeting places "
-                                    "are hidden among six candidate cells; end movement on "
+        where = "Succession map" if "board_level2" in rules else "Palace level only"
+        count = len(rules["board_level2"]["support_sites"]) if "board_level2" in rules else 6
+        summary["support_sites"] = (f"{where}: the three faction meeting places "
+                                    f"are hidden among {count} candidate cells; end movement on "
                                     "one and search to reveal it.")
     abilities = rules["combat"].get("abilities")
     if abilities:
@@ -501,9 +503,13 @@ def _succession_goals(obs, rules):
         revealed = obs["revealed_districts"].get(name)
         if revealed is None or revealed not in me["equipment"]:
             goals["collection"].append(cell)
-    if "support_sites" in board:  # blind palace-level sites
+    if "support_sites" in board:  # blind faction cards
+        revealed = board["support_sites"]["revealed"]
         for cell in board["support_sites"]["candidates"]:
-            goals["support"].append(cell)
+            key = f"{cell[0]},{cell[1]}"
+            # Skip searched blanks and factions this player already has.
+            if key not in revealed or (revealed[key] and revealed[key] not in me["support"]):
+                goals["support"].append(cell)
     else:
         for name, cell in board["factions"].items():
             if name not in me["support"]:
@@ -561,6 +567,8 @@ def _describe_succession(action, feats):
     kind, dest = action["kind"], action["destination"]
     if kind == "explore":
         return f"Collect at district {feats['district']}; equipment stays with you in both phases."
+    if kind == "search_site":
+        return f"Search the face-down faction card at {dest}; the result is public."
     if kind == "gain_support":
         return f"Gain {action['faction']} support for {feats['prestige_cost']} Prestige, without a die test."
     if kind == "proclaim":
@@ -596,7 +604,8 @@ def _build_succession_candidates(obs, rules, cap=16, max_cap=400):
         raise ValueError("no legal actions in a live turn")
     pending = obs.get("pending_claim")
     mandatory, duels, ordinary = [], {}, []
-    essential = {"proclaim", "maintain_claim", "claim_checkpoint", "gain_support", "explore"}
+    essential = {"proclaim", "maintain_claim", "claim_checkpoint", "gain_support", "explore",
+                 "search_site"}
     for action in legal:
         kind = action["kind"]
         if kind in essential or (kind == "duel" and pending and action.get("target") == pending["player"]):

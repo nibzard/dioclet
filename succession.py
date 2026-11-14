@@ -197,9 +197,23 @@ def _validate_board_level2(rules, config):
     for cell in posts:
         if not in_bounds(cell) or tuple(cell) in blocked:
             _error("invalid_rules", "board_level2 glory post out of bounds or blocked")
-    if config.get("blind_support"):
+    sites = twin.get("support_sites")
+    if sites is not None:
+        # Blind faction cards on the succession map: three factions and
+        # blanks dealt face down onto these street cells at the change.
+        if not isinstance(sites, list) or len(sites) < 3:
+            _error("invalid_rules", "board_level2.support_sites must list at least three cells")
+        reachable = Board(rules, "board_level2").distances(tuple(gates["P0"]))
+        for cell in sites:
+            if not in_bounds(cell) or tuple(cell) not in reachable:
+                _error("invalid_rules", "board_level2 support site must be a reachable street")
+            if tuple(cell) in {tuple(c) for c in gates.values()} or tuple(cell) == tuple(twin["checkpoint"]):
+                _error("invalid_rules", "board_level2 support site cannot be a gate or the checkpoint")
+        if len({tuple(c) for c in sites}) != len(sites):
+            _error("invalid_rules", "board_level2 support sites must be distinct")
+    if config.get("blind_support") and sites is None:
         _error("invalid_rules",
-               "blind_support re-deals the palace districts; it cannot combine with board_level2")
+               "blind_support with board_level2 needs board_level2.support_sites")
     b = Board(rules, "board_level2")
     if set(b.districts) or b.district_at:
         _error("invalid_rules", "board_level2 must not declare districts")
@@ -834,12 +848,16 @@ def _advance(state):
                         player["pos"] = player["gate"][:]
                 state["phase"], state["round"], state["round_start"] = 2, 1, 0
                 if rules["succession"].get("blind_support"):
-                    # Human redesign: on the palace level the three faction
-                    # meeting places are re-dealt blind onto the six district
-                    # entry cells - three hold a faction, three are decoys.
+                    # Human redesign: the three faction meeting places are
+                    # dealt blind - onto board_level2.support_sites on a
+                    # twin map, else onto the six district entry cells.
+                    # Three hold a faction, the rest are decoys.
                     # Drawn from the order stream, which nothing uses after
                     # setup, so matched seeds stay aligned across arms.
-                    cells = sorted(list(c) for c in rules["board"]["districts"].values())
+                    if "board_level2" in rules:
+                        cells = sorted(list(c) for c in rules["board_level2"]["support_sites"])
+                    else:
+                        cells = sorted(list(c) for c in rules["board"]["districts"].values())
                     state["faction_sites"] = {f"{c[0]},{c[1]}": None for c in cells}
                     for cell, name in zip(_shuffle(state, cells, "order")[:3],
                                           sorted(rules["succession"]["factions"])):
