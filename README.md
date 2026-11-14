@@ -12,21 +12,24 @@ The simulator, print kit, and browser game use different rules:
 
 | Component | Rules | Status |
 | --- | --- | --- |
-| Python simulator | [V0.9.4 twin-board](rules_v094_twinboard.json) | Current design candidate |
-| [Print kit](print/) | V0.9.4 twin-board | Generated PDFs; needs human playtesting |
+| Python simulator | [V0.10 big board](rules_v010_bigboard.json) | Current design candidate |
+| [Print kit](print/) | V0.10 big board | Generated PDFs; needs human playtesting |
 | [Browser game](web/) | [V0.8 succession](rules_v08_succession.json) | Playable with humans and bots |
 | Original simulator | [V0.1 baseline](rules_baseline.json) | Kept for historical experiments and replays |
 
-**V0.9.4 uses two boards.** Players collect equipment on the palace board,
-then return to their assigned gates on a smaller succession map. They buy
-support from two factions and defend a claim at the Peristyle for two rounds.
-Six equipment abilities affect play; at most one equipment modifier applies
-per duel side.
+**V0.10 uses two boards of the same size.** Players collect equipment on
+the palace board, then turn the board over and return to their gates on the
+succession map. Every gate there is nine steps from the Peristyle. The three
+factions hide among six face-down cards, with three blanks. Players search the
+cards, buy support from two factions, and defend a claim at the Peristyle for
+two rounds. Six equipment abilities affect play; at most one equipment
+modifier applies per duel side.
 
 The browser engine does not yet support the second board. Its V0.8 rules
 and rulebook differ from the current print kit. See the
-[V0.9.4 findings and limitations](notes/v094-twinboard-2026-11-13.md)
-for the evidence and open questions.
+[V0.10 findings](FINDINGS_V10.md) and the
+[V0.10 notes](notes/v10-level2-2026-11-14.md) for the evidence and open
+questions.
 
 ## Play in the browser
 
@@ -52,35 +55,35 @@ browser to V0.9.4. Cloudflare hosting is configured in
 
 ## Print and play
 
-Download the [complete A4 print kit](print/dioclet-complete-print-kit-A4-BW.pdf)
-or use the individual files:
-
-- [Palace board: four A4 tiles](print/dioclet-board-4xA4-BW.pdf)
-- [Succession map: one A4 page](print/dioclet-succession-map-A4-BW.pdf)
-- [Player sheets](print/dioclet-player-sheets-A4-BW.pdf)
-- [Cards and tokens](print/dioclet-cards-tokens-A4-BW.pdf)
-- [Rulebook](print/dioclet-rulebook-A4-BW.pdf)
-- [Quick reference](print/dioclet-quick-reference-A4-BW.pdf)
-- [Teaching guide](print/dioclet-teaching-guide-A4-BW.pdf)
-- [Playtest form](print/dioclet-playtest-form-A4-BW.pdf)
-- [Print and assembly instructions](print/dioclet-print-instructions-A4-BW.pdf)
-
-The kit uses black ink on A4 paper. The palace board assembles to
-580 × 406 mm. The succession map fits on one landscape page.
-Follow the print instructions and check the 100 mm calibration ruler.
-
-A second edition, the [drawn kit](print/dioclet-complete-print-kit-A4-ART.pdf),
-carries hand-drawn grayscale artwork (boards, cards, and tokens drawn
-programmatically, see `art/`) under the same cut lines:
+The default edition is the [drawn kit](print/dioclet-complete-print-kit-A4-ART.pdf).
+It carries hand-drawn grayscale artwork (boards, cards, and tokens drawn
+programmatically, see `art/`):
 
 - [Palace board, drawn art: four A4 tiles](print/dioclet-board-4xA4-ART.pdf)
-- [Succession map, drawn art](print/dioclet-succession-map-ART.pdf)
+- [Succession map, drawn art: four A4 tiles](print/dioclet-succession-map-ART.pdf)
 - [Cards and tokens, drawn art](print/dioclet-cards-tokens-ART.pdf)
+
+The [black-and-white kit](print/bw/dioclet-complete-print-kit-A4-BW.pdf)
+uses black ink only and is the source of the rules documents:
+
+- [Palace board: four A4 tiles](print/bw/dioclet-board-4xA4-BW.pdf)
+- [Succession map: four A4 tiles](print/bw/dioclet-succession-map-A4-BW.pdf)
+- [Player sheets](print/bw/dioclet-player-sheets-A4-BW.pdf)
+- [Cards and tokens](print/bw/dioclet-cards-tokens-A4-BW.pdf)
+- [Rulebook](print/bw/dioclet-rulebook-A4-BW.pdf)
+- [Quick reference](print/bw/dioclet-quick-reference-A4-BW.pdf)
+- [Teaching guide](print/bw/dioclet-teaching-guide-A4-BW.pdf)
+- [Playtest form](print/bw/dioclet-playtest-form-A4-BW.pdf)
+- [Print and assembly instructions](print/bw/dioclet-print-instructions-A4-BW.pdf)
+
+Each board assembles to 580 × 406 mm from four A4 tiles. The two boards
+share their cut lines, so you can tape them back to back. Follow the print
+instructions and check the 100 mm calibration ruler.
 
 Both kits print the same geometry: the art consumes a layout exported
 from the generator itself (`art/build/layout.json`), never a copy.
 
-To regenerate the kit from `rules_v094_twinboard.json`, install ReportLab:
+To regenerate the kit from `rules_v010_bigboard.json`, install ReportLab:
 
 ```bash
 python3 -m pip install reportlab
@@ -110,8 +113,8 @@ Run commands from the repository root.
 Use a new output directory for each game:
 
 ```bash
-python3 sim.py validate --rules rules_v094_twinboard.json
-python3 sim.py new --rules rules_v094_twinboard.json --seed 42 \
+python3 sim.py validate --rules rules_v010_bigboard.json
+python3 sim.py new --rules rules_v010_bigboard.json --seed 42 \
   --out runs/demo --policies balanced,greedy,aggressive,random
 python3 sim.py auto --run runs/demo
 python3 sim.py replay --run runs/demo --verify
@@ -149,8 +152,8 @@ A 96-game batch covers a full rotation of profiles and gate assignments.
 
 ```bash
 python3 tools/succession_experiments.py \
-  --rules rules_v094_twinboard.json --games 96 --seed-base 10000 \
-  --out results/twinboard-demo
+  --rules rules_v010_bigboard.json --games 96 --seed-base 10000 \
+  --out results/bigboard-demo
 ```
 
 Use a new, empty output directory. Read its `report.md` and `summary.json`
@@ -275,6 +278,7 @@ can be superseded by later experiments.
 | V0.8: imperial succession | [Redesign plan](docs/intervention-plan.md), [succession findings](FINDINGS_V08.md) |
 | V0.9–V0.9.3: equipment, claim windows, and movement | [Trial findings](FINDINGS_V09.md), [simplification study](notes/v09-simplification-study.md), [geometry sweep](notes/v09-geometry-sweep-2026-11-13.md) |
 | V0.9.4: separate succession map | [Twin-board findings](notes/v094-twinboard-2026-11-13.md), [human playtest protocol](playtest/protocol-v09.md) |
+| V0.10: big succession map and faction cards | [Findings](FINDINGS_V10.md), [notes](notes/v10-level2-2026-11-14.md), [Haiku table game](runs/haiku-table-v010/REPORT.md) |
 
 [`DECISIONS.md`](DECISIONS.md) records rule interpretations and design decisions.
 Earlier rules files remain available for comparisons and historical replays.

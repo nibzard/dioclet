@@ -10,7 +10,7 @@ Coordinates in the output are millimetres with the origin at the
 top-left corner of each artwork and y growing downward (canvas
 convention). The kit's PDF layout uses a bottom-left origin.
 
-Usage: python3 art/export_layout.py [--rules rules_v094_twinboard.json]
+Usage: python3 art/export_layout.py [--rules rules_v010_bigboard.json]
 """
 import json
 import os
@@ -66,31 +66,37 @@ def palace(rules):
 
 
 def succession(rules):
+    """The succession map shares the palace board's footprint and tiling."""
     S = kit.build_succession_layout(rules)
     b = S["board"]
-    ph = kit.PAGE_H
+    ax0, ay0, ax1, ay1 = S["art"]
 
     def flip(x, y):
-        return [round(x, 3), round(ph - y, 3)]
+        return [round(x - ax0, 3), round(ay1 - y, 3)]
 
     def at(cell):
         return flip(*S["pos"](tuple(cell)))
 
-    cell = kit.SCELL
+    cell = kit.CELL
     blocks = []
     for x0, y0, x1, y1 in S["blocks"]:
-        left = kit.SML + x0 * cell
-        top = kit.SMB + (S["rows"] - y0) * cell
+        left = kit.ML + x0 * cell
+        top = kit.MB + (S["rows"] - y0) * cell
         blocks.append(flip(left, top) + [(x1 - x0 + 1) * cell, (y1 - y0 + 1) * cell])
+    gx0, gy0, gw, gh = S["grid"]
     return {
-        "size_mm": [kit.PAGE_W, kit.PAGE_H],
+        "size_mm": [ax1 - ax0, ay1 - ay0],
         "cell_mm": cell,
-        "grid_mm": flip(kit.SML, kit.SMB + S["grid_h"]) + [S["grid_w"], S["grid_h"]],
+        "grid_mm": flip(gx0, gy0 + gh) + [gw, gh],
+        "border_mm": flip(19.0, ay1 - 7.0) + [(ax1 - 6.0) - 19.0, (ay1 - 7.0) - 16.0],
+        "cut_mm": {"x": round(S["cut"]["x"] - ax0, 3), "y": round(ay1 - S["cut"]["y"], 3)},
+        "reg_marks_mm": [flip(x, y) for x, y in S["reg_marks"]],
         "spaces": [{"cell": list(c), "mm": flip(x, y)} for c, (x, y) in S["spaces"]],
         "blocks": blocks,
         "gates": {k: at(v) for k, v in b.gates.items()},
+        "gate_names": kit.GATE_NAMES,
         "checkpoint": at(b.checkpoint),
-        "factions": {k: at(v) for k, v in rules["succession"]["factions"].items()},
+        "card_spaces": [at(c) for c in S["card_spaces"]],
         "rows": S["rows"], "cols": S["cols"],
     }
 
@@ -111,6 +117,8 @@ def main():
             "items": [{"name": name, "icon": icon, "text": text}
                       for name, icon, text in kit.CARDS],
             "abilities": abilities,
+            "factions": [{"name": name, "badge": badge, "lines": [l1, l2]}
+                         for name, badge, l1, l2 in kit.FACTION_CARDS],
         },
     }
     out_dir = os.path.join(ROOT, "art", "build")

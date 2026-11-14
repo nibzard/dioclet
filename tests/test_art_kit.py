@@ -13,8 +13,10 @@ the contract around it:
 """
 
 import json
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -80,13 +82,22 @@ class LayoutExport(unittest.TestCase):
             self.assertAlmostEqual(space["mm"][0], x - ax0, places=3)
             self.assertAlmostEqual(space["mm"][1], ay1 - y, places=3)
 
-    def test_succession_factions_match_the_rules(self):
+    def test_succession_card_spaces_match_the_rules(self):
         S = kit.build_succession_layout(self.rules)
         export = self.export["succession"]
-        for name, cell in self.rules["succession"]["factions"].items():
+        ax0, ay0, ax1, ay1 = S["art"]
+        sites = self.rules["board_level2"]["support_sites"]
+        self.assertEqual(len(export["card_spaces"]), len(sites))
+        for cell, (ex, ey) in zip(sites, export["card_spaces"]):
             x, y = S["pos"](tuple(cell))
-            self.assertAlmostEqual(export["factions"][name][0], x, places=3)
-            self.assertAlmostEqual(export["factions"][name][1], kit.PAGE_H - y, places=3)
+            self.assertAlmostEqual(ex, x - ax0, places=3)
+            self.assertAlmostEqual(ey, ay1 - y, places=3)
+        self.assertEqual(export["size_mm"], self.export["palace"]["size_mm"])
+        self.assertEqual(export["cut_mm"], self.export["palace"]["cut_mm"])
+
+    def test_faction_cards_match_the_kit_list(self):
+        exported = [(f["name"], f["badge"]) for f in self.export["cards"]["factions"]]
+        self.assertEqual(exported, [(n, b) for n, b, _l1, _l2 in kit.FACTION_CARDS])
 
     def test_cards_match_the_kit_card_list(self):
         items = self.export["cards"]["items"]
@@ -99,27 +110,34 @@ class LayoutExport(unittest.TestCase):
 class ArtKitPdfs(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # Rebuild only the ART PDFs; the BW PDFs have their own tests.
+        # Rebuild only the ART PDFs, into a scratch folder: the committed
+        # copies in print/ must not change when the tests run. The BW
+        # PDFs have their own tests.
+        cls.out = Path(tempfile.mkdtemp(prefix="dioclet-art-"))
         rules_arg = str(REPO / kit.RULES_FILE)
         script = (
             "import sys; sys.path.insert(0, '.'); sys.path.insert(0, 'tools');"
             "import make_a4_print_kit as kit;"
             f"rules = kit.engine.load_rules({rules_arg!r});"
-            f"kit.art_board_pdf({str(PRINT / 'dioclet-board-4xA4-ART.pdf')!r}, kit.build_layout(rules));"
-            f"kit.art_succession_pdf({str(PRINT / 'dioclet-succession-map-ART.pdf')!r});"
-            f"kit.art_cards_tokens_pdf({str(PRINT / 'dioclet-cards-tokens-ART.pdf')!r})"
+            f"kit.art_board_pdf({str(cls.out / 'dioclet-board-4xA4-ART.pdf')!r}, kit.build_layout(rules));"
+            f"kit.art_succession_pdf({str(cls.out / 'dioclet-succession-map-ART.pdf')!r}, kit.build_succession_layout(rules));"
+            f"kit.art_cards_tokens_pdf({str(cls.out / 'dioclet-cards-tokens-ART.pdf')!r})"
         )
         subprocess.run([sys.executable, "-c", script], cwd=str(REPO), check=True)
 
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.out, ignore_errors=True)
+
     def test_board_is_four_landscape_pages(self):
-        reader = PdfReader(PRINT / "dioclet-board-4xA4-ART.pdf")
+        reader = PdfReader(self.out / "dioclet-board-4xA4-ART.pdf")
         self.assertEqual(len(reader.pages), 4)
         for page in reader.pages:
             self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
             self.assertAlmostEqual(float(page.mediabox.height), A4_SHORT_PT, places=1)
 
     def test_every_art_board_page_carries_an_image(self):
-        reader = PdfReader(PRINT / "dioclet-board-4xA4-ART.pdf")
+        reader = PdfReader(self.out / "dioclet-board-4xA4-ART.pdf")
         for page in reader.pages:
             xobjs = page.get("/Resources", {}).get("/XObject", {})
             self.assertTrue(any(xobjs[k].get("/Subtype") == "/Image" for k in xobjs),
@@ -131,7 +149,7 @@ class ArtKitPdfs(unittest.TestCase):
         # so all four sheets printed the same corner of the board.
         L = kit.build_layout(engine.load_rules(str(REPO / kit.RULES_FILE)))
         ax0, ay0, ax1, ay1 = L["art"]
-        reader = PdfReader(PRINT / "dioclet-board-4xA4-ART.pdf")
+        reader = PdfReader(self.out / "dioclet-board-4xA4-ART.pdf")
         origins = []
         for page_no, page in zip(("1", "2", "3", "4"), reader.pages):
             x0, y0, _ = L["tiles"][page_no]
@@ -145,9 +163,23 @@ class ArtKitPdfs(unittest.TestCase):
             origins.append((round(ctm[4], 1), round(ctm[5], 1)))
         self.assertEqual(len(set(origins)), 4, "two tiles show the same window")
 
+    def test_succession_map_is_four_tiles_with_their_own_windows(self):
+        S = kit.build_succession_layout(engine.load_rules(str(REPO / kit.RULES_FILE)))
+        ax0, ay0, ax1, ay1 = S["art"]
+        reader = PdfReader(self.out / "dioclet-succession-map-ART.pdf")
+        self.assertEqual(len(reader.pages), 4)
+        for page_no, page in zip(("1", "2", "3", "4"), reader.pages):
+            x0, y0, _ = S["tiles"][page_no]
+            ctm = image_matrix(page)
+            self.assertAlmostEqual(ctm[4], (ax0 - x0) * kit.mm, places=1)
+            self.assertAlmostEqual(ctm[5], (ay0 - y0) * kit.mm, places=1)
+            self.assertIn(f"SUCCESSION MAP - PAGE {page_no} OF 4", page.extract_text())
+
     def test_cards_page_places_six_card_images(self):
-        reader = PdfReader(PRINT / "dioclet-cards-tokens-ART.pdf")
-        self.assertEqual(len(reader.pages), 3)
+        reader = PdfReader(self.out / "dioclet-cards-tokens-ART.pdf")
+        self.assertEqual(len(reader.pages), 5)
+        self.assertIn("FACTION CARDS", reader.pages[3].extract_text())
+        self.assertIn("FACTION CARD BACKS", reader.pages[4].extract_text())
         for page in reader.pages:
             xobjs = page.get("/Resources", {}).get("/XObject", {})
             self.assertTrue(any(xobjs[k].get("/Subtype") == "/Image" for k in xobjs))

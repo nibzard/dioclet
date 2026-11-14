@@ -119,3 +119,22 @@ export function factionEmblem(a, x, y, s, kind) {
 }
 
 export { tone };
+
+// A faction card space on the succession map: a bold roundel holding a
+// face-down card with a '?'. The card is dealt here at the change; until
+// it is searched nobody knows if a faction meets on this spot.
+export function cardSpace(a, x, y, r = 10.6) {
+  lift(a, (c) => c.arc(x, y, r + 0.7, 0, PI * 2), 1);
+  slabShadow(a, x, y, r, Math.max(0.6, r * 0.08));
+  a.circle(x, y, r, w("bold", { width: Math.max(0.4, r * 0.075), passes: 1 }));
+  a.circle(x, y, r * 0.88, w("hair"));
+  const cw = r * 0.82, ch = r * 1.12;
+  const card = [[x - cw / 2, y - ch / 2], [x + cw / 2, y - ch / 2], [x + cw / 2, y + ch / 2], [x - cw / 2, y + ch / 2]];
+  // The card's shadow, then the card lifted clean on top of it.
+  const shadow = card.map(([px, py]) => [px + r * 0.06, py + r * 0.06]);
+  a.hatch(poly(shadow), bbox(shadow), { angle: -PI / 4, gap: 0.4, ...W.hair, alpha: 0.55, run: 3 });
+  lift(a, poly(card), 1);
+  a.polygon(card, w("firm", { overshoot: 0.15 }));
+  a.polygon(card.map(([px, py]) => [x + (px - x) * 0.8, y + (py - y) * 0.86]), w("hair", { overshoot: 0.1 }));
+  text(a, "?", x, y + r * 0.27, r * 0.62, { style: "inscribed", medium: "charcoal" });
+}

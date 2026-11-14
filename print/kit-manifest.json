@@ -8,25 +8,26 @@
     "street_spaces": 97
   },
   "counts_level2": {
-    "blocked": 60,
+    "blocked": 160,
     "blocks": 4,
+    "card_spaces": 6,
     "gates": 4,
     "glory_posts": 0,
-    "street_spaces": 57
+    "street_spaces": 87
   },
   "files": {
     "art_board": "print/dioclet-board-4xA4-ART.pdf",
     "art_cards": "print/dioclet-cards-tokens-ART.pdf",
     "art_succession": "print/dioclet-succession-map-ART.pdf",
-    "board": "print/dioclet-board-4xA4-BW.pdf",
-    "cards": "print/dioclet-cards-tokens-A4-BW.pdf",
-    "form": "print/dioclet-playtest-form-A4-BW.pdf",
-    "instructions": "print/dioclet-print-instructions-A4-BW.pdf",
-    "quick": "print/dioclet-quick-reference-A4-BW.pdf",
-    "rulebook": "print/dioclet-rulebook-A4-BW.pdf",
-    "sheets": "print/dioclet-player-sheets-A4-BW.pdf",
-    "succession": "print/dioclet-succession-map-A4-BW.pdf",
-    "teaching": "print/dioclet-teaching-guide-A4-BW.pdf"
+    "board": "print/bw/dioclet-board-4xA4-BW.pdf",
+    "cards": "print/bw/dioclet-cards-tokens-A4-BW.pdf",
+    "form": "print/bw/dioclet-playtest-form-A4-BW.pdf",
+    "instructions": "print/bw/dioclet-print-instructions-A4-BW.pdf",
+    "quick": "print/bw/dioclet-quick-reference-A4-BW.pdf",
+    "rulebook": "print/bw/dioclet-rulebook-A4-BW.pdf",
+    "sheets": "print/bw/dioclet-player-sheets-A4-BW.pdf",
+    "succession": "print/bw/dioclet-succession-map-A4-BW.pdf",
+    "teaching": "print/bw/dioclet-teaching-guide-A4-BW.pdf"
   },
   "layout": {
     "art_bounds_mm": [
@@ -539,72 +540,124 @@
       ]
     },
     "succession_map_mm": {
+      "art_bounds_mm": [
+        15.0,
+        -14.0,
+        595.0,
+        392.0
+      ],
       "blocks": [
         [
           1,
-          5,
-          5,
-          7
+          1,
+          8,
+          5
         ],
         [
+          10,
+          1,
+          17,
+          5
+        ],
+        [
+          1,
           7,
-          5,
-          11,
-          7
+          8,
+          11
         ],
         [
-          1,
-          1,
-          5,
-          3
-        ],
-        [
+          10,
           7,
-          1,
-          11,
-          3
+          17,
+          11
         ]
       ],
-      "cell_mm": 16.5,
+      "cell_mm": 25.5,
       "grid_mm": [
-        214.5,
-        148.5
+        484.5,
+        331.5
+      ],
+      "reg_marks_mm": [
+        [
+          268.0,
+          300.0
+        ],
+        [
+          317.0,
+          300.0
+        ],
+        [
+          268.0,
+          100.0
+        ],
+        [
+          317.0,
+          100.0
+        ],
+        [
+          120.0,
+          225.0
+        ],
+        [
+          490.0,
+          225.0
+        ],
+        [
+          120.0,
+          177.0
+        ],
+        [
+          490.0,
+          177.0
+        ]
       ],
       "specials_mm": {
-        "checkpoint": [
-          148.5,
-          101.25
-        ],
-        "factions": {
-          "army": [
-            198.0,
-            101.25
+        "card_spaces": [
+          [
+            62.75,
+            354.75
           ],
-          "elites": [
-            148.5,
-            117.75
+          [
+            164.75,
+            201.75
           ],
-          "officials": [
-            99.0,
-            101.25
+          [
+            292.25,
+            329.25
+          ],
+          [
+            292.25,
+            74.25
+          ],
+          [
+            419.75,
+            201.75
+          ],
+          [
+            521.75,
+            48.75
           ]
-        },
+        ],
+        "checkpoint": [
+          292.25,
+          201.75
+        ],
         "gates": {
           "P0": [
-            148.5,
-            167.25
+            215.75,
+            354.75
           ],
           "P1": [
-            247.5,
-            101.25
+            521.75,
+            201.75
           ],
           "P2": [
-            148.5,
-            35.25
+            368.75,
+            48.75
           ],
           "P3": [
-            49.5,
-            101.25
+            62.75,
+            201.75
           ]
         }
       }
@@ -632,7 +685,7 @@
       ]
     }
   },
-  "rules_file": "rules_v094_twinboard.json",
-  "rules_hash": "d9c7067f7bf4f4ab66e558fd1803501e03dda05730574fa935ffcd7d17ebbdbe",
-  "version": "V0.9.4 print kit (V0.9.4 twin-board rules)"
+  "rules_file": "rules_v010_bigboard.json",
+  "rules_hash": "569e16ddce4f072067e6c5fd5cff0e6e3e319fd7c3858104fce97f6a1a86f3a0",
+  "version": "V0.10 print kit (V0.10 big-board rules)"
 }

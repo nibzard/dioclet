@@ -132,3 +132,78 @@ export function renderCardBack(layout, { dpi = 300, seed = 560 } = {}) {
   sheet.release();
   return canvas;
 }
+
+// ---------------------------------------------------------------------------
+// The six faction cards for the succession map: three factions and three
+// empty streets, and their shared back. Same size, frame and bleed as the
+// treasure cards; the back is clearly different, so the two decks never
+// mix: a large '?' over the three faction devices.
+import * as K from "../lib/marks.mjs";
+
+const FACTION_KIND = { shield: "army", column: "officials", laurel: "elites" };
+
+function cardFrame(a, cw, ch) {
+  const y0 = BLEED, y1 = BLEED + ch;
+  a.rect(BLEED + 2.4, y0 + 2.4, cw - 4.8, ch - 4.8, w("bold", { width: 0.55, overshoot: 0.5 }));
+  a.rect(BLEED + 3.6, y0 + 3.6, cw - 7.2, ch - 7.2, w("hair", { overshoot: 0.4 }));
+  for (const [rx, ry] of [[BLEED + 2.4, y0 + 2.4], [BLEED + cw - 2.4, y0 + 2.4], [BLEED + 2.4, y1 - 2.4], [BLEED + cw - 2.4, y1 - 2.4]]) {
+    M.lift(a, (c) => c.arc(rx, ry, 2.6, 0, PI * 2), 1);
+    a.circle(rx, ry, 2.1, w("firm"));
+    M.star(a, rx, ry, 1.5, { points: 8, inner: 0.45, weight: "firm", shade: false });
+  }
+}
+
+export function renderFactionCards(layout, { dpi = 300, seed = 600 } = {}) {
+  const [cw, ch] = layout.cards.size_mm;
+  const out = [];
+  let blank = 0;
+  layout.cards.factions.forEach((card, i) => {
+    const sheet = new Sheet({ widthMm: cw + BLEED * 2, heightMm: ch + BLEED * 2, dpi, seed: seed + i * 13 });
+    const a = new Artist(sheet, { seed: 31 + i });
+    const cx = BLEED + cw / 2;
+    cardFrame(a, cw, ch);
+    text(a, card.name, cx, BLEED + 11, 4.2, { style: "inscribed", medium: "charcoal", track: 0.05 });
+    a.line([BLEED + 8, BLEED + 15], [BLEED + cw - 8, BLEED + 15], w("fine", { bow: 0.1 }));
+    const ry = BLEED + 37, r = 16;
+    if (card.badge) {
+      M.tone(a, (c) => c.arc(cx, ry, r + 2.5, 0, PI * 2), [cx - r - 3, ry - r - 3, 2 * r + 6, 2 * r + 6], 0.14, { angle: PI / 4 });
+      K.factionSite(a, cx, ry, FACTION_KIND[card.badge], r);
+    } else {
+      // An empty street: a plain roundel on bare paving.
+      for (let k = -2; k <= 2; k++) {
+        a.line([cx - r - 4, ry + k * 5], [cx + r + 4, ry + k * 5], w("hair", { alpha: 0.3, bow: 0.05 }));
+      }
+      K.streetSpace(a, cx, ry, r * 0.75);
+    }
+    const plateY0 = BLEED + ch - 17.5, plateY1 = BLEED + ch - 5;
+    M.lift(a, (c) => c.rect(BLEED + 6, plateY0, cw - 12, plateY1 - plateY0), 0.95);
+    a.rect(BLEED + 6, plateY0, cw - 12, plateY1 - plateY0, w("hair", { overshoot: 0.3 }));
+    const cap = 2.1;
+    card.lines.forEach((ln, k) => text(a, ln.toUpperCase(), cx, plateY0 + 5 + k * cap * 1.9, cap, { medium: "graphite", weight: 1.05 }));
+    a.cutRect(BLEED, BLEED, cw, ch);
+    const canvas = sheet.compose();
+    sheet.release();
+    const name = card.badge ? `faction-${FACTION_KIND[card.badge]}.png` : `faction-empty-${++blank}.png`;
+    out.push([name, canvas]);
+  });
+  return out;
+}
+
+export function renderFactionBack(layout, { dpi = 300, seed = 660 } = {}) {
+  const [cw, ch] = layout.cards.size_mm;
+  const sheet = new Sheet({ widthMm: cw + BLEED * 2, heightMm: ch + BLEED * 2, dpi, seed });
+  const a = new Artist(sheet, { seed: 41 });
+  const cx = BLEED + cw / 2, cy = BLEED + ch / 2;
+  cardFrame(a, cw, ch);
+  M.tone(a, (c) => c.rect(BLEED + 6, BLEED + 6, cw - 12, ch - 12), [BLEED + 6, BLEED + 6, cw - 12, ch - 12], 0.12, { angle: -PI / 4 });
+  M.lift(a, (c) => c.arc(cx, cy - 7, 15.5, 0, PI * 2), 1);
+  M.coin(a, cx, cy - 7, 15, { beads: true, worn: 0.08 });
+  text(a, "?", cx, cy + 2.5, 18, { style: "inscribed", medium: "charcoal" });
+  const devices = [["army", -14], ["officials", 0], ["elites", 14]];
+  for (const [kind, dx] of devices) K.factionEmblem(a, cx + dx, cy + 18, 3.4, kind);
+  text(a, "FACTION CARD", cx, cy + 29, 2.4, { medium: "charcoal", weight: 1.1, track: 0.1 });
+  a.cutRect(BLEED, BLEED, cw, ch);
+  const canvas = sheet.compose();
+  sheet.release();
+  return canvas;
+}

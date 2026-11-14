@@ -1,4 +1,4 @@
-"""Checks for the V0.9.4 black-and-white A4 print-and-play kit.
+"""Checks for the V0.10 black-and-white A4 print-and-play kit.
 
 The kit is generated art, so these tests pin the contract a family
 relies on when they print it: page sizes and counts, board geometry
@@ -21,25 +21,26 @@ from tools import make_a4_print_kit as kit
 
 REPO = Path(__file__).resolve().parents[1]
 PRINT = REPO / "print"
+PRINT_BW = PRINT / "bw"     # the black-and-white edition
 A4_SHORT_PT = 595.2756   # 210 mm
 A4_LONG_PT = 841.8898    # 297 mm
 
 
 def page_text(name, page_index):
-    return PdfReader(PRINT / name).pages[page_index].extract_text()
+    return PdfReader(PRINT_BW / name).pages[page_index].extract_text()
 
 
 def whole_text(name):
     # Wrapping changes with type size; assertions concern the printed words.
     return " ".join(" ".join(p.extract_text() for p in
-                             PdfReader(PRINT / name).pages).split())
+                             PdfReader(PRINT_BW / name).pages).split())
 
 
 class BoardPages(unittest.TestCase):
     FILE = "dioclet-board-4xA4-BW.pdf"
 
     def test_four_a4_landscape_pages(self):
-        reader = PdfReader(PRINT / self.FILE)
+        reader = PdfReader(PRINT_BW / self.FILE)
         self.assertEqual(len(reader.pages), 4)
         for page in reader.pages:
             self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
@@ -59,7 +60,7 @@ class BoardPages(unittest.TestCase):
     def test_building_hatch_clip_uses_board_coordinates(self):
         # The northwest building's inset hatch rectangle must share the
         # point scale of its outline, rather than appearing near the origin.
-        page = PdfReader(PRINT / self.FILE).pages[0]
+        page = PdfReader(PRINT_BW / self.FILE).pages[0]
         expected = (80.5 * kit.mm, 219.5 * kit.mm,
                     117.5 * kit.mm, 117.5 * kit.mm)
         rectangles = [tuple(float(v) for v in args)
@@ -73,8 +74,8 @@ class BoardPages(unittest.TestCase):
 class DocumentPages(unittest.TestCase):
     FILES = {
         "dioclet-player-sheets-A4-BW.pdf": 2,
-        "dioclet-cards-tokens-A4-BW.pdf": 3,
-        "dioclet-rulebook-A4-BW.pdf": 7,
+        "dioclet-cards-tokens-A4-BW.pdf": 5,
+        "dioclet-rulebook-A4-BW.pdf": 8,
         "dioclet-quick-reference-A4-BW.pdf": 1,
         "dioclet-teaching-guide-A4-BW.pdf": 1,
         "dioclet-playtest-form-A4-BW.pdf": 2,
@@ -83,7 +84,7 @@ class DocumentPages(unittest.TestCase):
 
     def test_a4_portrait_page_counts(self):
         for name, count in self.FILES.items():
-            reader = PdfReader(PRINT / name)
+            reader = PdfReader(PRINT_BW / name)
             self.assertEqual(len(reader.pages), count, name)
             for page in reader.pages:
                 self.assertAlmostEqual(float(page.mediabox.width), A4_SHORT_PT,
@@ -91,19 +92,19 @@ class DocumentPages(unittest.TestCase):
                 self.assertAlmostEqual(float(page.mediabox.height), A4_LONG_PT,
                                        places=1, msg=name)
 
-    def test_combined_kit_starts_with_the_five_board_pages(self):
-        reader = PdfReader(PRINT / "dioclet-complete-print-kit-A4-BW.pdf")
-        expected = 4 + 1 + sum(self.FILES.values())
+    def test_combined_kit_starts_with_the_eight_board_pages(self):
+        reader = PdfReader(PRINT_BW / "dioclet-complete-print-kit-A4-BW.pdf")
+        expected = 4 + 4 + sum(self.FILES.values())
         self.assertEqual(len(reader.pages), expected)
-        for page in reader.pages[:5]:
+        for page in reader.pages[:8]:
             self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
 
-    def test_succession_map_is_one_landscape_page(self):
-        reader = PdfReader(PRINT / "dioclet-succession-map-A4-BW.pdf")
-        self.assertEqual(len(reader.pages), 1)
-        page = reader.pages[0]
-        self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
-        self.assertAlmostEqual(float(page.mediabox.height), A4_SHORT_PT, places=1)
+    def test_succession_map_is_four_landscape_pages(self):
+        reader = PdfReader(PRINT_BW / "dioclet-succession-map-A4-BW.pdf")
+        self.assertEqual(len(reader.pages), 4)
+        for page in reader.pages:
+            self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
+            self.assertAlmostEqual(float(page.mediabox.height), A4_SHORT_PT, places=1)
 
 
 class BoardMatchesRules(unittest.TestCase):
@@ -249,12 +250,14 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("succession map", text)                       # the second board
         self.assertIn("Every pawn returns", text)                   # gate reset
         self.assertIn("to its gate on the succession map", text)
-        self.assertIn("east side, on the east-west street", text)   # army meeting place
-        self.assertIn("west side, on the east-west street", text)   # officials
-        self.assertIn("north side, on the north-south street", text)  # elites
+        self.assertIn("six faction cards", text)                    # blind support
+        self.assertIn("the circles marked ? on the succession map", text)
+        self.assertIn("That is a search", text)
+        self.assertIn("An empty street gives nothing", text)
+        self.assertIn("nine steps from the Peristyle", text)        # pinwheel gates
         self.assertIn("the only Prestige income there", text)       # duel-only income
-        self.assertIn("Meeting places can only be visited during the "
-                      "succession phase", text)
+        self.assertIn("Faction cards exist only in the succession phase", text)
+        self.assertNotIn("east side, on the east-west street", text)  # old fixed sites
         self.assertIn("the palace map leaves the table", text)
         self.assertNotIn("You may gain support in either phase", text)
 
@@ -320,20 +323,32 @@ class SuccessionMapMatchesRules(unittest.TestCase):
     def setUpClass(cls):
         cls.rules = engine.load_rules(str(REPO / kit.RULES_FILE))
         cls.S = kit.build_succession_layout(cls.rules)
+        cls.L = kit.build_layout(cls.rules)
         cls.board = cls.S["board"]
         cls.manifest = json.loads((PRINT / "kit-manifest.json").read_text())
+
+    def symbols(self):
+        """(centre, drawn radius) for every symbol, as draw_succession_map draws it."""
+        special = ({tuple(g) for g in self.board.gates.values()}
+                   | set(self.S["card_spaces"]) | {tuple(self.board.checkpoint)})
+        out = [(xy, 9.2) for cell, xy in self.S["spaces"] if tuple(cell) not in special]
+        out += [(self.S["pos"](tuple(c)), 11.4) for c in self.board.gates.values()]
+        out += [(self.S["pos"](c), 10.6) for c in self.S["card_spaces"]]
+        out += [(self.S["pos"](tuple(self.board.checkpoint)), 11.2)]
+        return out
 
     def test_counts(self):
         blocked = {tuple(cell) for cell in self.rules["board_level2"]["blocked"]}
         spaces = {cell for cell, _ in self.S["spaces"]}
-        self.assertEqual(len(spaces), 57)
-        self.assertEqual(len(blocked), 60)
+        self.assertEqual(len(spaces), 87)
+        self.assertEqual(len(blocked), 160)
         self.assertFalse(spaces & blocked)
         counts = self.manifest["counts_level2"]
-        self.assertEqual(counts["street_spaces"], 57)
-        self.assertEqual(counts["blocked"], 60)
+        self.assertEqual(counts["street_spaces"], 87)
+        self.assertEqual(counts["blocked"], 160)
         self.assertEqual(counts["gates"], 4)
         self.assertEqual(counts["blocks"], 4)
+        self.assertEqual(counts["card_spaces"], 6)
         self.assertEqual(counts["glory_posts"], 0)
 
     def test_special_positions_match_rules(self):
@@ -344,46 +359,64 @@ class SuccessionMapMatchesRules(unittest.TestCase):
                              [round(v, 2) for v in self.S["pos"](tuple(cell))])
         self.assertEqual(specials["checkpoint"],
                          [round(v, 2) for v in self.S["pos"](tuple(self.board.checkpoint))])
-        for faction, cell in self.rules["succession"]["factions"].items():
-            self.assertEqual(specials["factions"][faction],
-                             [round(v, 2) for v in self.S["pos"](tuple(cell))])
+        self.assertEqual(specials["card_spaces"],
+                         [[round(v, 2) for v in self.S["pos"](tuple(c))]
+                          for c in self.rules["board_level2"]["support_sites"]])
         # Compass sanity: the gates sit where the prose says.
-        self.assertEqual(self.board.gates["P0"], (6, 0))   # north
-        self.assertEqual(self.board.gates["P1"], (12, 4))  # east
-        self.assertEqual(self.board.gates["P2"], (6, 8))   # south
-        self.assertEqual(self.board.gates["P3"], (0, 4))   # west
+        self.assertEqual(self.board.gates["P0"], (6, 0))    # north
+        self.assertEqual(self.board.gates["P1"], (18, 6))   # east
+        self.assertEqual(self.board.gates["P2"], (12, 12))  # south
+        self.assertEqual(self.board.gates["P3"], (0, 6))    # west
 
-    def test_every_symbol_clears_the_page_border(self):
-        # One page, no tiling: every symbol must fit inside the
-        # decorative border in one printable copy.
-        special = ({tuple(g) for g in self.board.gates.values()}
-                   | {tuple(c) for c in self.rules["succession"]["factions"].values()}
-                   | {tuple(self.board.checkpoint)})
-        for cell, (x, y) in self.S["spaces"]:
-            radius = 7.4 if tuple(cell) in special else 6.2
-            self.assertGreaterEqual(x - radius, 12.0, f"cell {cell} clips the border")
-            self.assertLessEqual(x + radius, kit.PAGE_W - 12.0, f"cell {cell}")
-            self.assertGreaterEqual(y - radius, 9.0, f"cell {cell}")
-            self.assertLessEqual(y + radius, kit.PAGE_H - 9.0, f"cell {cell}")
+    def test_same_footprint_and_cuts_as_the_palace_board(self):
+        # The two boards tape back to back, so they must match exactly.
+        self.assertEqual(self.S["art"], self.L["art"])
+        self.assertEqual(self.S["cut"], self.L["cut"])
+        self.assertEqual(self.S["tiles"], self.L["tiles"])
+        self.assertEqual(self.manifest["layout"]["succession_map_mm"]["art_bounds_mm"],
+                         list(self.L["art"]))
+
+    def test_no_symbol_crosses_a_cut_line(self):
+        cut_x, cut_y = self.S["cut"]["x"], self.S["cut"]["y"]
+        for (x, y), r in self.symbols():
+            self.assertFalse(x - r < cut_x < x + r, f"symbol at ({x}, {y}) crosses the upright cut")
+            self.assertFalse(y - r < cut_y < y + r, f"symbol at ({x}, {y}) crosses the cross cut")
+
+    def test_every_symbol_clears_the_safe_zone_on_some_tile(self):
+        tiles = [(x0, y0) for x0, y0, _ in self.S["tiles"].values()]
+        safe = kit.SAFE
+        for (px, py), r in self.symbols():
+            self.assertTrue(any(
+                px - r - x0 >= safe and py - r - y0 >= safe
+                and px + r - x0 <= kit.PAGE_W - safe and py + r - y0 <= kit.PAGE_H - safe
+                for x0, y0 in tiles), f"symbol at ({px},{py}) has no printable copy")
+
+    def test_each_tile_prints_two_registration_crosses_off_the_streets(self):
+        knockout = 5.2
+        for page_no, (x0, y0, _) in self.S["tiles"].items():
+            shown = [(ax, ay) for ax, ay in self.S["reg_marks"]
+                     if 11 < ax - x0 < kit.PAGE_W - 11 and 11 < ay - y0 < kit.PAGE_H - 11]
+            self.assertEqual(len(shown), 2, f"tile {page_no}")
+        for ax, ay in self.S["reg_marks"]:
+            for (x, y), r in self.symbols():
+                self.assertGreater((ax - x) ** 2 + (ay - y) ** 2, (r + knockout) ** 2,
+                                   f"cross at ({ax}, {ay}) covers a street symbol")
 
     def test_page_names_its_marks(self):
         text = whole_text("dioclet-succession-map-A4-BW.pdf")
-        for word in ("THE SUCCESSION MAP", "ARMY", "OFFICIALS", "ELITES",
-                     "PERISTYLE", "CITY BLOCK", "GOLDEN GATE", "SILVER GATE",
-                     "BRONZE GATE", "IRON GATE", "faction meeting place",
-                     "NO CUTTING NEEDED"):
+        for word in ("THE SUCCESSION MAP", "PERISTYLE", "CITY BLOCK", "GOLDEN GATE",
+                     "SILVER GATE", "BRONZE GATE", "IRON GATE", "faction card space",
+                     "SUCCESSION MAP - PAGE 1 OF 4", "SUCCESSION MAP - PAGE 4 OF 4"):
             self.assertIn(word, text)
 
-    def test_meeting_places_sit_one_per_street_arm(self):
-        # The printed faction directions must match the rules cells:
-        # elites north on the cardo, officials west and army east on
-        # the full-width east-west street, none on the Peristyle.
-        factions = self.rules["succession"]["factions"]
-        self.assertEqual(factions["elites"], [6, 3])
-        self.assertEqual(factions["officials"], [3, 4])
-        self.assertEqual(factions["army"], [9, 4])
-        for cell in factions.values():
-            self.assertNotEqual(tuple(cell), tuple(self.board.checkpoint))
+    def test_faction_cards_print_three_factions_and_three_blanks(self):
+        fronts = page_text("dioclet-cards-tokens-A4-BW.pdf", 3)
+        for word in ("FACTION CARDS", "ARMY", "OFFICIALS", "ELITES"):
+            self.assertIn(word, fronts)
+        self.assertEqual(fronts.count("EMPTY STREET"), 3)
+        backs = page_text("dioclet-cards-tokens-A4-BW.pdf", 4)
+        self.assertIn("FACTION CARD BACKS", backs)
+        self.assertEqual(backs.count("FACTION CARD"), 1 + 6)     # header + six backs
 
 
 if __name__ == "__main__":

@@ -1,28 +1,33 @@
 #!/usr/bin/env python3
-"""Generate the V0.9.4 black-and-white A4 print-and-play kit.
+"""Generate the V0.10 A4 print-and-play kit.
 
 Everything prints on ordinary A4 paper with black ink only. The game
 uses two boards. The palace board is one complete vector drawing of
 the treasure map (19x13 cells, 97 street spaces, six intact blocks),
 divided at print time into four overlapping A4 landscape tiles that
-assemble into one large board (about A2). The succession map (13x9,
-57 street spaces, four blocks) prints complete on ONE A4 landscape
-page - no tiling. All other documents are A4 portrait.
+assemble into one large board (about A2). The succession map has the
+same footprint (19x13 cells, four blocks, six faction card spaces) and
+tiles onto four pages the same way, so the two boards can be taped back
+to back. All other documents are A4 portrait.
 
-Outputs into print/:
+Outputs into print/bw/ (black and white):
   dioclet-board-4xA4-BW.pdf        four tiled palace-board pages (landscape)
-  dioclet-succession-map-A4-BW.pdf the succession map, one page (landscape)
+  dioclet-succession-map-A4-BW.pdf four tiled succession-map pages (landscape)
   dioclet-player-sheets-A4-BW.pdf  four player mats (two per page)
-  dioclet-cards-tokens-A4-BW.pdf   treasure cards, backs, tokens
+  dioclet-cards-tokens-A4-BW.pdf   treasure cards, tokens, faction cards
   dioclet-rulebook-A4-BW.pdf       family rulebook
   dioclet-quick-reference-A4-BW.pdf
   dioclet-teaching-guide-A4-BW.pdf
   dioclet-playtest-form-A4-BW.pdf
   dioclet-print-instructions-A4-BW.pdf
   dioclet-complete-print-kit-A4-BW.pdf (all of the above, boards first)
+With --art, into print/ (the default edition):
+  dioclet-board-4xA4-ART.pdf, dioclet-succession-map-ART.pdf,
+  dioclet-cards-tokens-ART.pdf, dioclet-complete-print-kit-A4-ART.pdf
+Always into print/:
   kit-manifest.json (layout facts used by the tests)
 
-Run: python3 tools/make_a4_print_kit.py [--rules RULES_FILE]
+Run: python3 tools/make_a4_print_kit.py [--rules RULES_FILE] [--art]
 """
 
 import json
@@ -38,9 +43,10 @@ from reportlab.pdfgen import canvas as pdfcanvas
 import engine  # noqa: E402
 from board import Board, validate_six_block_layout  # noqa: E402
 
-RULES_FILE = "rules_v094_twinboard.json"
-OUT_DIR = "print"
-KIT_VERSION = "V0.9.4 print kit (V0.9.4 twin-board rules)"
+RULES_FILE = "rules_v010_bigboard.json"
+OUT_DIR = "print"                         # ART edition and the manifest
+BW_DIR = os.path.join(OUT_DIR, "bw")      # black-and-white edition
+KIT_VERSION = "V0.10 print kit (V0.10 big-board rules)"
 
 # ---------------------------------------------------------------------------
 # Board layout, in millimetres. Y grows upward; north is at the top.
@@ -57,9 +63,15 @@ GATE_NAMES = {"P0": "GOLDEN GATE - NORTH", "P1": "SILVER GATE - EAST",
               "P2": "BRONZE GATE - SOUTH", "P3": "IRON GATE - WEST"}
 
 
-def build_layout(rules):
-    """All geometric facts, computed once and shared by every page."""
-    b = Board(rules)
+def build_layout(rules, section="board"):
+    """All geometric facts, computed once and shared by every page.
+
+    The palace board and the succession map share one footprint, so
+    both use these tile windows and cut lines; only the registration
+    crosses differ (section="board_level2" places them for the
+    succession map's streets).
+    """
+    b = Board(rules, section)
     rows, cols = b.height, b.width
     grid_w, grid_h = cols * CELL, rows * CELL
 
@@ -86,15 +98,18 @@ def build_layout(rules):
     # prints exactly two, so families can level the pages while
     # taping: one pair along the vertical cut, one along the
     # horizontal cut.
-    reg_marks = [(cut_x - 12.0, 300.0), (cut_x + 12.0, 300.0),   # vertical cut, top tiles
-                 (cut_x - 12.0, 160.0), (cut_x + 12.0, 160.0),   # vertical cut, bottom tiles
-                 # The horizontal-cut pairs must share x so families can
-                 # stack them vertically when taping. The decumanus street
-                 # row (circles x 62.75..521.75, y 192.6..211) leaves no
-                 # room for a 9.6 mm crosshair anywhere along it, so both
-                 # pairs sit west/east of the row ends, 12 mm off the cut.
-                 (40.0, 201.0), (560.0, 201.0),                  # horizontal cut, top tiles
-                 (40.0, 177.0), (560.0, 177.0)]                  # horizontal cut, bottom tiles
+    if section == "board_level2":
+        reg_marks = SUCCESSION_REG_MARKS
+    else:
+        reg_marks = [(cut_x - 12.0, 300.0), (cut_x + 12.0, 300.0),   # vertical cut, top tiles
+                     (cut_x - 12.0, 160.0), (cut_x + 12.0, 160.0),   # vertical cut, bottom tiles
+                     # The horizontal-cut pairs must share x so families can
+                     # stack them vertically when taping. The decumanus street
+                     # row (circles x 62.75..521.75, y 192.6..211) leaves no
+                     # room for a 9.6 mm crosshair anywhere along it, so both
+                     # pairs sit west/east of the row ends, 12 mm off the cut.
+                     (40.0, 201.0), (560.0, 201.0),                  # horizontal cut, top tiles
+                     (40.0, 177.0), (560.0, 177.0)]                  # horizontal cut, bottom tiles
     spaces = sorted((tuple(cell), pos(cell)) for cell in
                     {(x, y) for x in range(cols) for y in range(rows)
                      if (x, y) not in b.blocked})
@@ -106,6 +121,8 @@ def build_layout(rules):
         "overlap": OVERLAP,
         "tiles": tiles, "spaces": spaces,
         "cell": CELL, "safe": SAFE, "version": KIT_VERSION,
+        "sheet_note": ("SUCCESSION MAP - PAGE {} OF 4 - PRINT AT 100%"
+                       if section == "board_level2" else "PAGE {} OF 4 - PRINT AT 100%"),
     }
 
 
@@ -428,7 +445,7 @@ def draw_tile_furniture(c, L, page_no, window):
 
     # Sheet number in the outer corner of the tile (the corner of the
     # assembled board this page becomes), in page coordinates.
-    note = f"PAGE {page_no} OF 4 - PRINT AT 100%"
+    note = L["sheet_note"].format(page_no)
     c.setFont("Helvetica-Bold", 6.2)
     if page_no in ("1", "3"):
         ax, ay = L["art"][0] + 11, (383.5 if page_no == "1" else 19.0)
@@ -459,25 +476,28 @@ def board_pdf(path, L):
 
 
 # ---------------------------------------------------------------------------
-# The succession map: one complete A4 landscape page, no tiling.
+# The succession map: the palace board's footprint, tiled 2 x 2 at the
+# same scale and on the same cut lines, so the two boards can be taped
+# back to back into one board that turns over.
 
-SCELL = 16.5                                   # succession-map cell, mm
-SML, SMB = (PAGE_W - 13 * SCELL) / 2.0, 27.0   # centred horizontally
+# Registration crosses for the succession map. Column 9 and row 6 are
+# streets here, so the palace positions would sit on street circles.
+# Each pair shares one coordinate across its cut and sits inside a
+# block, clear of the hatch frame and the block numeral; every tile
+# prints exactly two.
+SUCCESSION_REG_MARKS = [(268.0, 300.0), (317.0, 300.0),   # vertical cut, top tiles
+                        (268.0, 100.0), (317.0, 100.0),   # vertical cut, bottom tiles
+                        (120.0, 225.0), (490.0, 225.0),   # horizontal cut, top tiles
+                        (120.0, 177.0), (490.0, 177.0)]   # horizontal cut, bottom tiles
 
 
 def build_succession_layout(rules):
-    """Geometric facts for the succession map, mirroring build_layout."""
-    b = Board(rules, "board_level2")
-    rows, cols = b.height, b.width
-
-    def pos(cell):
-        x, y = cell
-        return (SML + x * SCELL + SCELL / 2.0,
-                SMB + (rows - 1 - y) * SCELL + SCELL / 2.0)
-
-    spaces = sorted((tuple(cell), pos(cell)) for cell in
-                    {(x, y) for x in range(cols) for y in range(rows)
-                     if (x, y) not in b.blocked})
+    """Geometric facts for the succession map, sharing the palace tiling."""
+    S = build_layout(rules, "board_level2")
+    b = S["board"]
+    palace = Board(rules)
+    if (b.width, b.height) != (palace.width, palace.height):
+        raise SystemExit("the succession map must match the palace board's size")
     # The succession map declares no building footprints; its four
     # blocks are the connected components of blocked cells, drawn as
     # their exact bounding boxes (each component is a rectangle).
@@ -499,189 +519,170 @@ def build_succession_layout(rules):
         xs = [c[0] for c in group]
         ys = [c[1] for c in group]
         blocks.append((min(xs), min(ys), max(xs), max(ys)))
-    blocks.sort(key=lambda r: (-r[3], r[0]))   # north-west first
-    return {"board": b, "rules": rules, "pos": pos, "rows": rows,
-            "cols": cols, "spaces": spaces, "blocks": blocks,
-            "grid_w": cols * SCELL, "grid_h": rows * SCELL}
+    blocks.sort(key=lambda r: (r[1], r[0]))    # north-west first (y 0 is north)
+    S.update(blocks=blocks,
+             card_spaces=[tuple(c) for c in rules["board_level2"]["support_sites"]],
+             grid_w=S["cols"] * CELL, grid_h=S["rows"] * CELL)
+    return S
+
+
+def _card_space(c, x, y, r):
+    """A faction card space: bold ring, a face-down card with a '?'."""
+    c.setLineWidth(1.8)
+    c.circle(x * mm, y * mm, r * mm, stroke=1, fill=0)
+    w, h = r * 0.80, r * 1.10
+    c.setLineWidth(1.0)
+    c.roundRect((x - w / 2) * mm, (y - h / 2) * mm, w * mm, h * mm, r * 0.10 * mm,
+                stroke=1, fill=0)
+    _centered(c, x, y - r * 0.30, "?", "Times-Bold", r * 1.55)
+
+
+def _knockout_label(c, x, y, text, font="Helvetica-Bold", size=6.8):
+    """Centred text on a tight white plate, so hatch never crosses it."""
+    w = c.stringWidth(text, font, size) / mm
+    c.saveState()
+    c.setFillColorRGB(1, 1, 1)
+    c.rect((x - w / 2.0 - 1.2) * mm, (y - 0.9) * mm, (w + 2.4) * mm, (size * 0.36 + 1.6) * mm,
+           stroke=0, fill=1)
+    c.restoreState()
+    _centered(c, x, y, text, font, size)
 
 
 def draw_succession_map(c, S):
-    b, rules, pos = S["board"], S["rules"], S["pos"]
-    gw, gh = S["grid_w"], S["grid_h"]
+    b, pos = S["board"], S["pos"]
+    ml, mb = S["grid"][0], S["grid"][1]
+    art = S["art"]
 
-    # Outer decorative border and title band, matching the palace board.
+    # Outer border, title band and north arrow, as on the palace board.
+    bx0, by0, bx1, by1 = 19.0, 16.0, art[2] - 6.0, art[3] - 7.0
     c.setLineWidth(1.1)
-    c.rect(12.0 * mm, 9.0 * mm, (PAGE_W - 24.0) * mm, (PAGE_H - 18.0) * mm)
+    c.rect(bx0 * mm, by0 * mm, (bx1 - bx0) * mm, (by1 - by0) * mm)
     c.setLineWidth(0.4)
-    c.rect(13.6 * mm, 10.6 * mm, (PAGE_W - 27.2) * mm, (PAGE_H - 21.2) * mm)
+    c.rect((bx0 + 1.6) * mm, (by0 + 1.6) * mm, (bx1 - bx0 - 3.2) * mm, (by1 - by0 - 3.2) * mm)
     c.setLineWidth(0.0)
-    # The title band sits high: the north gate's name prints 13.5 mm
-    # above the gate (about y 180.8), right under the subtitle.
-    _centered(c, PAGE_W / 2.0, PAGE_H - 17.5, "THE SUCCESSION MAP",
-              "Times-Bold", 24)
-    _centered(c, PAGE_W / 2.0, PAGE_H - 24.5,
-              "DIOCLETIAN'S PALACE  ·  THE CONTEST FOR THE THRONE", "Times-Roman", 10.5)
-
-    # North indicator, top right.
-    nx, ny = PAGE_W - 30.0, PAGE_H - 26.0
+    _centered(c, (art[0] + art[2]) / 2.0, art[3] - 15.0, "THE SUCCESSION MAP",
+              "Times-Bold", 30)
+    _centered(c, (art[0] + art[2]) / 2.0, art[3] - 23.0,
+              "DIOCLETIAN'S PALACE  ·  THE CONTEST FOR THE THRONE", "Times-Roman", 12.5)
+    nx, ny = art[2] - 37.0, art[3] - 22.0
     c.setLineWidth(1.0)
     p = c.beginPath()
-    p.moveTo(nx * mm, (ny + 6) * mm)
-    p.lineTo((nx - 2.2) * mm, (ny - 1) * mm)
-    p.lineTo((nx + 2.2) * mm, (ny - 1) * mm)
+    p.moveTo(nx * mm, (ny + 7) * mm)
+    p.lineTo((nx - 2.6) * mm, (ny - 1) * mm)
+    p.lineTo((nx + 2.6) * mm, (ny - 1) * mm)
     p.close()
     c.drawPath(p, stroke=1, fill=0)
-    c.line(nx * mm, (ny - 1) * mm, nx * mm, (ny - 5.5) * mm)
-    _centered(c, nx, ny - 10.5, "N", "Times-Bold", 10)
+    c.line(nx * mm, (ny - 1) * mm, nx * mm, (ny - 6.5) * mm)
+    _centered(c, nx, ny - 12.5, "N", "Times-Bold", 11)
 
-    # City blocks: outline, hatch, roman numeral on a knockout plate.
+    # City blocks: double outline, sparse hatch, numeral on a plate.
     numerals = ("I", "II", "III", "IV")
     for index, (x0, y0, x1, y1) in enumerate(S["blocks"]):
-        bx = SML + x0 * SCELL + 1.8
-        by = SMB + (S["rows"] - 1 - y1) * SCELL + 1.8
-        bw = (x1 - x0 + 1) * SCELL - 3.6
-        bh = (y1 - y0 + 1) * SCELL - 3.6
-        c.setLineWidth(1.0)
+        bx = ml + x0 * CELL + 2.4
+        by = mb + (S["rows"] - 1 - y1) * CELL + 2.4
+        bw = (x1 - x0 + 1) * CELL - 4.8
+        bh = (y1 - y0 + 1) * CELL - 4.8
+        c.setLineWidth(1.2)
         c.rect(bx * mm, by * mm, bw * mm, bh * mm)
-        _hatch(c, bx + 1.2, by + 1.2, bw - 2.4, bh - 2.4, gap=6.0)
+        c.setLineWidth(0.8)
+        c.rect((bx + 1.7) * mm, (by + 1.7) * mm, (bw - 3.4) * mm, (bh - 3.4) * mm)
+        _hatch(c, bx + 2.6, by + 2.6, bw - 5.2, bh - 5.2, gap=8.5)
         cx, cy = bx + bw / 2.0, by + bh / 2.0
         c.saveState()
         c.setFillColorRGB(1, 1, 1)
-        c.rect((cx - 9) * mm, (cy - 6.5) * mm, 18 * mm, 13 * mm, stroke=0, fill=1)
+        c.rect((cx - 14) * mm, (cy - 9) * mm, 28 * mm, 17 * mm, stroke=0, fill=1)
+        c.rect((cx - 17) * mm, (cy - 17.6) * mm, 34 * mm, 6.4 * mm, stroke=0, fill=1)
         c.restoreState()
-        _centered(c, cx, cy - 2.0, numerals[index], "Times-Bold", 19)
-        _centered(c, cx, cy - 9.5, "CITY BLOCK", "Helvetica", 6)
+        _centered(c, cx, cy - 2.6, numerals[index], "Times-Bold", 34)
+        _centered(c, cx, cy - 15.5, "CITY BLOCK", "Helvetica", 8)
 
     # Streets: open circles; special cells carry their own symbols.
-    special = ({tuple(g) for g in b.gates.values()}
-               | {tuple(cell) for cell in rules["succession"]["factions"].values()}
+    special = ({tuple(g) for g in b.gates.values()} | set(S["card_spaces"])
                | {tuple(b.checkpoint)})
     for cell, (x, y) in S["spaces"]:
         if tuple(cell) in special:
             continue
-        c.setLineWidth(0.9)
-        c.circle(x * mm, y * mm, 6.2 * mm, stroke=1, fill=0)
+        c.setLineWidth(1.0)
+        c.circle(x * mm, y * mm, 9.2 * mm, stroke=1, fill=0)
 
-    # Gates: arch in a bold ring, compass name beside the ring.
+    # Faction card spaces: one face-down card each, dealt at the change.
+    for cell in S["card_spaces"]:
+        x, y = pos(cell)
+        _card_space(c, x, y, 10.6)
+
+    # Gates: arch in a bold ring, name above on a plate (the south gate
+    # sits under a block, so its name crosses the block frame).
     for pid, cell in sorted(b.gates.items()):
         x, y = pos(tuple(cell))
-        c.setLineWidth(1.7)
-        c.circle(x * mm, y * mm, 7.4 * mm, stroke=1, fill=0)
-        c.setLineWidth(1.2)
-        _arch(c, x * mm, (y + 0.6) * mm, 5.0 * mm)
-
-    # Peristyle: octagon at the crossing, the throne of this map. The
-    # label sits in the narrow band south of the octagon (north is the
-    # elites' street), on a tight white knockout.
-    px, py = pos(tuple(b.checkpoint))
-    c.setLineWidth(1.8)
-    _octagon(c, px * mm, py * mm, 7.4 * mm)
-    c.setLineWidth(0.7)
-    _octagon(c, px * mm, py * mm, 5.4 * mm)
-    _centered(c, px, py - 1.1, "X", "Times-Bold", 7)
-    c.saveState()
-    c.setFillColorRGB(1, 1, 1)
-    c.rect((px - 7) * mm, (py - 10.2) * mm, 14 * mm, 2.6 * mm, stroke=0, fill=1)
-    c.restoreState()
-    _centered(c, px, py - 9.6, "PERISTYLE", "Helvetica-Bold", 4.2)
-
-    # Faction meeting places: bold double circle, faction badge inside,
-    # faction name on a knockout plate over the block hatch - officials
-    # and army above their circles, elites to the right, each clear of
-    # every street circle (the east-west street runs the full row).
-    label_offset = {"officials": (0, 11.5), "army": (0, 11.5), "elites": (1, 0)}
-    for faction, cell in sorted(rules["succession"]["factions"].items()):
-        x, y = pos(tuple(cell))
+        c.setLineWidth(2.0)
+        c.circle(x * mm, y * mm, 11.4 * mm, stroke=1, fill=0)
         c.setLineWidth(1.5)
-        c.circle(x * mm, y * mm, 7.2 * mm, stroke=1, fill=0)
-        c.setLineWidth(0.6)
-        c.circle(x * mm, y * mm, 5.2 * mm, stroke=1, fill=0)
-        c.setLineWidth(0.9)
-        if faction == "army":
-            _shield(c, x * mm, y * mm, 3.4 * mm)
-            label = "ARMY"
-        elif faction == "officials":
-            _column(c, x * mm, (y + 0.2) * mm, 3.0 * mm)
-            label = "OFFICIALS"
-        else:
-            _laurel(c, x * mm, (y + 0.4) * mm, 3.4 * mm)
-            label = "ELITES"
-        name_w = c.stringWidth(label, "Helvetica-Bold", 5.4) / mm
-        dx, dy = label_offset[faction]
-        lx = x + dx * (9.2 + name_w / 2.0)
-        ly = y + dy
-        c.saveState()
-        c.setFillColorRGB(1, 1, 1)
-        c.rect((lx - name_w / 2.0 - 1.2) * mm, (ly - 3.4) * mm,
-               (name_w + 2.4) * mm, 6.8 * mm, stroke=0, fill=1)
-        c.restoreState()
-        _centered(c, lx, ly - 1.2, label, "Helvetica-Bold", 5.4)
+        _arch(c, x * mm, (y + 0.8) * mm, 7.8 * mm)
+        _knockout_label(c, x, y + 13.4, GATE_NAMES[pid])
 
-    # Gate compass names, clear of the grid on the outer margin.
-    gate_labels = {"P0": ("GOLDEN GATE - NORTH", 0, 1), "P1": ("SILVER GATE - EAST", 1, 0),
-                   "P2": ("BRONZE GATE - SOUTH", 0, -1), "P3": ("IRON GATE - WEST", -1, 0)}
-    for pid, (label, dx, dy) in gate_labels.items():
-        x, y = pos(tuple(b.gates[pid]))
-        c.setFont("Helvetica-Bold", 6.2)
-        if dx:
-            c.drawCentredString((x + dx * 26.0) * mm, (y - 1.1) * mm, label)
-        else:
-            c.drawCentredString(x * mm, (y + dy * 13.5) * mm, label)
+    # Peristyle: octagon at the crossing, label above (the horizontal
+    # cut runs 1.5 mm below the octagon).
+    px, py = pos(tuple(b.checkpoint))
+    c.setLineWidth(2.0)
+    _octagon(c, px * mm, py * mm, 11.2 * mm)
+    c.setLineWidth(0.8)
+    _octagon(c, px * mm, py * mm, 8.2 * mm)
+    _centered(c, px, py - 1.6, "X", "Times-Bold", 10)
+    _knockout_label(c, px, py + 13.4, "PERISTYLE")
 
-    # Legend band below the grid.
-    sy = SMB - 10.5
-    entries = [("circle", "street space"),
-               ("faction", "faction meeting place - support costs 1 Prestige"),
-               ("arch", "gate / return here"),
-               ("octagon", "Peristyle - proclaim here"),
-               ("hatch", "building - no entry")]
-    x = 20.0
-    for kind, label in entries:
-        c.setLineWidth(0.9)
-        if kind == "circle":
-            c.circle(x * mm, sy * mm, 2.6 * mm)
-            x += 6.2
-        elif kind == "faction":
-            c.setLineWidth(1.2)
-            c.circle(x * mm, sy * mm, 3.2 * mm)
-            c.setLineWidth(0.5)
-            c.circle(x * mm, sy * mm, 2.2 * mm)
-            _shield(c, x * mm, sy * mm, 1.7 * mm)
-            x += 8.0
-        elif kind == "arch":
-            _arch(c, x * mm, sy * mm, 2.6 * mm)
-            x += 6.2
-        elif kind == "octagon":
-            _octagon(c, x * mm, sy * mm, 3.0 * mm)
-            x += 7.2
-        elif kind == "hatch":
-            c.setLineWidth(0.8)
-            c.rect(x * mm, (sy - 2.4) * mm, 4.8 * mm, 4.8 * mm)
-            c.setLineWidth(0.25)
-            for d in (2.1, 3.3, 4.5):     # every stroke stays inside the 4.8 mm box
-                c.line((x + d) * mm, (sy - 2.4) * mm, (x + d - 1.9) * mm, (sy + 2.4) * mm)
-            x += 7.8
-        c.setFont("Helvetica", 8.2)
-        c.drawString(x * mm, (sy - 1.0) * mm, label)
-        x += c.stringWidth(label, "Helvetica", 8.2) / mm + 7.0
-
-    # One-page furniture: corner ticks and the print note.
-    c.setLineWidth(0.5)
-    for cx, cy, dx, dy in ((0, 0, 1, 1), (PAGE_W, 0, -1, 1),
-                           (0, PAGE_H, 1, -1), (PAGE_W, PAGE_H, -1, -1)):
-        c.line((cx + 3 * dx) * mm, cy * mm, (cx + 8 * dx) * mm, cy * mm)
-        c.line(cx * mm, (cy + 3 * dy) * mm, cx * mm, (cy + 8 * dy) * mm)
-    c.setFont("Helvetica-Bold", 6.2)
-    c.drawRightString((PAGE_W - 16.0) * mm, 12.4 * mm,
-                      "SUCCESSION MAP - PRINT AT 100% - NO CUTTING NEEDED")
+    # Legend band below the grid, two rows; entries flow left to right.
+    row_defs = [
+        (by0 + 15.4, [("circle", "street space"),
+                      ("card", "faction card space: search, then 1 Prestige for support"),
+                      ("arch", "gate / return here"),
+                      ("octagon", "Peristyle - proclaim here")]),
+        (by0 + 7.2, [("hatch", "building - no entry"),
+                     ("blank", "no guard posts on this map: duel wins are the only Prestige")]),
+    ]
+    for sy, entries in row_defs:
+        x = 40.0
+        for kind, label in entries:
+            c.setLineWidth(1.0)
+            if kind == "circle":
+                c.circle(x * mm, sy * mm, 3.0 * mm)
+                x += 7.0
+            elif kind == "card":
+                _card_space(c, x, sy, 3.4)
+                x += 8.0
+            elif kind == "arch":
+                _arch(c, x * mm, sy * mm, 3.0 * mm)
+                x += 7.0
+            elif kind == "octagon":
+                _octagon(c, x * mm, sy * mm, 3.4 * mm)
+                x += 8.0
+            elif kind == "hatch":
+                c.setLineWidth(0.8)
+                c.rect(x * mm, (sy - 2.8) * mm, 5.6 * mm, 5.6 * mm)
+                c.setLineWidth(0.25)
+                for d in (1.4, 3.0, 4.6):
+                    c.line((x + d) * mm, (sy - 2.8) * mm, (x + d - 2.2) * mm, (sy + 2.8) * mm)
+                x += 9.0
+            c.setFont("Helvetica", 9.5)
+            c.drawString(x * mm, (sy - 1.1) * mm, label)
+            x += c.stringWidth(label, "Helvetica", 9.5) / mm + 12.0
 
 
 def succession_map_pdf(path, rules):
+    S = build_succession_layout(rules)
     c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
-    c.setTitle("Diocletian's Palace - succession map (1 x A4, black and white)")
+    c.setTitle("Diocletian's Palace - succession map (4 x A4, black and white)")
     c.setAuthor("dioclet print kit")
-    draw_succession_map(c, build_succession_layout(rules))
-    c.showPage()
+    for page_no in ("1", "2", "3", "4"):
+        x0, y0, _ = S["tiles"][page_no]
+        c.saveState()
+        p = c.beginPath()
+        p.rect(0, 0, PAGE_W * mm, PAGE_H * mm)
+        c.clipPath(p, stroke=0, fill=0)
+        c.translate(-x0 * mm, -y0 * mm)
+        draw_succession_map(c, S)
+        c.restoreState()
+        draw_tile_furniture(c, S, page_no, (x0, y0))
+        c.showPage()
     c.save()
 
 
@@ -869,7 +870,7 @@ def player_mat(c, x, y, w, h, numeral):
     c.drawString(col2 * mm, ty * mm, "SUCCESSION REMINDERS")
     ty -= 5.4
     for line in ("Two maps: palace for treasure, succession map for the throne.",
-                 "Support: meeting places on the succession map, 1 Prestige.",
+                 "Support: search the ? cards, then 1 Prestige at a faction.",
                  "Proclaim: at the Peristyle with 2 different backers.",
                  "Claim window: a claim that stands 2 full rounds wins.",
                  "Contest a claim: pay the 1 Prestige fee, then duel.",
@@ -1123,7 +1124,88 @@ def cards_tokens_pdf(path):
                  "Track rounds only if you use the 24-round limits.")
     doc_footer(c, 3)
     c.showPage()
+
+    # Pages 4 and 5: the six faction cards and their backs.
+    faction_cards_pages(c, first_page=4)
     c.save()
+
+
+FACTION_CARDS = [
+    ("ARMY", "shield", "Support costs 1 Prestige.", "No roll."),
+    ("OFFICIALS", "column", "Support costs 1 Prestige.", "No roll."),
+    ("ELITES", "laurel", "Support costs 1 Prestige.", "No roll."),
+    ("EMPTY STREET", None, "Nobody meets here.", "Search another card."),
+    ("EMPTY STREET", None, "Nobody meets here.", "Search another card."),
+    ("EMPTY STREET", None, "Nobody meets here.", "Search another card."),
+]
+
+
+def _faction_badge(c, kind, x, y, r):
+    c.setLineWidth(1.4)
+    if kind == "shield":
+        _shield(c, x * mm, y * mm, r * mm)
+    elif kind == "column":
+        _column(c, x * mm, y * mm, r * 0.9 * mm)
+    elif kind == "laurel":
+        _laurel(c, x * mm, y * mm, r * mm)
+
+
+def faction_cards_pages(c, first_page):
+    """Six faction cards (three factions, three blanks) and their backs."""
+    x0, y0 = 16.0, PH - 32.5 - CARD_H
+    doc_header(c, "FACTION CARDS", "for the succession map - identical backs on the next page")
+    for i, (name, badge, line1, line2) in enumerate(FACTION_CARDS):
+        cx = x0 + (i % 3) * (CARD_W + 5.5)
+        cy = y0 - (i // 3) * (CARD_H + 5.0)
+        mid = cx + CARD_W / 2.0
+        c.setLineWidth(1.6)
+        c.rect(cx * mm, cy * mm, CARD_W * mm, CARD_H * mm)
+        c.setLineWidth(0.5)
+        c.rect((cx + 2.0) * mm, (cy + 2.0) * mm, (CARD_W - 4.0) * mm, (CARD_H - 4.0) * mm)
+        c.setLineWidth(0.8)
+        c.circle(mid * mm, (cy + 46.0) * mm, 17.0 * mm)
+        if badge:
+            _faction_badge(c, badge, mid, cy + 46.0, 11.0)
+        else:
+            # A blank: an empty street circle, dashed.
+            c.setDash(2, 2)
+            c.circle(mid * mm, (cy + 46.0) * mm, 9.0 * mm)
+            c.setDash()
+        c.setLineWidth(0.6)
+        c.line((cx + 7) * mm, (cy + 25) * mm, (cx + CARD_W - 7) * mm, (cy + 25) * mm)
+        _centered(c, mid, cy + 19.0, name, "Times-Bold", 11)
+        _centered(c, mid, cy + 13.0, line1, "Times-Italic", 7.6)
+        _centered(c, mid, cy + 9.0, line2, "Times-Italic", 7.6)
+        _centered(c, mid, cy + 4.5, "SUCCESSION - FACTION CARD", "Helvetica", 5.2)
+    y = y0 - (CARD_H + 5.0) - 9.0
+    para(c, "Keep these six cards aside during the palace phase. At the change, shuffle "
+            "them face down and put one on each card space - the circles marked ? on the "
+            "succession map. End your move on a card space and turn its card face up: "
+            "that is a search. A face-up faction card stays on the map; stop there and "
+            "pay 1 Prestige for that faction's support.", 16, y, PW - 32, size=8.4)
+    doc_footer(c, first_page)
+    c.showPage()
+
+    doc_header(c, "FACTION CARD BACKS", "six identical tiles - glue or fold behind each card")
+    for i in range(6):
+        cx = x0 + (i % 3) * (CARD_W + 5.5)
+        cy = y0 - (i // 3) * (CARD_H + 5.0)
+        mid = cx + CARD_W / 2.0
+        c.setLineWidth(1.2)
+        c.rect(cx * mm, cy * mm, CARD_W * mm, CARD_H * mm)
+        c.setLineWidth(0.5)
+        c.rect((cx + 2.6) * mm, (cy + 2.6) * mm, (CARD_W - 5.2) * mm, (CARD_H - 5.2) * mm)
+        # Three small badges round a large '?': unmistakably not a
+        # treasure card back (those carry one large laurel).
+        c.setLineWidth(1.4)
+        c.circle(mid * mm, (cy + 42.0) * mm, 15.0 * mm)
+        _centered(c, mid, cy + 35.5, "?", "Times-Bold", 46)
+        for kind, dx in (("shield", -14.0), ("column", 0.0), ("laurel", 14.0)):
+            c.setLineWidth(0.9)
+            _faction_badge(c, kind, mid + dx, cy + 17.0, 3.6)
+        _centered(c, mid, cy + 8.0, "FACTION CARD", "Times-Bold", 9.5)
+    doc_footer(c, first_page + 1)
+    c.showPage()
 
 
 # ---------------------------------------------------------------------------
@@ -1149,10 +1231,15 @@ def art_asset(name):
 
 def art_board_pdf(path, L):
     """The palace board with the drawn artwork under the same tiling."""
-    img = art_asset("palace-board.png")
+    art_tiled_pdf(path, L, "palace-board.png", "Diocletian's Palace - board (4 x A4, drawn art)")
+
+
+def art_tiled_pdf(path, L, asset, title):
+    """A full-board artwork tiled onto four A4 pages under the BW furniture."""
+    img = art_asset(asset)
     ax0, ay0, ax1, ay1 = L["art"]
     c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
-    c.setTitle("Diocletian's Palace - board (4 x A4, drawn art)")
+    c.setTitle(title)
     c.setAuthor("dioclet print kit")
     for page_no in ("1", "2", "3", "4"):
         x0, y0, _ = L["tiles"][page_no]
@@ -1176,14 +1263,10 @@ def art_board_pdf(path, L):
     c.save()
 
 
-def art_succession_pdf(path):
-    img = art_asset("succession-map.png")
-    c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
-    c.setTitle("Diocletian's Palace - succession map (drawn art)")
-    c.setAuthor("dioclet print kit")
-    c.drawImage(img, 0, 0, width=PAGE_W * mm, height=PAGE_H * mm)
-    c.showPage()
-    c.save()
+def art_succession_pdf(path, S):
+    """The succession map: same footprint, tiles and cut lines as the board."""
+    art_tiled_pdf(path, S, "succession-map.png",
+                  "Diocletian's Palace - succession map (4 x A4, drawn art)")
 
 
 def art_cards_tokens_pdf(path):
@@ -1220,6 +1303,32 @@ def art_cards_tokens_pdf(path):
     c.drawImage(art_asset("tokens-sheet.png"), 0, 0, width=PW * mm, height=PH * mm)
     doc_footer(c, 3)
     c.showPage()
+
+    # Pages 4 and 5: the faction cards and their shared back.
+    fronts = [art_asset(f"faction-{kind}.png") for kind in ("army", "officials", "elites")]
+    fronts += [art_asset(f"faction-empty-{n}.png") for n in (1, 2, 3)]
+    doc_header(c, "FACTION CARDS", "for the succession map - art backs on the next page")
+    for i in range(6):
+        cx = x0 + (i % 3) * (CARD_W + 5.5)
+        cy = y0 - (i // 3) * (CARD_H + 5.0)
+        c.drawImage(fronts[i], (cx - 2.0) * mm, (cy - 2.0) * mm,
+                    width=(CARD_W + 4.0) * mm, height=(CARD_H + 4.0) * mm)
+    y = y0 - (CARD_H + 5.0) - 9.0
+    para(c, "Keep these six cards aside during the palace phase. At the change, shuffle "
+            "them face down and put one on each card space - the circles marked ? on the "
+            "succession map. End your move on a card space and turn its card face up: "
+            "that is a search.", 16, y, PW - 32, size=8.4)
+    doc_footer(c, 4)
+    c.showPage()
+    doc_header(c, "FACTION CARD BACKS", "glue or fold behind each faction card - all six are identical")
+    back = art_asset("faction-back.png")
+    for i in range(6):
+        cx = x0 + (i % 3) * (CARD_W + 5.5)
+        cy = y0 - (i // 3) * (CARD_H + 5.0)
+        c.drawImage(back, (cx - 2.0) * mm, (cy - 2.0) * mm,
+                    width=(CARD_W + 4.0) * mm, height=(CARD_H + 4.0) * mm)
+    doc_footer(c, 5)
+    c.showPage()
     c.save()
 
 
@@ -1235,19 +1344,19 @@ RULEBOOK_PAGES = [
               "the Peristyle, the great crossing of the palace, and proclaim your claim. "
               "If none of your three rivals can stop it, the throne is yours."),
         ("h", "What you need"),
-        ("b", "This printed kit: the palace board (four taped pages), the succession "
-              "map (one page), six treasure cards, the tokens, and one player sheet "
-              "per person."),
+        ("b", "This printed kit: the palace board and the succession map (four "
+              "taped pages each, the same size), six treasure cards, six faction "
+              "cards, the tokens, and one player sheet per person."),
         ("b", "Two ordinary six-sided dice for movement, and one six-sided die for "
               "fights (any die works for both - you just need three dice in total)."),
         ("b", "A small pawn per player. Coins or buttons work. The paper pawns in "
               "this kit also work."),
         ("b", "About 45 to 75 minutes for four players learning the game."),
         ("h", "How to set up"),
-        ("n", "Assemble the palace board (see the assembly sheet) and lay the "
-              "succession map beside it; the small map waits until the succession "
-              "begins. Each player picks a pawn and a player sheet, and writes "
-              "their name on it."),
+        ("n", "Assemble both boards (see the assembly sheet). Lay the palace map "
+              "face up; the succession map and the six faction cards wait until "
+              "the succession begins. Each player picks a pawn and a player "
+              "sheet, and writes their name on it."),
         ("n", "Shuffle the six treasure cards face down. Place one on each treasure "
               "entry, the double circles marked A to F. Then turn two of the six "
               "face up at random - everyone sees those two treasures from the start."),
@@ -1263,16 +1372,18 @@ RULEBOOK_PAGES = [
               "south, east or west. You may stop before using the whole roll and you "
               "may pass through circles occupied by other pawns."),
         ("n", "Do one action where you stand - or do nothing. Taking treasure, "
-              "standing guard, duelling, gaining support, proclaiming and "
-              "revealing a district (with the galea) are all actions. You never "
+              "standing guard, duelling, searching a faction card, gaining "
+              "support, proclaiming and revealing a district (with the galea) "
+              "are all actions. You never "
               "do two of these on the same turn."),
         ("h", "What counts as movement"),
         ("p", "The white circles are streets. The hatched blocks are buildings: "
               "nobody walks through them. All movement and all distances are counted "
               "along street circles, not across buildings."),
         ("p", "Guard duty and duels are actions of a moving turn: you must move at "
-              "least one circle first. Taking treasure, gaining support, claiming the "
-              "checkpoint and proclaiming may be done without moving."),
+              "least one circle first. Taking treasure, searching a card, gaining "
+              "support, claiming the checkpoint and proclaiming may be done "
+              "without moving."),
         ("h", "Rounds and turns"),
         ("p", "A round is one turn for every player, in clockwise order from the "
               "starting player. After the last player, a new round begins and the "
@@ -1326,23 +1437,33 @@ RULEBOOK_PAGES = [
               "The loser pays 1 Prestige to the bank as shame, as much as they "
               "hold. Nobody loses equipment or support."),
         ("h", "Spending Prestige"),
-        ("b", "1 Prestige: one faction's support (next page)."),
+        ("b", "1 Prestige: one faction's support (next page). Searching a "
+              "faction card is free."),
         ("b", "1 Prestige: the mandatory fee to contest a proclaimed claim (next page)."),
     ]),
     ("Factions and the claim", [
         ("h", "The three factions"),
-        ("p", "Three groups in the city can back your claim. Their meeting places "
-              "are marked on the succession map, the small board used for the "
-              "endgame:"),
-        ("t", [["Faction", "Badge", "Meeting place"],
-               ["Army", "shield", "east side, on the east-west street"],
-               ["Imperial officials", "column", "west side, on the east-west street"],
-               ["City elites", "laurel", "north side, on the north-south street"]]),
-        ("p", "Visit a meeting place and spend 1 Prestige to gain that faction's "
-              "support. There is no roll. Every faction can support every player, but "
-              "each faction supports each player only once. Support lasts the whole "
-              "game. Meeting places can only be visited during the succession "
-              "phase - during the palace phase nobody can sell you their backing."),
+        ("p", "Three groups in the city can back your claim: the Army, the Imperial "
+              "officials and the City elites. Nobody knows where they meet until "
+              "the succession begins. Their meeting places are hidden among six "
+              "faction cards on the succession map:"),
+        ("t", [["Card", "Badge", "What it does"],
+               ["Army", "shield", "support for 1 Prestige, no roll"],
+               ["Imperial officials", "column", "support for 1 Prestige, no roll"],
+               ["City elites", "laurel", "support for 1 Prestige, no roll"],
+               ["Empty street (3 cards)", "none", "nothing - search another card"]]),
+        ("h", "Searching the faction cards"),
+        ("n", "At the change, shuffle the six faction cards face down and put one "
+              "on each card space - the circles marked ? on the succession map."),
+        ("n", "End your move on a card space and turn its card face up as your "
+              "action. That is a search. Everyone sees the card, and it stays "
+              "face up for the rest of the game."),
+        ("n", "Stand on a face-up faction card and spend 1 Prestige as your action "
+              "to gain that faction's support. An empty street gives nothing."),
+        ("p", "Every faction can support every player, but each faction supports "
+              "each player only once. Support lasts the whole game. Faction cards "
+              "exist only in the succession phase - during the palace phase "
+              "nobody can sell you their backing."),
         ("h", "From the city to the succession"),
         ("p", "The game has two phases and two boards. In the palace phase everyone "
               "collects equipment and Prestige on the large board. The first player "
@@ -1350,13 +1471,14 @@ RULEBOOK_PAGES = [
               "checkpoint as their action. Finish that round, then one more full "
               "round, and the succession phase begins. If nobody claims by the end "
               "of round 24, the succession begins anyway."),
-        ("p", "At the change, the palace map leaves the table. Every pawn returns "
+        ("p", "At the change, the palace map leaves the table: turn the board "
+              "over, or set it aside. Deal the faction cards. Every pawn returns "
               "to its gate on the succession map - the same compass gate it started "
               "from - and keeps everything it owns: items, Prestige, and any "
               "support already gained. From now on all movement, support, duels "
-              "and claims happen on the small map. Winning a duel is the only "
-              "Prestige income there - the guard posts stayed behind on the "
-              "palace map."),
+              "and claims happen on the succession map. Every gate there is nine "
+              "steps from the Peristyle. Winning a duel is the only Prestige "
+              "income there - the guard posts stayed behind on the palace map."),
         ("h", "Proclaiming a claim"),
         ("n", "During the succession phase, stand at the Peristyle with support from "
               "two different factions."),
@@ -1407,8 +1529,8 @@ RULEBOOK_PAGES = [
         ("b", "An ordinary duel is free. Challenging a claim always costs the "
               "1 Prestige fee."),
         ("b", "Everything is public: positions, items, Prestige, support, and who "
-              "has claimed what. Only the four face-down cards and the next dice "
-              "roll are hidden."),
+              "has claimed what. Only the face-down treasure and faction cards and "
+              "the next dice roll are hidden."),
     ]),
     ("Common questions", [
         ("q", "Can I pass through another pawn? Yes. Pawns never block a street."),
@@ -1426,6 +1548,8 @@ RULEBOOK_PAGES = [
               "3. Spend some first."),
         ("q", "Can a faction support two different players? Yes - every faction can "
               "back every player once."),
+        ("q", "What if I search an empty street? Nothing more happens. The card "
+              "stays face up, so nobody searches there again."),
         ("q", "Can I proclaim twice? Yes, if your first claim is canceled, walk "
               "back and proclaim again. Support is never lost."),
         ("q", "Can a claim be canceled after the window closes? No. Two full rounds "
@@ -1450,7 +1574,7 @@ def rulebook_pdf(path):
 
     y = PH - 36
     c.setFont("Times-Italic", 9.5)
-    y = para(c, "Read pages 1 to 3 before the first turn. Use pages 4 to 6 for "
+    y = para(c, "Read pages 1 to 4 before the first turn. Use pages 5 to 8 for "
                 "the succession phase and common questions.", 22, y, PW - 44)
     y -= 3
 
@@ -1542,13 +1666,16 @@ def quick_reference_pdf(path):
     blocks = [
         ("YOUR TURN", ["1. Roll two dice.", "2. Move up to the total; stop early if you like.",
                        "3. Do ONE action (or none): take treasure · guard duty · duel · "
-                       "gain support · claim the checkpoint · proclaim · maintain your claim."]),
+                       "search a card · gain support · claim the checkpoint · proclaim · "
+                       "maintain your claim."]),
         ("TWO MAPS", ["Palace map (large): treasures, guard posts, the checkpoint claim.",
                       "Claim the checkpoint: own ALL SIX items and stand at the Peristyle. "
                       "The palace map ends one full round after the first claim, or after "
                       "palace round 24 if nobody owns all six.",
-                      "Succession map (small): support, proclaiming, the whole endgame.",
-                      "At the change everyone returns to their gate on the small map."]),
+                      "Succession map (the back of the board): support, proclaiming, "
+                      "the whole endgame.",
+                      "At the change everyone returns to their gate on the succession "
+                      "map; every gate is 9 steps from the Peristyle."]),
         ("ROLLS", ["Movement: two dice summed.", "Guard post: one die - 4+ earns 1 Prestige "
                    "(palace map).",
                    "Duel: one die each + your one best item bonus; the pugio wins ties."]),
@@ -1558,11 +1685,15 @@ def quick_reference_pdf(path):
             "when beaten."]),
         ("PRESTIGE (cap 3)", ["Earn: guard post 4+ (palace) · any duel win - the only "
                               "income on the succession map.",
-                              "Spend: 1 = faction support · 1 = fee to contest a claim.",
+                              "Spend: 1 = faction support · 1 = fee to contest a claim. "
+                              "Searching is free.",
                               "Lose: 1 to the bank whenever you lose a duel."]),
-        ("FACTIONS (succession map only)", [
-            "Army (shield) east · officials (column) west · elites (laurel) north.",
-            "1 Prestige each, no roll. Two different factions needed to proclaim."]),
+        ("FACTION CARDS (succession map only)", [
+            "Six cards face down on the ? spaces: army, officials, elites, and "
+            "three empty streets.",
+            "Search: end your move on a ? and turn the card face up (your action).",
+            "Support: on a face-up faction, 1 Prestige, no roll. Two different "
+            "factions needed to proclaim."]),
         ("PROCLAIM", ["Succession phase, stand at the Peristyle, 2 supporters, "
                       "no other claim standing."]),
         ("CONTEST A CLAIM", ["Move within 2 circles of the claimant and duel them, "
@@ -1631,14 +1762,15 @@ def teaching_guide_pdf(path):
          "Win a duel: also 1. Lose a duel: pay 1 back to the bank. You can hold "
          "three. You will spend it on friends and on challenges."),
         ("Factions (45 seconds)", "Three groups can back you - the Army, the "
-         "officials, the city elites. Their meeting places are marked on the SMALL "
-         "map, the succession map: army east, officials west, elites north. Once "
-         "the succession begins, walk to a meeting place and pay 1 Prestige - that "
-         "faction supports you for the rest of the game. Get two different "
-         "factions behind you. During the palace phase nobody can be bought."),
+         "officials, the city elites. Nobody knows where they meet. When the "
+         "succession begins, six faction cards go face down on the ? spaces of "
+         "the succession map - three factions, three empty streets. Stop on a "
+         "card and turn it up. Find a faction and pay 1 Prestige - it supports "
+         "you for the rest of the game. Get two different factions behind you."),
         ("The endgame (60 seconds)", "When someone holds all six items they claim "
          "at the crossing - the Peristyle - and the succession begins: one more "
-         "round, then everyone moves to the small map, back at their own gate. "
+         "round, then we turn the board over, and everyone starts again at their "
+         "own gate. "
          "The whole race for the throne happens there: buy support, stand at the "
          "Peristyle with two backers and proclaim. Your rivals now have two full "
          "rounds to stop you: move next to you, pay 1 Prestige, and duel. Win the "
@@ -1675,7 +1807,7 @@ def playtest_form_pdf(path):
     for page in (1, 2):
         doc_header(c, "PLAYTEST RECORD", "observations only - no invented results")
         y = PH - 36
-        lines = [("", 8), ("Date ______________    Game version V0.9.4    "
+        lines = [("", 8), ("Date ______________    Game version V0.10    "
                            "Played before? yes / no", 9)]
         if page == 1:
             blocks = [
@@ -1703,7 +1835,9 @@ def playtest_form_pdf(path):
                                 "Did anyone cross the middle for B, E or the inner "
                                 "stars (palace map)? yes / hardly / no",
                                 "Did the two start-revealed treasures change first "
-                                "moves? yes / no"]),
+                                "moves? yes / no",
+                                "Faction cards: searches before the first support: ____  "
+                                "Did a far card go unused? yes / no"]),
                 ("THE CLAIM", ["Claims proclaimed: ____  Challenged: ____  "
                                "Canceled: ____  Crowned: ____",
                                "Did the two-round claim window feel tense or empty? "
@@ -1760,8 +1894,8 @@ def print_instructions_pdf(path):
     y -= 5.4
     for line in ("Board file 'dioclet-board-4xA4': four pages, A4 LANDSCAPE, "
                  "scale 100% (Actual size). Do not tick 'fit to page'.",
-                 "Succession map 'dioclet-succession-map': ONE page, A4 LANDSCAPE, "
-                 "100%. No cutting or taping - print and play.",
+                 "Succession map 'dioclet-succession-map': four pages, A4 "
+                 "LANDSCAPE, 100%. It assembles exactly like the board.",
                  "Every other file: A4 portrait, 100%.",
                  "Any black-and-white printer works. Single-sided printing is fine.",
                  "Paper is enough. Card stock makes the cards nicer, but is not "
@@ -1779,18 +1913,18 @@ def print_instructions_pdf(path):
     c.setFont("Times-Bold", 11)
     c.drawString(16 * mm, y * mm, "3. Cut")
     y -= 5.4
-    for line in ("Cut out the six treasure cards, the six card backs, and every "
-                 "token on the tokens page.",
+    for line in ("Cut out the six treasure cards, the six faction cards, their "
+                 "backs, and every token on the tokens page.",
                  "Fold each pawn in half on the middle line and tape or glue it so "
                  "it stands up. A coin works just as well.",
-                 "Leave the four board pages uncut for now - they are trimmed "
+                 "Leave the eight board pages uncut for now - they are trimmed "
                  "during assembly (next page)."):
         y = bullet(c, line, 19, y, PW - 38, size=9.4)
     doc_footer(c, 1)
     c.showPage()
 
     # Page 2: board assembly with diagram.
-    doc_header(c, "PRINT AND ASSEMBLE", "tape four pages into the palace board (about 58 x 41 cm)")
+    doc_header(c, "PRINT AND ASSEMBLE", "tape four pages into each board (about 58 x 41 cm)")
     y = PH - 36
     c.setFont("Times-Bold", 11)
     c.drawString(16 * mm, y * mm, "4. Assemble the board")
@@ -1806,8 +1940,10 @@ def print_instructions_pdf(path):
                  "small circle-crosses near each join must sit level with their "
                  "neighbours on the next page.",
                  "Tape every join from the back with any tape.",
-                 "Optional: glue the finished board onto a folder or thin "
-                 "cardboard. Not required for play."):
+                 "Assemble the succession map the same way; its pages say "
+                 "SUCCESSION MAP.",
+                 "Optional: tape or glue the two boards back to back, both north "
+                 "edges at the top, to make one board that turns over."):
         y = bullet(c, line, 19, y, PW - 38, size=9.4)
 
     y -= 5
@@ -1899,14 +2035,16 @@ PRINTED_ABILITIES = {
     "lorica_segmentata": ("prevent_displacement", 1),
 }
 
-# The twin-board prose assumes this exact succession map: the gates and
-# Peristyle the compass text names, the three meeting places the faction
-# text locates, and no guard posts on the endgame map.
+# The big-board prose assumes this exact succession map: the palace
+# board's size, gates "9 steps from the Peristyle", six faction card
+# spaces dealt blind, and no guard posts on the endgame map.
 PRINTED_TWIN = {
-    "gates": {"P0": [6, 0], "P1": [12, 4], "P2": [6, 8], "P3": [0, 4]},
-    "checkpoint": [6, 4],
+    "width": 19,
+    "height": 13,
+    "gates": {"P0": [6, 0], "P1": [18, 6], "P2": [12, 12], "P3": [0, 6]},
+    "checkpoint": [9, 6],
     "glory_posts": [],
-    "factions": {"army": [9, 4], "officials": [3, 4], "elites": [6, 3]},
+    "support_sites": [[0, 0], [4, 6], [9, 1], [9, 11], [14, 6], [18, 12]],
 }
 
 
@@ -1944,26 +2082,30 @@ def main():
     if not isinstance(twin, dict):
         raise SystemExit("printed text assumes a board_level2 succession map; "
                          "update the kit prose")
+    if not rules["succession"].get("blind_support"):
+        raise SystemExit("printed text assumes succession.blind_support (faction "
+                         "cards); update the kit prose")
     for key, value in PRINTED_TWIN.items():
-        actual = twin.get(key) if key != "factions" else rules["succession"]["factions"]
+        actual = twin.get(key)
         if actual != value:
             raise SystemExit(
                 f"printed text assumes board_level2 {key} == {value}, "
                 f"rules say {actual}; update the kit prose")
     build_art = "--art" in sys.argv
     L = build_layout(rules)
-    os.makedirs(OUT_DIR, exist_ok=True)
+    os.makedirs(BW_DIR, exist_ok=True)
     out = lambda name: os.path.join(OUT_DIR, name)
+    bw = lambda name: os.path.join(BW_DIR, name)
     files = {
-        "board": out("dioclet-board-4xA4-BW.pdf"),
-        "succession": out("dioclet-succession-map-A4-BW.pdf"),
-        "sheets": out("dioclet-player-sheets-A4-BW.pdf"),
-        "cards": out("dioclet-cards-tokens-A4-BW.pdf"),
-        "rulebook": out("dioclet-rulebook-A4-BW.pdf"),
-        "quick": out("dioclet-quick-reference-A4-BW.pdf"),
-        "teaching": out("dioclet-teaching-guide-A4-BW.pdf"),
-        "form": out("dioclet-playtest-form-A4-BW.pdf"),
-        "instructions": out("dioclet-print-instructions-A4-BW.pdf"),
+        "board": bw("dioclet-board-4xA4-BW.pdf"),
+        "succession": bw("dioclet-succession-map-A4-BW.pdf"),
+        "sheets": bw("dioclet-player-sheets-A4-BW.pdf"),
+        "cards": bw("dioclet-cards-tokens-A4-BW.pdf"),
+        "rulebook": bw("dioclet-rulebook-A4-BW.pdf"),
+        "quick": bw("dioclet-quick-reference-A4-BW.pdf"),
+        "teaching": bw("dioclet-teaching-guide-A4-BW.pdf"),
+        "form": bw("dioclet-playtest-form-A4-BW.pdf"),
+        "instructions": bw("dioclet-print-instructions-A4-BW.pdf"),
     }
     board_pdf(files["board"], L)
     succession_map_pdf(files["succession"], rules)
@@ -1977,7 +2119,7 @@ def main():
     combine([files["board"], files["succession"], files["instructions"],
              files["rulebook"], files["quick"],
              files["teaching"], files["sheets"], files["cards"], files["form"]],
-            out("dioclet-complete-print-kit-A4-BW.pdf"))
+            bw("dioclet-complete-print-kit-A4-BW.pdf"))
     if build_art:
         art_files = {
             "art_board": out("dioclet-board-4xA4-ART.pdf"),
@@ -1985,7 +2127,7 @@ def main():
             "art_cards": out("dioclet-cards-tokens-ART.pdf"),
         }
         art_board_pdf(art_files["art_board"], L)
-        art_succession_pdf(art_files["art_succession"])
+        art_succession_pdf(art_files["art_succession"], build_succession_layout(rules))
         art_cards_tokens_pdf(art_files["art_cards"])
         combine([art_files["art_board"], art_files["art_succession"],
                  files["instructions"], files["rulebook"], files["quick"],
@@ -2006,6 +2148,7 @@ def main():
         "counts_level2": {
             "street_spaces": len(S["spaces"]), "blocked": len(S["board"].blocked),
             "gates": len(S["board"].gates), "blocks": len(S["blocks"]),
+            "card_spaces": len(S["card_spaces"]),
             "glory_posts": len(S["board"].glory_posts)},
         "layout": {
             "cell_mm": CELL, "overlap_mm": OVERLAP, "safe_mm": SAFE,
@@ -2025,13 +2168,15 @@ def main():
                 "glory_posts": [list(map(round, L["pos"](tuple(cell)))) for cell in b.glory_posts],
             },
             "succession_map_mm": {
-                "cell_mm": SCELL, "grid_mm": [S["grid_w"], S["grid_h"]],
+                "cell_mm": CELL, "grid_mm": [S["grid_w"], S["grid_h"]],
+                "art_bounds_mm": list(S["art"]),
+                "reg_marks_mm": [list(p) for p in S["reg_marks"]],
                 "specials_mm": {
                     "gates": {pid: [round(v, 2) for v in S["pos"](tuple(cell))]
                               for pid, cell in S["board"].gates.items()},
                     "checkpoint": [round(v, 2) for v in S["pos"](tuple(S["board"].checkpoint))],
-                    "factions": {name: [round(v, 2) for v in S["pos"](tuple(cell))]
-                                 for name, cell in rules["succession"]["factions"].items()},
+                    "card_spaces": [[round(v, 2) for v in S["pos"](cell)]
+                                    for cell in S["card_spaces"]],
                 },
                 "blocks": [list(block) for block in S["blocks"]],
             },
@@ -2040,7 +2185,8 @@ def main():
     }
     with open(out("kit-manifest.json"), "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=2, sort_keys=True)
-    print(f"wrote {len(files) + 1} PDFs + kit-manifest.json into {OUT_DIR}/" + (" (art kit included)" if build_art else ""))
+    print(f"wrote {len(files) + 1} PDFs into {BW_DIR}/" + (" and the art kit into " + OUT_DIR + "/" if build_art else "")
+          + f", plus {OUT_DIR}/kit-manifest.json")
     for name, path in files.items():
         print(f"  {name}: {path} ({os.path.getsize(path) // 1024} KB)")
 
