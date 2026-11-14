@@ -286,6 +286,15 @@ class PrintedRulesMatchRelease(unittest.TestCase):
             self.assertNotIn("boost", text.lower(), name)
             self.assertNotIn("+2", text, name)
 
+    def test_reference_and_rulebook_teach_the_prestige_reserve(self):
+        # In the four-seat Haiku game every rival held 0 Prestige when a
+        # claim was proclaimed, and one spent its next point on support
+        # instead of the contest fee; nobody could contest.
+        quick = " ".join(whole_text("dioclet-quick-reference-A4-BW.pdf").split())
+        self.assertIn("Keep 1 in reserve: with 0 Prestige you cannot contest a claim.", quick)
+        rulebook = whole_text("dioclet-rulebook-A4-BW.pdf")
+        self.assertIn("Keep 1 Prestige in reserve.", rulebook)
+
     def test_quick_reference_states_the_six_item_checkpoint_claim(self):
         # In a four-agent playtest every seat looked for "claim the
         # checkpoint" on the palace map without knowing it needs all six

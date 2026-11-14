@@ -45,3 +45,22 @@ decision is D51. Spend: none (offline).
 - The print kit and the art show the big board (four A4 tiles, the
   same cut lines as the palace board) and six faction cards. The
   browser engine still plays the 0.9.4 succession map.
+
+## The Prestige lockout (2026-11-14)
+
+In the Haiku game every rival held 0 Prestige when the winning claim
+was proclaimed, so nobody could pay the contest fee. Full numbers:
+`notes/v10-prestige-2026-11-14.md`.
+
+- Cheaper or longer contests make it worse. Free contests, no
+  duel-loser cost, and a three-round window raise draws to 16–39%.
+- Four guard posts on the succession map (`rules_v10_l2posts.json`)
+  hold up on a 1,536-game holdout: draws 2.8% to 1.6%, the Prestige
+  farmer .16 to .22, and gate fairness p = .51. With seats that spend
+  on support during a rival's claim, the base board skews to the north
+  gate (p = .0001); with posts it stays fair (p = .56).
+- The posts do not change the share of claims that no rival can
+  contest (about 2–3% for bots). The bots never reach the agents'
+  all-zero state, so that part of the problem is how people play. The
+  quick reference and the rulebook now say: keep 1 Prestige in reserve.
+- Not adopted yet: the posts need a decision and a print-kit update.
