@@ -78,4 +78,5 @@ faction card each. Full numbers: `notes/v10-six-blocks-2026-11-14.md`.
   1,536-game holdout (p = .26 to .51). Level 2 falls from a median of
   12 rounds to 10, draws stay at about 1%, and the Prestige farmer
   falls from .22 to .16 or .17.
-- Not adopted: this needs the designer's decision.
+- Adopted (D53): the designer chose six blocks. The "spread" arm is
+  `rules_v0102_bigboard.json` ("0.10.2-bigboard").

@@ -616,3 +616,26 @@ practical. No baseline rule values were changed.
   `rules_v10_l2posts.json` except for the version and the name.
   `rules_v010_bigboard.json` stays as the base arm of the V0.10
   experiments. Details: `notes/v10-prestige-2026-11-14.md`.
+
+- **D53 (V0.10.2, 2026-11-15): six blocks on the succession map.**
+  The designer asked for one faction card per block, as on the palace
+  map, and chose six blocks. The succession map now uses the palace
+  street grid: streets on rows 0, 6 and 12 and columns 0, 6, 12 and
+  18 (97 street spaces). The gates do not move, and the Peristyle
+  stays at (9,6), the centre of the middle street, so every gate is
+  still 9 steps from it. A search in `tools/v10_six_blocks.py` found
+  20 card sets that are fair, look the same after a half-turn, and give
+  each block one card. In every set, two cards sit 1 or 2 steps from
+  the Peristyle. The "spread" set is adopted: (3,0), (15,12), (3,6),
+  (15,6), (7,6), (11,6), at 2, 2, 6, 6, 12 and 12 steps from the
+  Peristyle. The D52 posts collide with two of these cards, so the
+  posts move to (0,2), (18,10), (2,0) and (16,12), 13 steps from the
+  Peristyle and fair for every gate. Holdout (1,536 games, seeds
+  1080000+): gates p = .26, draws 1.0%, level 2 median 10 rounds
+  (12 on 0.10.1), Prestige farmer .17 (.22 on 0.10.1). The designer
+  accepted the lower farmer share and the shorter level 2. The print
+  kit now shares the palace tiling and registration crosses, and it
+  stops if the two maps' street grids differ. Promoted as
+  `rules_v0102_bigboard.json` ("0.10.2-bigboard"); it equals
+  `rules_v10_six_spread.json` except for the version and the name.
+  Details: `notes/v10-six-blocks-2026-11-14.md`.

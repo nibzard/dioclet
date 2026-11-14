@@ -7,6 +7,7 @@ least one tile, tracker counts, and the printed prose matching the
 released V0.9 numbers.
 """
 
+import itertools
 import json
 import sys
 import unittest
@@ -353,14 +354,14 @@ class SuccessionMapMatchesRules(unittest.TestCase):
     def test_counts(self):
         blocked = {tuple(cell) for cell in self.rules["board_level2"]["blocked"]}
         spaces = {cell for cell, _ in self.S["spaces"]}
-        self.assertEqual(len(spaces), 87)
-        self.assertEqual(len(blocked), 160)
+        self.assertEqual(len(spaces), 97)
+        self.assertEqual(len(blocked), 150)
         self.assertFalse(spaces & blocked)
         counts = self.manifest["counts_level2"]
-        self.assertEqual(counts["street_spaces"], 87)
-        self.assertEqual(counts["blocked"], 160)
+        self.assertEqual(counts["street_spaces"], 97)
+        self.assertEqual(counts["blocked"], 150)
         self.assertEqual(counts["gates"], 4)
-        self.assertEqual(counts["blocks"], 4)
+        self.assertEqual(counts["blocks"], 6)
         self.assertEqual(counts["card_spaces"], 6)
         self.assertEqual(counts["glory_posts"], 4)
 
@@ -378,7 +379,21 @@ class SuccessionMapMatchesRules(unittest.TestCase):
         self.assertEqual(specials["glory_posts"],
                          [[round(v, 2) for v in self.S["pos"](tuple(c))]
                           for c in self.rules["board_level2"]["glory_posts"]])
-        self.assertEqual(self.board.glory_posts, [(0, 3), (18, 9), (3, 0), (15, 12)])
+        self.assertEqual(self.board.glory_posts, [(0, 2), (18, 10), (2, 0), (16, 12)])
+
+    def test_one_card_for_each_block(self):
+        # D53: six blocks, one faction card space beside each.
+        blocks = self.S["blocks"]
+
+        def touches(cell, block):
+            x0, y0, x1, y1 = block
+            return any(x0 <= cell[0] + dx <= x1 and y0 <= cell[1] + dy <= y1
+                       for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+        cards = self.S["card_spaces"]
+        self.assertEqual(len(blocks), 6)
+        self.assertTrue(any(all(touches(c, b) for c, b in zip(cards, order))
+                            for order in itertools.permutations(blocks)))
+
         # Compass sanity: the gates sit where the prose says.
         self.assertEqual(self.board.gates["P0"], (6, 0))    # north
         self.assertEqual(self.board.gates["P1"], (18, 6))   # east

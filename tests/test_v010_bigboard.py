@@ -192,6 +192,17 @@ class TestSuccessionGuardPostsExperiment(unittest.TestCase):
 class TestSixBlockExperiment(unittest.TestCase):
     """rules_v10_six_*.json: six-block succession maps (experiment)."""
 
+    def test_adopted_file_is_the_spread_arm(self):
+        # D53: 0.10.2-bigboard adopts the "spread" arm unchanged.
+        adopted = engine.load_rules(os.path.join(ROOT, "rules_v0102_bigboard.json"))
+        spread = engine.load_rules(os.path.join(ROOT, "rules_v10_six_spread.json"))
+        engine.validate_rules(adopted)
+        self.assertEqual(adopted["rules_version"], "0.10.2-bigboard")
+        for value in (adopted, spread):
+            value.pop("rules_version")
+            value.pop("game_name")
+        self.assertEqual(adopted, spread)
+
     def test_files_match_the_tool_and_are_fair(self):
         sys.path.insert(0, os.path.join(ROOT, "tools"))
         import v10_six_blocks as six
