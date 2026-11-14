@@ -593,3 +593,26 @@ practical. No baseline rule values were changed.
   `blind_support` with `board_level2` deals onto these sites, and
   is rejected without them. The deal uses the same order stream as
   the palace-level deal, so matched seeds stay aligned.
+
+- **D52 (V0.10.1, 2026-11-14): guard posts on the succession map.**
+  In the Haiku table game (`runs/haiku-table-v010`), every rival held
+  0 Prestige when the winning claim was proclaimed, so nobody could
+  pay the contest fee. Human session 001 reported the same lockout.
+  A screen of 768 games rejected the cheaper or longer contests:
+  free contests, no duel-loser cost, and a three-round window raise
+  draws to 16 to 39%. The owner adopted four guard posts on the
+  succession map at (0,3), (18,9), (3,0) and (15,12). They look the
+  same after a half-turn. Every gate sees them at 3, 9, 21 and 21
+  steps, and each is 12 steps from the Peristyle. The guard post rule
+  is unchanged: move onto the post, roll 4+, gain 1 Prestige. Holdout
+  (1,536 games, seeds 1060000+): draws 2.8% to 1.6%, the Prestige
+  farmer .16 to .22, gates fair (p = .51). With seats that spend on
+  support during a rival's claim, the gates stay fair with the posts
+  (p = .56) and skew north without them (p = .0001). The posts do not
+  change the share of claims that no rival can contest (about 2 to 3%
+  for bots), so the quick reference and the rulebook also teach a
+  1-Prestige reserve. Promoted as `rules_v0101_bigboard.json`
+  ("0.10.1-bigboard"); it equals the experiment file
+  `rules_v10_l2posts.json` except for the version and the name.
+  `rules_v010_bigboard.json` stays as the base arm of the V0.10
+  experiments. Details: `notes/v10-prestige-2026-11-14.md`.

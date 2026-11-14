@@ -12,14 +12,15 @@ The simulator, print kit, and browser game use different rules:
 
 | Component | Rules | Status |
 | --- | --- | --- |
-| Python simulator | [V0.10 big board](rules_v010_bigboard.json) | Current design candidate |
-| [Print kit](print/) | V0.10 big board | Generated PDFs; needs human playtesting |
+| Python simulator | [V0.10.1 big board](rules_v0101_bigboard.json) | Current design candidate |
+| [Print kit](print/) | V0.10.1 big board | Generated PDFs; needs human playtesting |
 | [Browser game](web/) | [V0.8 succession](rules_v08_succession.json) | Playable with humans and bots |
 | Original simulator | [V0.1 baseline](rules_baseline.json) | Kept for historical experiments and replays |
 
 **V0.10 uses two boards of the same size.** Players collect equipment on
 the palace board, then turn the board over and return to their gates on the
-succession map. Every gate there is nine steps from the Peristyle. The three
+succession map. Every gate there is nine steps from the Peristyle, and four
+guard posts let players earn Prestige there too. The three
 factions hide among six face-down cards, with three blanks. Players search the
 cards, buy support from two factions, and defend a claim at the Peristyle for
 two rounds. Six equipment abilities affect play; at most one equipment
@@ -83,7 +84,7 @@ instructions and check the 100 mm calibration ruler.
 Both kits print the same geometry: the art consumes a layout exported
 from the generator itself (`art/build/layout.json`), never a copy.
 
-To regenerate the kit from `rules_v010_bigboard.json`, install ReportLab:
+To regenerate the kit from `rules_v0101_bigboard.json`, install ReportLab:
 
 ```bash
 python3 -m pip install reportlab
@@ -113,8 +114,8 @@ Run commands from the repository root.
 Use a new output directory for each game:
 
 ```bash
-python3 sim.py validate --rules rules_v010_bigboard.json
-python3 sim.py new --rules rules_v010_bigboard.json --seed 42 \
+python3 sim.py validate --rules rules_v0101_bigboard.json
+python3 sim.py new --rules rules_v0101_bigboard.json --seed 42 \
   --out runs/demo --policies balanced,greedy,aggressive,random
 python3 sim.py auto --run runs/demo
 python3 sim.py replay --run runs/demo --verify
@@ -152,7 +153,7 @@ A 96-game batch covers a full rotation of profiles and gate assignments.
 
 ```bash
 python3 tools/succession_experiments.py \
-  --rules rules_v010_bigboard.json --games 96 --seed-base 10000 \
+  --rules rules_v0101_bigboard.json --games 96 --seed-base 10000 \
   --out results/bigboard-demo
 ```
 

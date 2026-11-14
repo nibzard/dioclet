@@ -63,4 +63,5 @@ was proclaimed, so nobody could pay the contest fee. Full numbers:
   contest (about 2–3% for bots). The bots never reach the agents'
   all-zero state, so that part of the problem is how people play. The
   quick reference and the rulebook now say: keep 1 Prestige in reserve.
-- Not adopted yet: the posts need a decision and a print-kit update.
+- Adopted (D52) as `rules_v0101_bigboard.json` ("0.10.1-bigboard").
+  The print kit and the art map show the four posts.

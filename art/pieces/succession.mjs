@@ -54,9 +54,11 @@ export function renderSuccession(layout, { dpi = 200, seed = 400 } = {}) {
   const key = (p) => `${p[0].toFixed(2)},${p[1].toFixed(2)}`;
   for (const p of Object.values(S.gates)) special.add(key(p));
   for (const p of S.card_spaces) special.add(key(p));
+  for (const p of S.glory_posts) special.add(key(p));
   special.add(key(S.checkpoint));
   for (const s of S.spaces) if (!special.has(key(s.mm))) K.streetSpace(a, s.mm[0], s.mm[1], 9.2);
   for (const p of S.card_spaces) K.cardSpace(a, p[0], p[1], 10.6);
+  for (const p of S.glory_posts) K.guardPost(a, p[0], p[1], 9.6);
   for (const p of Object.values(S.gates)) K.gateMark(a, p[0], p[1], 11.4);
   K.peristyle(a, S.checkpoint[0], S.checkpoint[1], 11.2);
   text(a, "PERISTYLE", S.checkpoint[0], S.checkpoint[1] - 12.6, 2.5, { medium: "charcoal", weight: 1.2 });
@@ -331,7 +333,7 @@ function drawKey(a, S, G) {
     ["gate", "GATE - RETURN HERE WHEN THE MAP OPENS"],
     ["peri", "PERISTYLE - PROCLAIM HERE"],
     ["block", "BUILDING - NO ENTRY"],
-    ["none", "NO GUARD POSTS: DUEL WINS ARE THE ONLY PRESTIGE"],
+    ["post", "GUARD POST: ROLL 4+ FOR 1 PRESTIGE"],
   ];
   const iconX = x0 + 5, textX = x0 + 11.5, textW = x1 - textX, cap = 1.9;
   for (const [kind, label] of items) {
@@ -347,7 +349,7 @@ function drawKey(a, S, G) {
       a.rect(iconX - r, iy - r, 2 * r, 2 * r, w("bold", { width: 0.45 }));
       A.hall(a, iconX - r + 1, iy - r + 1, 2 * r - 2, 2 * r - 2, { shadow: 0 });
     }
-    if (kind === "none") K.factionEmblem(a, iconX, iy, 2.8, "army");
+    if (kind === "post") M.star(a, iconX, iy, r, { points: 8, inner: 0.5, weight: "firm" });
     const ty0 = iy - ((lines.length - 1) * cap * 1.75) / 2 + cap / 2;
     lines.forEach((ln, i) => text(a, ln, textX, ty0 + i * cap * 1.75, cap, { align: "left", medium: "graphite", weight: 1.05 }));
     y += hh + 1.5;
