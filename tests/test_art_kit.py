@@ -13,8 +13,10 @@ the contract around it:
 """
 
 import json
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -99,27 +101,34 @@ class LayoutExport(unittest.TestCase):
 class ArtKitPdfs(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # Rebuild only the ART PDFs; the BW PDFs have their own tests.
+        # Rebuild only the ART PDFs, into a scratch folder: the committed
+        # copies in print/ must not change when the tests run. The BW
+        # PDFs have their own tests.
+        cls.out = Path(tempfile.mkdtemp(prefix="dioclet-art-"))
         rules_arg = str(REPO / kit.RULES_FILE)
         script = (
             "import sys; sys.path.insert(0, '.'); sys.path.insert(0, 'tools');"
             "import make_a4_print_kit as kit;"
             f"rules = kit.engine.load_rules({rules_arg!r});"
-            f"kit.art_board_pdf({str(PRINT / 'dioclet-board-4xA4-ART.pdf')!r}, kit.build_layout(rules));"
-            f"kit.art_succession_pdf({str(PRINT / 'dioclet-succession-map-ART.pdf')!r});"
-            f"kit.art_cards_tokens_pdf({str(PRINT / 'dioclet-cards-tokens-ART.pdf')!r})"
+            f"kit.art_board_pdf({str(cls.out / 'dioclet-board-4xA4-ART.pdf')!r}, kit.build_layout(rules));"
+            f"kit.art_succession_pdf({str(cls.out / 'dioclet-succession-map-ART.pdf')!r});"
+            f"kit.art_cards_tokens_pdf({str(cls.out / 'dioclet-cards-tokens-ART.pdf')!r})"
         )
         subprocess.run([sys.executable, "-c", script], cwd=str(REPO), check=True)
 
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.out, ignore_errors=True)
+
     def test_board_is_four_landscape_pages(self):
-        reader = PdfReader(PRINT / "dioclet-board-4xA4-ART.pdf")
+        reader = PdfReader(self.out / "dioclet-board-4xA4-ART.pdf")
         self.assertEqual(len(reader.pages), 4)
         for page in reader.pages:
             self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
             self.assertAlmostEqual(float(page.mediabox.height), A4_SHORT_PT, places=1)
 
     def test_every_art_board_page_carries_an_image(self):
-        reader = PdfReader(PRINT / "dioclet-board-4xA4-ART.pdf")
+        reader = PdfReader(self.out / "dioclet-board-4xA4-ART.pdf")
         for page in reader.pages:
             xobjs = page.get("/Resources", {}).get("/XObject", {})
             self.assertTrue(any(xobjs[k].get("/Subtype") == "/Image" for k in xobjs),
@@ -131,7 +140,7 @@ class ArtKitPdfs(unittest.TestCase):
         # so all four sheets printed the same corner of the board.
         L = kit.build_layout(engine.load_rules(str(REPO / kit.RULES_FILE)))
         ax0, ay0, ax1, ay1 = L["art"]
-        reader = PdfReader(PRINT / "dioclet-board-4xA4-ART.pdf")
+        reader = PdfReader(self.out / "dioclet-board-4xA4-ART.pdf")
         origins = []
         for page_no, page in zip(("1", "2", "3", "4"), reader.pages):
             x0, y0, _ = L["tiles"][page_no]
@@ -146,7 +155,7 @@ class ArtKitPdfs(unittest.TestCase):
         self.assertEqual(len(set(origins)), 4, "two tiles show the same window")
 
     def test_cards_page_places_six_card_images(self):
-        reader = PdfReader(PRINT / "dioclet-cards-tokens-ART.pdf")
+        reader = PdfReader(self.out / "dioclet-cards-tokens-ART.pdf")
         self.assertEqual(len(reader.pages), 3)
         for page in reader.pages:
             xobjs = page.get("/Resources", {}).get("/XObject", {})

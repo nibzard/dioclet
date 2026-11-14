@@ -52,30 +52,30 @@ browser to V0.9.4. Cloudflare hosting is configured in
 
 ## Print and play
 
-Download the [complete A4 print kit](print/dioclet-complete-print-kit-A4-BW.pdf)
-or use the individual files:
-
-- [Palace board: four A4 tiles](print/dioclet-board-4xA4-BW.pdf)
-- [Succession map: one A4 page](print/dioclet-succession-map-A4-BW.pdf)
-- [Player sheets](print/dioclet-player-sheets-A4-BW.pdf)
-- [Cards and tokens](print/dioclet-cards-tokens-A4-BW.pdf)
-- [Rulebook](print/dioclet-rulebook-A4-BW.pdf)
-- [Quick reference](print/dioclet-quick-reference-A4-BW.pdf)
-- [Teaching guide](print/dioclet-teaching-guide-A4-BW.pdf)
-- [Playtest form](print/dioclet-playtest-form-A4-BW.pdf)
-- [Print and assembly instructions](print/dioclet-print-instructions-A4-BW.pdf)
-
-The kit uses black ink on A4 paper. The palace board assembles to
-580 × 406 mm. The succession map fits on one landscape page.
-Follow the print instructions and check the 100 mm calibration ruler.
-
-A second edition, the [drawn kit](print/dioclet-complete-print-kit-A4-ART.pdf),
-carries hand-drawn grayscale artwork (boards, cards, and tokens drawn
-programmatically, see `art/`) under the same cut lines:
+The default edition is the [drawn kit](print/dioclet-complete-print-kit-A4-ART.pdf).
+It carries hand-drawn grayscale artwork (boards, cards, and tokens drawn
+programmatically, see `art/`):
 
 - [Palace board, drawn art: four A4 tiles](print/dioclet-board-4xA4-ART.pdf)
 - [Succession map, drawn art](print/dioclet-succession-map-ART.pdf)
 - [Cards and tokens, drawn art](print/dioclet-cards-tokens-ART.pdf)
+
+The [black-and-white kit](print/bw/dioclet-complete-print-kit-A4-BW.pdf)
+uses black ink only and is the source of the rules documents:
+
+- [Palace board: four A4 tiles](print/bw/dioclet-board-4xA4-BW.pdf)
+- [Succession map: one A4 page](print/bw/dioclet-succession-map-A4-BW.pdf)
+- [Player sheets](print/bw/dioclet-player-sheets-A4-BW.pdf)
+- [Cards and tokens](print/bw/dioclet-cards-tokens-A4-BW.pdf)
+- [Rulebook](print/bw/dioclet-rulebook-A4-BW.pdf)
+- [Quick reference](print/bw/dioclet-quick-reference-A4-BW.pdf)
+- [Teaching guide](print/bw/dioclet-teaching-guide-A4-BW.pdf)
+- [Playtest form](print/bw/dioclet-playtest-form-A4-BW.pdf)
+- [Print and assembly instructions](print/bw/dioclet-print-instructions-A4-BW.pdf)
+
+The palace board assembles to 580 × 406 mm. The succession map fits on
+one landscape page. Follow the print instructions and check the 100 mm
+calibration ruler.
 
 Both kits print the same geometry: the art consumes a layout exported
 from the generator itself (`art/build/layout.json`), never a copy.

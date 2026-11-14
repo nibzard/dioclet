@@ -21,25 +21,26 @@ from tools import make_a4_print_kit as kit
 
 REPO = Path(__file__).resolve().parents[1]
 PRINT = REPO / "print"
+PRINT_BW = PRINT / "bw"     # the black-and-white edition
 A4_SHORT_PT = 595.2756   # 210 mm
 A4_LONG_PT = 841.8898    # 297 mm
 
 
 def page_text(name, page_index):
-    return PdfReader(PRINT / name).pages[page_index].extract_text()
+    return PdfReader(PRINT_BW / name).pages[page_index].extract_text()
 
 
 def whole_text(name):
     # Wrapping changes with type size; assertions concern the printed words.
     return " ".join(" ".join(p.extract_text() for p in
-                             PdfReader(PRINT / name).pages).split())
+                             PdfReader(PRINT_BW / name).pages).split())
 
 
 class BoardPages(unittest.TestCase):
     FILE = "dioclet-board-4xA4-BW.pdf"
 
     def test_four_a4_landscape_pages(self):
-        reader = PdfReader(PRINT / self.FILE)
+        reader = PdfReader(PRINT_BW / self.FILE)
         self.assertEqual(len(reader.pages), 4)
         for page in reader.pages:
             self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
@@ -59,7 +60,7 @@ class BoardPages(unittest.TestCase):
     def test_building_hatch_clip_uses_board_coordinates(self):
         # The northwest building's inset hatch rectangle must share the
         # point scale of its outline, rather than appearing near the origin.
-        page = PdfReader(PRINT / self.FILE).pages[0]
+        page = PdfReader(PRINT_BW / self.FILE).pages[0]
         expected = (80.5 * kit.mm, 219.5 * kit.mm,
                     117.5 * kit.mm, 117.5 * kit.mm)
         rectangles = [tuple(float(v) for v in args)
@@ -83,7 +84,7 @@ class DocumentPages(unittest.TestCase):
 
     def test_a4_portrait_page_counts(self):
         for name, count in self.FILES.items():
-            reader = PdfReader(PRINT / name)
+            reader = PdfReader(PRINT_BW / name)
             self.assertEqual(len(reader.pages), count, name)
             for page in reader.pages:
                 self.assertAlmostEqual(float(page.mediabox.width), A4_SHORT_PT,
@@ -92,14 +93,14 @@ class DocumentPages(unittest.TestCase):
                                        places=1, msg=name)
 
     def test_combined_kit_starts_with_the_five_board_pages(self):
-        reader = PdfReader(PRINT / "dioclet-complete-print-kit-A4-BW.pdf")
+        reader = PdfReader(PRINT_BW / "dioclet-complete-print-kit-A4-BW.pdf")
         expected = 4 + 1 + sum(self.FILES.values())
         self.assertEqual(len(reader.pages), expected)
         for page in reader.pages[:5]:
             self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
 
     def test_succession_map_is_one_landscape_page(self):
-        reader = PdfReader(PRINT / "dioclet-succession-map-A4-BW.pdf")
+        reader = PdfReader(PRINT_BW / "dioclet-succession-map-A4-BW.pdf")
         self.assertEqual(len(reader.pages), 1)
         page = reader.pages[0]
         self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)

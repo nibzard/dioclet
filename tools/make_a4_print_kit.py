@@ -9,7 +9,7 @@ assemble into one large board (about A2). The succession map (13x9,
 57 street spaces, four blocks) prints complete on ONE A4 landscape
 page - no tiling. All other documents are A4 portrait.
 
-Outputs into print/:
+Outputs into print/bw/ (black and white):
   dioclet-board-4xA4-BW.pdf        four tiled palace-board pages (landscape)
   dioclet-succession-map-A4-BW.pdf the succession map, one page (landscape)
   dioclet-player-sheets-A4-BW.pdf  four player mats (two per page)
@@ -20,9 +20,13 @@ Outputs into print/:
   dioclet-playtest-form-A4-BW.pdf
   dioclet-print-instructions-A4-BW.pdf
   dioclet-complete-print-kit-A4-BW.pdf (all of the above, boards first)
+With --art, into print/ (the default edition):
+  dioclet-board-4xA4-ART.pdf, dioclet-succession-map-ART.pdf,
+  dioclet-cards-tokens-ART.pdf, dioclet-complete-print-kit-A4-ART.pdf
+Always into print/:
   kit-manifest.json (layout facts used by the tests)
 
-Run: python3 tools/make_a4_print_kit.py [--rules RULES_FILE]
+Run: python3 tools/make_a4_print_kit.py [--rules RULES_FILE] [--art]
 """
 
 import json
@@ -39,7 +43,8 @@ import engine  # noqa: E402
 from board import Board, validate_six_block_layout  # noqa: E402
 
 RULES_FILE = "rules_v094_twinboard.json"
-OUT_DIR = "print"
+OUT_DIR = "print"                         # ART edition and the manifest
+BW_DIR = os.path.join(OUT_DIR, "bw")      # black-and-white edition
 KIT_VERSION = "V0.9.4 print kit (V0.9.4 twin-board rules)"
 
 # ---------------------------------------------------------------------------
@@ -1952,18 +1957,19 @@ def main():
                 f"rules say {actual}; update the kit prose")
     build_art = "--art" in sys.argv
     L = build_layout(rules)
-    os.makedirs(OUT_DIR, exist_ok=True)
+    os.makedirs(BW_DIR, exist_ok=True)
     out = lambda name: os.path.join(OUT_DIR, name)
+    bw = lambda name: os.path.join(BW_DIR, name)
     files = {
-        "board": out("dioclet-board-4xA4-BW.pdf"),
-        "succession": out("dioclet-succession-map-A4-BW.pdf"),
-        "sheets": out("dioclet-player-sheets-A4-BW.pdf"),
-        "cards": out("dioclet-cards-tokens-A4-BW.pdf"),
-        "rulebook": out("dioclet-rulebook-A4-BW.pdf"),
-        "quick": out("dioclet-quick-reference-A4-BW.pdf"),
-        "teaching": out("dioclet-teaching-guide-A4-BW.pdf"),
-        "form": out("dioclet-playtest-form-A4-BW.pdf"),
-        "instructions": out("dioclet-print-instructions-A4-BW.pdf"),
+        "board": bw("dioclet-board-4xA4-BW.pdf"),
+        "succession": bw("dioclet-succession-map-A4-BW.pdf"),
+        "sheets": bw("dioclet-player-sheets-A4-BW.pdf"),
+        "cards": bw("dioclet-cards-tokens-A4-BW.pdf"),
+        "rulebook": bw("dioclet-rulebook-A4-BW.pdf"),
+        "quick": bw("dioclet-quick-reference-A4-BW.pdf"),
+        "teaching": bw("dioclet-teaching-guide-A4-BW.pdf"),
+        "form": bw("dioclet-playtest-form-A4-BW.pdf"),
+        "instructions": bw("dioclet-print-instructions-A4-BW.pdf"),
     }
     board_pdf(files["board"], L)
     succession_map_pdf(files["succession"], rules)
@@ -1977,7 +1983,7 @@ def main():
     combine([files["board"], files["succession"], files["instructions"],
              files["rulebook"], files["quick"],
              files["teaching"], files["sheets"], files["cards"], files["form"]],
-            out("dioclet-complete-print-kit-A4-BW.pdf"))
+            bw("dioclet-complete-print-kit-A4-BW.pdf"))
     if build_art:
         art_files = {
             "art_board": out("dioclet-board-4xA4-ART.pdf"),
@@ -2040,7 +2046,8 @@ def main():
     }
     with open(out("kit-manifest.json"), "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=2, sort_keys=True)
-    print(f"wrote {len(files) + 1} PDFs + kit-manifest.json into {OUT_DIR}/" + (" (art kit included)" if build_art else ""))
+    print(f"wrote {len(files) + 1} PDFs into {BW_DIR}/" + (" and the art kit into " + OUT_DIR + "/" if build_art else "")
+          + f", plus {OUT_DIR}/kit-manifest.json")
     for name, path in files.items():
         print(f"  {name}: {path} ({os.path.getsize(path) // 1024} KB)")
 
