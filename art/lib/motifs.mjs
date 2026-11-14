@@ -126,6 +126,14 @@ export function laurelWreath(a, cx, cy, r, { leafLen, leafWid, pairs = 9, gap = 
 // Tabula ansata: the plaque with dovetail handles that carries Roman
 // inscriptions. Used for every label plate.
 
+// The full footprint of a tabula ansata (body, ears, and shadow), so a
+// plan can keep its trees and buildings off the plaque.
+export function tabulaBounds(cx, cy, wdt, hgt, { ears = true, pad = 1 } = {}) {
+  const ear = ears ? hgt * 0.55 : 0;
+  return { x0: cx - wdt / 2 - ear - pad, x1: cx + wdt / 2 + ear + 0.8 + pad,
+    y0: cy - hgt / 2 - hgt * 0.05 - pad, y1: cy + hgt / 2 + hgt * 0.05 + 0.9 + pad };
+}
+
 export function tabula(a, cx, cy, wdt, hgt, { depth = 0.5, ears = true, lifted = true, weight = "firm" } = {}) {
   const x0 = cx - wdt / 2, x1 = cx + wdt / 2, y0 = cy - hgt / 2, y1 = cy + hgt / 2;
   const ear = ears ? hgt * 0.55 : 0;
@@ -299,18 +307,48 @@ export function cypress(a, x, base, h) {
 
 // A tree seen from above (for the plan view): a scribbled crown with a
 // shadow cast to the lower right.
+// A tree seen from above, in line: a scalloped crown of leaf clumps,
+// clump arcs and hatching on the side away from the light (upper left),
+// and a hatched cast shadow to the lower right. No wash: a smooth gray
+// disc reads as a glossy ball, not foliage.
 export function treeTop(a, x, y, r) {
-  a.smudge((c) => c.ellipse(x + r * 0.35, y + r * 0.35, r * 0.95, r * 0.85, 0, 0, PI * 2), { alpha: 0.18, blur: r * 0.15 });
-  const loops = Math.round(r * 2.4);
-  for (let i = 0; i < loops; i++) {
-    const ang = a.rng() * PI * 2, rr = r * Math.sqrt(a.rng()) * 0.75;
-    const px = x + Math.cos(ang) * rr, py = y + Math.sin(ang) * rr;
-    const lr = r * (0.18 + a.rng() * 0.16);
-    const shadow = (Math.cos(ang - PI / 4) * rr) / r;
-    a.stroke(arcPoints(px, py, lr, lr * 0.85, a.rng() * 6, a.rng() * 6 + PI * 1.3, 10),
-      w("hair", { alpha: 0.45 + 0.3 * Math.max(0, shadow), wobble: 0.05 }));
+  // Cast shadow first; the crown is lifted over it.
+  const sx = x + r * 0.45, sy = y + r * 0.4;
+  a.hatch((c) => c.ellipse(sx, sy, r * 0.95, r * 0.85, 0, 0, PI * 2), [sx - r, sy - r, 2 * r, 2 * r],
+    { angle: PI / 4, gap: 0.45, ...W.hair, alpha: 0.45, run: r });
+  // Crown edge: a ring of rounded scallops, one small arc per clump.
+  const bumps = Math.max(6, Math.round(r * 2.2));
+  const outline = [];
+  const off = a.rng() * PI;
+  for (let i = 0; i < bumps; i++) {
+    const tm = off + (i / bumps) * PI * 2;
+    const rc = r * (0.74 + a.rng() * 0.06);
+    const b = rc * Math.sin(PI / bumps) * 1.35;
+    outline.push(...arcPoints(x + Math.cos(tm) * rc, y + Math.sin(tm) * rc, b, b, tm - 1.25, tm + 1.25, 8));
   }
-  a.stroke(arcPoints(x, y, r, r * 0.95, 0, PI * 2.05, 40), w("fine", { alpha: 0.5, breaks: 0.15 }));
+  lift(a, poly(outline), 0.95);
+  // Shadow half of the crown: hatching clipped to the lower right.
+  const half = [];
+  for (let i = 0; i <= 16; i++) {
+    const t = -PI / 4 + (i / 16) * PI;
+    half.push([x + Math.cos(t) * r * 0.82, y + Math.sin(t) * r * 0.82]);
+  }
+  for (let i = 16; i >= 0; i--) {
+    const t = -PI / 4 + (i / 16) * PI;
+    half.push([x + Math.cos(t) * r * 0.2, y + Math.sin(t) * r * 0.2]);
+  }
+  a.hatch(poly(half), bbox(half, 0.2), { angle: -PI / 5, gap: 0.5, ...W.hair, alpha: 0.5, run: r });
+  // Leaf clumps: small open arcs, darker on the shadow side.
+  const loops = Math.round(r * 2.2);
+  for (let i = 0; i < loops; i++) {
+    const ang = a.rng() * PI * 2, rr = r * Math.sqrt(a.rng()) * 0.62;
+    const px = x + Math.cos(ang) * rr, py = y + Math.sin(ang) * rr;
+    const lr = r * (0.16 + a.rng() * 0.1);
+    const dark = Math.max(0, Math.cos(ang - PI / 4)) * (rr / r);
+    a.stroke(arcPoints(px, py, lr, lr * 0.9, PI * 0.1, PI * 1.1, 8),
+      w("hair", { alpha: 0.4 + 0.45 * dark, wobble: 0.04 }));
+  }
+  a.stroke([...outline, outline[0]], w("fine", { alpha: 0.85, wobble: 0.04 }));
 }
 
 // Water: horizontal strokes that thicken in the troughs.
