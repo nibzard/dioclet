@@ -42,5 +42,6 @@ decision is D51. Spend: none (offline).
   after two rounds. Level 2 took 9 rounds. Prestige, not the cards,
   decided the endgame: no rival could afford to contest the winning
   claim. A faction dealt to a far corner site went unused.
-- The print kit, the art, and the browser engine still show the
-  0.9.4 succession map.
+- The print kit and the art show the big board (four A4 tiles, the
+  same cut lines as the palace board) and six faction cards. The
+  browser engine still plays the 0.9.4 succession map.

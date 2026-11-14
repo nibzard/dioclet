@@ -2,7 +2,7 @@
 //
 //   node render.mjs [piece ...] [--dpi N] [--out DIR]
 //
-// Pieces: palace, succession, cards, tokens (default: all). Geometry comes
+// Pieces: palace, succession, cards, factions, tokens (default: all). Geometry comes
 // from build/layout.json; run `python3 art/export_layout.py` first.
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -35,12 +35,17 @@ if (want("palace")) {
 }
 if (want("succession")) {
   const { renderSuccession } = await import("./pieces/succession.mjs");
-  save("succession-map.png", renderSuccession(layout, { dpi: Number(dpiArg || 300) }));
+  save("succession-map.png", renderSuccession(layout, { dpi: Number(dpiArg || 200) }));
 }
 if (want("cards")) {
   const { renderCards, renderBack } = await import("./pieces/cards.mjs");
   for (const [name, canvas] of renderCards(layout, { dpi: Number(dpiArg || 300) })) save(name, canvas);
   save("card-back.png", renderBack(layout, { dpi: Number(dpiArg || 300) }));
+}
+if (want("factions")) {
+  const { renderFactionCards, renderFactionBack } = await import("./pieces/cards.mjs");
+  for (const [name, canvas] of renderFactionCards(layout, { dpi: Number(dpiArg || 300) })) save(name, canvas);
+  save("faction-back.png", renderFactionBack(layout, { dpi: Number(dpiArg || 300) }));
 }
 if (want("tokens")) {
   const { renderTokens } = await import("./pieces/tokens.mjs");

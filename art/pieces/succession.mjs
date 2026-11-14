@@ -1,12 +1,16 @@
 // The succession map: the second board, where the throne is contested.
-// A single A4 landscape page: four city blocks around a crossing, gates
-// at the compass points, the Peristyle at the centre, and the three
-// faction meeting places on the street arms. Drawn as a companion sheet
-// to the palace board: same paper, same pencil box, lighter hand - the
-// map is a working chart, not a survey.
+// It has the palace board's footprint and prints on the same four tiles,
+// so a family can tape the two boards back to back. Four city quarters
+// stand around the Peristyle; the gates sit pinwheel-fashion, each nine
+// steps from the crossing; six roundels hold the face-down faction cards.
+// Drawn as the palace board's companion: same paper, same pencil box,
+// same walls and margins, a busier town inside.
+//
+// Every game position comes from art/build/layout.json, which the print
+// kit generates from the rules file. Nothing here invents geometry.
 import { Sheet } from "../lib/core.mjs";
 import { Artist } from "../lib/brush.mjs";
-import { text, measure } from "../lib/letters.mjs";
+import { text, wrap } from "../lib/letters.mjs";
 import * as M from "../lib/motifs.mjs";
 import * as A from "../lib/architecture.mjs";
 import * as K from "../lib/marks.mjs";
@@ -14,46 +18,49 @@ import * as K from "../lib/marks.mjs";
 const PI = Math.PI;
 const w = (name, extra = {}) => ({ ...M.W[name], ...extra });
 
-const GATE_LABELS = { P0: "GOLDEN GATE", P1: "SILVER GATE", P2: "BRONZE GATE", P3: "IRON GATE" };
-const BLOCK_NAMES = { I: "MERCATVS", II: "BALNEAE", III: "TABERNAE", IV: "DOMVS" };
-// The district plaque, body only; smaller than the palace's so each
-// block keeps room for its buildings around it.
-const PLAQUE = [22, 16];
-const plaqueBox = (px, py) => M.tabulaBounds(px, py, PLAQUE[0], PLAQUE[1]);
+const GATE_LABELS = {
+  P0: ["GOLDEN GATE", "NORTH"], P1: ["SILVER GATE", "EAST"],
+  P2: ["BRONZE GATE · SOUTH"], P3: ["IRON GATE · WEST"],
+};
+// Blocks in layout order: north-west, north-east, south-west, south-east.
+const QUARTERS = [
+  { numeral: "I", name: "MERCATVS", theme: "market" },
+  { numeral: "II", name: "BALNEAE", theme: "baths" },
+  { numeral: "III", name: "TABERNAE", theme: "shops" },
+  { numeral: "IV", name: "DOMVS", theme: "houses" },
+];
+const PLAQUE = [32, 24];
 
-const FACTION_LABELS = { army: "ARMY", officials: "OFFICIALS", elites: "CITY ELITES" };
-
-export function renderSuccession(layout, { dpi = 300, seed = 400 } = {}) {
+export function renderSuccession(layout, { dpi = 200, seed = 400 } = {}) {
   const S = layout.succession;
   const [W0, H0] = S.size_mm;
   const sheet = new Sheet({ widthMm: W0, heightMm: H0, dpi, seed });
   const a = new Artist(sheet, { seed: 1 });
   const [gx, gy, gw, gh] = S.grid_mm;
   const G = { x0: gx, y0: gy, x1: gx + gw, y1: gy + gh };
+  // Registration crosses get a white knockout in the kit; keep detail off them.
+  const keepOut = S.reg_marks_mm.map(([x, y]) => [x, y, 7]);
 
   drawFrame(a, S);
-  drawTitle(a, S);
+  drawSea(a, S, G);
   drawPaving(a, S);
-  for (let i = 0; i < S.blocks.length; i++) drawBlock(a, S, i);
+  drawWalls(a, S, G);
+  S.blocks.forEach((rect, i) => drawQuarter(a, rect, QUARTERS[i], keepOut));
+  drawMargins(a, S, G);
+  drawTitle(a, S);
 
-  // Play symbols.
+  // Play symbols last, each on cleared ground.
   const special = new Set();
   const key = (p) => `${p[0].toFixed(2)},${p[1].toFixed(2)}`;
   for (const p of Object.values(S.gates)) special.add(key(p));
-  for (const p of Object.values(S.factions)) special.add(key(p));
+  for (const p of S.card_spaces) special.add(key(p));
   special.add(key(S.checkpoint));
-  for (const s of S.spaces) if (!special.has(key(s.mm))) K.streetSpace(a, s.mm[0], s.mm[1], 6.2);
-  K.peristyle(a, S.checkpoint[0], S.checkpoint[1], 9.6);
-  for (const p of Object.values(S.gates)) K.gateMark(a, p[0], p[1], 8.2);
-  for (const [name, p] of Object.entries(S.factions)) {
-    K.factionSite(a, p[0], p[1], name, 6.6);
-    drawFactionLabel(a, name, p, S);
-  }
-  // A street circle sits directly south of the Peristyle, so its name
-  // goes on a tag over the corner of block II, level with the ARMY and
-  // OFFICIALS tags.
-  tag(a, "PERISTYLE", S.checkpoint[0] + 10.5, S.checkpoint[1] + 12.5, 2.2, "left");
-  for (const [pid, p] of Object.entries(S.gates)) drawGateLabel(a, pid, p, S, G);
+  for (const s of S.spaces) if (!special.has(key(s.mm))) K.streetSpace(a, s.mm[0], s.mm[1], 9.2);
+  for (const p of S.card_spaces) K.cardSpace(a, p[0], p[1], 10.6);
+  for (const p of Object.values(S.gates)) K.gateMark(a, p[0], p[1], 11.4);
+  K.peristyle(a, S.checkpoint[0], S.checkpoint[1], 11.2);
+  text(a, "PERISTYLE", S.checkpoint[0], S.checkpoint[1] - 12.6, 2.5, { medium: "charcoal", weight: 1.2 });
+  drawGateLabels(a, S, G);
   drawKey(a, S, G);
 
   const out = sheet.compose();
@@ -61,25 +68,24 @@ export function renderSuccession(layout, { dpi = 300, seed = 400 } = {}) {
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// Frame, sea, paving and walls: the palace board's, so both sides match.
+
 function drawFrame(a, S) {
-  a.rect(12, 8, 273, 196, w("bold", { width: 0.7, overshoot: 0.8 }));
-  a.rect(13.6, 9.6, 269.8, 192.8, w("fine", { overshoot: 0.5 }));
-  for (const [cx, cy] of [[12, 8], [285, 8], [12, 204], [285, 204]]) {
-    M.lift(a, (c) => c.arc(cx, cy, 3.2, 0, PI * 2), 1);
-    a.circle(cx, cy, 2.8, w("firm"));
-    M.star(a, cx, cy, 2.1, { points: 8, inner: 0.45, weight: "firm", shade: false });
+  const [x, y, wd, ht] = S.border_mm;
+  a.rect(x, y, wd, ht, w("bold", { width: 0.7, overshoot: 0.8 }));
+  a.rect(x + 1.6, y + 1.6, wd - 3.2, ht - 3.2, w("fine", { overshoot: 0.5 }));
+  for (const [cx, cy] of [[x, y], [x + wd, y], [x, y + ht], [x + wd, y + ht]]) {
+    M.lift(a, (c) => c.arc(cx, cy, 3.4, 0, PI * 2), 1);
+    a.circle(cx, cy, 3.0, w("firm"));
+    M.star(a, cx, cy, 2.3, { points: 8, inner: 0.45, weight: "firm", shade: false });
   }
 }
 
-function drawTitle(a, S) {
-  const cx = S.size_mm[0] / 2;
-  const cap = 6.4;
-  const wd = text(a, "THE SUCCESSION MAP", cx, 21.5, cap, { style: "inscribed", medium: "charcoal", track: 0.06 });
-  for (const s of [-1, 1]) {
-    const x0 = cx + s * (wd / 2 + 3);
-    M.laurelBranch(a, [[x0, 19], [x0 + s * 7, 17.4], [x0 + s * 13, 18.6]], { leafLen: 2.6, leafWid: 0.9, pairs: 4 });
-  }
-  text(a, "DIOCLETIAN'S PALACE · THE CONTEST FOR THE THRONE", cx, 26.8, 1.8, { medium: "graphite", weight: 1.05 });
+function drawSea(a, S, G) {
+  const y0 = G.y1 + 9, y1 = S.border_mm[1] + S.border_mm[3] - 2.5;
+  const x0 = S.border_mm[0] + 66, x1 = S.border_mm[0] + S.border_mm[2] - 58;
+  M.waves(a, x0, y0, x1 - x0, y1 - y0, { density: 0.75 });
 }
 
 function drawPaving(a, S) {
@@ -87,168 +93,263 @@ function drawPaving(a, S) {
   for (const s of S.spaces) {
     const [cx, cy] = s.mm;
     const x0 = cx - c / 2, y0 = cy - c / 2;
-    for (let r = 0; r < 3; r++) {
-      const yy = y0 + r * (c / 3);
-      a.line([x0, yy], [x0 + c, yy], w("hair", { alpha: 0.2, bow: 0.05, wobble: 0.04 }));
-      for (let k = 0; k < 3; k++) {
-        const xx = x0 + (r % 2) * 2.75 + k * 5.5 + a.rng.gauss(0.4);
+    for (let r = 0; r < 5; r++) {
+      const yy = y0 + r * (c / 5);
+      a.line([x0, yy], [x0 + c, yy], w("hair", { alpha: 0.22, bow: 0.05, wobble: 0.05 }));
+      const off = (r % 2) * 2.5;
+      for (let k = 0; k < 5; k++) {
+        const xx = x0 + off + k * 5.1 + a.rng.gauss(0.4);
         if (xx > x0 + c) continue;
-        a.line([xx, yy], [xx, yy + c / 3], w("hair", { alpha: 0.18, bow: 0 }));
+        a.line([xx, yy], [xx, yy + c / 5], w("hair", { alpha: 0.2, bow: 0 }));
       }
     }
   }
 }
 
-// Block plans, simpler than the palace's: this is a working map. The
-// layout lists the blocks south-west, south-east, north-west, north-east
-// (I to IV). Each plan builds around a plaque at the centre and keeps
-// its buildings and trees off plaqueBox().
-const PLANS = [
-  // I, south-west: the market - stall rows north and south of an open court.
-  (a, x, y, s, t) => {
-    const box = plaqueBox(x + s / 2, y + t / 2);
-    A.court(a, x + 2, y + 2, s - 4, t - 4, { colonnade: false });
-    const n = 3, gap = 3, wd = (s - 10 - gap * (n - 1)) / n, hh = box.y0 - y - 4;
-    for (let i = 0; i < n; i++) {
-      A.hall(a, x + 5 + i * (wd + gap), y + 3, wd, hh, { ridge: "h" });
-      A.hall(a, x + 5 + i * (wd + gap), y + t - 3 - hh, wd, hh, { ridge: "h" });
+function wallBand(a, x0, y0, x1, y1, horizontal) {
+  const pts = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+  M.lift(a, M.poly(pts), 1);
+  const n = 3;
+  for (let i = 1; i < n; i++) {
+    if (horizontal) {
+      const yy = y0 + (i / n) * (y1 - y0);
+      a.line([x0, yy], [x1, yy], w("hair", { alpha: 0.4, bow: 0.05 }));
+      for (let xx = x0 + (i % 2) * 2.2; xx < x1; xx += 4.4 + a.rng() * 0.8) {
+        a.line([xx, y0 + ((i - 1) / n) * (y1 - y0)], [xx, yy], w("hair", { alpha: 0.35, bow: 0 }));
+      }
+    } else {
+      const xx = x0 + (i / n) * (x1 - x0);
+      a.line([xx, y0], [xx, y1], w("hair", { alpha: 0.4, bow: 0.05 }));
+      for (let yy = y0 + (i % 2) * 2.2; yy < y1; yy += 4.4 + a.rng() * 0.8) {
+        a.line([x0 + ((i - 1) / n) * (x1 - x0), yy], [xx, yy], w("hair", { alpha: 0.35, bow: 0 }));
+      }
     }
-    A.garden(a, x + 4, box.y0, s - 8, box.y1 - box.y0, 4, [box]);
-    return [x + s / 2, y + t / 2];
-  },
-  // II, south-east: the baths - a hall to the west, the exercise court in
-  // the middle, the round hot room and the plunge pool to the east.
-  (a, x, y, s, t) => {
-    const box = plaqueBox(x + s / 2, y + t / 2);
-    A.hall(a, x + 2, y + 2, box.x0 - x - 4, t - 4, { ridge: "v" });
-    A.court(a, box.x0 - 0.5, y + 2, box.x1 - box.x0 + 1, t - 4, { colonnade: true, spacing: 3.2 });
-    const ex = box.x1 + 1.5, ew = x + s - 2 - ex;
-    A.dome(a, ex + ew / 2, y + 2 + ew / 2, ew / 2 - 0.5, { ribs: 12 });
-    M.waves(a, ex, y + t * 0.55, ew, t * 0.4, { density: 1 });
-    a.rect(ex, y + t * 0.55, ew, t * 0.4, w("fine", { overshoot: 0.3 }));
-    return [x + s / 2, y + t / 2];
-  },
-  // III, north-west: the shops - a row of tabernae, a yard behind.
-  (a, x, y, s, t) => {
-    const box = plaqueBox(x + s / 2, y + t / 2 + 2);
-    const n = 4, gap = 2.5, wd = (s - 8 - gap * (n - 1)) / n;
-    for (let i = 0; i < n; i++) A.hall(a, x + 4 + i * (wd + gap), y + 2, wd, box.y0 - y - 3, { ridge: "h" });
-    A.court(a, x + 2, box.y0 - 0.5, s - 4, y + t - 2 - box.y0 + 0.5, { colonnade: false });
-    A.garden(a, x + 4, box.y0 + 1, s - 8, box.y1 - box.y0 - 2, 4, [box]);
-    return [x + s / 2, y + t / 2 + 2];
-  },
-  // IV, north-east: the town house - west wing, atrium, apsed dining
-  // room and a store to the east.
-  (a, x, y, s, t) => {
-    const box = plaqueBox(x + s / 2, y + t / 2);
-    A.hall(a, x + 2, y + 2, box.x0 - x - 4, t - 4, { ridge: "v" });
-    A.court(a, box.x0 - 0.5, y + 2, box.x1 - box.x0 + 1, t - 4, { colonnade: true, spacing: 3.4 });
-    const ex = box.x1 + 1.5, ew = x + s - 2 - ex;
-    A.apseHall(a, ex, y + 2, ew, t * 0.46, "s");
-    A.hall(a, ex, y + t * 0.66, ew, t * 0.34 - 2, { ridge: "v" });
-    return [x + s / 2, y + t / 2];
-  },
-];
+  }
+  a.rect(x0, y0, x1 - x0, y1 - y0, w("firm", { overshoot: 0.4 }));
+}
 
-function drawBlock(a, S, index) {
-  const [bx, by, bw, bh] = S.blocks[index];
-  const ins = 1.6;
-  const x = bx + ins, y = by + ins, s = bw - ins * 2, t = bh - ins * 2;
-  const pts = [[x, y], [x + s, y], [x + s, y + t], [x, y + t]];
+function squareTower(a, cx, cy, s) {
+  const pts = [[cx - s / 2, cy - s / 2], [cx + s / 2, cy - s / 2], [cx + s / 2, cy + s / 2], [cx - s / 2, cy + s / 2]];
   A.castShadow(a, pts, 1.2);
-  a.rect(x, y, s, t, w("bold", { width: 0.6, overshoot: 0.5 }));
-  a.rect(x + 1.4, y + 1.4, s - 2.8, t - 2.8, w("hair", { overshoot: 0.35 }));
-  const numeral = ["I", "II", "III", "IV"][index];
-  const [px, py] = PLANS[index](a, x + 2.8, y + 2.8, s - 5.6, t - 5.6);
-  M.tabula(a, px, py, PLAQUE[0], PLAQUE[1], { depth: 0.5 });
-  text(a, numeral, px, py + 3.2, 8, { style: "inscribed", medium: "charcoal" });
-  text(a, BLOCK_NAMES[numeral], px, py + 6.5, 1.6, { medium: "graphite", weight: 1.1, track: 0.15 });
+  const c = [cx, cy];
+  const planes = [[pts[0], pts[1], c], [pts[1], pts[2], c], [pts[2], pts[3], c], [pts[3], pts[0], c]];
+  const shade = [0.15, 0.55, 0.75, 0.25];
+  planes.forEach((pl, i) => {
+    const gap = 1.4 - shade[i] * 0.9;
+    a.hatch(M.poly(pl), M.bbox(pl, 0), { angle: i % 2 ? 0 : PI / 2, gap, ...M.W.hair, alpha: 0.35 + shade[i] * 0.4, run: s });
+    a.line(pl[0], c, w("hair", { bow: 0 }));
+  });
+  a.polygon(pts, w("firm", { overshoot: 0.3 }));
 }
 
-function drawStreetNames(a, S, G) {
-  // CARD O / DECVMANVS along the arms, tiny, in the margin.
-  text(a, "CARDO", G.x0 - 8, S.checkpoint[1] + 12.5, 1.9, { medium: "graphite", weight: 1.05 });
-  M.rotated(a, G.x1 + 9.5, S.checkpoint[1] - 12.5, -PI / 2, () => {
-    text(a, "CARDO", 0, 1.25, 1.9, { medium: "graphite", weight: 1.05 });
-  });
-  M.rotated(a, S.checkpoint[0] - 12.5, G.y0 - 7.5, 0, () => {
-    text(a, "DECVMANVS", 0, 1.25, 1.9, { medium: "graphite", weight: 1.05, align: "center" });
-  });
-  M.rotated(a, S.checkpoint[0] + 12.5, G.y1 + 9.5, 0, () => {
-    text(a, "DECVMANVS", 0, 1.25, 1.9, { medium: "graphite", weight: 1.05, align: "center" });
+function drawWalls(a, S, G) {
+  const t = 5.0;
+  wallBand(a, G.x0 - t, G.y0 - t, G.x1 + t, G.y0, true);
+  wallBand(a, G.x0 - t, G.y1, G.x1 + t, G.y1 + t, true);
+  wallBand(a, G.x0 - t, G.y0, G.x0, G.y1, false);
+  wallBand(a, G.x1, G.y0, G.x1 + t, G.y1, false);
+  for (const [cx, cy] of [[G.x0 - 2.5, G.y0 - 2.5], [G.x1 + 2.5, G.y0 - 2.5], [G.x0 - 2.5, G.y1 + 2.5], [G.x1 + 2.5, G.y1 + 2.5]]) {
+    squareTower(a, cx, cy, 12);
+  }
+  // Square towers flank each gate; the town's gates are plainer than
+  // the palace's octagons.
+  const g = S.gates, off = 16.5;
+  squareTower(a, g.P0[0] - off, G.y0 - 3.2, 8);
+  squareTower(a, g.P0[0] + off, G.y0 - 3.2, 8);
+  squareTower(a, g.P2[0] - off, G.y1 + 3.2, 8);
+  squareTower(a, g.P2[0] + off, G.y1 + 3.2, 8);
+  squareTower(a, G.x1 + 3.2, g.P1[1] - off, 8);
+  squareTower(a, G.x1 + 3.2, g.P1[1] + off, 8);
+  squareTower(a, G.x0 - 3.2, g.P3[1] - off, 8);
+  squareTower(a, G.x0 - 3.2, g.P3[1] + off, 8);
+}
+
+// ---------------------------------------------------------------------------
+// The four quarters. Each is a grid of lots around a central court that
+// carries the plaque. A lot that would touch a registration cross stays
+// open ground with a few trees, so the crosses print on clean paper.
+
+function drawQuarter(a, rect, q, keepOut) {
+  const [bx, by, bw, bh] = rect;
+  const ins = 2.4;
+  const x = bx + ins, y = by + ins, s = bw - ins * 2, t = bh - ins * 2;
+  A.castShadow(a, [[x, y], [x + s, y], [x + s, y + t], [x, y + t]], 1.4);
+  a.rect(x, y, s, t, w("bold", { width: 0.65, overshoot: 0.6 }));
+  a.rect(x + 1.7, y + 1.7, s - 3.4, t - 3.4, w("fine", { overshoot: 0.4 }));
+
+  const ix = x + 4, iy = y + 4, is = s - 8, it = t - 8;
+  const cols = 6, rows = 3, lane = 4;
+  const lw = (is - lane * (cols - 1)) / cols, lh = (it - lane * (rows - 1)) / rows;
+  const lot = (i, j) => [ix + i * (lw + lane), iy + j * (lh + lane)];
+  const hits = (x0, y0, x1, y1) => keepOut.some(([kx, ky, kr]) =>
+    kx + kr > x0 && kx - kr < x1 && ky + kr > y0 && ky - kr < y1);
+
+  // The central court spans the middle two lots of the middle row.
+  const [cx0, cy0] = lot(2, 1);
+  const cw = lw * 2 + lane;
+  const px = cx0 + cw / 2, py = cy0 + lh / 2;
+  const box = M.tabulaBounds(px, py, PLAQUE[0], PLAQUE[1]);
+  const LOTS = THEMES[q.theme];
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      if (j === 1 && (i === 2 || i === 3)) continue;
+      const [lx, ly] = lot(i, j);
+      if (hits(lx, ly, lx + lw, ly + lh)) {
+        A.garden(a, lx, ly, lw, lh, 3, keepOut);
+        continue;
+      }
+      LOTS.lot(a, lx, ly, lw, lh, i, j);
+    }
+  }
+  LOTS.court(a, cx0, cy0, cw, lh, [box]);
+  M.tabula(a, px, py, PLAQUE[0], PLAQUE[1], { depth: 0.6 });
+  text(a, q.numeral, px, py + 5, 13, { style: "inscribed", medium: "charcoal" });
+  text(a, q.name, px, py + 9.6, 2.2, { medium: "graphite", weight: 1.15, track: 0.15 });
+}
+
+const THEMES = {
+  // The market: long stall halls in pairs, a colonnaded forum.
+  market: {
+    lot(a, x, y, wd, ht, i, j) {
+      if ((i + j) % 3 === 2) {
+        A.court(a, x, y, wd, ht, { colonnade: false, wall: true, paving: true });
+        A.hall(a, x, y, wd, ht * 0.3, { ridge: "h" });
+        return;
+      }
+      A.hall(a, x, y, wd, ht * 0.42, { ridge: "h" });
+      A.hall(a, x, y + ht * 0.58, wd, ht * 0.42, { ridge: "h" });
+    },
+    court(a, x, y, wd, ht, keep) {
+      A.court(a, x, y, wd, ht, { colonnade: true, spacing: 3.4 });
+      A.garden(a, x + 3, y + 3, wd - 6, ht - 6, 2, keep);
+    },
+  },
+  // The baths: domed hot rooms, plunge pools, a palaestra in the middle.
+  baths: {
+    lot(a, x, y, wd, ht, i, j) {
+      const k = (i * 2 + j) % 3;
+      if (k === 0) {
+        A.hall(a, x, y, wd, ht, { ridge: "v" });
+        A.dome(a, x + wd / 2, y + ht / 2, Math.min(wd, ht) * 0.3, { ribs: 12 });
+      } else if (k === 1) {
+        M.waves(a, x + 2, y + 2, wd - 4, ht - 4, { density: 1 });
+        a.rect(x, y, wd, ht, w("firm", { overshoot: 0.3 }));
+        a.rect(x + 1.5, y + 1.5, wd - 3, ht - 3, w("hair", { overshoot: 0.2 }));
+      } else {
+        A.apseHall(a, x, y, wd, ht, j === 0 ? "s" : "n");
+      }
+    },
+    court(a, x, y, wd, ht, keep) {
+      A.court(a, x, y, wd, ht, { colonnade: true, spacing: 3.0 });
+      A.garden(a, x + 3, y + 3, wd - 6, ht - 6, 2, keep);
+    },
+  },
+  // The shops: rows of tabernae along each lot, a yard behind them.
+  shops: {
+    lot(a, x, y, wd, ht, i, j) {
+      const n = 3, gap = 1.8, sw = (wd - gap * (n - 1)) / n;
+      const front = j === 2 ? y + ht * 0.55 : y;
+      for (let k = 0; k < n; k++) A.hall(a, x + k * (sw + gap), front, sw, ht * 0.45, { ridge: "h" });
+      const yard = j === 2 ? y : y + ht * 0.5;
+      A.court(a, x, yard, wd, ht * 0.45, { colonnade: false, wall: true, paving: true });
+      if ((i + j) % 2 === 0) A.garden(a, x + 2, yard + 2, wd - 4, ht * 0.45 - 4, 2);
+    },
+    court(a, x, y, wd, ht, keep) {
+      A.court(a, x, y, wd, ht, { colonnade: false, paving: true });
+      A.garden(a, x + 3, y + 3, wd - 6, ht - 6, 3, keep);
+    },
+  },
+  // The houses: atrium houses, each a court with rooms on two sides.
+  houses: {
+    lot(a, x, y, wd, ht, i, j) {
+      A.court(a, x, y, wd, ht, { colonnade: (i + j) % 2 === 1, spacing: 3.2 });
+      A.hall(a, x, y, wd, ht * 0.28, { ridge: "h" });
+      const side = i % 2 === 0 ? x : x + wd * 0.7;
+      A.hall(a, side, y + ht * 0.28, wd * 0.3, ht * 0.72, { ridge: "v" });
+      const gx = i % 2 === 0 ? x + wd * 0.32 : x + 1.5;
+      A.garden(a, gx, y + ht * 0.32, wd * 0.66, ht * 0.64, 2);
+    },
+    court(a, x, y, wd, ht, keep) {
+      A.court(a, x, y, wd, ht, { colonnade: true, spacing: 3.6 });
+      A.garden(a, x + 3, y + 3, wd - 6, ht - 6, 3, keep);
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+
+function drawTitle(a, S) {
+  const cx = S.size_mm[0] / 2;
+  // Slightly smaller than the palace title, with short sprigs: the north
+  // gate's label stands just west of the title on this map.
+  const base = 18.2, cap = 7.0;
+  const wdt = text(a, "THE SUCCESSION MAP", cx, base, cap, { style: "inscribed", medium: "charcoal", track: 0.06 });
+  for (const s of [-1, 1]) {
+    const x0 = cx + s * (wdt / 2 + 2.5);
+    M.laurelBranch(a, [[x0, base - cap * 0.4], [x0 + s * 4.5, base - cap * 0.75], [x0 + s * 8, base - cap * 0.55]],
+      { leafLen: 2.6, leafWid: 0.9, pairs: 4, berries: true });
+  }
+}
+
+function drawGateLabels(a, S, G) {
+  const g = S.gates;
+  text(a, GATE_LABELS.P0[0], g.P0[0], G.y0 - 12.4, 2.5, { medium: "charcoal", weight: 1.1 });
+  text(a, GATE_LABELS.P0[1], g.P0[0], G.y0 - 8.4, 2.5, { medium: "charcoal", weight: 1.1 });
+  text(a, GATE_LABELS.P2[0], g.P2[0], G.y1 + 13.6, 2.5, { medium: "charcoal", weight: 1.1 });
+  const ex = (G.x1 + S.border_mm[0] + S.border_mm[2]) / 2 + 1.5;
+  text(a, GATE_LABELS.P1[0], ex, g.P1[1] - 12, 2.5, { medium: "charcoal", weight: 1.1 });
+  text(a, GATE_LABELS.P1[1], ex, g.P1[1] - 7.5, 2.5, { medium: "charcoal", weight: 1.1 });
+  const wx = S.border_mm[0] + 9.5;
+  M.rotated(a, wx, g.P3[1], -PI / 2, () => {
+    text(a, GATE_LABELS.P3[0], 0, 1.25, 2.5, { medium: "charcoal", weight: 1.1 });
   });
 }
 
-function drawGateLabel(a, pid, p, S, G) {
-  const cap = 2.3;
-  if (pid === "P0") text(a, GATE_LABELS.P0, p[0], G.y0 - 3.2, cap, { medium: "charcoal", weight: 1.1 });
-  if (pid === "P2") text(a, GATE_LABELS.P2, p[0], G.y1 + 3.8, cap, { medium: "charcoal", weight: 1.1 });
-  if (pid === "P1") M.rotated(a, G.x1 + 6.5, p[1] - 7.5, -PI / 2, () => {
-    text(a, GATE_LABELS.P1, 0, 1.5, cap, { medium: "charcoal", weight: 1.1 });
-  });
-  if (pid === "P3") M.rotated(a, G.x0 - 6.5, p[1] + 7.5, PI / 2, () => {
-    text(a, GATE_LABELS.P3, 0, 1.5, cap, { medium: "charcoal", weight: 1.1 });
-  });
-}
-
-// A name on a small white plate with pointed ends, sized to the text.
-function tag(a, label, x, y, cap, align = "center") {
-  const wd = measure(label, cap);
-  const cx = align === "left" ? x + wd / 2 : x;
-  M.lift(a, (c) => {
-    c.moveTo(cx - wd / 2 - 1, y - cap - 1);
-    c.lineTo(cx + wd / 2 + 1, y - cap - 1);
-    c.lineTo(cx + wd / 2 + 2.2, y - cap / 2);
-    c.lineTo(cx + wd / 2 + 1, y + 1.2);
-    c.lineTo(cx - wd / 2 - 1, y + 1.2);
-    c.lineTo(cx - wd / 2 - 2.2, y - cap / 2);
-    c.closePath();
-  }, 0.95);
-  text(a, label, cx, y, cap, { medium: "charcoal", weight: 1.1 });
-}
-
-function drawFactionLabel(a, name, p, S) {
-  const label = FACTION_LABELS[name];
-  // Elites: right of the circle, over the corner of block IV. Army and
-  // officials: below their circles, over the top walls of II and I.
-  if (name === "elites") tag(a, label, p[0] + 10.5, p[1] + 0.8, 2.2, "left");
-  else tag(a, label, p[0], p[1] + 12.5, 2.2);
+function drawMargins(a, S, G) {
+  const right0 = G.x1 + 9, right1 = S.border_mm[0] + S.border_mm[2] - 2;
+  const rcx = (right0 + right1) / 2;
+  M.compassRose(a, rcx, 56, 15);
+  M.cypress(a, rcx + 9, 156, 44);
+  M.column(a, rcx - 3, 92, 62, { shaft: 0.15 });
+  const lx = S.border_mm[0] + 14;
+  for (const [yy, h] of [[96, 30], [128, 24], [296, 30], [330, 26]]) M.cypress(a, lx + a.rng.gauss(1), yy, h);
 }
 
 function drawKey(a, S, G) {
-  // Two rows between the Bronze Gate label and the inner frame line
-  // (y 202.4). Each row is centred on the page using the measured
-  // width of its entries, so no label runs past the frame.
-  const cap = 1.8, iconR = 2.3, pad = 2.2, between = 9;
-  const y0 = G.y1 + 6;
-  a.line([20, y0], [277, y0], w("fine"));
+  const x0 = G.x1 + 10, x1 = S.border_mm[0] + S.border_mm[2] - 3.5;
+  const cx = (x0 + x1) / 2;
+  let y = 232;
+  text(a, "KEY", cx, y, 4.2, { style: "inscribed", medium: "charcoal" });
+  y += 3.5;
+  text(a, "THE CONTEST FOR THE THRONE", cx, y + 2.2, 1.7, { medium: "graphite" });
+  y += 5;
+  a.line([x0 + 4, y], [x1 - 4, y], w("fine"));
+  y += 7;
   const items = [
+    ["space", "STREET SPACE"],
+    ["card", "FACTION CARD SPACE: SEARCH, THEN 1 PRESTIGE FOR SUPPORT"],
     ["gate", "GATE - RETURN HERE WHEN THE MAP OPENS"],
-    ["faction", "FACTION MEETING PLACE - 1 PRESTIGE FOR SUPPORT"],
     ["peri", "PERISTYLE - PROCLAIM HERE"],
-    ["space", "STREET SPACE - DUEL WINS PAY 1 PRESTIGE HERE"],
     ["block", "BUILDING - NO ENTRY"],
+    ["none", "NO GUARD POSTS: DUEL WINS ARE THE ONLY PRESTIGE"],
   ];
-  const rows = [items.slice(0, 3), items.slice(3)];
-  const cx = S.size_mm[0] / 2;
-  let y = y0 + 4.4;
-  for (const row of rows) {
-    const widths = row.map(([, label]) => iconR * 2 + pad + measure(label, cap));
-    const total = widths.reduce((u, v) => u + v, 0) + between * (row.length - 1);
-    let x = cx - total / 2;
-    row.forEach(([kind, label], i) => {
-      const iconX = x + iconR;
-      if (kind === "gate") K.gateMark(a, iconX, y, iconR);
-      if (kind === "faction") K.factionSite(a, iconX, y, "officials", iconR);
-      if (kind === "peri") K.peristyle(a, iconX, y, iconR);
-      if (kind === "space") K.streetSpace(a, iconX, y, iconR - 0.2);
-      if (kind === "block") {
-        a.rect(iconX - iconR, y - iconR, iconR * 2, iconR * 2, w("bold", { width: 0.4 }));
-        A.hall(a, iconX - iconR + 0.9, y - iconR + 0.9, iconR * 2 - 1.8, iconR * 2 - 1.8, { shadow: 0 });
-      }
-      text(a, label, x + iconR * 2 + pad, y + cap / 2, cap, { align: "left", medium: "graphite", weight: 1.05 });
-      x += widths[i] + between;
-    });
-    y += 5.6;
+  const iconX = x0 + 5, textX = x0 + 11.5, textW = x1 - textX, cap = 1.9;
+  for (const [kind, label] of items) {
+    const lines = wrap(label, cap, textW);
+    const hh = Math.max(9, lines.length * cap * 1.75 + 2.5);
+    const iy = y + hh / 2 - 2;
+    const r = 3.6;
+    if (kind === "space") K.streetSpace(a, iconX, iy, r);
+    if (kind === "card") K.cardSpace(a, iconX, iy, r + 0.4);
+    if (kind === "gate") K.gateMark(a, iconX, iy, r + 0.5);
+    if (kind === "peri") K.peristyle(a, iconX, iy, r + 0.4);
+    if (kind === "block") {
+      a.rect(iconX - r, iy - r, 2 * r, 2 * r, w("bold", { width: 0.45 }));
+      A.hall(a, iconX - r + 1, iy - r + 1, 2 * r - 2, 2 * r - 2, { shadow: 0 });
+    }
+    if (kind === "none") K.factionEmblem(a, iconX, iy, 2.8, "army");
+    const ty0 = iy - ((lines.length - 1) * cap * 1.75) / 2 + cap / 2;
+    lines.forEach((ln, i) => text(a, ln, textX, ty0 + i * cap * 1.75, cap, { align: "left", medium: "graphite", weight: 1.05 }));
+    y += hh + 1.5;
   }
 }
