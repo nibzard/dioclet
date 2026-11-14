@@ -10,7 +10,7 @@ Coordinates in the output are millimetres with the origin at the
 top-left corner of each artwork and y growing downward (canvas
 convention). The kit's PDF layout uses a bottom-left origin.
 
-Usage: python3 art/export_layout.py [--rules rules_v010_bigboard.json]
+Usage: python3 art/export_layout.py [--rules rules_v0101_bigboard.json]
 """
 import json
 import os
@@ -96,6 +96,7 @@ def succession(rules):
         "gates": {k: at(v) for k, v in b.gates.items()},
         "gate_names": kit.GATE_NAMES,
         "checkpoint": at(b.checkpoint),
+        "glory_posts": [at(c) for c in b.glory_posts],
         "card_spaces": [at(c) for c in S["card_spaces"]],
         "rows": S["rows"], "cols": S["cols"],
     }

@@ -154,12 +154,19 @@ class TestBigBoardDeal(unittest.TestCase):
         self.assertEqual(engine.result(a), engine.result(b))
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TestSuccessionGuardPostsExperiment(unittest.TestCase):
     """rules_v10_l2posts.json: the V0.10 board plus four guard posts (experiment)."""
+
+    def test_adopted_file_is_the_experiment_file(self):
+        # D52: 0.10.1-bigboard adopts the experiment arm unchanged.
+        adopted = engine.load_rules(os.path.join(ROOT, "rules_v0101_bigboard.json"))
+        posts = engine.load_rules(os.path.join(ROOT, "rules_v10_l2posts.json"))
+        engine.validate_rules(adopted)
+        self.assertEqual(adopted["rules_version"], "0.10.1-bigboard")
+        for value in (adopted, posts):
+            value.pop("rules_version")
+            value.pop("game_name")
+        self.assertEqual(adopted, posts)
 
     def test_posts_file_differs_from_v010_only_by_the_posts(self):
         base, posts = rules(), engine.load_rules(os.path.join(ROOT, "rules_v10_l2posts.json"))
@@ -179,3 +186,6 @@ class TestSuccessionGuardPostsExperiment(unittest.TestCase):
         profiles = {gid: sorted(b2.distances(tuple(c))[p] for p in posts) for gid, c in b2.gates.items()}
         self.assertEqual(len({tuple(p) for p in profiles.values()}), 1, profiles)
         self.assertEqual({b2.distances(cp)[p] for p in posts}, {12})
+
+if __name__ == "__main__":
+    unittest.main()

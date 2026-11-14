@@ -43,7 +43,7 @@ from reportlab.pdfgen import canvas as pdfcanvas
 import engine  # noqa: E402
 from board import Board, validate_six_block_layout  # noqa: E402
 
-RULES_FILE = "rules_v010_bigboard.json"
+RULES_FILE = "rules_v0101_bigboard.json"
 OUT_DIR = "print"                         # ART edition and the manifest
 BW_DIR = os.path.join(OUT_DIR, "bw")      # black-and-white edition
 KIT_VERSION = "V0.10 print kit (V0.10 big-board rules)"
@@ -598,7 +598,7 @@ def draw_succession_map(c, S):
 
     # Streets: open circles; special cells carry their own symbols.
     special = ({tuple(g) for g in b.gates.values()} | set(S["card_spaces"])
-               | {tuple(b.checkpoint)})
+               | {tuple(g) for g in b.glory_posts} | {tuple(b.checkpoint)})
     for cell, (x, y) in S["spaces"]:
         if tuple(cell) in special:
             continue
@@ -609,6 +609,13 @@ def draw_succession_map(c, S):
     for cell in S["card_spaces"]:
         x, y = pos(cell)
         _card_space(c, x, y, 10.6)
+
+    # Guard posts: star plus roll reminder, as on the palace map.
+    for cell in b.glory_posts:
+        x, y = pos(tuple(cell))
+        c.setLineWidth(1.3)
+        _star(c, x * mm, (y + 1.4) * mm, 9.6 * mm)
+        _centered(c, x, y - 6.6, "4+", "Helvetica-Bold", 6.5)
 
     # Gates: arch in a bold ring, name above on a plate (the south gate
     # sits under a block, so its name crosses the block frame).
@@ -637,7 +644,7 @@ def draw_succession_map(c, S):
                       ("arch", "gate / return here"),
                       ("octagon", "Peristyle - proclaim here")]),
         (by0 + 7.2, [("hatch", "building - no entry"),
-                     ("blank", "no guard posts on this map: duel wins are the only Prestige")]),
+                     ("star", "guard post: roll 4+ for 1 Prestige")]),
     ]
     for sy, entries in row_defs:
         x = 40.0
@@ -655,6 +662,9 @@ def draw_succession_map(c, S):
             elif kind == "octagon":
                 _octagon(c, x * mm, sy * mm, 3.4 * mm)
                 x += 8.0
+            elif kind == "star":
+                _star(c, x * mm, sy * mm, 3.6 * mm)
+                x += 8.5
             elif kind == "hatch":
                 c.setLineWidth(0.8)
                 c.rect(x * mm, (sy - 2.8) * mm, 5.6 * mm, 5.6 * mm)
@@ -1422,10 +1432,9 @@ RULEBOOK_PAGES = [
     ]),
     ("Prestige", [
         ("h", "Earning Prestige"),
-        ("b", "Guard post (star, palace map only): end a move there and roll one "
+        ("b", "Guard post (star, on both maps): end a move there and roll one "
               "die. A 4, 5 or 6 earns 1 Prestige."),
-        ("b", "Win a duel: the winner of any duel earns 1 Prestige. On the "
-              "succession map this is the only income."),
+        ("b", "Win a duel: the winner of any duel earns 1 Prestige."),
         ("p", "You can hold at most 3 Prestige. Any reward above three is lost - "
               "spend it or waste it."),
         ("h", "Duels"),
@@ -1480,8 +1489,9 @@ RULEBOOK_PAGES = [
               "from - and keeps everything it owns: items, Prestige, and any "
               "support already gained. From now on all movement, support, duels "
               "and claims happen on the succession map. Every gate there is nine "
-              "steps from the Peristyle. Winning a duel is the only Prestige "
-              "income there - the guard posts stayed behind on the palace map."),
+              "steps from the Peristyle. The succession map has four guard posts "
+              "of its own, and duels still pay, so a broke player can earn the "
+              "contest fee again."),
         ("h", "Proclaiming a claim"),
         ("n", "During the succession phase, stand at the Peristyle with support from "
               "two different factions."),
@@ -1671,7 +1681,7 @@ def quick_reference_pdf(path):
                        "3. Do ONE action (or none): take treasure · guard duty · duel · "
                        "search a card · gain support · claim the checkpoint · proclaim · "
                        "maintain your claim."]),
-        ("TWO MAPS", ["Palace map (large): treasures, guard posts, the checkpoint claim.",
+        ("TWO MAPS", ["Palace map (large): treasures, the checkpoint claim.",
                       "Claim the checkpoint: own ALL SIX items and stand at the Peristyle. "
                       "The palace map ends one full round after the first claim, or after "
                       "palace round 24 if nobody owns all six.",
@@ -1680,14 +1690,13 @@ def quick_reference_pdf(path):
                       "At the change everyone returns to their gate on the succession "
                       "map; every gate is 9 steps from the Peristyle."]),
         ("ROLLS", ["Movement: two dice summed.", "Guard post: one die - 4+ earns 1 Prestige "
-                   "(palace map).",
+                   "(either map).",
                    "Duel: one die each + your one best item bonus; the pugio wins ties."]),
         ("EQUIPMENT (one best bonus per side)", [
             "Gladius +1 attack · Scutum +1 defense · Pilum +1 vs the claimant.",
             "Pugio wins ties · Galea once: reveal a district · Lorica once: stay "
             "when beaten."]),
-        ("PRESTIGE (cap 3)", ["Earn: guard post 4+ (palace) · any duel win - the only "
-                              "income on the succession map.",
+        ("PRESTIGE (cap 3)", ["Earn: guard post 4+ (either map) · any duel win.",
                               "Spend: 1 = faction support · 1 = fee to contest a claim. "
                               "Searching is free.",
                               "Keep 1 in reserve: with 0 Prestige you cannot contest a claim.",
@@ -2041,13 +2050,13 @@ PRINTED_ABILITIES = {
 
 # The big-board prose assumes this exact succession map: the palace
 # board's size, gates "9 steps from the Peristyle", six faction card
-# spaces dealt blind, and no guard posts on the endgame map.
+# spaces dealt blind, and four guard posts on the endgame map.
 PRINTED_TWIN = {
     "width": 19,
     "height": 13,
     "gates": {"P0": [6, 0], "P1": [18, 6], "P2": [12, 12], "P3": [0, 6]},
     "checkpoint": [9, 6],
-    "glory_posts": [],
+    "glory_posts": [[0, 3], [18, 9], [3, 0], [15, 12]],
     "support_sites": [[0, 0], [4, 6], [9, 1], [9, 11], [14, 6], [18, 12]],
 }
 
@@ -2181,6 +2190,8 @@ def main():
                     "checkpoint": [round(v, 2) for v in S["pos"](tuple(S["board"].checkpoint))],
                     "card_spaces": [[round(v, 2) for v in S["pos"](cell)]
                                     for cell in S["card_spaces"]],
+                    "glory_posts": [[round(v, 2) for v in S["pos"](tuple(cell))]
+                                    for cell in S["board"].glory_posts],
                 },
                 "blocks": [list(block) for block in S["blocks"]],
             },

@@ -255,7 +255,9 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("That is a search", text)
         self.assertIn("An empty street gives nothing", text)
         self.assertIn("nine steps from the Peristyle", text)        # pinwheel gates
-        self.assertIn("the only Prestige income there", text)       # duel-only income
+        self.assertIn("four guard posts", text)                     # succession posts
+        self.assertIn("Guard post (star, on both maps)", text)
+        self.assertNotIn("the only Prestige income there", text)
         self.assertIn("Faction cards exist only in the succession phase", text)
         self.assertNotIn("east side, on the east-west street", text)  # old fixed sites
         self.assertIn("the palace map leaves the table", text)
@@ -339,8 +341,10 @@ class SuccessionMapMatchesRules(unittest.TestCase):
     def symbols(self):
         """(centre, drawn radius) for every symbol, as draw_succession_map draws it."""
         special = ({tuple(g) for g in self.board.gates.values()}
-                   | set(self.S["card_spaces"]) | {tuple(self.board.checkpoint)})
+                   | set(self.S["card_spaces"]) | {tuple(self.board.checkpoint)}
+                   | {tuple(p) for p in self.board.glory_posts})
         out = [(xy, 9.2) for cell, xy in self.S["spaces"] if tuple(cell) not in special]
+        out += [(self.S["pos"](tuple(c)), 9.6) for c in self.board.glory_posts]
         out += [(self.S["pos"](tuple(c)), 11.4) for c in self.board.gates.values()]
         out += [(self.S["pos"](c), 10.6) for c in self.S["card_spaces"]]
         out += [(self.S["pos"](tuple(self.board.checkpoint)), 11.2)]
@@ -358,7 +362,7 @@ class SuccessionMapMatchesRules(unittest.TestCase):
         self.assertEqual(counts["gates"], 4)
         self.assertEqual(counts["blocks"], 4)
         self.assertEqual(counts["card_spaces"], 6)
-        self.assertEqual(counts["glory_posts"], 0)
+        self.assertEqual(counts["glory_posts"], 4)
 
     def test_special_positions_match_rules(self):
         layout = self.manifest["layout"]["succession_map_mm"]
@@ -371,6 +375,10 @@ class SuccessionMapMatchesRules(unittest.TestCase):
         self.assertEqual(specials["card_spaces"],
                          [[round(v, 2) for v in self.S["pos"](tuple(c))]
                           for c in self.rules["board_level2"]["support_sites"]])
+        self.assertEqual(specials["glory_posts"],
+                         [[round(v, 2) for v in self.S["pos"](tuple(c))]
+                          for c in self.rules["board_level2"]["glory_posts"]])
+        self.assertEqual(self.board.glory_posts, [(0, 3), (18, 9), (3, 0), (15, 12)])
         # Compass sanity: the gates sit where the prose says.
         self.assertEqual(self.board.gates["P0"], (6, 0))    # north
         self.assertEqual(self.board.gates["P1"], (18, 6))   # east
