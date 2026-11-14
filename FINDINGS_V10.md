@@ -65,3 +65,18 @@ was proclaimed, so nobody could pay the contest fee. Full numbers:
   quick reference and the rulebook now say: keep 1 Prestige in reserve.
 - Adopted (D52) as `rules_v0101_bigboard.json` ("0.10.1-bigboard").
   The print kit and the art map show the four posts.
+
+## Six blocks on the succession map (2026-11-14)
+
+The designer asked whether the succession map can use six blocks, one
+faction card each. Full numbers: `notes/v10-six-blocks-2026-11-14.md`.
+
+- With the 0.10.1 gates and the Peristyle at (9,6), 20 card sets are
+  fair (one card per block). In every one, two cards sit 1 or 2 steps
+  from the Peristyle.
+- Three arms (spread, ring, near) all pass the gate test in a
+  1,536-game holdout (p = .26 to .51). Level 2 falls from a median of
+  12 rounds to 10, draws stay at about 1%, and the Prestige farmer
+  falls from .22 to .16 or .17.
+- Adopted (D53): the designer chose six blocks. The "spread" arm is
+  `rules_v0102_bigboard.json` ("0.10.2-bigboard").

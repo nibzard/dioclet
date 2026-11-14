@@ -6,7 +6,8 @@ uses two boards. The palace board is one complete vector drawing of
 the treasure map (19x13 cells, 97 street spaces, six intact blocks),
 divided at print time into four overlapping A4 landscape tiles that
 assemble into one large board (about A2). The succession map has the
-same footprint (19x13 cells, four blocks, six faction card spaces) and
+same footprint and street grid (19x13 cells, six blocks, six faction
+card spaces, one for each block) and
 tiles onto four pages the same way, so the two boards can be taped back
 to back. All other documents are A4 portrait.
 
@@ -43,7 +44,7 @@ from reportlab.pdfgen import canvas as pdfcanvas
 import engine  # noqa: E402
 from board import Board, validate_six_block_layout  # noqa: E402
 
-RULES_FILE = "rules_v0101_bigboard.json"
+RULES_FILE = "rules_v0102_bigboard.json"
 OUT_DIR = "print"                         # ART edition and the manifest
 BW_DIR = os.path.join(OUT_DIR, "bw")      # black-and-white edition
 KIT_VERSION = "V0.10 print kit (V0.10 big-board rules)"
@@ -66,10 +67,9 @@ GATE_NAMES = {"P0": "GOLDEN GATE - NORTH", "P1": "SILVER GATE - EAST",
 def build_layout(rules, section="board"):
     """All geometric facts, computed once and shared by every page.
 
-    The palace board and the succession map share one footprint, so
-    both use these tile windows and cut lines; only the registration
-    crosses differ (section="board_level2" places them for the
-    succession map's streets).
+    The palace board and the succession map share one footprint and
+    one street grid, so both use these tile windows, cut lines and
+    registration crosses.
     """
     b = Board(rules, section)
     rows, cols = b.height, b.width
@@ -98,18 +98,15 @@ def build_layout(rules, section="board"):
     # prints exactly two, so families can level the pages while
     # taping: one pair along the vertical cut, one along the
     # horizontal cut.
-    if section == "board_level2":
-        reg_marks = SUCCESSION_REG_MARKS
-    else:
-        reg_marks = [(cut_x - 12.0, 300.0), (cut_x + 12.0, 300.0),   # vertical cut, top tiles
-                     (cut_x - 12.0, 160.0), (cut_x + 12.0, 160.0),   # vertical cut, bottom tiles
-                     # The horizontal-cut pairs must share x so families can
-                     # stack them vertically when taping. The decumanus street
-                     # row (circles x 62.75..521.75, y 192.6..211) leaves no
-                     # room for a 9.6 mm crosshair anywhere along it, so both
-                     # pairs sit west/east of the row ends, 12 mm off the cut.
-                     (40.0, 201.0), (560.0, 201.0),                  # horizontal cut, top tiles
-                     (40.0, 177.0), (560.0, 177.0)]                  # horizontal cut, bottom tiles
+    reg_marks = [(cut_x - 12.0, 300.0), (cut_x + 12.0, 300.0),   # vertical cut, top tiles
+                 (cut_x - 12.0, 160.0), (cut_x + 12.0, 160.0),   # vertical cut, bottom tiles
+                 # The horizontal-cut pairs must share x so families can
+                 # stack them vertically when taping. The decumanus street
+                 # row (circles x 62.75..521.75, y 192.6..211) leaves no
+                 # room for a 9.6 mm crosshair anywhere along it, so both
+                 # pairs sit west/east of the row ends, 12 mm off the cut.
+                 (40.0, 201.0), (560.0, 201.0),                  # horizontal cut, top tiles
+                 (40.0, 177.0), (560.0, 177.0)]                  # horizontal cut, bottom tiles
     spaces = sorted((tuple(cell), pos(cell)) for cell in
                     {(x, y) for x in range(cols) for y in range(rows)
                      if (x, y) not in b.blocked})
@@ -480,25 +477,14 @@ def board_pdf(path, L):
 # same scale and on the same cut lines, so the two boards can be taped
 # back to back into one board that turns over.
 
-# Registration crosses for the succession map. Column 9 and row 6 are
-# streets here, so the palace positions would sit on street circles.
-# Each pair shares one coordinate across its cut and sits inside a
-# block, clear of the hatch frame and the block numeral; every tile
-# prints exactly two.
-SUCCESSION_REG_MARKS = [(268.0, 300.0), (317.0, 300.0),   # vertical cut, top tiles
-                        (268.0, 100.0), (317.0, 100.0),   # vertical cut, bottom tiles
-                        (120.0, 225.0), (490.0, 225.0),   # horizontal cut, top tiles
-                        (120.0, 177.0), (490.0, 177.0)]   # horizontal cut, bottom tiles
-
-
 def build_succession_layout(rules):
     """Geometric facts for the succession map, sharing the palace tiling."""
     S = build_layout(rules, "board_level2")
     b = S["board"]
     palace = Board(rules)
-    if (b.width, b.height) != (palace.width, palace.height):
-        raise SystemExit("the succession map must match the palace board's size")
-    # The succession map declares no building footprints; its four
+    if (b.width, b.height) != (palace.width, palace.height) or b.blocked != palace.blocked:
+        raise SystemExit("the succession map must use the palace board's street grid")
+    # The succession map declares no building footprints; its six
     # blocks are the connected components of blocked cells, drawn as
     # their exact bounding boxes (each component is a rectangle).
     remaining, components = set(b.blocked), []
@@ -576,7 +562,7 @@ def draw_succession_map(c, S):
     _centered(c, nx, ny - 12.5, "N", "Times-Bold", 11)
 
     # City blocks: double outline, sparse hatch, numeral on a plate.
-    numerals = ("I", "II", "III", "IV")
+    numerals = ("I", "II", "III", "IV", "V", "VI")
     for index, (x0, y0, x1, y1) in enumerate(S["blocks"]):
         bx = ml + x0 * CELL + 2.4
         by = mb + (S["rows"] - 1 - y1) * CELL + 2.4
@@ -588,6 +574,9 @@ def draw_succession_map(c, S):
         c.rect((bx + 1.7) * mm, (by + 1.7) * mm, (bw - 3.4) * mm, (bh - 3.4) * mm)
         _hatch(c, bx + 2.6, by + 2.6, bw - 5.2, bh - 5.2, gap=8.5)
         cx, cy = bx + bw / 2.0, by + bh / 2.0
+        if bx < S["cut"]["x"] < bx + bw:
+            # A middle block: keep its plate whole, west of the cut.
+            cx = min(cx, S["cut"]["x"] - 3.0 - 17.0)
         c.saveState()
         c.setFillColorRGB(1, 1, 1)
         c.rect((cx - 14) * mm, (cy - 9) * mm, 28 * mm, 17 * mm, stroke=0, fill=1)
@@ -627,7 +616,7 @@ def draw_succession_map(c, S):
         _arch(c, x * mm, (y + 0.8) * mm, 7.8 * mm)
         _knockout_label(c, x, y + 13.4, GATE_NAMES[pid])
 
-    # Peristyle: octagon at the crossing, label above (the horizontal
+    # Peristyle: octagon on the middle street, label above (the horizontal
     # cut runs 1.5 mm below the octagon).
     px, py = pos(tuple(b.checkpoint))
     c.setLineWidth(2.0)
@@ -1527,12 +1516,12 @@ RULEBOOK_PAGES = [
         ("h", "An example challenge"),
         ("p", "Livia has proclaimed at the Peristyle with the Army and the elites "
               "behind her. Marcus, holding 2 Prestige, the gladius and the pilum, "
-              "moves next to the crossing. He pays the 1 Prestige fee and duels. "
+              "moves next to the Peristyle. He pays the 1 Prestige fee and duels. "
               "His best item bonus is +1 - the pilum also applies against a "
               "claimant, but one bonus only counts. He rolls 5 + 1 = 6. Livia "
               "holds the scutum and rolls 4 + 1 = 5. Marcus wins; the claim dies "
               "and Livia pays 1 Prestige shame. She has kept the lorica segmentata "
-              "unused, so she stays at the crossing instead of walking back to her "
+              "unused, so she stays at the Peristyle instead of walking back to her "
               "gate on the succession map. Marcus earns 1 Prestige for the duel "
               "win, leaving him with 2."),
         ("h", "If nobody wins"),
@@ -2050,14 +2039,15 @@ PRINTED_ABILITIES = {
 
 # The big-board prose assumes this exact succession map: the palace
 # board's size, gates "9 steps from the Peristyle", six faction card
-# spaces dealt blind, and four guard posts on the endgame map.
+# spaces dealt blind (one for each of the six blocks), and four guard
+# posts on the endgame map.
 PRINTED_TWIN = {
     "width": 19,
     "height": 13,
     "gates": {"P0": [6, 0], "P1": [18, 6], "P2": [12, 12], "P3": [0, 6]},
     "checkpoint": [9, 6],
-    "glory_posts": [[0, 3], [18, 9], [3, 0], [15, 12]],
-    "support_sites": [[0, 0], [4, 6], [9, 1], [9, 11], [14, 6], [18, 12]],
+    "glory_posts": [[0, 2], [18, 10], [2, 0], [16, 12]],
+    "support_sites": [[3, 0], [15, 12], [3, 6], [15, 6], [7, 6], [11, 6]],
 }
 
 

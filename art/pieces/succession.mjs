@@ -1,8 +1,9 @@
 // The succession map: the second board, where the throne is contested.
 // It has the palace board's footprint and prints on the same four tiles,
-// so a family can tape the two boards back to back. Four city quarters
+// so a family can tape the two boards back to back. Six city quarters
 // stand around the Peristyle; the gates sit pinwheel-fashion, each nine
-// steps from the crossing; six roundels hold the face-down faction cards.
+// steps from the Peristyle; six roundels hold the face-down faction cards,
+// one for each quarter.
 // Drawn as the palace board's companion: same paper, same pencil box,
 // same walls and margins, a busier town inside.
 //
@@ -22,12 +23,14 @@ const GATE_LABELS = {
   P0: ["GOLDEN GATE", "NORTH"], P1: ["SILVER GATE", "EAST"],
   P2: ["BRONZE GATE · SOUTH"], P3: ["IRON GATE · WEST"],
 };
-// Blocks in layout order: north-west, north-east, south-west, south-east.
+// Blocks in layout order: the north row west to east, then the south row.
 const QUARTERS = [
   { numeral: "I", name: "MERCATVS", theme: "market" },
-  { numeral: "II", name: "BALNEAE", theme: "baths" },
-  { numeral: "III", name: "TABERNAE", theme: "shops" },
-  { numeral: "IV", name: "DOMVS", theme: "houses" },
+  { numeral: "II", name: "HORREA", theme: "granaries" },
+  { numeral: "III", name: "BALNEAE", theme: "baths" },
+  { numeral: "IV", name: "TABERNAE", theme: "shops" },
+  { numeral: "V", name: "FANVM", theme: "temple" },
+  { numeral: "VI", name: "DOMVS", theme: "houses" },
 ];
 const PLAQUE = [32, 24];
 
@@ -45,7 +48,7 @@ export function renderSuccession(layout, { dpi = 200, seed = 400 } = {}) {
   drawSea(a, S, G);
   drawPaving(a, S);
   drawWalls(a, S, G);
-  S.blocks.forEach((rect, i) => drawQuarter(a, rect, QUARTERS[i], keepOut));
+  S.blocks.forEach((rect, i) => drawQuarter(a, rect, QUARTERS[i], keepOut, S.cut_mm.x));
   drawMargins(a, S, G);
   drawTitle(a, S);
 
@@ -167,11 +170,13 @@ function drawWalls(a, S, G) {
 }
 
 // ---------------------------------------------------------------------------
-// The four quarters. Each is a grid of lots around a central court that
-// carries the plaque. A lot that would touch a registration cross stays
-// open ground with a few trees, so the crosses print on clean paper.
+// The six quarters. Each is a grid of lots around a court that carries
+// the plaque. A lot that would touch a registration cross stays open
+// ground with a few trees, so the crosses print on clean paper. The
+// middle quarters straddle the vertical tile cut, so their court moves
+// to the west lots and the plaque stays on one sheet.
 
-function drawQuarter(a, rect, q, keepOut) {
+function drawQuarter(a, rect, q, keepOut, cutX) {
   const [bx, by, bw, bh] = rect;
   const ins = 2.4;
   const x = bx + ins, y = by + ins, s = bw - ins * 2, t = bh - ins * 2;
@@ -180,21 +185,23 @@ function drawQuarter(a, rect, q, keepOut) {
   a.rect(x + 1.7, y + 1.7, s - 3.4, t - 3.4, w("fine", { overshoot: 0.4 }));
 
   const ix = x + 4, iy = y + 4, is = s - 8, it = t - 8;
-  const cols = 6, rows = 3, lane = 4;
+  const cols = s > t * 1.3 ? 6 : 4, rows = 3, lane = 4;
   const lw = (is - lane * (cols - 1)) / cols, lh = (it - lane * (rows - 1)) / rows;
   const lot = (i, j) => [ix + i * (lw + lane), iy + j * (lh + lane)];
   const hits = (x0, y0, x1, y1) => keepOut.some(([kx, ky, kr]) =>
     kx + kr > x0 && kx - kr < x1 && ky + kr > y0 && ky - kr < y1);
 
-  // The central court spans the middle two lots of the middle row.
-  const [cx0, cy0] = lot(2, 1);
+  // The court spans two lots of the middle row: the middle two, or the
+  // two west lots when the block straddles the cut.
+  const ci = x < cutX && cutX < x + s ? 0 : cols / 2 - 1;
+  const [cx0, cy0] = lot(ci, 1);
   const cw = lw * 2 + lane;
   const px = cx0 + cw / 2, py = cy0 + lh / 2;
   const box = M.tabulaBounds(px, py, PLAQUE[0], PLAQUE[1]);
   const LOTS = THEMES[q.theme];
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
-      if (j === 1 && (i === 2 || i === 3)) continue;
+      if (j === 1 && (i === ci || i === ci + 1)) continue;
       const [lx, ly] = lot(i, j);
       if (hits(lx, ly, lx + lw, ly + lh)) {
         A.garden(a, lx, ly, lw, lh, 3, keepOut);
@@ -259,6 +266,37 @@ const THEMES = {
     court(a, x, y, wd, ht, keep) {
       A.court(a, x, y, wd, ht, { colonnade: false, paving: true });
       A.garden(a, x + 3, y + 3, wd - 6, ht - 6, 3, keep);
+    },
+  },
+  // The granaries: long buttressed store halls, a loading yard.
+  granaries: {
+    lot(a, x, y, wd, ht, i, j) {
+      if ((i + j) % 4 === 3) {
+        A.court(a, x, y, wd, ht, { colonnade: false, wall: true, paving: true });
+        return;
+      }
+      A.hall(a, x, y, wd * 0.46, ht, { ridge: "v" });
+      A.hall(a, x + wd * 0.54, y, wd * 0.46, ht, { ridge: "v" });
+    },
+    court(a, x, y, wd, ht, keep) {
+      A.court(a, x, y, wd, ht, { colonnade: false, paving: true });
+      A.garden(a, x + 3, y + 3, wd - 6, ht - 6, 2, keep);
+    },
+  },
+  // The sanctuary: small temples in walled precincts, a sacred grove.
+  temple: {
+    lot(a, x, y, wd, ht, i, j) {
+      if ((i + j) % 2 === 0) {
+        A.court(a, x, y, wd, ht, { colonnade: true, spacing: 3.0 });
+        A.temple(a, x + wd * 0.2, y + ht * 0.15, wd * 0.6, ht * 0.7, { front: j === 0 ? "s" : "n", columns: [4, 6] });
+      } else {
+        A.court(a, x, y, wd, ht, { colonnade: false, wall: true, paving: false });
+        A.garden(a, x + 2, y + 2, wd - 4, ht - 4, 4);
+      }
+    },
+    court(a, x, y, wd, ht, keep) {
+      A.court(a, x, y, wd, ht, { colonnade: true, spacing: 3.2 });
+      A.garden(a, x + 3, y + 3, wd - 6, ht - 6, 2, keep);
     },
   },
   // The houses: atrium houses, each a court with rooms on two sides.

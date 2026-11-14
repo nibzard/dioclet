@@ -8,6 +8,7 @@ dealt face down onto six street sites at the phase change.
 import json
 import os
 import random
+import sys
 import unittest
 
 import candidate_actions
@@ -186,6 +187,41 @@ class TestSuccessionGuardPostsExperiment(unittest.TestCase):
         profiles = {gid: sorted(b2.distances(tuple(c))[p] for p in posts) for gid, c in b2.gates.items()}
         self.assertEqual(len({tuple(p) for p in profiles.values()}), 1, profiles)
         self.assertEqual({b2.distances(cp)[p] for p in posts}, {12})
+
+
+class TestSixBlockExperiment(unittest.TestCase):
+    """rules_v10_six_*.json: six-block succession maps (experiment)."""
+
+    def test_adopted_file_is_the_spread_arm(self):
+        # D53: 0.10.2-bigboard adopts the "spread" arm unchanged.
+        adopted = engine.load_rules(os.path.join(ROOT, "rules_v0102_bigboard.json"))
+        spread = engine.load_rules(os.path.join(ROOT, "rules_v10_six_spread.json"))
+        engine.validate_rules(adopted)
+        self.assertEqual(adopted["rules_version"], "0.10.2-bigboard")
+        for value in (adopted, spread):
+            value.pop("rules_version")
+            value.pop("game_name")
+        self.assertEqual(adopted, spread)
+
+    def test_files_match_the_tool_and_are_fair(self):
+        sys.path.insert(0, os.path.join(ROOT, "tools"))
+        import v10_six_blocks as six
+        for name in six.ARMS:
+            with self.subTest(arm=name):
+                value = engine.load_rules(os.path.join(ROOT, six.rules_file(name)))
+                engine.validate_rules(value)
+                self.assertEqual(value, six.arm_rules(name))
+                b2 = engine.Board(value, "board_level2")
+                self.assertEqual(len(b2.distances(b2.gates["P0"])), 97)
+                cp = tuple(value["board_level2"]["checkpoint"])
+                self.assertEqual({b2.distances(g)[cp] for g in b2.gates.values()}, {9})
+                for key in ("support_sites", "glory_posts"):
+                    cells = [tuple(c) for c in value["board_level2"][key]]
+                    profiles = {sorted_tuple for sorted_tuple in
+                                (tuple(sorted(b2.distances(g)[c] for c in cells))
+                                 for g in b2.gates.values())}
+                    self.assertEqual(len(profiles), 1, (name, key))
+
 
 if __name__ == "__main__":
     unittest.main()
