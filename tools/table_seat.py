@@ -30,7 +30,8 @@ FACTION_MARK = {"army": "a", "officials": "o", "elites": "e"}
 
 
 def ascii_map(obs):
-    """North at the top. Players are digits 0-3, drawn over the map."""
+    """North (y 0) at the top, as on the printed boards. Players are digits
+    0-3, drawn over the map."""
     b = obs["board"]
     w, h = b["width"], b["height"]
     grid = [["." for _ in range(w)] for _ in range(h)]
@@ -56,7 +57,7 @@ def ascii_map(obs):
         x, y = p["position"]
         grid[y][x] = pid[1]
     rows = []
-    for y in range(h - 1, -1, -1):
+    for y in range(h):
         rows.append(f"{y:2d} " + "".join(grid[y]))
     rows.append("   " + "".join(str(x % 10) for x in range(w)))
     return "\n".join(rows)
@@ -97,6 +98,29 @@ def public_events(state, obs, since_turn):
     return lines[-12:]
 
 
+def claim_lines(obs, rules):
+    """Plain claim status. The palace checkpoint claim and a succession
+    claim are different things, so each phase shows only its own."""
+    prog = obs.get("progress") or {}
+    if obs["phase"] == 1:
+        first = prog.get("first_challenger")
+        return [f"palace checkpoint claim: {first or 'nobody yet'} "
+                f"(own all six items and stand at the Peristyle) | full sets: "
+                f"{prog.get('players_with_full_equipment')}"]
+    config = rules["succession"]
+    pending = obs.get("pending_claim")
+    if not pending:
+        return [f"standing claim: none - stand at the Peristyle with "
+                f"{config['required_support']} supports to proclaim"]
+    window = config.get("claim_window_rounds", 0)
+    fee = config.get("contest_cost", 0)
+    last = pending["round"] + window - 1
+    return [f"standing claim: {pending['player']} (proclaimed in round {pending['round']}). "
+            f"It wins at the end of round {last} unless a rival wins a contest duel "
+            f"first (fee {fee} Prestige, within {rules['movement']['duel_range']} "
+            f"circles of the claimant)."]
+
+
 def view(run, player, out=sys.stdout):
     state = engine.load_run(run)
     if engine.is_finished(state):
@@ -127,10 +151,8 @@ def view(run, player, out=sys.stdout):
               f"items {p['equipment_count']}/6 {p['equipment']} support {p['support']}",
               file=out)
     print(f"\nrevealed districts: {obs.get('revealed_districts')}", file=out)
-    print(f"pending claim: {obs.get('pending_claim')}", file=out)
-    prog = obs.get("progress") or {}
-    print(f"first challenger: {prog.get('first_challenger')} | full sets: "
-          f"{prog.get('players_with_full_equipment')}", file=out)
+    for line in claim_lines(obs, rules):
+        print(line, file=out)
     since = max(0, obs["turn_id"] - 12)
     print("\nRECENT EVENTS:", file=out)
     for line in public_events(state, obs, since):
