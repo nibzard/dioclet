@@ -161,13 +161,17 @@ export function mausoleum(a, cx, cy, r) {
 
 // Scattered garden trees inside a region, kept off a list of keep-out
 // circles.
+// keepOut holds circles [x, y, r] and rectangles {x0, y0, x1, y1}.
 export function garden(a, x, y, wd, ht, count, keepOut = []) {
   let placed = 0, tries = 0;
+  const blocked = (px, py, r) => keepOut.some((k) => Array.isArray(k)
+    ? Math.hypot(px - k[0], py - k[1]) < k[2] + r
+    : px + r > k.x0 && px - r < k.x1 && py + r > k.y0 && py - r < k.y1);
   while (placed < count && tries < count * 30) {
     tries++;
     const r = 1.6 + a.rng() * 1.6;
     const px = x + r + a.rng() * (wd - 2 * r), py = y + r + a.rng() * (ht - 2 * r);
-    if (keepOut.some(([kx, ky, kr]) => Math.hypot(px - kx, py - ky) < kr + r)) continue;
+    if (blocked(px, py, r)) continue;
     treeTop(a, px, py, r);
     keepOut.push([px, py, r + 0.6]);
     placed++;

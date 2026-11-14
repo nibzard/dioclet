@@ -18,9 +18,13 @@ const PI = Math.PI;
 const w = (name, extra = {}) => ({ ...M.W[name], ...extra });
 
 const GATE_LABELS = {
-  P0: ["GOLDEN GATE · NORTH"], P1: ["SILVER GATE", "EAST"],
+  P0: ["GOLDEN GATE", "NORTH"], P1: ["SILVER GATE", "EAST"],
   P2: ["BRONZE GATE · SOUTH"], P3: ["IRON GATE · WEST"],
 };
+
+// The district plaque, body only; the ears add 0.55 x the height each side.
+const PLAQUE = [36, 28];
+const plaqueBox = (px, py) => M.tabulaBounds(px, py, PLAQUE[0], PLAQUE[1]);
 
 const BLOCK_NAMES = {
   A: "HORREA", B: "CASTRA", C: "FABRICAE", D: "TEMPLVM IOVIS", E: "MAVSOLEVM", F: "PALATIVM",
@@ -210,7 +214,9 @@ function drawWalls(a, P, G) {
 
 // ---------------------------------------------------------------------------
 // The six blocks. Each is a plan with its own purpose, and a tabula ansata
-// carries the district letter.
+// carries the district letter. Every plan returns the plaque centre and
+// keeps its buildings and trees off plaqueBox() so the letter sits on
+// open ground.
 
 function drawBlock(a, b, keepOut) {
   const [bx, by, bw, bh] = b.rect;
@@ -224,7 +230,7 @@ function drawBlock(a, b, keepOut) {
   const plaque = PLANS[b.district](a, ix, iy, is, it, keepOut);
   // Plaque with the district letter and the block's Latin name.
   const [px, py] = plaque;
-  M.tabula(a, px, py, 36, 28, { depth: 0.6 });
+  M.tabula(a, px, py, PLAQUE[0], PLAQUE[1], { depth: 0.6 });
   text(a, b.district, px, py + 5.8, 15, { style: "inscribed", medium: "charcoal" });
   text(a, BLOCK_NAMES[b.district], px, py + 11.4, 2.4, { medium: "graphite", weight: 1.15, track: 0.15 });
 }
@@ -251,21 +257,30 @@ const PLANS = {
     A.court(a, x + 2, y + 21, s - 4, 34, { colonnade: false, paving: true });
     A.garden(a, x + 4, y + 23, s - 8, 30, 3, [...keepOut, [x + s * 0.5, y + 38, 8]]);
     A.temple(a, x + s * 0.5 - 4.5, y + 30, 9, 13, { front: "s", columns: [3, 4] });
-    const left = [x + 2, y + 60, 30, t - 62], right = [x + s - 32, y + 60, 30, t - 62];
+    const left = [x + 2, y + 60, 20, t - 62], right = [x + s - 22, y + 60, 20, t - 62];
     for (const [hx, hy, hw, hh] of [left, right]) {
-      A.hall(a, hx, hy, hw, (hh - 3) / 2, { ridge: "h" });
-      A.hall(a, hx, hy + (hh + 3) / 2, hw, (hh - 3) / 2, { ridge: "h" });
+      A.hall(a, hx, hy, hw, (hh - 3) / 2, { ridge: "v" });
+      A.hall(a, hx, hy + (hh + 3) / 2, hw, (hh - 3) / 2, { ridge: "v" });
     }
     return [x + s / 2, y + 60 + (t - 62) / 2];
   },
   // Workshops: small buildings along lanes, a cistern, a few trees.
   C(a, x, y, s, t) {
     const n = 3, gap = 5, cw = (s - 4 - gap * (n - 1)) / n;
+    const box = plaqueBox(x + s / 2, y + t / 2);
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         const cx = x + 2 + i * (cw + gap), cy = y + 2 + j * (cw + gap);
         if (i === 1 && j === 1) continue;
-        if ((i + j) % 2 === 0) {
+        if (j === 1) {
+          // Either side of the plaque: a long shed on the outer lane and
+          // a short one along the top, with a yard tree or two.
+          const outer = i === 0 ? cx : cx + cw * 0.68;
+          const top = i === 0 ? cx : cx + cw * 0.4;
+          A.hall(a, outer, cy, cw * 0.32, cw, { ridge: "v" });
+          A.hall(a, top, cy, cw * 0.6, cw * 0.32, { ridge: "h" });
+          A.garden(a, i === 0 ? cx + cw * 0.34 : cx + cw * 0.06, cy + cw * 0.36, cw * 0.6, cw * 0.6, 2, [box]);
+        } else if ((i + j) % 2 === 0) {
           A.hall(a, cx, cy, cw, cw * 0.45, { ridge: "h" });
           A.hall(a, cx, cy + cw * 0.55, cw * 0.55, cw * 0.45, { ridge: "v" });
           A.dome(a, cx + cw * 0.8, cy + cw * 0.78, cw * 0.14, { ribs: 8 });
@@ -286,29 +301,32 @@ const PLANS = {
     A.temple(a, x + s / 2 - 17, y + 9, 34, 50, { front: "s", columns: [6, 8] });
     A.roundTemple(a, x + 17, y + 30, 9);
     A.roundTemple(a, x + s - 17, y + 30, 9);
-    A.garden(a, x + 6, y + 64, s - 12, t - 70, 6, [[x + s / 2, y + t - 26, 22]]);
+    A.garden(a, x + 6, y + 64, s - 12, t - 70, 6, [plaqueBox(x + s / 2, y + t - 26)]);
     return [x + s / 2, y + t - 26];
   },
   // The mausoleum: the octagon in its precinct, a forecourt to the north.
   E(a, x, y, s, t, keepOut) {
     A.court(a, x + 2, y + 2, s - 4, t - 4, { colonnade: true, spacing: 3.6 });
-    A.mausoleum(a, x + s / 2, y + 58, 23);
-    // Forecourt: two cyprees and the plaque, clear of the octagon.
+    A.mausoleum(a, x + s / 2, y + 62, 23);
+    // Forecourt: two cypresses and the plaque, clear of the octagon.
     M.cypress(a, x + 15, y + 26, 20);
     M.cypress(a, x + s - 15, y + 26, 18);
-    return [x + s / 2, y + 17];
+    return [x + s / 2, y + 20.5];
   },
   // The imperial apartments: halls with apses, a domed vestibule, and
   // garden courts.
   F(a, x, y, s, t) {
+    const px = x + s / 2, py = y + 84;
     A.dome(a, x + 16, y + 16, 11, { ribs: 16 });
-    A.apseHall(a, x + 34, y + 4, 30, 22, "s");
-    A.apseHall(a, x + s - 36, y + 4, 32, 26, "e");
-    A.court(a, x + 4, y + 34, 34, 36, { colonnade: true, spacing: 3 });
-    A.garden(a, x + 8, y + 38, 26, 28, 3);
-    A.hall(a, x + s - 34, y + 36, 30, 32, { ridge: "v" });
-    A.hall(a, x + 2, y + t - 16, s - 4, 14, { ridge: "h" });
-    return [x + s / 2 + 4, y + t / 2 + 8];
+    A.apseHall(a, x + 32, y + 4, 28, 22, "s");
+    // The east apse ends inside the precinct wall, not on it.
+    A.apseHall(a, x + s - 46, y + 4, 32, 24, "e");
+    A.court(a, x + 4, y + 38, 30, 26, { colonnade: true, spacing: 3 });
+    A.garden(a, x + 8, y + 42, 22, 18, 3);
+    A.hall(a, x + s - 32, y + 40, 28, 24, { ridge: "v" });
+    A.garden(a, x + 38, y + 38, 42, 26, 3, [plaqueBox(px, py)]);
+    A.hall(a, x + 2, y + t - 13, s - 4, 11, { ridge: "h" });
+    return [px, py];
   },
 };
 
@@ -321,14 +339,17 @@ function drawTitle(a, P) {
   // Laurel sprigs either side of the title.
   for (const s of [-1, 1]) {
     const x0 = cx + s * (wdt / 2 + 3);
-    M.laurelBranch(a, [[x0, base - cap * 0.4], [x0 + s * 8, base - cap * 0.75], [x0 + s * 16, base - cap * 0.55]],
+    M.laurelBranch(a, [[x0, base - cap * 0.4], [x0 + s * 6, base - cap * 0.75], [x0 + s * 12, base - cap * 0.55]],
       { leafLen: 3.0, leafWid: 1.0, pairs: 5, berries: true });
   }
 }
 
 function drawGateLabels(a, P, G) {
   const g = P.gates;
-  text(a, GATE_LABELS.P0[0], g.P0[0], G.y0 - 9.6, 2.5, { medium: "charcoal", weight: 1.1 });
+  // North: two lines, like the east, so the label stays clear of the
+  // laurel sprig beside the title.
+  text(a, GATE_LABELS.P0[0], g.P0[0], G.y0 - 12.4, 2.5, { medium: "charcoal", weight: 1.1 });
+  text(a, GATE_LABELS.P0[1], g.P0[0], G.y0 - 8.4, 2.5, { medium: "charcoal", weight: 1.1 });
   text(a, GATE_LABELS.P2[0], g.P2[0], G.y1 + 13.6, 2.5, { medium: "charcoal", weight: 1.1 });
   const ex = (G.x1 + P.border_mm[0] + P.border_mm[2]) / 2 + 1.5;
   text(a, GATE_LABELS.P1[0], ex, g.P1[1] - 12, 2.5, { medium: "charcoal", weight: 1.1 });

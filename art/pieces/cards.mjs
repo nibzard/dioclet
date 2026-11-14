@@ -3,7 +3,7 @@
 // family can glue them back to back without a white rim.
 import { Sheet } from "../lib/core.mjs";
 import { Artist } from "../lib/brush.mjs";
-import { text, wrap } from "../lib/letters.mjs";
+import { text, wrap, measure } from "../lib/letters.mjs";
 import * as M from "../lib/motifs.mjs";
 import { DEVICES } from "../lib/devices.mjs";
 
@@ -42,11 +42,31 @@ function drawCard(a, item, index, cw, ch, bleed) {
     M.star(a, rx, ry, 1.5, { points: 8, inner: 0.45, weight: "firm", shade: false });
   }
 
-  // Title with a rule and laurel sprigs beneath.
-  text(a, item.name.toUpperCase(), cx, y0 + 10.5, 4.6, { style: "inscribed", medium: "charcoal", track: 0.05 });
-  a.line([bleed + 8, y0 + 14.2], [bleed + cw - 8, y0 + 14.2], w("fine", { bow: 0.1 }));
-  M.laurelBranch(a, [[cx - 12, y0 + 16.6], [cx - 6, y0 + 15.4], [cx - 1.2, y0 + 15.8]], { leafLen: 2.0, leafWid: 0.7, pairs: 3, berries: false });
-  M.laurelBranch(a, [[cx + 12, y0 + 16.6], [cx + 6, y0 + 15.4], [cx + 1.2, y0 + 15.8]], { leafLen: 2.0, leafWid: 0.7, pairs: 3, berries: false });
+  // Title across the full frame width. A name too long for one line at
+  // the standard size (Lorica Segmentata) breaks onto two lines.
+  const name = item.name.toUpperCase();
+  const titleW = cw - 12, track = 0.05;
+  const fits = (str, cap) => measure(str, cap, { spacing: 0.2 + track }) <= titleW;
+  let ruleY = y0 + 14.4;
+  if (fits(name, 4.6)) {
+    text(a, name, cx, y0 + 10.5, 4.6, { style: "inscribed", medium: "charcoal", track });
+  } else {
+    const words = name.split(" ");
+    const lines = [words.slice(0, -1).join(" "), words[words.length - 1]];
+    let cap = 3.6;
+    while (!lines.every((ln) => fits(ln, cap))) cap -= 0.1;
+    text(a, lines[0], cx, y0 + 7.6, cap, { style: "inscribed", medium: "charcoal", track });
+    text(a, lines[1], cx, y0 + 7.6 + cap + 0.6, cap, { style: "inscribed", medium: "charcoal", track });
+    ruleY = y0 + 15.8;
+  }
+  // The rule carries the index coin at its centre, laurel either side.
+  const coinR = 3.3;
+  a.line([bleed + 8, ruleY], [cx - coinR - 1.2, ruleY], w("fine", { bow: 0.1 }));
+  a.line([cx + coinR + 1.2, ruleY], [bleed + cw - 8, ruleY], w("fine", { bow: 0.1 }));
+  M.laurelBranch(a, [[cx - 15, ruleY + 3], [cx - 10, ruleY + 2], [cx - coinR - 1.6, ruleY + 2.4]], { leafLen: 2.0, leafWid: 0.7, pairs: 3, berries: false });
+  M.laurelBranch(a, [[cx + 15, ruleY + 3], [cx + 10, ruleY + 2], [cx + coinR + 1.6, ruleY + 2.4]], { leafLen: 2.0, leafWid: 0.7, pairs: 3, berries: false });
+  M.coin(a, cx, ruleY, coinR, { beads: true, worn: 0.1 });
+  text(a, ROMAN[index], cx, ruleY + 1.1, 2.3, { style: "inscribed", medium: "charcoal" });
 
   // The arch window: a niche with a hatched soffit and a sill.
   const wcx = cx, sill = y0 + 58.5, topY = y0 + 21.5;
@@ -74,10 +94,6 @@ function drawCard(a, item, index, cw, ch, bleed) {
 
   // The device itself, standing on the sill.
   (DEVICES[item.icon] || DEVICES.dagger)(a, wcx, (topY + sill) / 2 + 4, 30);
-
-  // Index coin, top right inside the frame.
-  M.coin(a, bleed + cw - 8.5, y0 + 9.5, 4.2, { beads: true, worn: 0.1 });
-  text(a, ROMAN[index], bleed + cw - 8.5, y0 + 10.8, 3.0, { style: "inscribed", medium: "charcoal" });
 
   // Ability text on a lifted plate at the foot.
   const plateY0 = y1 - 14.5, plateY1 = y1 - 4.5;

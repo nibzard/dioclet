@@ -94,15 +94,19 @@ export function renderTokens(_layout, { dpi = 300, seed = 600 } = {}) {
 
   sectionLabel(a, "MARKERS", y);
   y += 7;
-  M.tabula(a, 46, y + 11, 44, 20, { depth: 0.6 });
-  a.cutRect(24, y + 1, 44, 20);
-  text(a, "CLAIM", 46, y + 12.5, 5.0, { style: "inscribed", medium: "charcoal" });
-  text(a, "PENDING", 46, y + 17.6, 1.9, { medium: "graphite", weight: 1.05 });
-  M.tabula(a, 116, y + 11, 52, 20, { depth: 0.6 });
-  a.cutRect(90, y + 1, 52, 20);
-  M.laurelBranch(a, [[88, y + 8], [94, y + 6.8], [100, y + 7.4]], { leafLen: 2.4, leafWid: 0.8, pairs: 4 });
-  text(a, "FIRST", 116, y + 10.5, 4.2, { style: "inscribed", medium: "charcoal" });
-  text(a, "CHALLENGER", 116, y + 16.0, 2.3, { medium: "graphite", weight: 1.1, track: 0.1 });
+  // Each cut line encloses the whole plaque, ears included, and the two
+  // markers keep a gap between them.
+  const marker = (cx, wd) => {
+    M.tabula(a, cx, y + 11, wd, 18, { depth: 0.6 });
+    const b = M.tabulaBounds(cx, y + 11, wd, 18, { pad: 1.2 });
+    a.cutRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0);
+  };
+  marker(52, 40);
+  text(a, "CLAIM", 52, y + 12.3, 5.0, { style: "inscribed", medium: "charcoal" });
+  text(a, "PENDING", 52, y + 17.0, 1.9, { medium: "graphite", weight: 1.05 });
+  marker(134, 46);
+  text(a, "FIRST", 134, y + 10.6, 4.2, { style: "inscribed", medium: "charcoal" });
+  text(a, "CHALLENGER", 134, y + 15.8, 2.3, { medium: "graphite", weight: 1.1, track: 0.1 });
   y += 30;
 
   sectionLabel(a, "ROUND AND PHASE TRACK", y);

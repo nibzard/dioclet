@@ -32,6 +32,30 @@ A4_SHORT_PT = 595.2756   # 210 mm
 A4_LONG_PT = 841.8898    # 297 mm
 
 
+def image_matrix(page):
+    """The transform in force when the page paints its first image."""
+    from pypdf.generic import ContentStream
+
+    def mul(m, n):
+        a, b, c, d, e, f = m
+        A, B, C, D, E, F = n
+        return (a * A + b * C, a * B + b * D, c * A + d * C, c * B + d * D,
+                e * A + f * C + E, e * B + f * D + F)
+
+    ctm, stack = (1, 0, 0, 1, 0, 0), []
+    xobjs = page["/Resources"]["/XObject"]
+    for operands, op in ContentStream(page.get_contents(), page.pdf).operations:
+        if op == b"q":
+            stack.append(ctm)
+        elif op == b"Q":
+            ctm = stack.pop()
+        elif op == b"cm":
+            ctm = mul(tuple(float(v) for v in operands), ctm)
+        elif op == b"Do" and xobjs[operands[0]].get("/Subtype") == "/Image":
+            return ctm
+    raise AssertionError("page paints no image")
+
+
 class LayoutExport(unittest.TestCase):
     """The exported geometry matches the kit's own layout functions."""
 
@@ -100,6 +124,26 @@ class ArtKitPdfs(unittest.TestCase):
             xobjs = page.get("/Resources", {}).get("/XObject", {})
             self.assertTrue(any(xobjs[k].get("/Subtype") == "/Image" for k in xobjs),
                             "tile page embeds no artwork")
+
+    def test_each_tile_shows_its_own_window_of_the_artwork(self):
+        # Every tile must place the artwork shifted by its own window
+        # origin. A regression drew the image before the tile translate,
+        # so all four sheets printed the same corner of the board.
+        L = kit.build_layout(engine.load_rules(str(REPO / kit.RULES_FILE)))
+        ax0, ay0, ax1, ay1 = L["art"]
+        reader = PdfReader(PRINT / "dioclet-board-4xA4-ART.pdf")
+        origins = []
+        for page_no, page in zip(("1", "2", "3", "4"), reader.pages):
+            x0, y0, _ = L["tiles"][page_no]
+            ctm = image_matrix(page)
+            self.assertAlmostEqual(ctm[0], (ax1 - ax0) * kit.mm, places=1)
+            self.assertAlmostEqual(ctm[3], (ay1 - ay0) * kit.mm, places=1)
+            self.assertAlmostEqual(ctm[4], (ax0 - x0) * kit.mm, places=1,
+                                   msg=f"tile {page_no} x offset")
+            self.assertAlmostEqual(ctm[5], (ay0 - y0) * kit.mm, places=1,
+                                   msg=f"tile {page_no} y offset")
+            origins.append((round(ctm[4], 1), round(ctm[5], 1)))
+        self.assertEqual(len(set(origins)), 4, "two tiles show the same window")
 
     def test_cards_page_places_six_card_images(self):
         reader = PdfReader(PRINT / "dioclet-cards-tokens-ART.pdf")
