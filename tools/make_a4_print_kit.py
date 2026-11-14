@@ -1440,6 +1440,9 @@ RULEBOOK_PAGES = [
         ("b", "1 Prestige: one faction's support (next page). Searching a "
               "faction card is free."),
         ("b", "1 Prestige: the mandatory fee to contest a proclaimed claim (next page)."),
+        ("p", "Keep 1 Prestige in reserve. A rival can proclaim at any time, and "
+              "with 0 Prestige you cannot contest the claim - you can only watch "
+              "the two rounds run out."),
     ]),
     ("Factions and the claim", [
         ("h", "The three factions"),
@@ -1687,6 +1690,7 @@ def quick_reference_pdf(path):
                               "income on the succession map.",
                               "Spend: 1 = faction support · 1 = fee to contest a claim. "
                               "Searching is free.",
+                              "Keep 1 in reserve: with 0 Prestige you cannot contest a claim.",
                               "Lose: 1 to the bank whenever you lose a duel."]),
         ("FACTION CARDS (succession map only)", [
             "Six cards face down on the ? spaces: army, officials, elites, and "

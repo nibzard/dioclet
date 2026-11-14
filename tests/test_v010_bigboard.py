@@ -156,3 +156,26 @@ class TestBigBoardDeal(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSuccessionGuardPostsExperiment(unittest.TestCase):
+    """rules_v10_l2posts.json: the V0.10 board plus four guard posts (experiment)."""
+
+    def test_posts_file_differs_from_v010_only_by_the_posts(self):
+        base, posts = rules(), engine.load_rules(os.path.join(ROOT, "rules_v10_l2posts.json"))
+        engine.validate_rules(posts)
+        self.assertEqual(posts["board_level2"]["glory_posts"], [[0, 3], [18, 9], [3, 0], [15, 12]])
+        for value in (base, posts):
+            value["board_level2"].pop("glory_posts", None)
+            value.pop("rules_version")
+            value.pop("game_name")
+        self.assertEqual(base, posts)
+
+    def test_every_gate_sees_the_same_post_distances(self):
+        value = engine.load_rules(os.path.join(ROOT, "rules_v10_l2posts.json"))
+        b2 = engine.Board(value, "board_level2")
+        cp = tuple(value["board_level2"]["checkpoint"])
+        posts = [tuple(c) for c in value["board_level2"]["glory_posts"]]
+        profiles = {gid: sorted(b2.distances(tuple(c))[p] for p in posts) for gid, c in b2.gates.items()}
+        self.assertEqual(len({tuple(p) for p in profiles.values()}), 1, profiles)
+        self.assertEqual({b2.distances(cp)[p] for p in posts}, {12})
