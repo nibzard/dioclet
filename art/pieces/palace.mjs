@@ -23,8 +23,11 @@ const GATE_LABELS = {
 };
 
 // The district plaque, body only; the ears add 0.55 x the height each side.
-const PLAQUE = [36, 28];
+const PLAQUE = [32, 24];
 const plaqueBox = (px, py) => M.tabulaBounds(px, py, PLAQUE[0], PLAQUE[1]);
+// The largest plaque centre x that keeps the whole plaque west of the
+// vertical tile cut, with a margin, so no letter is split across sheets.
+const westOfCut = (cutX, margin = 3) => cutX - margin - (plaqueBox(0, 0).x1);
 
 const BLOCK_NAMES = {
   A: "HORREA", B: "CASTRA", C: "FABRICAE", D: "TEMPLVM IOVIS", E: "MAVSOLEVM", F: "PALATIVM",
@@ -46,7 +49,7 @@ export function renderPalace(layout, { dpi = 200, seed = 300 } = {}) {
   drawSea(a, P, G);
   drawPaving(a, P);
   drawWalls(a, P, G);
-  for (const b of P.buildings) drawBlock(a, b, keepOut);
+  for (const b of P.buildings) drawBlock(a, b, keepOut, P.cut_mm.x);
   drawMargins(a, P, G);
   drawTitle(a, P);
 
@@ -218,7 +221,7 @@ function drawWalls(a, P, G) {
 // keeps its buildings and trees off plaqueBox() so the letter sits on
 // open ground.
 
-function drawBlock(a, b, keepOut) {
+function drawBlock(a, b, keepOut, cutX) {
   const [bx, by, bw, bh] = b.rect;
   const ins = 2.4;
   const x = bx + ins, y = by + ins, s = bw - ins * 2, t = bh - ins * 2;
@@ -227,12 +230,12 @@ function drawBlock(a, b, keepOut) {
   a.rect(x, y, s, t, w("bold", { width: 0.65, overshoot: 0.6 }));
   a.rect(x + 1.7, y + 1.7, s - 3.4, t - 3.4, w("fine", { overshoot: 0.4 }));
   const ix = x + 3.4, iy = y + 3.4, is = s - 6.8, it = t - 6.8;
-  const plaque = PLANS[b.district](a, ix, iy, is, it, keepOut);
+  const plaque = PLANS[b.district](a, ix, iy, is, it, keepOut, cutX);
   // Plaque with the district letter and the block's Latin name.
   const [px, py] = plaque;
   M.tabula(a, px, py, PLAQUE[0], PLAQUE[1], { depth: 0.6 });
-  text(a, b.district, px, py + 5.8, 15, { style: "inscribed", medium: "charcoal" });
-  text(a, BLOCK_NAMES[b.district], px, py + 11.4, 2.4, { medium: "graphite", weight: 1.15, track: 0.15 });
+  text(a, b.district, px, py + 5, 13, { style: "inscribed", medium: "charcoal" });
+  text(a, BLOCK_NAMES[b.district], px, py + 9.6, 2.2, { medium: "graphite", weight: 1.15, track: 0.15 });
 }
 
 const PLANS = {
@@ -247,7 +250,9 @@ const PLANS = {
     return [x + s / 2, y + t / 2];
   },
   // Barracks: rows of quarters around a drill yard with a small shrine.
-  B(a, x, y, s, t, keepOut) {
+  // The vertical tile cut crosses B and E, so their plaques sit west of
+  // it and the other buildings fill the east side.
+  B(a, x, y, s, t, keepOut, cutX) {
     const row = (yy, hh) => {
       const n = 3, gap = 3, wd = (s - 4 - gap * (n - 1)) / n;
       for (let i = 0; i < n; i++) A.hall(a, x + 2 + i * (wd + gap), yy, wd, hh, { ridge: "h" });
@@ -255,14 +260,14 @@ const PLANS = {
     row(y + 2, 15);
     // The drill yard: open ground, two trees, the standard's shrine.
     A.court(a, x + 2, y + 21, s - 4, 34, { colonnade: false, paving: true });
-    A.garden(a, x + 4, y + 23, s - 8, 30, 3, [...keepOut, [x + s * 0.5, y + 38, 8]]);
-    A.temple(a, x + s * 0.5 - 4.5, y + 30, 9, 13, { front: "s", columns: [3, 4] });
-    const left = [x + 2, y + 60, 20, t - 62], right = [x + s - 22, y + 60, 20, t - 62];
-    for (const [hx, hy, hw, hh] of [left, right]) {
-      A.hall(a, hx, hy, hw, (hh - 3) / 2, { ridge: "v" });
-      A.hall(a, hx, hy + (hh + 3) / 2, hw, (hh - 3) / 2, { ridge: "v" });
-    }
-    return [x + s / 2, y + 60 + (t - 62) / 2];
+    A.garden(a, x + 4, y + 23, s - 8, 30, 3, [...keepOut, [x + s * 0.5, y + 37, 9]]);
+    // The standards' shrine: a small round aedes in the yard.
+    A.roundTemple(a, x + s * 0.5, y + 37, 6, 8);
+    const px = Math.min(x + s / 2, westOfCut(cutX)), py = y + 60 + (t - 62) / 2;
+    const hx = cutX + 4, hw = x + s - 2 - hx, hy = y + 60, hh = t - 62;
+    A.hall(a, hx, hy, hw, (hh - 3) / 2, { ridge: "h" });
+    A.hall(a, hx, hy + (hh + 3) / 2, hw, (hh - 3) / 2, { ridge: "h" });
+    return [px, py];
   },
   // Workshops: small buildings along lanes, a cistern, a few trees.
   C(a, x, y, s, t) {
@@ -305,13 +310,14 @@ const PLANS = {
     return [x + s / 2, y + t - 26];
   },
   // The mausoleum: the octagon in its precinct, a forecourt to the north.
-  E(a, x, y, s, t, keepOut) {
+  E(a, x, y, s, t, keepOut, cutX) {
     A.court(a, x + 2, y + 2, s - 4, t - 4, { colonnade: true, spacing: 3.6 });
     A.mausoleum(a, x + s / 2, y + 62, 23);
-    // Forecourt: two cypresses and the plaque, clear of the octagon.
-    M.cypress(a, x + 15, y + 26, 20);
-    M.cypress(a, x + s - 15, y + 26, 18);
-    return [x + s / 2, y + 20.5];
+    // Forecourt: the plaque west of the cut, two cypresses east of it,
+    // all clear of the octagon.
+    M.cypress(a, x + s - 30, y + 28, 20);
+    M.cypress(a, x + s - 15, y + 28, 18);
+    return [Math.min(x + s / 2, westOfCut(cutX)), y + 20.5];
   },
   // The imperial apartments: halls with apses, a domed vestibule, and
   // garden courts.
