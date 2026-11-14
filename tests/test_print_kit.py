@@ -283,6 +283,14 @@ class PrintedRulesMatchRelease(unittest.TestCase):
             self.assertNotIn("boost", text.lower(), name)
             self.assertNotIn("+2", text, name)
 
+    def test_quick_reference_states_the_six_item_checkpoint_claim(self):
+        # In a four-agent playtest every seat looked for "claim the
+        # checkpoint" on the palace map without knowing it needs all six
+        # items; the quick reference listed the action but not the rule.
+        text = " ".join(whole_text("dioclet-quick-reference-A4-BW.pdf").split())
+        self.assertIn("own ALL SIX items and stand at the Peristyle", text)
+        self.assertIn("palace round 24", text)
+
     def test_player_sheets_list_all_trackers(self):
         text = whole_text("dioclet-player-sheets-A4-BW.pdf")
         for item in self.rules["equipment"]:
