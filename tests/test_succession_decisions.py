@@ -159,3 +159,26 @@ class TestExperimentBudget(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestTwinBoardShortlist(unittest.TestCase):
+    def test_shortlist_builds_on_both_maps(self):
+        # Phase 2 of the twin-board rules is played on board_level2. The
+        # shortlist once measured distances on the palace map, so any
+        # succession-map cell missing from the palace streets raised
+        # KeyError (found in a live four-agent game at turn 98).
+        import random
+        import policies
+        rules = engine.load_rules(str(ROOT / "rules_v094_twinboard.json"))
+        state = engine.new_game(rules, 20261114, "twin-shortlist")
+        rng = random.Random(7)
+        phases = set()
+        while not engine.is_finished(state):
+            obs = engine.observe(state, state["active_player"])
+            phases.add(obs["phase"])
+            built = candidates.build_candidates(obs, rules)
+            shortlist = built[0] if isinstance(built, tuple) else built
+            self.assertTrue(shortlist)
+            action_id, reason = policies.act("tactical", obs, rng)
+            engine.apply_action(state, state["active_player"], obs["turn_id"], action_id, reason)
+        self.assertEqual(phases, {1, 2})

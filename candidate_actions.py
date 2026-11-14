@@ -486,8 +486,10 @@ def _project_succession(obs, rules):
 
 def _succession_distances(obs, rules, start):
     # The public rules contain only geometry. No state or secret is read.
+    # Phase 2 is played on the second map when the rules define one.
     from board import Board
-    return Board(rules).distances(tuple(start))
+    level = "board_level2" if obs.get("phase") == 2 and "board_level2" in rules else "board"
+    return Board(rules, level).distances(tuple(start))
 
 
 def _succession_goals(obs, rules):

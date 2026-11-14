@@ -1543,7 +1543,10 @@ def quick_reference_pdf(path):
         ("YOUR TURN", ["1. Roll two dice.", "2. Move up to the total; stop early if you like.",
                        "3. Do ONE action (or none): take treasure · guard duty · duel · "
                        "gain support · claim the checkpoint · proclaim · maintain your claim."]),
-        ("TWO MAPS", ["Palace map (large): treasures, guard posts, opening claim.",
+        ("TWO MAPS", ["Palace map (large): treasures, guard posts, the checkpoint claim.",
+                      "Claim the checkpoint: own ALL SIX items and stand at the Peristyle. "
+                      "The palace map ends one full round after the first claim, or after "
+                      "palace round 24 if nobody owns all six.",
                       "Succession map (small): support, proclaiming, the whole endgame.",
                       "At the change everyone returns to their gate on the small map."]),
         ("ROLLS", ["Movement: two dice summed.", "Guard post: one die - 4+ earns 1 Prestige "
@@ -1570,23 +1573,35 @@ def quick_reference_pdf(path):
         ("WINNING", ["A claim that stands two full rounds = emperor.",
                      "No claim standing by succession round 24 = draw."]),
     ]
-    for title, lines in blocks:
-        wrapped = [wrap_lines(c, line, 168.0, size=9.0, font="Helvetica") for line in lines]
-        body_h = 5.6 * sum(len(group) for group in wrapped) + 4.0
+    # The blocks must end above the footer rule (13 mm). Use the most
+    # generous line pitch that fits; fail loudly if none does.
+    wrapped = [[wrap_lines(c, line, 168.0, size=9.0, font="Helvetica") for line in lines]
+               for _, lines in blocks]
+    n_lines = sum(len(g) for groups in wrapped for g in groups)
+    head, pad, gap, floor = 6.2, 4.0, 3.6, 16.0
+
+    def bottom(pitch):
+        return y - len(blocks) * (head + pad + gap) + gap - pitch * n_lines
+
+    pitch = next((p for p in (5.6, 5.3, 5.0, 4.8, 4.6) if bottom(p) >= floor), None)
+    if pitch is None:
+        raise SystemExit("quick reference text does not fit on one page")
+    for (title, _), groups in zip(blocks, wrapped):
+        body_h = pitch * sum(len(group) for group in groups) + pad
         c.setLineWidth(1.1)
-        c.rect(16 * mm, (y - 6.2) * mm, (PW - 32) * mm, 6.2 * mm)
+        c.rect(16 * mm, (y - head) * mm, (PW - 32) * mm, head * mm)
         c.setFont("Helvetica-Bold", 9)
         c.drawString(18.5 * mm, (y - 4.4) * mm, title)
-        y -= 6.2
+        y -= head
         c.setLineWidth(0.4)
         c.rect(16 * mm, (y - body_h) * mm, (PW - 32) * mm, body_h * mm)
         yy = y - 4.2
         c.setFont("Helvetica", 9.0)
-        for group in wrapped:
+        for group in groups:
             for line in group:
                 c.drawString(19.5 * mm, yy * mm, line)
-                yy -= 5.6
-        y = y - body_h - 5.2
+                yy -= pitch
+        y = y - body_h - gap
     doc_footer(c, 1)
     c.showPage()
     c.save()
@@ -1910,6 +1925,11 @@ def main():
             raise SystemExit(
                 f"printed text assumes {section}.{key} == {value}, "
                 f"rules say {rules[section].get(key)}; update the kit prose")
+    # The quick reference prints "own all six items" for the checkpoint
+    # claim. The engine reads an absent key as 6.
+    if rules["level1"].get("claim_required_equipment", 6) != 6:
+        raise SystemExit("printed text assumes level1.claim_required_equipment == 6; "
+                         "update the kit prose")
     for key, value in PRINTED_TOP_LEVEL.items():
         if rules.get(key) != value:
             raise SystemExit(
