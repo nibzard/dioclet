@@ -2,13 +2,57 @@
 
 *The Roman Succession. Claim the throne. Survive the challenge.*
 
-A competitive four-player board game set in Diocletian's Palace, Split, in
-305 AD. Collect equipment, earn Prestige, secure faction support, and defend
-your claim to the throne through a final two-round window. Imperial Rivals is
-the series name; 305 AD is the first edition.
+![The palace board, hand-drawn edition](docs/images/palace-board.jpg)
 
-This repository contains a deterministic Python simulator, a browser game,
-a print-and-play kit, and the experiments that guide the design.
+Imperial Rivals is a competitive board game for four players. It is set in
+Diocletian's Palace, Split, in 305 AD. The emperor steps down, and you race
+your rivals to take his place. Imperial Rivals is the series name; 305 AD is
+the first edition.
+
+**[Play in your browser](https://dioclet-board.nikola-balic.workers.dev)** ·
+**[Print the kit](print/imperial-rivals-305ad-complete-print-kit-A4-ART.pdf)** ·
+**[Run the simulator](#run-the-simulator)**
+
+## How a game plays
+
+1. **Arm yourself in the palace.** Start at one of four gates. Roll two dice
+   to move, open the six treasure blocks, and collect equipment. Fight rivals
+   in duels and roll at guard posts to earn Prestige.
+2. **Turn the board over.** The first player with all six items claims the
+   checkpoint at the Peristyle. One more full round later, the board turns
+   over to the succession map, and every player returns to a gate. Each
+   gate is nine steps from the Peristyle.
+3. **Find the factions.** Six face-down cards sit beside the six blocks.
+   Three hide the Army, the Elites, and the Officials. Three are empty
+   streets. Pay 1 Prestige to win the support of a faction you find.
+4. **Claim the throne.** With two factions behind you, claim the Peristyle.
+   Rivals can cancel your claim only by beating you in a duel. Hold it for
+   two full rounds to win.
+
+![The succession map, the reverse side of the board](docs/images/succession-map.jpg)
+
+### The cards
+
+Six pieces of equipment change how duels and claims play out. At most one
+equipment modifier applies to each side of a duel.
+
+![The six equipment cards and the card back](docs/images/equipment-cards.jpg)
+
+The faction cards hide among blanks until a player searches them.
+
+![The faction cards: Army, Elites, Officials, an empty street, and the card back](docs/images/faction-cards.jpg)
+
+All artwork is drawn by code: seeded pen, graphite, and charcoal strokes on
+a paper texture, with hand-lettered Roman capitals. See [`art/`](art/).
+
+## What this repository holds
+
+- A deterministic Python simulator with bots, model players, and
+  experiment tools.
+- A browser game that runs the same rules, checked move for move against
+  the simulator.
+- A print-and-play kit in a drawn edition and a black-and-white edition.
+- The experiments, findings, and decisions behind every rule change.
 
 ## Current versions
 
@@ -110,6 +154,13 @@ changing the rules or the drawing code (`@napi-rs/canvas` needs Node 18+):
 python3 art/export_layout.py
 cd art && npm ci && node render.mjs && cd ..
 python3 tools/make_a4_print_kit.py --art
+```
+
+The README images in `docs/images/` are reduced copies of these assets.
+Rebuild them with ImageMagick:
+
+```bash
+tools/make_readme_images.sh
 ```
 
 The generator updates the PDFs and [`print/kit-manifest.json`](print/kit-manifest.json).
