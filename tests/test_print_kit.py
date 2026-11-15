@@ -38,7 +38,7 @@ def whole_text(name):
 
 
 class BoardPages(unittest.TestCase):
-    FILE = "dioclet-board-4xA4-BW.pdf"
+    FILE = "imperial-rivals-305ad-board-4xA4-BW.pdf"
 
     def test_four_a4_landscape_pages(self):
         reader = PdfReader(PRINT_BW / self.FILE)
@@ -74,13 +74,13 @@ class BoardPages(unittest.TestCase):
 
 class DocumentPages(unittest.TestCase):
     FILES = {
-        "dioclet-player-sheets-A4-BW.pdf": 2,
-        "dioclet-cards-tokens-A4-BW.pdf": 5,
-        "dioclet-rulebook-A4-BW.pdf": 8,
-        "dioclet-quick-reference-A4-BW.pdf": 1,
-        "dioclet-teaching-guide-A4-BW.pdf": 1,
-        "dioclet-playtest-form-A4-BW.pdf": 2,
-        "dioclet-print-instructions-A4-BW.pdf": 2,
+        "imperial-rivals-305ad-player-sheets-A4-BW.pdf": 2,
+        "imperial-rivals-305ad-cards-tokens-A4-BW.pdf": 5,
+        "imperial-rivals-305ad-rulebook-A4-BW.pdf": 8,
+        "imperial-rivals-305ad-quick-reference-A4-BW.pdf": 1,
+        "imperial-rivals-305ad-teaching-guide-A4-BW.pdf": 1,
+        "imperial-rivals-305ad-playtest-form-A4-BW.pdf": 2,
+        "imperial-rivals-305ad-print-instructions-A4-BW.pdf": 2,
     }
 
     def test_a4_portrait_page_counts(self):
@@ -96,11 +96,11 @@ class DocumentPages(unittest.TestCase):
     def test_combined_kit_puts_the_pages_to_cut_last(self):
         # The rules first; the print instructions right before the
         # pages to cut (boards, then cards and tokens); no playtest form.
-        reader = PdfReader(PRINT_BW / "dioclet-complete-print-kit-A4-BW.pdf")
-        form = self.FILES["dioclet-playtest-form-A4-BW.pdf"]
+        reader = PdfReader(PRINT_BW / "imperial-rivals-305ad-complete-print-kit-A4-BW.pdf")
+        form = self.FILES["imperial-rivals-305ad-playtest-form-A4-BW.pdf"]
         expected = 4 + 4 + sum(self.FILES.values()) - form
         self.assertEqual(len(reader.pages), expected)
-        cards = self.FILES["dioclet-cards-tokens-A4-BW.pdf"]
+        cards = self.FILES["imperial-rivals-305ad-cards-tokens-A4-BW.pdf"]
         first_board = expected - cards - 8
         landscape = [i for i, page in enumerate(reader.pages)
                      if float(page.mediabox.width) > float(page.mediabox.height)]
@@ -114,7 +114,7 @@ class DocumentPages(unittest.TestCase):
         self.assertFalse(any("PLAYTEST RECORD" in t for t in texts))
 
     def test_succession_map_is_four_landscape_pages(self):
-        reader = PdfReader(PRINT_BW / "dioclet-succession-map-A4-BW.pdf")
+        reader = PdfReader(PRINT_BW / "imperial-rivals-305ad-succession-map-A4-BW.pdf")
         self.assertEqual(len(reader.pages), 4)
         for page in reader.pages:
             self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
@@ -239,7 +239,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("update the kit prose", result.stderr)
 
     def test_rulebook_pins_the_economy_numbers(self):
-        text = whole_text("dioclet-rulebook-A4-BW.pdf")
+        text = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
         self.assertIn("mandatory fee of 1 Prestige", text)          # contest fee
         self.assertIn("hold at most 3 Prestige", text)              # glory cap
         self.assertIn("A 4, 5 or 6 earns 1 Prestige", text)         # guard post
@@ -250,7 +250,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("leaving him with 2", text)                   # example math
 
     def test_rulebook_pins_the_v092_mechanics(self):
-        text = whole_text("dioclet-rulebook-A4-BW.pdf")
+        text = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
         self.assertIn("at most one item bonus", text)               # ability cap
         self.assertIn("never a sum", text)
         self.assertIn("two full rounds", text)                      # claim window
@@ -260,7 +260,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertNotIn("acclaimed emperor", text)                 # window replaced it
 
     def test_rulebook_pins_the_twin_board_flow(self):
-        text = whole_text("dioclet-rulebook-A4-BW.pdf")
+        text = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
         self.assertIn("succession map", text)                       # the second board
         self.assertIn("Every pawn returns", text)                   # gate reset
         self.assertIn("to its gate on the succession map", text)
@@ -293,12 +293,12 @@ class PrintedRulesMatchRelease(unittest.TestCase):
     def test_no_boost_prose_survives_anywhere(self):
         # 0.9.3 removed the optional +2 duel boost; if it ever comes
         # back, the prose (and this check) must be rewritten on purpose.
-        for name in ("dioclet-rulebook-A4-BW.pdf",
-                     "dioclet-quick-reference-A4-BW.pdf",
-                     "dioclet-teaching-guide-A4-BW.pdf",
-                     "dioclet-player-sheets-A4-BW.pdf",
-                     "dioclet-cards-tokens-A4-BW.pdf",
-                     "dioclet-succession-map-A4-BW.pdf"):
+        for name in ("imperial-rivals-305ad-rulebook-A4-BW.pdf",
+                     "imperial-rivals-305ad-quick-reference-A4-BW.pdf",
+                     "imperial-rivals-305ad-teaching-guide-A4-BW.pdf",
+                     "imperial-rivals-305ad-player-sheets-A4-BW.pdf",
+                     "imperial-rivals-305ad-cards-tokens-A4-BW.pdf",
+                     "imperial-rivals-305ad-succession-map-A4-BW.pdf"):
             text = whole_text(name)
             self.assertNotIn("boost", text.lower(), name)
             self.assertNotIn("+2", text, name)
@@ -307,28 +307,28 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         # In the four-seat Haiku game every rival held 0 Prestige when a
         # claim was proclaimed, and one spent its next point on support
         # instead of the contest fee; nobody could contest.
-        quick = " ".join(whole_text("dioclet-quick-reference-A4-BW.pdf").split())
+        quick = " ".join(whole_text("imperial-rivals-305ad-quick-reference-A4-BW.pdf").split())
         self.assertIn("Keep 1 in reserve: with 0 Prestige you cannot contest a claim.", quick)
-        rulebook = whole_text("dioclet-rulebook-A4-BW.pdf")
+        rulebook = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
         self.assertIn("Keep 1 Prestige in reserve.", rulebook)
 
     def test_quick_reference_says_the_peristyle_moves(self):
         # In the 0.10.2 table game three of four seats were caught out by
         # the Peristyle sitting at (6,6) on the palace map and (9,6) on
         # the succession map, which share one street grid.
-        quick = " ".join(whole_text("dioclet-quick-reference-A4-BW.pdf").split())
+        quick = " ".join(whole_text("imperial-rivals-305ad-quick-reference-A4-BW.pdf").split())
         self.assertIn("Its Peristyle is 3 steps EAST of the palace one", quick)
 
     def test_quick_reference_states_the_six_item_checkpoint_claim(self):
         # In a four-agent playtest every seat looked for "claim the
         # checkpoint" on the palace map without knowing it needs all six
         # items; the quick reference listed the action but not the rule.
-        text = " ".join(whole_text("dioclet-quick-reference-A4-BW.pdf").split())
+        text = " ".join(whole_text("imperial-rivals-305ad-quick-reference-A4-BW.pdf").split())
         self.assertIn("own ALL SIX items and stand at the Peristyle", text)
         self.assertIn("palace round 24", text)
 
     def test_player_sheets_list_all_trackers(self):
-        text = whole_text("dioclet-player-sheets-A4-BW.pdf")
+        text = whole_text("imperial-rivals-305ad-player-sheets-A4-BW.pdf")
         for item in self.rules["equipment"]:
             self.assertIn(item.upper().replace("_", " "), text.upper())
         self.assertIn("PRESTIGE - one counter on the track", text)
@@ -339,16 +339,16 @@ class PrintedRulesMatchRelease(unittest.TestCase):
             self.assertIn(faction, text)
 
     def test_cards_cover_the_six_items_and_identical_backs(self):
-        fronts = page_text("dioclet-cards-tokens-A4-BW.pdf", 0)
+        fronts = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 0)
         for item in self.rules["equipment"]:
             self.assertIn(item.replace("_", " ").upper(), fronts.upper())
         # Six backs, each the same two-line title (one string per line).
-        backs = page_text("dioclet-cards-tokens-A4-BW.pdf", 1)
+        backs = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 1)
         self.assertEqual(backs.count("IMPERIAL"), 6)
         self.assertEqual(backs.count("RIVALS"), 6)
 
     def test_tokens_page_matches_game_limits(self):
-        tokens = page_text("dioclet-cards-tokens-A4-BW.pdf", 2)
+        tokens = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 2)
         self.assertEqual(tokens.count("City phase (max 24 rounds):"), 1)
         self.assertEqual(tokens.count("Succession phase (max 24 rounds):"), 1)
         self.assertIn("PAWN", tokens.upper())  # fold-up pawns I-IV
@@ -480,18 +480,18 @@ class SuccessionMapMatchesRules(unittest.TestCase):
                                    f"cross at ({ax}, {ay}) covers a street symbol")
 
     def test_page_names_its_marks(self):
-        text = whole_text("dioclet-succession-map-A4-BW.pdf")
+        text = whole_text("imperial-rivals-305ad-succession-map-A4-BW.pdf")
         for word in ("THE SUCCESSION MAP", "PERISTYLE", "CITY BLOCK", "GOLDEN GATE",
                      "SILVER GATE", "BRONZE GATE", "IRON GATE", "faction card space",
                      "SUCCESSION MAP - PAGE 1 OF 4", "SUCCESSION MAP - PAGE 4 OF 4"):
             self.assertIn(word, text)
 
     def test_faction_cards_print_three_factions_and_three_blanks(self):
-        fronts = page_text("dioclet-cards-tokens-A4-BW.pdf", 3)
+        fronts = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 3)
         for word in ("FACTION CARDS", "ARMY", "OFFICIALS", "ELITES"):
             self.assertIn(word, fronts)
         self.assertEqual(fronts.count("EMPTY STREET"), 3)
-        backs = page_text("dioclet-cards-tokens-A4-BW.pdf", 4)
+        backs = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 4)
         self.assertIn("FACTION CARD BACKS", backs)
         self.assertEqual(backs.count("FACTION CARD"), 1 + 6)     # header + six backs
 

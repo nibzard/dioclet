@@ -12,21 +12,21 @@ tiles onto four pages the same way, so the two boards can be taped back
 to back. All other documents are A4 portrait.
 
 Outputs into print/bw/ (black and white):
-  dioclet-board-4xA4-BW.pdf        four tiled palace-board pages (landscape)
-  dioclet-succession-map-A4-BW.pdf four tiled succession-map pages (landscape)
-  dioclet-player-sheets-A4-BW.pdf  four player mats (two per page)
-  dioclet-cards-tokens-A4-BW.pdf   treasure cards, tokens, faction cards
-  dioclet-rulebook-A4-BW.pdf       family rulebook
-  dioclet-quick-reference-A4-BW.pdf
-  dioclet-teaching-guide-A4-BW.pdf
-  dioclet-playtest-form-A4-BW.pdf
-  dioclet-print-instructions-A4-BW.pdf
-  dioclet-complete-print-kit-A4-BW.pdf (rules, quick reference, guide
+  imperial-rivals-305ad-board-4xA4-BW.pdf        four tiled palace-board pages (landscape)
+  imperial-rivals-305ad-succession-map-A4-BW.pdf four tiled succession-map pages (landscape)
+  imperial-rivals-305ad-player-sheets-A4-BW.pdf  four player mats (two per page)
+  imperial-rivals-305ad-cards-tokens-A4-BW.pdf   treasure cards, tokens, faction cards
+  imperial-rivals-305ad-rulebook-A4-BW.pdf       family rulebook
+  imperial-rivals-305ad-quick-reference-A4-BW.pdf
+  imperial-rivals-305ad-teaching-guide-A4-BW.pdf
+  imperial-rivals-305ad-playtest-form-A4-BW.pdf
+  imperial-rivals-305ad-print-instructions-A4-BW.pdf
+  imperial-rivals-305ad-complete-print-kit-A4-BW.pdf (rules, quick reference, guide
                                    and sheets first; then the print instructions
                                    and every page to cut; no playtest form)
 With --art, into print/ (the default edition):
-  dioclet-board-4xA4-ART.pdf, dioclet-succession-map-ART.pdf,
-  dioclet-cards-tokens-ART.pdf, dioclet-complete-print-kit-A4-ART.pdf
+  imperial-rivals-305ad-board-4xA4-ART.pdf, imperial-rivals-305ad-succession-map-ART.pdf,
+  imperial-rivals-305ad-cards-tokens-ART.pdf, imperial-rivals-305ad-complete-print-kit-A4-ART.pdf
 Always into print/:
   kit-manifest.json (layout facts used by the tests)
 
@@ -2074,9 +2074,9 @@ def print_instructions_pdf(path):
     c.setFont("Times-Bold", 11)
     c.drawString(16 * mm, y * mm, "1. Print")
     y -= 5.4
-    for line in ("Board file 'dioclet-board-4xA4': four pages, A4 LANDSCAPE, "
+    for line in ("Board file 'imperial-rivals-305ad-board-4xA4': four pages, A4 LANDSCAPE, "
                  "scale 100% (Actual size). Do not tick 'fit to page'.",
-                 "Succession map 'dioclet-succession-map': four pages, A4 "
+                 "Succession map 'imperial-rivals-305ad-succession-map': four pages, A4 "
                  "LANDSCAPE, 100%. It assembles exactly like the board.",
                  "Every other file: A4 portrait, 100%.",
                  "Any black-and-white printer works. Single-sided printing is fine.",
@@ -2289,15 +2289,15 @@ def main():
     out = lambda name: os.path.join(OUT_DIR, name)
     bw = lambda name: os.path.join(BW_DIR, name)
     files = {
-        "board": bw("dioclet-board-4xA4-BW.pdf"),
-        "succession": bw("dioclet-succession-map-A4-BW.pdf"),
-        "sheets": bw("dioclet-player-sheets-A4-BW.pdf"),
-        "cards": bw("dioclet-cards-tokens-A4-BW.pdf"),
-        "rulebook": bw("dioclet-rulebook-A4-BW.pdf"),
-        "quick": bw("dioclet-quick-reference-A4-BW.pdf"),
-        "teaching": bw("dioclet-teaching-guide-A4-BW.pdf"),
-        "form": bw("dioclet-playtest-form-A4-BW.pdf"),
-        "instructions": bw("dioclet-print-instructions-A4-BW.pdf"),
+        "board": bw("imperial-rivals-305ad-board-4xA4-BW.pdf"),
+        "succession": bw("imperial-rivals-305ad-succession-map-A4-BW.pdf"),
+        "sheets": bw("imperial-rivals-305ad-player-sheets-A4-BW.pdf"),
+        "cards": bw("imperial-rivals-305ad-cards-tokens-A4-BW.pdf"),
+        "rulebook": bw("imperial-rivals-305ad-rulebook-A4-BW.pdf"),
+        "quick": bw("imperial-rivals-305ad-quick-reference-A4-BW.pdf"),
+        "teaching": bw("imperial-rivals-305ad-teaching-guide-A4-BW.pdf"),
+        "form": bw("imperial-rivals-305ad-playtest-form-A4-BW.pdf"),
+        "instructions": bw("imperial-rivals-305ad-print-instructions-A4-BW.pdf"),
     }
     board_pdf(files["board"], L)
     succession_map_pdf(files["succession"], rules)
@@ -2313,12 +2313,12 @@ def main():
     # playtest form prints on its own.
     combine([files["rulebook"], files["quick"], files["teaching"], files["sheets"],
              files["instructions"], files["board"], files["succession"], files["cards"]],
-            bw("dioclet-complete-print-kit-A4-BW.pdf"))
+            bw("imperial-rivals-305ad-complete-print-kit-A4-BW.pdf"))
     if build_art:
         art_files = {
-            "art_board": out("dioclet-board-4xA4-ART.pdf"),
-            "art_succession": out("dioclet-succession-map-ART.pdf"),
-            "art_cards": out("dioclet-cards-tokens-ART.pdf"),
+            "art_board": out("imperial-rivals-305ad-board-4xA4-ART.pdf"),
+            "art_succession": out("imperial-rivals-305ad-succession-map-ART.pdf"),
+            "art_cards": out("imperial-rivals-305ad-cards-tokens-ART.pdf"),
         }
         art_board_pdf(art_files["art_board"], L)
         art_succession_pdf(art_files["art_succession"], build_succession_layout(rules))
@@ -2326,7 +2326,7 @@ def main():
         combine([files["rulebook"], files["quick"], files["teaching"], files["sheets"],
                  files["instructions"], art_files["art_board"],
                  art_files["art_succession"], art_files["art_cards"]],
-                out("dioclet-complete-print-kit-A4-ART.pdf"))
+                out("imperial-rivals-305ad-complete-print-kit-A4-ART.pdf"))
         files.update(art_files)
     b = L["board"]
     S = build_succession_layout(rules)
