@@ -247,10 +247,42 @@ export class Artist {
     ctx.restore();
   }
 
+  // Paint: a watercolour glaze for the colour edition, and nothing at all
+  // in grayscale. Glazes multiply, as transparent washes do on paper, and
+  // the pigment collects at the edge of the wet area as it dries. No
+  // randomness is drawn here, so the linework of both editions matches.
+  // color is a hex string; alpha the pigment load; blur the soft edge in
+  // mm; edge the extra pigment in the drying rim.
+  paint(pathFn, color, { alpha = 0.55, blur = 0.25, edge = 0.35, evenodd = false } = {}) {
+    if (!this.sheet.color || !color) return;
+    const ctx = this.sheet.ctx("pigment");
+    const k = this.sheet.k;
+    ctx.save();
+    ctx.globalCompositeOperation = "multiply";
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    if (blur > 0) ctx.filter = `blur(${(blur * k).toFixed(1)}px)`;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    pathFn(ctx);
+    ctx.fill(evenodd ? "evenodd" : "nonzero");
+    // A cut-out (evenodd) path joins its subpaths with a stray line, so
+    // only plain shapes get the drying rim.
+    if (edge > 0 && !evenodd) {
+      ctx.globalAlpha = alpha * edge;
+      ctx.lineWidth = 0.45;
+      ctx.filter = `blur(${(0.18 * k).toFixed(1)}px)`;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   // Erase: a kneaded eraser pressed over a region removes the marks already
   // on the paper (and only those), so plates for lettering come clean.
   erase(pathFn, { strength = 0.9, blur = 0.6 } = {}) {
-    for (const m of ["wash", "graphite", "charcoal"]) {
+    // In colour the eraser also lifts the watercolour, so a plate comes
+    // back to bare paper before its own colour goes on.
+    for (const m of this.sheet.color ? ["wash", "graphite", "charcoal", "pigment"] : ["wash", "graphite", "charcoal"]) {
       const ctx = this.sheet.ctx(m);
       ctx.save();
       ctx.globalCompositeOperation = "destination-out";

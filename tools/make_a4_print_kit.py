@@ -27,10 +27,13 @@ Outputs into print/bw/ (black and white):
 With --art, into print/ (the default edition):
   imperial-rivals-305ad-board-4xA4-ART.pdf, imperial-rivals-305ad-succession-map-ART.pdf,
   imperial-rivals-305ad-cards-tokens-ART.pdf, imperial-rivals-305ad-complete-print-kit-A4-ART.pdf
+With --color, into print/color/ (the full-colour edition for colour printers):
+  imperial-rivals-305ad-board-4xA4-COLOR.pdf, imperial-rivals-305ad-succession-map-COLOR.pdf,
+  imperial-rivals-305ad-cards-tokens-COLOR.pdf, imperial-rivals-305ad-complete-print-kit-A4-COLOR.pdf
 Always into print/:
   kit-manifest.json (layout facts used by the tests)
 
-Run: python3 tools/make_a4_print_kit.py [--rules RULES_FILE] [--art]
+Run: python3 tools/make_a4_print_kit.py [--rules RULES_FILE] [--art] [--color]
 """
 
 import json
@@ -49,6 +52,7 @@ from board import Board, validate_six_block_layout  # noqa: E402
 RULES_FILE = "rules_v0102_bigboard.json"
 OUT_DIR = "print"                         # ART edition and the manifest
 BW_DIR = os.path.join(OUT_DIR, "bw")      # black-and-white edition
+COLOR_DIR = os.path.join(OUT_DIR, "color")  # full-colour edition
 KIT_VERSION = "prototype print kit V0.10.2"
 
 # Brand names (Brand & Naming Specification v1.0, 15 November 2026).
@@ -1402,27 +1406,34 @@ def faction_cards_pages(c, first_page):
 # and land in art/build/assets/. Missing assets fail loudly; the
 # black-and-white kit never depends on them.
 
+# The full-colour edition is the same drawing with watercolour glazes,
+# rendered with `node render.mjs --color` into art/build/assets-color/.
+# It uses the same layout, tiling, and cut furniture as the drawn kit.
+
 ART_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                        "art", "build", "assets")
+COLOR_ART_DIR = ART_DIR + "-color"
 
 
-def art_asset(name):
-    path = os.path.join(ART_DIR, name)
+def art_asset(name, asset_dir=ART_DIR):
+    path = os.path.join(asset_dir, name)
     if not os.path.exists(path):
+        flag = " --color" if asset_dir == COLOR_ART_DIR else ""
         raise SystemExit(
-            f"art asset {name} not found under {ART_DIR}. Build it first:\n"
-            "  python3 art/export_layout.py && (cd art && npm ci && node render.mjs)")
+            f"art asset {name} not found under {asset_dir}. Build it first:\n"
+            f"  python3 art/export_layout.py && (cd art && npm ci && node render.mjs{flag})")
     return path
 
 
-def art_board_pdf(path, L):
+def art_board_pdf(path, L, asset_dir=ART_DIR, label="drawn art"):
     """The palace board with the drawn artwork under the same tiling."""
-    art_tiled_pdf(path, L, "palace-board.png", f"{PRODUCT} - board (4 x A4, drawn art)")
+    art_tiled_pdf(path, L, "palace-board.png", f"{PRODUCT} - board (4 x A4, {label})",
+                  asset_dir)
 
 
-def art_tiled_pdf(path, L, asset, title):
+def art_tiled_pdf(path, L, asset, title, asset_dir=ART_DIR):
     """A full-board artwork tiled onto four A4 pages under the BW furniture."""
-    img = art_asset(asset)
+    img = art_asset(asset, asset_dir)
     ax0, ay0, ax1, ay1 = L["art"]
     c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
     c.setTitle(title)
@@ -1449,17 +1460,18 @@ def art_tiled_pdf(path, L, asset, title):
     c.save()
 
 
-def art_succession_pdf(path, S):
+def art_succession_pdf(path, S, asset_dir=ART_DIR, label="drawn art"):
     """The succession map: same footprint, tiles and cut lines as the board."""
     art_tiled_pdf(path, S, "succession-map.png",
-                  f"{PRODUCT} - succession map (4 x A4, drawn art)")
+                  f"{PRODUCT} - succession map (4 x A4, {label})", asset_dir)
 
 
-def art_cards_tokens_pdf(path):
+def art_cards_tokens_pdf(path, asset_dir=ART_DIR, label="drawn art"):
     """Card fronts with bleed, identical art backs, and the token sheet."""
-    c = new_doc(path, f"{PRODUCT} - cards and tokens (drawn art)")
-    back = art_asset("card-back.png")
-    cards = [art_asset(f"card-{i + 1}-{icon}.png")
+    c = new_doc(path, f"{PRODUCT} - cards and tokens ({label})")
+    art_asset_here = lambda name: art_asset(name, asset_dir)
+    back = art_asset_here("card-back.png")
+    cards = [art_asset_here(f"card-{i + 1}-{icon}.png")
              for i, (_n, icon, _t) in enumerate(CARDS)]
 
     # Page 1: the six fronts. The PNGs carry a 2 mm bleed margin, so the
@@ -1486,13 +1498,13 @@ def art_cards_tokens_pdf(path):
 
     # Page 3: the token sheet, cut guides drawn into the art.
     doc_header(c, "TOKENS", "cut on the dashed lines - fold the pawns and tape them upright")
-    c.drawImage(art_asset("tokens-sheet.png"), 0, 0, width=PW * mm, height=PH * mm)
+    c.drawImage(art_asset_here("tokens-sheet.png"), 0, 0, width=PW * mm, height=PH * mm)
     doc_footer(c, 3)
     c.showPage()
 
     # Pages 4 and 5: the faction cards and their shared back.
-    fronts = [art_asset(f"faction-{kind}.png") for kind in ("army", "officials", "elites")]
-    fronts += [art_asset(f"faction-empty-{n}.png") for n in (1, 2, 3)]
+    fronts = [art_asset_here(f"faction-{kind}.png") for kind in ("army", "officials", "elites")]
+    fronts += [art_asset_here(f"faction-empty-{n}.png") for n in (1, 2, 3)]
     doc_header(c, "FACTION CARDS", "for the succession map - art backs on the next page")
     for i in range(6):
         cx = x0 + (i % 3) * (CARD_W + 5.5)
@@ -1507,7 +1519,7 @@ def art_cards_tokens_pdf(path):
     doc_footer(c, 4)
     c.showPage()
     doc_header(c, "FACTION CARD BACKS", "glue or fold behind each faction card - all six are identical")
-    back = art_asset("faction-back.png")
+    back = art_asset_here("faction-back.png")
     for i in range(6):
         cx = x0 + (i % 3) * (CARD_W + 5.5)
         cy = y0 - (i // 3) * (CARD_H + 5.0)
@@ -2319,6 +2331,7 @@ def main():
                 f"printed text assumes board_level2 {key} == {value}, "
                 f"rules say {actual}; update the kit prose")
     build_art = "--art" in sys.argv
+    build_color = "--color" in sys.argv
     L = build_layout(rules)
     os.makedirs(BW_DIR, exist_ok=True)
     out = lambda name: os.path.join(OUT_DIR, name)
@@ -2363,6 +2376,24 @@ def main():
                  art_files["art_succession"], art_files["art_cards"]],
                 out("imperial-rivals-305ad-complete-print-kit-A4-ART.pdf"))
         files.update(art_files)
+    if build_color:
+        os.makedirs(COLOR_DIR, exist_ok=True)
+        col = lambda name: os.path.join(COLOR_DIR, name)
+        color_files = {
+            "color_board": col("imperial-rivals-305ad-board-4xA4-COLOR.pdf"),
+            "color_succession": col("imperial-rivals-305ad-succession-map-COLOR.pdf"),
+            "color_cards": col("imperial-rivals-305ad-cards-tokens-COLOR.pdf"),
+        }
+        label = "full colour"
+        art_board_pdf(color_files["color_board"], L, COLOR_ART_DIR, label)
+        art_succession_pdf(color_files["color_succession"], build_succession_layout(rules),
+                           COLOR_ART_DIR, label)
+        art_cards_tokens_pdf(color_files["color_cards"], COLOR_ART_DIR, label)
+        combine([files["rulebook"], files["quick"], files["teaching"], files["sheets"],
+                 files["instructions"], color_files["color_board"],
+                 color_files["color_succession"], color_files["color_cards"]],
+                col("imperial-rivals-305ad-complete-print-kit-A4-COLOR.pdf"))
+        files.update(color_files)
     b = L["board"]
     S = build_succession_layout(rules)
     manifest = {
@@ -2416,6 +2447,7 @@ def main():
     with open(out("kit-manifest.json"), "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=2, sort_keys=True)
     print(f"wrote {len(files) + 1} PDFs into {BW_DIR}/" + (" and the art kit into " + OUT_DIR + "/" if build_art else "")
+          + (" and the colour kit into " + COLOR_DIR + "/" if build_color else "")
           + f", plus {OUT_DIR}/kit-manifest.json")
     for name, path in files.items():
         print(f"  {name}: {path} ({os.path.getsize(path) // 1024} KB)")

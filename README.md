@@ -51,7 +51,8 @@ a paper texture, with hand-lettered Roman capitals. See [`art/`](art/).
   experiment tools.
 - A browser game that runs the same rules, checked move for move against
   the simulator.
-- A print-and-play kit in a drawn edition and a black-and-white edition.
+- A print-and-play kit in a drawn edition, a full-colour edition, and a
+  black-and-white edition.
 - The experiments, findings, and decisions behind every rule change.
 
 ## Current versions
@@ -114,7 +115,16 @@ programmatically, see `art/`):
 - [Succession map, drawn art: four A4 tiles](print/imperial-rivals-305ad-succession-map-ART.pdf)
 - [Cards and tokens, drawn art](print/imperial-rivals-305ad-cards-tokens-ART.pdf)
 
-Both complete kits start with the rulebook, quick reference, teaching guide,
+For a colour printer, use the [full-colour kit](print/color/imperial-rivals-305ad-complete-print-kit-A4-COLOR.pdf).
+It is the same drawing with watercolour glazes: terracotta roofs, gold
+treasure entries, gates in the colour of their metal, and faction cards in
+red (army), purple (officials), and green (elites):
+
+- [Palace board, full colour: four A4 tiles](print/color/imperial-rivals-305ad-board-4xA4-COLOR.pdf)
+- [Succession map, full colour: four A4 tiles](print/color/imperial-rivals-305ad-succession-map-COLOR.pdf)
+- [Cards and tokens, full colour](print/color/imperial-rivals-305ad-cards-tokens-COLOR.pdf)
+
+All three complete kits start with the rulebook, quick reference, teaching guide,
 and player sheets. The print instructions come next, right before the pages to
 cut: the palace board, the succession map, then the cards and tokens.
 
@@ -136,7 +146,7 @@ Each board assembles to 580 × 406 mm from four A4 tiles. The two boards
 share their cut lines, so you can tape them back to back. Follow the print
 instructions and check the 100 mm calibration ruler.
 
-Both kits print the same geometry: the art consumes a layout exported
+All kits print the same geometry: the art consumes a layout exported
 from the generator itself (`art/build/layout.json`), never a copy.
 
 To regenerate the kit from `rules_v0102_bigboard.json`, install ReportLab:
@@ -145,6 +155,7 @@ To regenerate the kit from `rules_v0102_bigboard.json`, install ReportLab:
 python3 -m pip install reportlab
 python3 tools/make_a4_print_kit.py          # black-and-white kit
 python3 tools/make_a4_print_kit.py --art    # also the drawn kit
+python3 tools/make_a4_print_kit.py --art --color  # and the full-colour kit
 ```
 
 The drawn assets are seeded and reproducible. To re-render them after
@@ -152,9 +163,14 @@ changing the rules or the drawing code (`@napi-rs/canvas` needs Node 18+):
 
 ```bash
 python3 art/export_layout.py
-cd art && npm ci && node render.mjs && cd ..
-python3 tools/make_a4_print_kit.py --art
+cd art && npm ci && node render.mjs && node render.mjs --color && cd ..
+python3 tools/make_a4_print_kit.py --art --color
 ```
+
+The colour assets land in `art/build/assets-color/`. The colour edition
+draws the same lines from the same seeds as the grayscale edition and adds
+one pigment layer, so `node render.mjs` without `--color` stays
+byte-identical.
 
 The README images in `docs/images/` are reduced copies of these assets.
 Rebuild them with ImageMagick:

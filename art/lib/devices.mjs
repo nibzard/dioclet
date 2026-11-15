@@ -5,11 +5,16 @@
 // and each object rests on a soft shadow.
 import { arcPoints, spline } from "./brush.mjs";
 import { W, poly, bbox, tone } from "./motifs.mjs";
+import { PALETTE as C } from "./palette.mjs";
 
 const PI = Math.PI;
 const w = (name, extra = {}) => ({ ...W[name], ...extra });
 
+// Colour glazes for a part of a device: metal, wood, leather, cloth.
+const glaze = (a, pathFn, color, alpha = 0.75) => a.paint(pathFn, color, { alpha, blur: 0.06, edge: 0.35 });
+
 function groundShadow(a, cx, cy, r) {
+  a.paint((c) => c.ellipse(cx + r * 0.25, cy + r * 0.18, r, r * 0.28, 0, 0, PI * 2), C.shadow, { alpha: 0.35, blur: 1.2, edge: 0 });
   a.smudge((c) => c.ellipse(cx + r * 0.25, cy + r * 0.18, r, r * 0.28, 0, 0, PI * 2), { alpha: 0.3, blur: 1.4 });
   // A few darker flicks under the object, like dust.
   for (let i = 0; i < 9; i++) {
@@ -28,6 +33,7 @@ export function pugio(a, cx, cy, h) {
   const bl = (s) => spline([tip, [cx + s * 2.2 * u, top + 3.5 * u], [cx + s * 3.1 * u, top + 6.5 * u],
     [cx + s * 2.3 * u, top + 10 * u], [cx + s * 2.8 * u, top + 13.5 * u], [cx + s * 3.6 * u, top + 15.6 * u]], 7);
   const right = bl(1), left = bl(-1);
+  glaze(a, poly([...right, ...left.slice().reverse()]), C.steel);
   tone(a, poly([...right, [cx, top + 15.6 * u]]), bbox(right, 0.5), 0.5, { angle: PI / 2.2 });
   a.stroke(right, w("firm"));
   a.stroke(left, w("firm"));
@@ -38,6 +44,7 @@ export function pugio(a, cx, cy, h) {
   // Crossguard: a broad tapered bar with rivets at the ends.
   const gy = top + 15.6 * u;
   const guard = [[cx - 5.2 * u, gy], [cx + 5.2 * u, gy], [cx + 4.4 * u, gy + 1.9 * u], [cx - 4.4 * u, gy + 1.9 * u]];
+  glaze(a, poly(guard), C.bronze);
   tone(a, poly(guard), bbox(guard, 0.3), 0.45, { angle: PI / 2 });
   a.polygon(guard, w("bold", { width: 0.5, overshoot: 0.1 }));
   for (const s of [-1, 1]) a.circle(cx + s * 3.6 * u, gy + 0.95 * u, 0.45 * u, w("fine"));
@@ -45,6 +52,8 @@ export function pugio(a, cx, cy, h) {
   const g0 = gy + 1.9 * u, g1 = g0 + 6.4 * u, mid = (g0 + g1) / 2;
   const grip = (s) => spline([[cx + s * 1.3 * u, g0], [cx + s * 1.0 * u, mid - 1.4 * u], [cx + s * 1.0 * u, mid + 1.4 * u], [cx + s * 1.4 * u, g1]], 6);
   const gripPts = [...grip(1), ...grip(-1).reverse()];
+  glaze(a, poly(gripPts), C.wood);
+  glaze(a, (c) => c.ellipse(cx, mid, 2.3 * u, 0.8 * u, 0, 0, PI * 2), C.bronze);
   tone(a, poly(gripPts), bbox(gripPts, 0.3), 0.35, { angle: PI / 2 });
   a.stroke([...gripPts, gripPts[0]], w("firm"));
   a.ellipse(cx, mid, 2.3 * u, 0.8 * u, w("firm"));
@@ -53,6 +62,7 @@ export function pugio(a, cx, cy, h) {
   const py = g1;
   const pom = [...arcPoints(cx, py + 0.9 * u, 4.2 * u, 0.9 * u, PI, 2 * PI, 10),
     ...arcPoints(cx, py + 0.9 * u, 4.2 * u, 1.9 * u, 0, PI, 14).slice(1, -1)];
+  glaze(a, poly(pom), C.bronze);
   tone(a, poly(pom), bbox(pom, 0.3), 0.4, { angle: PI / 2.3 });
   a.stroke([...pom, pom[0]], w("bold", { width: 0.5 }));
   for (const dx of [-2.2, 0, 2.2]) a.circle(cx + dx * u, py + (dx === 0 ? 1.3 : 1.1) * u, 0.4 * u, w("fine"));
@@ -66,6 +76,7 @@ export function gladius(a, cx, cy, h) {
   const tip = [cx, top];
   const edge = (s) => spline([tip, [cx + s * 2.6 * u, top + 8 * u], [cx + s * 2.9 * u, top + 17 * u], [cx + s * 2.9 * u, top + 19 * u]], 7);
   const right = edge(1), left = edge(-1);
+  glaze(a, poly([...right, ...left.slice().reverse()]), C.steel);
   tone(a, poly(right), bbox(right, 0.5), 0.45, { angle: PI / 2.1 });
   a.stroke(right, w("firm"));
   a.stroke(left, w("firm"));
@@ -73,6 +84,9 @@ export function gladius(a, cx, cy, h) {
   a.line([cx + 1.3 * u, top + 5 * u], [cx + 1.45 * u, top + 16 * u], w("hair", { alpha: 0.35, bow: 0 }));
   // Guard boss, grip with cord rings, disc pommel.
   const gy = top + 19 * u;
+  glaze(a, (c) => c.ellipse(cx, gy + 0.8 * u, 3.4 * u, 1.2 * u, 0, 0, PI * 2), C.gold);
+  glaze(a, (c) => c.rect(cx - 1.7 * u, gy + 1.8 * u, 3.4 * u, 6 * u), C.wood);
+  glaze(a, (c) => c.ellipse(cx, gy + 9 * u, 2.6 * u, 2.2 * u, 0, 0, PI * 2), C.gold);
   a.ellipse(cx, gy + 0.8 * u, 3.4 * u, 1.2 * u, w("firm"));
   a.rect(cx - 1.7 * u, gy + 1.8 * u, 3.4 * u, 6 * u, w("firm", { overshoot: 0.12 }));
   tone(a, (c) => c.rect(cx - 1.5 * u, gy + 1.9 * u, 3 * u, 5.8 * u), [cx - 1.5 * u, gy + 1.9 * u, 3 * u, 5.8 * u], 0.3, { angle: PI / 2 });
@@ -89,6 +103,8 @@ export function pilum(a, cx, cy, h) {
   // Small pyramidal head.
   const hb = top + 2.6 * u;
   const head = [[cx, top], [cx + 0.95 * u, hb - 0.6 * u], [cx + 0.5 * u, hb], [cx - 0.5 * u, hb], [cx - 0.95 * u, hb - 0.6 * u]];
+  glaze(a, poly(head), C.steel);
+  glaze(a, (c) => c.rect(cx - 0.32 * u, hb, 0.64 * u, 9.4 * u), C.steel);
   tone(a, poly([head[0], head[1], head[2], [cx, hb]]), bbox(head, 0.4), 0.55, { angle: PI / 2.4 });
   a.polygon(head, w("firm", { overshoot: 0.05 }));
   a.line([cx, top + 0.5 * u], [cx, hb], w("hair", { bow: 0 }));
@@ -98,6 +114,7 @@ export function pilum(a, cx, cy, h) {
   a.line([cx + 0.28 * u, hb], [cx + 0.32 * u, jb], w("firm", { bow: 0 }));
   // Wooden block where the shank is riveted into the shaft.
   const blk = [cx - 1.5 * u, jb, 3 * u, 2.8 * u];
+  glaze(a, (c) => c.rect(...blk), C.bronze);
   tone(a, (c) => c.rect(...blk), blk, 0.4, { angle: PI / 2 });
   a.rect(...blk, w("bold", { width: 0.45, overshoot: 0.1 }));
   a.line([cx - 1.5 * u, jb + 0.7 * u], [cx + 1.5 * u, jb + 0.7 * u], w("hair", { bow: 0 }));
@@ -105,6 +122,8 @@ export function pilum(a, cx, cy, h) {
   // The wooden shaft: heavier, tapering, with grain.
   const s0 = jb + 2.8 * u, s1 = top + 28.6 * u;
   const shaft = [[cx - 0.95 * u, s0], [cx + 0.95 * u, s0], [cx + 0.75 * u, s1], [cx - 0.75 * u, s1]];
+  glaze(a, poly(shaft), C.wood);
+  glaze(a, (c) => c.rect(cx - 0.95 * u, s0 + 6 * u, 1.9 * u, 2.6 * u), C.leather);
   tone(a, poly([[cx + 0.1 * u, s0], [cx + 0.95 * u, s0], [cx + 0.75 * u, s1], [cx + 0.1 * u, s1]]), bbox(shaft, 0.3), 0.4, { angle: PI / 2.2 });
   a.line(shaft[0], shaft[3], w("firm", { bow: 0 }));
   a.line(shaft[1], shaft[2], w("firm", { bow: 0 }));
@@ -131,6 +150,7 @@ export function galea(a, cx, cy, h) {
 
   // Neck guard first, so the bowl overlaps it.
   const neck = Ps([[-0.5, 14.4], [-3.2, 14.6], [-6.9, 13.9], [-9.4, 15.6], [-9.8, 16.8], [-6.6, 16.8], [-3.0, 16.0], [-0.6, 15.4]]);
+  glaze(a, poly(neck), C.bronze);
   tone(a, poly(neck), bbox(neck, 0.4), 0.45, { angle: PI / 2.3 });
   a.polygon(neck, w("firm", { overshoot: 0.1 }));
   a.stroke(spline(Ps([[-1.2, 15.2], [-6.4, 15.4], [-9.4, 16.4]]), 6), w("hair", { bow: 0 }));
@@ -141,6 +161,7 @@ export function galea(a, cx, cy, h) {
   const ear = arcPoints(ox + 2.2 * u, top + 14.2 * u, 1.5 * u, 1.6 * u, 0, -PI, 12);
   const back = Ps([[0.7, 14.2], [-3.2, 14.6], [-6.9, 14.0]]);
   const outline = [...bowl, ...rim, ...ear, ...back];
+  glaze(a, poly(outline), C.bronze);
   tone(a, poly(outline), bbox(outline, 0.5), 0.18, { angle: PI / 2.6 });
   // Shadow side: the back and underside of the bowl.
   const shade = spline(Ps([[-1.0, 5.5], [-5.6, 6.8], [-7.4, 10.4], [-6.9, 14.0], [-3.2, 14.6], [-2.2, 11.0]]), 7);
@@ -154,11 +175,13 @@ export function galea(a, cx, cy, h) {
   a.stroke(spline(Ps([[6.6, 11.0], [5.0, 9.7], [3.4, 10.3], [3.9, 11.2]]), 6), w("fine"));
   // Brow peak, a narrow projecting band (not a cap brim).
   const peak = Ps([[7.3, 12.2], [9.2, 11.9], [9.0, 12.8], [7.5, 13.2]]);
+  glaze(a, poly(peak), C.bronze);
   tone(a, poly(peak), bbox(peak, 0.3), 0.5, { angle: PI / 2 });
   a.polygon(peak, w("firm", { overshoot: 0.05 }));
 
   // Cheek guard hanging from a hinge in front of the ear.
   const cheek = spline(Ps([[3.4, 14.0], [7.4, 13.3], [7.8, 16.6], [6.6, 19.8], [4.6, 20.8], [3.2, 18.6], [2.9, 16.0]]), 7, true);
+  glaze(a, poly(cheek), C.bronze);
   tone(a, poly(cheek), bbox(cheek, 0.5), 0.35, { angle: PI / 2.3 });
   a.stroke(cheek, w("firm"));
   // Hinge straps tie the guard to the rim.
@@ -171,6 +194,7 @@ export function galea(a, cx, cy, h) {
   const inner = spline(Ps([[5.4, 6.4], [2.6, 4.9], [0, 4.4], [-3.4, 4.9], [-6.4, 6.6], [-8.0, 9.0]]), 10);
   const outer = spline(Ps([[6.0, 5.8], [4.0, 1.4], [0, -0.2], [-4.4, 0.9], [-7.8, 4.6], [-9.0, 8.8]]), 10);
   const crest = [...inner, ...outer.slice().reverse()];
+  glaze(a, poly(crest), C.red, 0.85);
   tone(a, poly(crest), bbox(crest, 0.5), 0.35, { angle: -PI / 3 });
   const n = 46;
   for (let i = 0; i <= n; i++) {
@@ -199,6 +223,7 @@ export function scutum(a, cx, cy, h) {
     return pts;
   };
   const face = strip(0, 1);
+  glaze(a, poly(face), C.red, 0.85);
   // Tone rolls round the curve: light at the left, dark at the right.
   tone(a, poly(strip(0, 0.08)), bbox(strip(0, 0.08), 0.3), 0.25, { angle: PI / 2 });
   tone(a, poly(strip(0.58, 0.78)), bbox(strip(0.58, 0.78), 0.3), 0.3, { angle: PI / 2 });
@@ -230,10 +255,12 @@ export function scutum(a, cx, cy, h) {
   }
   // Boss: a square iron plate with corner rivets, the round umbo on it.
   const bs = 3.8 * u;
+  glaze(a, (c) => c.rect(cx - bs, my - bs, bs * 2, bs * 2), C.steel, 0.9);
   tone(a, (c) => c.rect(cx - bs, my - bs, bs * 2, bs * 2), [cx - bs, my - bs, bs * 2, bs * 2], 0.2, { angle: PI / 3 });
   a.rect(cx - bs, my - bs, bs * 2, bs * 2, w("firm", { overshoot: 0.1 }));
   for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) a.circle(cx + dx * (bs - 0.8 * u), my + dy * (bs - 0.8 * u), 0.35 * u, w("fine"));
   M_lift(a, cx, my, 2.7 * u);
+  glaze(a, (c) => c.arc(cx, my, 2.7 * u, 0, PI * 2), C.gold, 0.85);
   tone(a, (c) => { c.moveTo(cx, my - 2.6 * u); c.arc(cx, my, 2.6 * u, -PI / 2, PI / 2); c.closePath(); },
     [cx - 3 * u, my - 3 * u, 6 * u, 6 * u], 0.55, { angle: PI / 2 });
   a.circle(cx, my, 2.7 * u, w("bold"));
@@ -255,6 +282,7 @@ export function lorica(a, cx, cy, h) {
   const sil = spline(Ps([[2.8, 2.2], [6.6, 2.4], [9.2, 4.6], [9.4, 7.0], [7.0, 9.6], [6.4, 12.5], [6.0, 16], [6.6, 20], [6.4, 23.2],
     [0, 23.8], [-6.4, 23.2], [-6.6, 20], [-6.0, 16], [-6.4, 12.5], [-7.0, 9.6], [-9.4, 7.0], [-9.2, 4.6], [-6.6, 2.4], [-2.8, 2.2],
     [-2.0, 3.9], [0, 4.6], [2.0, 3.9]]), 6, true);
+  glaze(a, poly(sil), C.steel, 0.8);
   tone(a, poly(sil), bbox(sil, 0.5), 0.15, { angle: PI / 2.8 });
   const side = spline(Ps([[2.6, 4.6], [7.6, 3.0], [9.4, 7.0], [7.0, 9.6], [6.4, 12.5], [6.0, 16], [6.6, 20], [6.4, 23.2], [2.6, 23.6], [3.2, 14]]), 6, true);
   tone(a, poly(side), bbox(side, 0.5), 0.4, { angle: PI / 2.3 });

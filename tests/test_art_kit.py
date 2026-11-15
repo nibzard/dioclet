@@ -8,6 +8,9 @@ the contract around it:
   board.
 - When the rendered assets are present, the ART PDFs exist, carry the
   right page sizes and counts, and reuse the BW tiles' cut furniture.
+- The full-colour edition (`node art/render.mjs --color`) has the same
+  assets at the same sizes, really in colour, and its COLOR PDFs use the
+  same tiling.
 - Nothing here runs Node: rendering is a separate build step
   (`node art/render.mjs`), and the tests skip cleanly without it.
 """
@@ -183,6 +186,67 @@ class ArtKitPdfs(unittest.TestCase):
         for page in reader.pages:
             xobjs = page.get("/Resources", {}).get("/XObject", {})
             self.assertTrue(any(xobjs[k].get("/Subtype") == "/Image" for k in xobjs))
+
+
+COLOR_ASSETS = ART_BUILD / "assets-color"
+
+
+@unittest.skipUnless((COLOR_ASSETS / "palace-board.png").exists(),
+                     "colour assets not rendered (run: node art/render.mjs --color)")
+class ColorKit(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.out = Path(tempfile.mkdtemp(prefix="dioclet-color-"))
+        rules = engine.load_rules(str(REPO / kit.RULES_FILE))
+        cls.L = kit.build_layout(rules)
+        cls.S = kit.build_succession_layout(rules)
+        cls.board = cls.out / "board-COLOR.pdf"
+        cls.succession = cls.out / "succession-COLOR.pdf"
+        cls.cards = cls.out / "cards-COLOR.pdf"
+        kit.art_board_pdf(str(cls.board), cls.L, kit.COLOR_ART_DIR, "full colour")
+        kit.art_succession_pdf(str(cls.succession), cls.S, kit.COLOR_ART_DIR, "full colour")
+        kit.art_cards_tokens_pdf(str(cls.cards), kit.COLOR_ART_DIR, "full colour")
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.out, ignore_errors=True)
+
+    def test_every_grayscale_asset_has_a_colour_twin_of_the_same_size(self):
+        from PIL import Image
+        gray = sorted(p.name for p in (ART_BUILD / "assets").glob("*.png"))
+        self.assertEqual(gray, sorted(p.name for p in COLOR_ASSETS.glob("*.png")))
+        for name in gray:
+            with Image.open(ART_BUILD / "assets" / name) as g, Image.open(COLOR_ASSETS / name) as c:
+                self.assertEqual(g.size, c.size, name)
+
+    def test_colour_assets_are_in_colour(self):
+        from PIL import Image
+        for name in ("palace-board.png", "succession-map.png", "card-back.png", "tokens-sheet.png"):
+            with Image.open(COLOR_ASSETS / name) as im:
+                hsv = im.convert("RGB").resize((200, 140)).convert("HSV")
+                # A grayscale render has no saturated pixel at all.
+                vivid = sum(1 for px in hsv.getdata() if px[1] > 60) / (200 * 140)
+                self.assertGreater(vivid, 0.03, f"{name} looks grayscale")
+
+    def test_boards_tile_like_the_art_kit(self):
+        for path, layout in ((self.board, self.L), (self.succession, self.S)):
+            reader = PdfReader(path)
+            self.assertEqual(len(reader.pages), 4)
+            ax0, ay0, _, _ = layout["art"]
+            for page_no, page in zip(("1", "2", "3", "4"), reader.pages):
+                x0, y0, _ = layout["tiles"][page_no]
+                ctm = image_matrix(page)
+                self.assertAlmostEqual(ctm[4], (ax0 - x0) * kit.mm, places=1)
+                self.assertAlmostEqual(ctm[5], (ay0 - y0) * kit.mm, places=1)
+
+    def test_cards_pdf_embeds_the_colour_images(self):
+        reader = PdfReader(self.cards)
+        self.assertEqual(len(reader.pages), 5)
+        for page in reader.pages:
+            xobjs = page["/Resources"]["/XObject"]
+            spaces = {xobjs[k].get("/ColorSpace") for k in xobjs
+                      if xobjs[k].get("/Subtype") == "/Image"}
+            self.assertIn("/DeviceRGB", spaces)
 
 
 if __name__ == "__main__":
