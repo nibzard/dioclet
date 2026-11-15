@@ -1,130 +1,62 @@
-// Node test for web/engine.js + web/bots.js (run: node tools/test_web_engine.mjs)
-import { createRequire } from "node:module";
-const require = createRequire(import.meta.url);
-require("../web/board-data.js");
-require("../web/engine.js");
-require("../web/bots.js");
+// Board-data contract and shared geometry checks for the V0.10.2 web kit.
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+const root = new URL('../', import.meta.url);
+const ctx = vm.createContext({console,structuredClone});
+vm.runInContext(readFileSync(new URL('web/board-data.js',root),'utf8'),ctx);
+vm.runInContext(readFileSync(new URL('web/engine.js',root),'utf8'),ctx);
+const B = ctx.DIOCLET_BOARD, E = ctx.DIOCLET_ENGINE;
+const key = c => c.join(',');
+const plain = v => JSON.parse(JSON.stringify(v));
 
-const E = globalThis.DIOCLET_ENGINE;
-const BOTS = globalThis.DIOCLET_BOTS;
-const B = globalThis.DIOCLET_BOARD;
-
-let failures = 0;
-function check(name, cond) {
-  if (cond) { console.log("  ok:", name); }
-  else { console.error("  FAIL:", name); failures++; }
+// The generated payload must describe the twin-board V0.10.2 game and
+// must not carry any field from the retired V0.8 shape: dead keys would
+// keep dead engine branches alive.
+{
+  assert.equal(B.mode, 'succession-v1');
+  assert.equal(B.rulesVersion, '0.10.2-bigboard');
+  for (const gone of ['level2','sealsRequired','hitsToWin','prestigeRules','combatRules','gloryCap','districts','blocked','gates','checkpoint','gloryPosts'])
+    assert.ok(!Object.hasOwn(B, gone), `legacy top-level key ${gone} must be gone`);
+  assert.ok(!('support_in_city' in B.succession) && !('factions' in B.succession) && !('reset_positions' in B.succession));
+  assert.equal(Object.keys(B.combat.abilities).length, 6);
+  assert.equal(B.succession.blindSupport, true);
+  assert.equal(B.succession.claimWindowRounds, 2);
+  assert.equal(B.succession.contestCost, 1);
+  assert.equal(B.glory.duelLoserCost, 1);
+  assert.equal(B.startReveals, 2);
+  assert.equal(B.claimRequiredEquipment, 6);
+  assert.equal(B.succession.challengeBonus, 0, 'the paid boost is gone in 0.10.2');
 }
 
-// --- board facts ---------------------------------------------------
-check("97 street spaces", B.width * B.height - B.blocked.length === 97);
-const remaining = new Set(B.blocked.map(c => c.join(",")));
-const blocks = [];
-while (remaining.size) {
-  const start = remaining.values().next().value;
-  remaining.delete(start);
-  const todo = [start.split(",").map(Number)];
-  for (let i = 0; i < todo.length; i++) {
-    const [x, y] = todo[i];
-    for (const next of [[x-1,y], [x+1,y], [x,y-1], [x,y+1]]) {
-      if (remaining.delete(next.join(","))) todo.push(next);
-    }
-  }
-  blocks.push(todo);
-}
-check("six physical blocks of 25 cells", blocks.length === 6 && blocks.every(b => b.length === 25));
-const blocked = new Set(B.blocked.map(c => c.join(",")));
-check("no street pierces a declared block", B.buildings.length === 6 && B.buildings.every(b => {
-  for (let x = b.x0; x <= b.x1; x++) for (let y = b.y0; y <= b.y1; y++) {
-    if (!blocked.has([x,y].join(","))) return false;
-  }
-  return true;
-}));
-check("one explicit card per block", new Set(B.buildings.map(b => b.district)).size === 6 &&
-  B.buildings.every(b => Object.hasOwn(B.districts, b.district)));
-check("cardo and decumanus run end to end",
-  Array.from({length: B.height}, (_, y) => !blocked.has([6,y].join(","))).every(Boolean) &&
-  Array.from({length: B.width}, (_, x) => !blocked.has([x,6].join(","))).every(Boolean));
-check("four gates end the two main streets", JSON.stringify(B.gates) ===
-  JSON.stringify({P0:[6,0], P1:[18,6], P2:[6,12], P3:[0,6]}));
-check("checkpoint marks the main crossing", B.checkpoint.join(",") === "6,6");
-check("no blocked special",
-  [...Object.values(B.gates), ...Object.values(B.districts),
-   B.checkpoint, ...B.gloryPosts, ...Object.values(B.level2)]
-  .every(c => !B.blocked.some(b => b[0] === c[0] && b[1] === c[1])));
-
-// --- engine invariants over full bot games -------------------------
-function playGame(seed, kinds) {
-  const seats = ["P0", "P1", "P2", "P3"].map((id, i) => ({
-    id, kind: kinds[i], name: id }));
-  const g = E.newGame(seed, seats);
-  let guard = 0;
-  while (!g.winner && !g.draw) {
-    if (++guard > 6000) return { g, stuck: true };
-    const p = E.active(g);
-    const acts = E.legalActions(g);
-    if (acts.length === 0) return { g, stuck: true, noActions: true };
-    // invariant: every action destination is a street cell within the roll
-    for (const a of acts) {
-      const [x, y] = a.dest.split(",").map(Number);
-      if (B.blocked.some(b => b[0] === x && b[1] === y)) {
-        return { g, bad: "action into building: " + a.dest };
-      }
-      if (a.dist > g.currentRoll.total) {
-        return { g, bad: "move beyond roll" };
-      }
-    }
-    // invariant: glory always within cap
-    for (const q of g.players) {
-      if (q.glory < 0 || q.glory > B.gloryCap) {
-        return { g, bad: "glory out of range" };
-      }
-    }
-    const a = BOTS.choose(p.kind, { ...g, activePlayer: p }, acts,
-                          () => g.rng());
-    E.applyAction(g, a);
-  }
-  return { g, stuck: false };
+// Both maps: same street grid, different gates and Peristyle.
+{
+  assert.equal(B.map1.width, 19); assert.equal(B.map1.height, 13);
+  assert.deepEqual(plain(B.map1.blocked),
+                   plain([...B.boardLevel2.blocked].sort((a,b)=>a[0]-b[0]||a[1]-b[1])));
+  assert.deepEqual(plain(B.map1.gates.P2), [6,12]);
+  assert.deepEqual(plain(B.boardLevel2.gates.P2), [12,12], 'the south gate moves on the succession map');
+  assert.deepEqual(plain(B.map1.checkpoint), [6,6]);
+  assert.deepEqual(plain(B.boardLevel2.checkpoint), [9,6]);
+  assert.equal(B.boardLevel2.supportSites.length, 6);
+  assert.equal(B.boardLevel2.gloryPosts.length, 4);
 }
 
-console.log("full bot games:");
-let wins = 0, draws = 0, rounds = [];
-for (let i = 0; i < 40; i++) {
-  const kinds = ["balanced", "greedy", "aggressive", "balanced"];
-  const { g, stuck, bad, noActions } = playGame(1000 + i * 7, kinds);
-  if (bad) { check("game " + i + " invariants", false); console.error("   ", bad); failures++; break; }
-  if (stuck || noActions) { check("game " + i + " terminates", false); failures++; break; }
-  if (g.winner) wins++; else draws++;
-  rounds.push(g.round);
-  // winner has two hits
-  if (g.winner && E.player(g, g.winner).hits !== 2) {
-    check("winner has 2 hits", false); failures++; break;
-  }
-  // all players have full equipment after the transition
-  if (g.players.some(p => p.equipment.length !== 6)) {
-    check("full gear after transition", false); failures++; break;
-  }
+// Geometry: every cell reachable, pinwheel gates nine steps from the
+// succession Peristyle, card spaces on streets, per-map caches.
+{
+  const dist1 = E.distancesFrom(key(B.map1.gates.P0), E.MAPS.map1);
+  assert.equal(dist1.size, 19*13 - B.map1.blocked.length);
+  const dist2 = E.distancesFrom(key(B.boardLevel2.checkpoint), E.MAPS.map2);
+  for (const [id, cell] of Object.entries(B.boardLevel2.gates))
+    assert.equal(dist2.get(key(cell)), 9, `gate ${id} nine steps from the succession Peristyle`);
+  for (const site of B.boardLevel2.supportSites)
+    assert.ok(!B.map1.blocked.some(c => key(c) === key(site)), 'card spaces sit on streets');
+  assert.notEqual(E.MAPS.map1.distanceMaps, E.MAPS.map2.distanceMaps);
+  const p = E.path(key(B.map1.gates.P0), key(B.map1.checkpoint), E.MAPS.map1);
+  assert.equal(p[0], key(B.map1.gates.P0));
+  assert.equal(p[p.length-1], key(B.map1.checkpoint));
+  assert.ok(p.every((k, i) => i === 0 || E.neighbors(p[i-1], E.MAPS.map1).includes(k)));
+  assert.equal(E.cmp('a','b') < 0 && E.cmp('b','a') > 0 && E.cmp('a','a') === 0, true, 'codepoint compare');
 }
-check("40 bot games completed", true);
-console.log(`  wins ${wins}, draws ${draws}, median rounds ` +
-  rounds.sort((a, b) => a - b)[Math.floor(rounds.length / 2)]);
-check("all games decisive or drawn cleanly", wins + draws === 40);
-
-// determinism: same seed, same bot choices -> same winner
-const r1 = playGame(777, ["balanced", "balanced", "greedy", "aggressive"]);
-const r2 = playGame(777, ["balanced", "balanced", "greedy", "aggressive"]);
-check("same seed replays identically",
-  r1.g.winner === r2.g.winner && r1.g.round === r2.g.round &&
-  r1.g.log.length === r2.g.log.length);
-
-// 2d6 roll distribution sanity
-const g0 = E.newGame(9, ["P0","P1","P2","P3"].map(id => ({ id, kind: "balanced", name: id })));
-let min = 99, max = 0, total = 0, n = 0, sum = 0;
-for (let i = 0; i < 4000; i++) {
-  const r = { dice: [1 + Math.floor(g0.rng() * 6), 1 + Math.floor(g0.rng() * 6)] };
-  min = Math.min(min, r.dice[0]); max = Math.max(max, r.dice[0]);
-  total += r.dice.reduce((a, b) => a + b, 0); n++;
-}
-check("movement dice in range 2..12", total / n > 6.5 && total / n < 7.5);
-
-if (failures) { console.error(failures + " failures"); process.exit(1); }
-console.log("all web engine tests pass");
+console.log('board-data contract and geometry checks pass.');

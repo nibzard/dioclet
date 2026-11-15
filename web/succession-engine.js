@@ -1,31 +1,52 @@
-/* V0.8 succession rules. Legacy games keep the original engine. */
+/* Imperial Rivals: 305 AD - the V0.10.2 succession engine.
+ *
+ * A faithful port of the Python reference (succession.py driving
+ * rules_v0102_bigboard.json): two maps that share one street grid,
+ * six equipment abilities (best single modifier per duel side, pugio
+ * tie-break), blind faction cards on the succession map, and a
+ * two-full-round claim window. State field names mirror the Python
+ * engine so the parity harness (tools/test_succession_parity.mjs) can
+ * replay identical seeds against both implementations.
+ */
 (function (global) {
   "use strict";
   const B = global.DIOCLET_BOARD;
   if (B.mode !== "succession-v1") return;
-  const geometry = global.DIOCLET_ENGINE;
+  const geo = global.DIOCLET_ENGINE;
   const C = B.succession;
-  const G = B.prestigeRules || { guard_post_success_min_roll: 4, guard_post_reward: 1,
-    duel_win_reward: 1, first_challenger_reward: 1 };
-  const combat = B.combatRules || {};
-  const gearBonus = count => combat.equipment_bonus_tiers
-    ? combat.equipment_bonus_tiers.find(t => count >= t.min_count && count <= t.max_count).bonus
-    : geometry.gearBonus(count);
+  const G = B.glory;
+  const ABIL = B.combat.abilities || {};
   const SALTS = { gates: 0xA5A5A5A5, order: 0x243F6A88,
     equipment: 0x9E3779B9, movement: 0xB7E15162, combat: 0xDEADBEEF,
     bots: 0x85EBCA6B };
-  const distanceMaps = new Map();
-  function distancesFrom(start) {
-    if (!distanceMaps.has(start)) distanceMaps.set(start, geometry.distancesFrom(start));
-    return distanceMaps.get(start);
-  }
-  const distance = (a, b) => distancesFrom(a).get(b);
   const key = c => c.join(",");
-  const cap = () => B.gloryCap == null ? Infinity : B.gloryCap;
-  const coordinate = value => typeof value === "string" ? value : key(value);
-  const districtAt = Object.fromEntries(Object.entries(B.districts).map(([n, c]) => [key(c), n]));
-  const factions = Object.keys(C.factions).sort();
-  const factionCell = f => coordinate(C.factions[f]);
+  const cmp = geo.cmp;
+  const cap = () => G.cap == null ? Infinity : G.cap;
+
+  const M1 = {
+    graph: geo.MAPS.map1,
+    checkpoint: key(B.map1.checkpoint),
+    posts: new Set(B.map1.gloryPosts.map(key)),
+    gateCell: id => key(B.map1.gates[id]),
+  };
+  const M2 = {
+    graph: geo.MAPS.map2,
+    checkpoint: key(B.boardLevel2.checkpoint),
+    posts: new Set(B.boardLevel2.gloryPosts.map(key)),
+    supportSites: B.boardLevel2.supportSites,
+    gateCell: id => key(B.boardLevel2.gates[id]),
+  };
+  const mapFor = g => (g.phase === 1 ? M1 : M2);
+  const gateCell = (p, phase) => (phase === 1 ? M1 : M2).gateCell(p.gateId);
+
+  const districtAt = Object.fromEntries(Object.entries(B.map1.districts).map(([n, c]) => [key(c), n]));
+  const districtNames = Object.keys(B.map1.districts).sort(cmp);
+  const factionNames = C.factionNames.slice().sort(cmp);
+  const factionCell = f => key(C.factionCells[f]);
+
+  function distancesFrom(start, graph) { return geo.distancesFrom(start, graph); }
+  const distanceIn = (g, a, b) => geo.distance(a, b, mapFor(g).graph);
+
   function random(g, stream) {
     let x = g.rngStates[stream] >>> 0;
     x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
@@ -49,6 +70,23 @@
     }
     return out;
   }
+  /* Best-one-never-sum helpers, mirroring _usable_ability/_ability_total. */
+  function usableAbility(p, type) {
+    for (const item of p.equipment) {
+      const spec = ABIL[item];
+      if (spec && spec.type === type && spec.value > 0 && !p.abilitiesUsed[type]) return item;
+    }
+    return null;
+  }
+  function abilityTotal(p, type) {
+    let total = 0;
+    for (const item of p.equipment) {
+      const spec = ABIL[item];
+      if (spec && spec.type === type) total += spec.value;
+    }
+    return total;
+  }
+
   function player(g, id) { return g.players.find(p => p.id === id); }
   function active(g) {
     // A terminal game retains the actor of its final completed turn.
@@ -56,46 +94,58 @@
       ? g.events[g.events.length - 1].player : g.order[g.turnIndex];
     return player(g, id);
   }
+
   function newGame(seed, seats, options = {}) {
     if (!Number.isSafeInteger(Number(seed))) throw Error("The seed must be an integer");
     if (seats.length !== 4 || new Set(seats.map(s => s.id)).size !== 4 ||
-        seats.some(s => !Object.hasOwn(B.gates, s.id))) throw Error("Four distinct player IDs are required");
+        seats.some(s => !Object.hasOwn(B.map1.gates, s.id))) throw Error("Four distinct player IDs are required");
     const g = { mode: "succession-v1", seed: Number(seed), rngStates: {}, players: [],
       order: [], turnRoundStart: 0, turnIndex: 0, turnSeq: 0,
-      phase: 1, round: 1, equipmentMap: {}, revealed: {},
-      firstClaimer: null, claimRound: null, transitionAt: null,
+      phase: 1, round: 1, districtEquipment: {}, revealed: {}, setupReveals: [],
+      firstClaimer: null, triggerRound: null, transitionAt: null,
       currentRoll: null, pendingClaim: null, winner: null, draw: false,
-      log: [], events: [], phase1Timeout: false, phase2Timeout: false,
-      roundsLevel1: null, policyVersion: "succession-bots-v080.1" };
+      endReason: null, status: "in_progress",
+      factionSites: null, factionSitesRevealed: null,
+      equipmentAtTransition: {},
+      phase1Timeout: false, phase2Timeout: false, roundsLevel1: null,
+      log: [], events: [], policyVersion: "succession-engine-v0100.1" };
     for (const [name, salt] of Object.entries(SALTS)) g.rngStates[name] = ((g.seed >>> 0) ^ salt) >>> 0 || 1;
     if (options.diceOverrides) g.diceOverrides = structuredClone(options.diceOverrides);
     g.rng = () => random(g, "bots");
-    const ids = seats.map(s => s.id).sort();
-    const mode = options.gateMode || C.gate_assignment || "random";
+    const ids = seats.map(s => s.id).sort(cmp);
+    const mode = options.gateMode || C.gateAssignment || "random";
     let gates = ids.slice();
-    const explicit = options.gateOrder || C.gate_order;
+    const explicit = options.gateOrder;
     if (explicit) {
       if (explicit.length !== 4 || new Set(explicit).size !== 4 || explicit.some(id => !ids.includes(id))) throw Error("Gate assignment must be a permutation");
       gates = explicit.slice();
     } else if (mode === "random") gates = shuffle(g, ids, "gates");
     else if (mode === "rotation") {
-      const rotation = options.gateRotation ?? C.gate_rotation ?? 0;
+      const rotation = options.gateRotation ?? 0;
       if (!Number.isInteger(rotation) || rotation < 0 || rotation > 3) throw Error("Gate rotation must be 0 to 3");
       gates = ids.map((_, i) => ids[(i + rotation) % 4]);
     } else if (mode !== "manual") throw Error("Unknown gate assignment mode");
     g.gateMode = mode;
     g.gateAssignment = Object.fromEntries(ids.map((id, i) => [id, gates[i]]));
     g.players = ids.map((id, i) => {
-      const seat = seats.find(s => s.id === id), gateId = gates[i], gate = key(B.gates[gateId]);
+      const seat = seats.find(s => s.id === id), gateId = gates[i], gate = M1.gateCell(gateId);
       return { id, name: seat.name || id, kind: seat.kind || "human", index: i,
-        gateId, gate, pos: gate, equipment: [], prestige: 0, support: [], turns: 0 };
+        gateId, gate, pos: gate, equipment: [], prestige: 0, support: [],
+        turns: 0, abilitiesUsed: {} };
     });
     g.order = shuffle(g, ids, "order");
     const equipment = shuffle(g, B.equipment, "equipment");
-    Object.keys(B.districts).sort().forEach((n, i) => { g.equipmentMap[key(B.districts[n])] = equipment[i]; });
+    districtNames.forEach((n, i) => { g.districtEquipment[n] = equipment[i]; });
+    if (B.startReveals) {
+      for (const name of shuffle(g, districtNames, "equipment").slice(0, B.startReveals)) {
+        g.revealed[name] = g.districtEquipment[name];
+      }
+      g.setupReveals = Object.keys(g.revealed).sort(cmp);
+    }
     startTurn(g);
     return g;
   }
+
   function startTurn(g) {
     if (g.winner || g.draw) return;
     const dice = Array.from({ length: B.movement.count }, () => die(g, "movement"));
@@ -103,78 +153,8 @@
     g.turnSeq++;
     active(g).turns++;
   }
+
   function event(rec, type, values = {}) { rec.events.push({ type, ...values }); }
-  function nextTurn(g, rec) {
-    g.turnIndex = (g.turnIndex + 1) % 4;
-    const endRound = g.turnIndex === g.turnRoundStart;
-    if (endRound) {
-      g.round++;
-      g.turnRoundStart = B.rotateFirst === false ? 0 : (g.turnRoundStart + 1) % 4;
-      g.turnIndex = g.turnRoundStart;
-      if (g.phase === 1 && (g.round > B.l1MaxRounds || (g.transitionAt !== null && g.round > g.transitionAt))) {
-        g.roundsLevel1 = g.round - 1;
-        g.phase1Timeout = g.firstClaimer === null;
-        if (C.reset_positions) for (const p of g.players) p.pos = p.gate;
-        g.phase = 2; g.round = 1; g.turnRoundStart = 0; g.turnIndex = 0;
-        event(rec, "phase_transition", { from_phase: 1, to_phase: 2, auto_granted: {}, reset_positions: Boolean(C.reset_positions) });
-        g.log.push("The succession begins. Equipment, support, and Prestige remain yours.");
-      } else if (g.phase === 2 && g.round > B.l2MaxRounds) {
-        g.draw = true; g.phase2Timeout = true; g.round = B.l2MaxRounds; g.currentRoll = null;
-        event(rec, "game_draw", { reason: "phase2_timeout" });
-        g.log.push("No claim prevails before the succession deadline. A draw.");
-        return;
-      }
-    }
-    startTurn(g);
-  }
-  function legalActions(g) {
-    if (g.winner || g.draw) return [];
-    const p = active(g), dist = distancesFrom(p.pos), actions = [];
-    const add = (kind, dest, extra = {}) => actions.push({ kind, dest, dist: dist.get(dest), turnId: g.turnSeq, ...extra });
-    const specials = dest => {
-      if (Object.hasOwn(districtAt, dest)) {
-        const revealed = g.revealed[dest];
-        if (!revealed || !p.equipment.includes(revealed)) add("explore", dest);
-      }
-      if ((g.phase === 2 || C.support_in_city) && p.prestige >= C.support_cost) {
-        for (const faction of factions) {
-          if (dest === factionCell(faction) && !p.support.includes(faction)) add("gain_support", dest, { faction });
-        }
-      }
-      if (g.phase === 1 && !g.firstClaimer && p.equipment.length === 6 && dest === key(B.checkpoint)) add("claim_checkpoint", dest);
-      if (g.phase === 2 && dest === key(B.checkpoint)) {
-        if (!g.pendingClaim && p.support.length >= C.required_support) add("proclaim", dest);
-        if (g.pendingClaim?.claimant === p.id) add("maintain_claim", dest);
-      }
-    };
-    for (const [dest, steps] of dist) {
-      if (steps > g.currentRoll.total) continue;
-      if (steps === 0) {
-        if (B.movement.allowStationary !== false) specials(dest);
-        else if (g.pendingClaim?.claimant === p.id && dest === key(B.checkpoint)) add("maintain_claim", dest);
-        continue;
-      }
-      add("move", dest);
-      specials(dest);
-      if (B.gloryPosts.some(c => key(c) === dest) && p.prestige < cap()) add("guard_post", dest);
-      for (const q of g.players) {
-        if (q.id === p.id || distance(dest, q.pos) > B.movement.duelRange) continue;
-        const contestCost = g.pendingClaim?.claimant === q.id ? (C.contest_cost || 0) : 0;
-        if (p.prestige < contestCost) continue;
-        add("duel", dest, { target: q.id, spend_prestige: false, spend: false, contest_cost: contestCost });
-        if (p.prestige >= contestCost + C.challenge_cost) add("duel", dest, { target: q.id, spend_prestige: true, spend: true, contest_cost: contestCost });
-      }
-    }
-    actions.sort((a, b) => {
-      const [ax, ay] = a.dest.split(",").map(Number), [bx, by] = b.dest.split(",").map(Number);
-      return a.kind.localeCompare(b.kind) || ax - bx || ay - by ||
-        (a.target || "").localeCompare(b.target || "") || Number(Boolean(a.spend_prestige)) - Number(Boolean(b.spend_prestige)) ||
-        (a.faction || "").localeCompare(b.faction || "");
-    });
-    return actions.map((a, i) => ({ ...a, action_id: "a" + String(i + 1).padStart(4, "0") }));
-  }
-  const actionFields = ["kind", "dest", "target", "spend_prestige", "faction", "turnId", "action_id", "contest_cost"];
-  function sameAction(a, b) { return actionFields.every(k => a[k] === b[k]); }
   function grant(g, p, amount, rec, source) {
     const kept = Math.min(amount, cap() - p.prestige);
     p.prestige += kept;
@@ -187,82 +167,273 @@
   }
   function cancelClaim(g, rec, reason) {
     if (!g.pendingClaim) return;
-    event(rec, "claim_cancelled", { player: g.pendingClaim.claimant, claim_id: g.pendingClaim.id, reason });
-    g.log.push(player(g, g.pendingClaim.claimant).name + " loses the claim: " + reason + ".");
+    event(rec, "claim_cancelled", { player: g.pendingClaim.player, claim_id: g.pendingClaim.claimId, reason });
+    g.log.push(player(g, g.pendingClaim.player).name + " loses the claim: " + reason + ".");
     g.pendingClaim = null;
   }
+
+  /* Turn advance, mirroring _advance: on the round wrap check the claim
+   * window first, then the phase-1 transition or the phase-2 deadline.
+   * Terminal paths return before startTurn, so no dice are rolled. */
+  function advance(g, rec) {
+    if (g.winner || g.draw) return;
+    g.turnIndex = (g.turnIndex + 1) % 4;
+    if (g.turnIndex === g.turnRoundStart) {
+      g.round++;
+      g.turnRoundStart = B.rotateFirst === false ? 0 : (g.turnRoundStart + 1) % 4;
+      g.turnIndex = g.turnRoundStart;
+      const window = C.claimWindowRounds;
+      const pending = g.pendingClaim;
+      if (window && g.phase === 2 && pending && g.round - pending.round >= window) {
+        g.winner = pending.player; g.status = "finished"; g.endReason = "survived_window";
+        event(rec, "game_won", { player: pending.player, cause: "survived_window" });
+        g.log.push(player(g, pending.player).name + " holds the claim through the window and is emperor.");
+        g.currentRoll = null;
+        return;
+      }
+      if (g.phase === 1 && (g.round > B.l1MaxRounds ||
+          (g.transitionAt !== null && g.round > g.transitionAt))) {
+        g.roundsLevel1 = g.round - 1;
+        g.phase1Timeout = g.firstClaimer === null;
+        g.equipmentAtTransition = Object.fromEntries(g.players.map(p => [p.id, p.equipment.length]));
+        // Twin-board change: the succession map takes over and every seat
+        // returns to its gate on that map.
+        g.phase = 2;
+        for (const p of g.players) p.pos = gateCell(p, 2);
+        g.round = 1; g.turnRoundStart = 0; g.turnIndex = 0;
+        if (C.blindSupport) {
+          const cells = M2.supportSites.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(key);
+          g.factionSites = {};
+          cells.forEach(k => { g.factionSites[k] = null; });
+          shuffle(g, cells, "order").slice(0, 3)
+            .forEach((k, i) => { g.factionSites[k] = factionNames[i]; });
+          g.factionSitesRevealed = {};
+        }
+        event(rec, "phase_transition", { from_phase: 1, to_phase: 2, auto_granted: {}, phase1_timeout: g.phase1Timeout });
+        g.log.push("The succession map takes over. Every pawn returns to its gate; items, Prestige, and support remain yours.");
+      } else if (g.phase === 2 && g.round > B.l2MaxRounds) {
+        g.draw = true; g.phase2Timeout = true; g.status = "finished"; g.endReason = "phase2_timeout";
+        g.round = B.l2MaxRounds; g.currentRoll = null;
+        event(rec, "game_draw", { reason: "phase2_timeout" });
+        g.log.push("No claim prevails before the succession deadline. A draw.");
+        return;
+      }
+    }
+    startTurn(g);
+  }
+
+  function legalActions(g) {
+    if (g.winner || g.draw) return [];
+    const p = active(g), M = mapFor(g), dist = distancesFrom(p.pos, M.graph);
+    const actions = [];
+    const add = (kind, dest, extra = {}) => actions.push({ kind, dest, dist: dist.get(dest), turnId: g.turnSeq, ...extra });
+    const specials = dest => {
+      // Treasure entries exist only on the palace map; in phase 2 the
+      // active board has no districts and explore is never offered.
+      const district = g.phase === 1 ? districtAt[dest] : undefined;
+      if (district !== undefined &&
+          (!(district in g.revealed) || !p.equipment.includes(g.districtEquipment[district]))) add("explore", dest);
+      if (g.phase === 2) {
+        if (C.blindSupport && g.factionSites) {
+          // Search unrevealed cells; buy support only at revealed factions.
+          if (dest in g.factionSites && !(dest in g.factionSitesRevealed)) add("search_site", dest);
+          const revealed = g.factionSitesRevealed?.[dest];
+          if (revealed && !p.support.includes(revealed) && p.prestige >= C.supportCost) add("gain_support", dest, { faction: revealed });
+        } else {
+          for (const faction of factionNames) {
+            if (dest === factionCell(faction) && !p.support.includes(faction) && p.prestige >= C.supportCost) add("gain_support", dest, { faction });
+          }
+        }
+      }
+      if (dest === M.checkpoint) {
+        if (g.phase === 1 && g.firstClaimer === null && p.equipment.length >= B.claimRequiredEquipment) add("claim_checkpoint", dest);
+        if (g.phase === 2 && !g.pendingClaim && p.support.length >= C.requiredSupport && p.prestige >= C.proclaimCost) add("proclaim", dest);
+      }
+    };
+    for (const [dest, steps] of dist) {
+      if (steps > g.currentRoll.total) continue;
+      if (steps === 0) {
+        if (B.movement.allowStationary !== false) specials(dest);
+        continue;
+      }
+      add("move", dest);
+      specials(dest);
+      if (M.posts.has(dest) && p.prestige < cap()) add("guard_post", dest);
+      for (const q of g.players) {
+        if (q.id === p.id) continue;
+        const dd = distanceIn(g, dest, q.pos);
+        if (dd == null || dd > B.movement.duelRange) continue;
+        if (g.pendingClaim?.player === q.id && C.challengeRadius && dd > C.challengeRadius) continue;
+        const contestCost = g.pendingClaim?.player === q.id ? C.contestCost : 0;
+        if (p.prestige < contestCost) continue;
+        add("duel", dest, { target: q.id, spend_prestige: false, contest_cost: contestCost });
+        if (C.challengeBonus && p.prestige >= contestCost + C.challengeCost) add("duel", dest, { target: q.id, spend_prestige: true, contest_cost: contestCost });
+      }
+    }
+    // Galea: a stationary, once-per-game public reveal of any unexplored
+    // district, wherever it is.
+    if (B.movement.allowStationary !== false && usableAbility(p, "reveal_district")) {
+      for (const name of districtNames) {
+        if (!(name in g.revealed)) add("inspect", p.pos, { district: name });
+      }
+    }
+    if (g.pendingClaim?.player === p.id && p.pos === M.checkpoint) add("maintain_claim", p.pos);
+    actions.sort((a, b) => {
+      const [ax, ay] = a.dest.split(",").map(Number), [bx, by] = b.dest.split(",").map(Number);
+      return cmp(a.kind, b.kind) || ax - bx || ay - by ||
+        cmp(a.target || "", b.target || "") || Number(Boolean(a.spend_prestige)) - Number(Boolean(b.spend_prestige)) ||
+        cmp(a.faction || "", b.faction || "");
+    });
+    return actions.map((a, i) => ({ ...a, action_id: "a" + String(i + 1).padStart(4, "0") }));
+  }
+
+  const actionFields = ["kind", "dest", "target", "spend_prestige", "faction", "district", "turnId", "action_id", "contest_cost"];
+  function sameAction(a, b) { return actionFields.every(k => a[k] === b[k]); }
+
   function applyAction(g, supplied) {
     const action = legalActions(g).find(a => sameAction(a, supplied));
     if (!action) throw Error("Illegal or stale action; refresh the current legal actions");
-    const p = active(g), oldClaim = g.pendingClaim && { ...g.pendingClaim, responded: g.pendingClaim.responded.slice() };
+    const p = active(g), M = mapFor(g);
+    const pendingBefore = g.pendingClaim && { ...g.pendingClaim, responded: g.pendingClaim.responded.slice() };
     const rec = { player: p.id, kind: action.kind, dest: action.dest, turnId: g.turnSeq,
       phase: g.phase, round: g.round, action: { ...action }, dice: [], events: [], notes: [] };
     p.pos = action.dest;
-    if (g.pendingClaim?.claimant === p.id && p.pos !== key(B.checkpoint)) cancelClaim(g, rec, "left the Peristyle");
+    if (g.pendingClaim?.player === p.id && p.pos !== M.checkpoint) cancelClaim(g, rec, "left_peristyle");
+
     if (action.kind === "explore") {
-      const item = g.equipmentMap[action.dest];
-      if (!g.revealed[action.dest]) { g.revealed[action.dest] = item; event(rec, "treasure_revealed", { district: districtAt[action.dest], item }); }
+      const district = districtAt[action.dest];
+      const item = g.districtEquipment[district];
+      if (!(district in g.revealed)) {
+        g.revealed[district] = item;
+        event(rec, "district_revealed", { district, item });
+      }
       if (!p.equipment.includes(item)) {
         p.equipment.push(item);
-        event(rec, "equipment_collected", { player: p.id, item });
+        event(rec, "equipment_collected", { player: p.id, district, item });
         rec.notes.push("collected " + item);
       } else rec.notes.push("already owns this equipment");
+    } else if (action.kind === "inspect") {
+      const district = action.district;
+      const item = usableAbility(p, "reveal_district");
+      g.revealed[district] = g.districtEquipment[district];
+      p.abilitiesUsed.reveal_district = item;
+      event(rec, "district_revealed", { district, item: g.districtEquipment[district] });
+      event(rec, "ability_used", { player: p.id, ability: item, district });
+      rec.notes.push("the galea reveals district " + district + ": " + g.districtEquipment[district]);
     } else if (action.kind === "guard_post") {
       const roll = die(g, "combat"); rec.dice.push(roll);
-      const success = roll >= G.guard_post_success_min_roll;
+      const success = roll >= G.guardMinRoll;
       event(rec, "guard_post", { player: p.id, roll, success });
-      const kept = success ? grant(g, p, G.guard_post_reward, rec, "guard_post") : 0;
+      const kept = success ? grant(g, p, G.guardReward, rec, "guard_post") : 0;
       rec.notes.push("guard duty " + roll + ": +" + kept + " Prestige");
+    } else if (action.kind === "search_site") {
+      const faction = g.factionSites[action.dest];
+      g.factionSitesRevealed[action.dest] = faction;
+      event(rec, "support_site_revealed", { player: p.id, cell: action.dest.split(",").map(Number), faction });
+      rec.notes.push(faction ? "the " + faction + " meet here" : "an empty street");
     } else if (action.kind === "gain_support") {
-      spend(p, C.support_cost, rec, "faction_support");
+      spend(p, C.supportCost, rec, "faction_support");
       p.support.push(action.faction);
+      p.support.sort(cmp);
       event(rec, "support_gained", { player: p.id, faction: action.faction });
       rec.notes.push("secured " + action.faction + " support");
+    } else if (action.kind === "claim_checkpoint") {
+      g.firstClaimer = p.id;
+      g.triggerRound = g.round;
+      g.transitionAt = Math.min(g.round + B.graceRounds, B.l1MaxRounds);
+      if (G.firstChallengerReward) grant(g, p, G.firstChallengerReward, rec, "checkpoint");
+      event(rec, "first_challenger", { player: p.id, transition_at: g.transitionAt });
+      rec.notes.push("claims the checkpoint; the succession countdown begins");
+    } else if (action.kind === "proclaim") {
+      g.pendingClaim = { player: p.id, claimId: g.turnSeq, claim_id: g.turnSeq,
+        round: g.round, responded: [] };
+      if (C.proclaimCost) spend(p, C.proclaimCost, rec, "proclaim");
+      event(rec, "claim_proclaimed", { player: p.id, claim_id: g.turnSeq });
+      rec.notes.push("proclaims a claim to the throne");
+    } else if (action.kind === "maintain_claim") {
+      event(rec, "claim_maintained", { player: p.id });
+      rec.notes.push("maintains the claim");
     } else if (action.kind === "duel") {
       const q = player(g, action.target);
       if (action.contest_cost) spend(p, action.contest_cost, rec, "claim_contest");
-      if (action.spend_prestige) spend(p, C.challenge_cost, rec, "challenge");
-      const attackerDie = die(g, "combat"), defenderDie = die(g, "combat");
-      rec.dice.push(attackerDie, defenderDie);
-      const attack = attackerDie + gearBonus(p.equipment.length) + (action.spend_prestige ? C.challenge_bonus : 0);
-      const defence = defenderDie + gearBonus(q.equipment.length);
-      const winner = attack > defence || (attack === defence && !combat.tie_goes_to_defender) ? p : q;
-      grant(g, winner, G.duel_win_reward, rec, "duel");
-      event(rec, "duel", { attacker: p.id, defender: q.id, winner: winner.id,
-        attacker_roll: attackerDie, defender_roll: defenderDie, attacker_total: attack, defender_total: defence,
-        spend_prestige: action.spend_prestige });
-      rec.notes.push("challenge " + attack + " vs " + defence + ": " + winner.name + " wins");
-      if (winner.id === p.id && g.pendingClaim?.claimant === q.id) {
-        cancelClaim(g, rec, "defeated by " + p.name);
-        q.pos = q.gate;
-        event(rec, "claimant_returned", { player: q.id, destination: q.gate });
+      if (action.spend_prestige) spend(p, C.challengeCost, rec, "challenge");
+      const attackRoll = die(g, "combat"), defenseRoll = die(g, "combat");
+      rec.dice.push(attackRoll, defenseRoll);
+      // At most one equipment modifier applies per side: the best one,
+      // never the sum. The pilum counts only against the standing claimant.
+      const attackMods = [], defenseMods = [];
+      for (const item of p.equipment) {
+        const spec = ABIL[item];
+        if (!spec || spec.value <= 0) continue;
+        if (spec.type === "attack_bonus") attackMods.push(spec.value);
+        else if (spec.type === "attack_vs_claimant" && g.pendingClaim && g.pendingClaim.player === q.id) attackMods.push(spec.value);
       }
-    } else if (action.kind === "claim_checkpoint") {
-      g.firstClaimer = p.id; g.claimRound = g.round;
-      g.transitionAt = Math.min(g.round + B.graceRounds, B.l1MaxRounds);
-      grant(g, p, G.first_challenger_reward, rec, "first_challenger");
-      event(rec, "first_challenger", { player: p.id, transition_at: g.transitionAt });
-      rec.notes.push("opens the succession countdown");
-    } else if (action.kind === "proclaim") {
-      g.pendingClaim = { claimant: p.id, player: p.id, responded: [], id: g.turnSeq, claim_id: g.turnSeq };
-      event(rec, "claim_proclaimed", { player: p.id, claim_id: g.turnSeq });
-      rec.notes.push("claims imperial power; every rival gets a response");
-    } else if (action.kind === "maintain_claim") rec.notes.push("maintains the claim");
-    else rec.notes.push("moves to " + action.dest);
-    if (oldClaim && g.pendingClaim?.id === oldClaim.id && p.id !== oldClaim.claimant && !g.pendingClaim.responded.includes(p.id)) {
-      g.pendingClaim.responded.push(p.id);
-      event(rec, "claim_response", { player: p.id, claim_id: oldClaim.id });
-      if (g.pendingClaim.responded.length === 3) {
-        g.winner = g.pendingClaim.claimant;
-        event(rec, "game_won", { player: g.winner, reason: "claim_survived" });
-        g.log.push(player(g, g.winner).name + " is acclaimed emperor.");
+      for (const item of q.equipment) {
+        const spec = ABIL[item];
+        if (spec && spec.type === "defense_bonus" && spec.value > 0) defenseMods.push(spec.value);
+      }
+      const stack = mods => (B.combat.abilityStacking === "sum"
+        ? mods.reduce((a, b) => a + b, 0) : Math.max(...mods));
+      const attackBonus = (attackMods.length ? stack(attackMods) : 0) + (action.spend_prestige ? C.challengeBonus : 0);
+      const defenseBonus = defenseMods.length ? stack(defenseMods) : 0;
+      const attackScore = attackRoll + attackBonus, defenseScore = defenseRoll + defenseBonus;
+      // Pugio: the lone holder wins a tied duel; if both or neither hold
+      // one, the base tie rule decides.
+      const attackerPugio = abilityTotal(p, "win_ties") > 0;
+      const defenderPugio = abilityTotal(q, "win_ties") > 0;
+      let won;
+      if (attackScore !== defenseScore) won = attackScore > defenseScore;
+      else if (attackerPugio !== defenderPugio) {
+        won = attackerPugio;
+        const holder = won ? p : q;
+        event(rec, "ability_used", { player: holder.id,
+          ability: holder.equipment.find(i => ABIL[i]?.type === "win_ties") });
+      } else won = !B.combat.tieGoesToDefender;
+      const winner = won ? p : q;
+      event(rec, "duel", { attacker: p.id, defender: q.id, winner: winner.id,
+        attacker_roll: attackRoll, defender_roll: defenseRoll,
+        attacker_bonus: attackBonus, defender_bonus: defenseBonus,
+        attacker_score: attackScore, defender_score: defenseScore,
+        spend_prestige: Boolean(action.spend_prestige) });
+      grant(g, winner, G.duelWinReward, rec, "duel");
+      const shame = G.duelLoserCost ?? 0;
+      if (shame) {
+        const loser = won ? q : p;
+        const paid = Math.min(shame, loser.prestige);
+        if (paid) spend(loser, paid, rec, "duel_shame");
+      }
+      rec.notes.push("duel " + attackScore + " vs " + defenseScore + ": " + winner.name + " wins");
+      if (won && g.pendingClaim && g.pendingClaim.player === q.id) {
+        cancelClaim(g, rec, "challenge_won");
+        // Lorica: once per game the beaten claimant keeps their position.
+        // The claim still dies; only the walk back to the gate is saved.
+        const loricaItem = usableAbility(q, "prevent_displacement");
+        if (loricaItem) {
+          q.abilitiesUsed.prevent_displacement = loricaItem;
+          event(rec, "ability_used", { player: q.id, ability: loricaItem });
+        } else {
+          q.pos = gateCell(q, g.phase);
+          event(rec, "claimant_returned", { player: q.id, destination: q.pos });
+        }
+      }
+    } else rec.notes.push("moves to " + action.dest);
+
+    // Response bookkeeping survives for the record; under a claim window
+    // mere responses no longer crown anyone - the window decides.
+    const pending = g.pendingClaim;
+    if (pendingBefore && pending && pending.claimId === pendingBefore.claimId && p.id !== pendingBefore.player) {
+      if (!pending.responded.includes(p.id)) {
+        pending.responded.push(p.id);
+        event(rec, "claim_response", { player: p.id, claim_id: pending.claimId });
       }
     }
     g.log.push(p.name + ": " + rec.notes.join("; "));
     g.events.push(rec);
-    if (!g.winner) nextTurn(g, rec);
+    if (!g.winner && !g.draw) advance(g, rec);
     return rec;
   }
-  global.DIOCLET_ENGINE = { ...geometry, newGame, legalActions, applyAction, player, active,
-    distancesFrom, distance, gearBonus, mode: "succession-v1", version: "succession-engine-v080.1" };
+
+  global.DIOCLET_ENGINE = { ...geo, mapFor, gateCell, newGame, legalActions, applyAction,
+    player, active, distanceIn, usableAbility, abilityTotal,
+    mode: "succession-v1", version: "succession-engine-v0100.1" };
 })(typeof window !== "undefined" ? window : globalThis);

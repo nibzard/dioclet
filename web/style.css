@@ -39,7 +39,7 @@ main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; align-items: 
 .sw { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 .sw.gate { background: #5a3d6b; } .sw.entry { background: #3f6f9e; }
 .sw.cp { background: #c9972b; } .sw.post { background: #5f7a4a; }
-.sw.emp { background: #a03d2e; } .sw.ret { background: #4a6b7a; }
+.sw.card { background: #203d35; border-radius: 0; }
 .sw.hl { background: #fff6d9; border: 2px solid var(--gold); width: 10px; height: 10px; }
 .board-note { text-align: center; font: italic 12px var(--serif); color: #8a8c7d; margin: 15px 0 0; }
 .board-note span { color: var(--gold); margin-right: 5px; }
@@ -244,7 +244,10 @@ button.text-button:hover { color: #92703b; }
 #setup-error { font-size: 11px; color: var(--red); margin: 0 0 10px; }
 #setup-error:empty { display: none; }
 button:disabled { opacity: .45; cursor: default; }
-.support-list { margin-top: 8px; font-size: 10px; line-height: 1.6; color: var(--muted); overflow-wrap: anywhere; }
+.support-list { margin-top: 6px; font-size: 10px; line-height: 1.6; color: var(--muted); overflow-wrap: anywhere; }
 .support-list strong { color: var(--ink); font-weight: 500; }
+.gear-list { margin-top: 6px; font-size: 10px; line-height: 1.6; color: var(--muted); overflow-wrap: anywhere; }
+.gear-list strong { color: var(--ink); font-weight: 500; }
+.fbadge { display: inline-grid; place-items: center; width: 15px; height: 15px; margin-left: 4px; background: #203d35; color: #f3f0e8; border-radius: 50%; font-size: 9px; font-weight: 600; vertical-align: middle; }
 .claim-status { padding: 14px 16px; border: 1px solid #b9ad85; background: #f2ecd9; font-size: 12px; line-height: 1.7; }
 @media (max-width: 620px) { .gate-settings select { font-size: 16px; } }

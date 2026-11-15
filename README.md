@@ -12,13 +12,13 @@ a print-and-play kit, and the experiments that guide the design.
 
 ## Current versions
 
-The simulator, print kit, and browser game use different rules:
+The simulator, print kit, and browser game share one rules file:
 
 | Component | Rules | Status |
 | --- | --- | --- |
 | Python simulator | [V0.10.2 big board](rules_v0102_bigboard.json) | Current design candidate |
 | [Print kit](print/) | V0.10.2 big board | Generated PDFs; needs human playtesting |
-| [Browser game](web/) | [V0.8 succession](rules_v08_succession.json) | Playable with humans and bots |
+| [Browser game](web/) | V0.10.2 big board | Playable with humans and bots; Python parity |
 | Original simulator | [V0.1 baseline](rules_baseline.json) | Kept for historical experiments and replays |
 
 **V0.10 uses two boards of the same size.** Players collect equipment on
@@ -31,8 +31,9 @@ cards, buy support from two factions, and defend a claim at the Peristyle for
 two rounds. Six equipment abilities affect play; at most one equipment
 modifier applies per duel side.
 
-The browser engine does not yet support the second board. Its V0.8 rules
-and rulebook differ from the current print kit. See the
+The browser engine is a port of the Python engine. The parity check
+replays seeded games against `succession.py` and matches every legal
+action, die, and state. See the
 [V0.10 findings](FINDINGS_V10.md) and the
 [V0.10 notes](notes/v10-level2-2026-11-14.md) for the evidence and open
 questions.
@@ -47,17 +48,17 @@ python3 -m http.server 8000 --directory web
 ```
 
 Open <http://localhost:8000>. Choose human or bot players and use
-**How to play** for the V0.8 rulebook.
+**How to play** for the full rulebook.
 
-The board data and rulebook are generated from `rules_v08_succession.json`:
+The board data and rulebook are generated from `rules_v0102_bigboard.json`:
 
 ```bash
 python3 tools/make_web_board.py
 ```
 
-This command regenerates the V0.8 browser files. It does not upgrade the
-browser to V0.9.4. Cloudflare hosting is configured in
-[`wrangler.jsonc`](wrangler.jsonc).
+This command regenerates `web/board-data.js` and `web/rules.js`. It fails
+when the rules file is not the twin-board succession variant. Cloudflare
+hosting is configured in [`wrangler.jsonc`](wrangler.jsonc).
 
 ## Print and play
 
@@ -212,7 +213,7 @@ python3 -m pip install -r requirements-decisions.txt
 Try an offline mock game:
 
 ```bash
-python3 sim.py ai-auto --rules rules_v08_succession.json --seed 4400 \
+python3 sim.py ai-auto --rules rules_v0102_bigboard.json --seed 4400 \
   --players decisions,decisions,decisions,decisions \
   --provider mock --out runs/mock-demo
 ```
@@ -255,8 +256,8 @@ node tools/test_web_ui.mjs
 ```
 
 The user interface check requires `jsdom`; it prints `SKIP` when that package
-is unavailable. The browser checks cover the implemented browser rules,
-not V0.9.4 twin-board parity.
+is unavailable. The parity check replays seeded games against the Python
+engine on the twin-board rules.
 
 ## Project map
 

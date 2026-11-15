@@ -1,19 +1,26 @@
-/* Diocletian's Palace: table UI over web/engine.js and web/bots.js. */
+/* Imperial Rivals: 305 AD - table UI over engine.js, succession-engine.js,
+ * and succession-bots.js. One street grid, two boards: the city map with
+ * its six treasure districts, and the succession map with blind faction
+ * cards and the Peristyle claim. */
 (function () {
   "use strict";
 
   const B = window.DIOCLET_BOARD;
-  const SUCCESSION = B.mode === "succession-v1";
+  if (B.mode !== "succession-v1") throw Error("This UI requires the succession board data");
   const FACTIONS = { army: "Army", officials: "Imperial officials", elites: "City elites" };
+  const LETTER = { army: "A", officials: "O", elites: "C" };
+  const FACTIONCOLOR = { army: "#7a5a2e", officials: "#3f6f9e", elites: "#5f7a4a" };
   const GATES = { P0: "North · Golden", P1: "East · Silver", P2: "South · Bronze", P3: "West · Iron" };
+  const ITEMS = { pugio: "Pugio", pilum: "Pilum", galea: "Galea", scutum: "Scutum",
+    gladius: "Gladius", lorica_segmentata: "Lorica" };
   const E = window.DIOCLET_ENGINE;
   const BOTS = window.DIOCLET_BOTS;
   const CELL = 44, PAD = 36;
   const COLORS = { P0: "#5a3d6b", P1: "#b0532f", P2: "#5f7a4a", P3: "#3f6f9e" };
-  const SEATNAMES = { P0: "North", P1: "East", P2: "South", P3: "West" };
   const KINDS = [["human", "Human (this device)"], ["balanced", "Bot: balanced"],
                  ["greedy", "Bot: collector"], ["aggressive", "Bot: fighter"],
                  ["random", "Bot: wanderer"]];
+  const C = B.succession;
 
   const svg = document.getElementById("board");
   const NS = "http://www.w3.org/2000/svg";
@@ -27,6 +34,7 @@
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
   const reducedMotion = () => window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const activeMap = () => g && g.phase === 2 ? B.boardLevel2 : B.map1;
 
   const previousFocus = new Map();
   function syncDialogs() {
@@ -62,7 +70,7 @@
   /* ---------------- board rendering ---------------- */
 
   function buildBoard() {
-    const w = PAD * 2 + B.width * CELL, h = PAD * 2 + B.height * CELL;
+    const w = PAD * 2 + B.map1.width * CELL, h = PAD * 2 + B.map1.height * CELL;
     svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
     el("rect", { width: w, height: h, fill: "#efecdf", rx: 0 });
     el("rect", { x: 8, y: 8, width: w - 16, height: h - 16, rx: 0,
@@ -71,12 +79,12 @@
                  fill: "none", stroke: "#cfd0b9", "stroke-width": .8 });
     // Each declared footprint is one intact, non-walkable block.
     // District ownership is explicit; proximity must not assign cards.
-    B.buildings.forEach(bld => {
+    B.map1.buildings.forEach(bld => {
       const left = PAD + bld.x0 * CELL + 3;
       const top = PAD + bld.y0 * CELL + 3;
       const width = (bld.x1 - bld.x0 + 1) * CELL - 6;
       const height = (bld.y1 - bld.y0 + 1) * CELL - 6;
-      const district = [bld.district, B.districts[bld.district]];
+      const district = [bld.district, B.map1.districts[bld.district]];
       const group = el("g", { "pointer-events": "none", "aria-hidden": "true",
         class: "city-block", "data-district": bld.district });
       el("rect", { x: left, y: top, width, height, rx: 0, fill: "#d9d5c2", stroke: "#b7b89d", "stroke-width": 1.3 }, group);
@@ -93,26 +101,29 @@
         fill: "none", stroke: "#d0d1ba", "stroke-width": .8 }, group);
       if (district) {
         const midX = left + width / 2, midY = top + height / 2;
+        // The treasure plate hides on the succession map: phase 2 has no
+        // districts to explore.
+        const plate = el("g", { class: "district-plate" }, group);
         el("text", { x: midX, y: midY - 43, "text-anchor": "middle", fill: "#7f866e",
-          "font-family": "Verdana, sans-serif", "font-size": 8, "letter-spacing": 2 }, group, "DISTRICT " + district[0]);
+          "font-family": "Verdana, sans-serif", "font-size": 8, "letter-spacing": 2 }, plate, "DISTRICT " + district[0]);
         el("rect", { x: midX - 20, y: midY - 30, width: 40, height: 48, rx: 0,
-          fill: "#f3f0e4", stroke: "#a7af93", "stroke-width": 1 }, group);
+          fill: "#f3f0e4", stroke: "#a7af93", "stroke-width": 1 }, plate);
         el("text", { id: "treasure-" + K(...district[1]), x: midX, y: midY + 3,
-          "text-anchor": "middle", fill: "#8c977b", "font-family": "Georgia, serif", "font-size": 29 }, group, "?");
+          "text-anchor": "middle", fill: "#8c977b", "font-family": "Georgia, serif", "font-size": 29 }, plate, "?");
         el("text", { id: "district-" + K(...district[1]), x: midX, y: midY + 41,
           "text-anchor": "middle", fill: "#7d866d", "font-family": "Verdana, sans-serif",
-          "font-size": 9 }, group, "Hidden treasure");
+          "font-size": 9 }, plate, "Hidden treasure");
       }
     });
     const streetLabel = (x, y, text) => el("text", { x, y,
       "text-anchor": "middle", fill: "#747d64", "font-family": "Verdana, sans-serif",
       "font-size": 8, "letter-spacing": 1, "pointer-events": "none" }, svg, text);
-    streetLabel(cx(B.streets.cardo.coordinate), 26, "CARDO · N–S");
-    streetLabel(cx(10), cy(B.streets.decumanus.coordinate) - 15, "DECUMANUS · E–W");
+    streetLabel(cx(B.map1.streets.cardo.coordinate), 26, "CARDO · N–S");
+    streetLabel(cx(10), cy(B.map1.streets.decumanus.coordinate) - 15, "DECUMANUS · E–W");
     streetLabel(w - 34, 26, "N ↑");
-    for (let y = 0; y < B.height; y++) {
-      for (let x = 0; x < B.width; x++) {
-        if (B.blocked.some(c => c[0] === x && c[1] === y)) continue;
+    for (let y = 0; y < B.map1.height; y++) {
+      for (let x = 0; x < B.map1.width; x++) {
+        if (B.map1.blocked.some(c => c[0] === x && c[1] === y)) continue;
         const k = K(x, y);
         el("circle", { cx: cx(x), cy: cy(y), r: 13, fill: "#fbf9ee",
                        stroke: "#c0c4ab", "stroke-width": 1.5, "data-k": k,
@@ -122,20 +133,19 @@
     const TITLES = {
       gate: "Gate and start position",
       entry: "Treasure entry: stop here to take the card",
-      checkpoint: "Checkpoint: first with all six treasures opens the gate",
-      post: "Guard post: roll 4 or more for 1 Prestige",
-      emperor: "The Emperor's chamber: two hits win the game",
-      retreat: "Retreat hall: step back here on a missed strike",
+      checkpoint: "Checkpoint: first with all six items opens the succession",
+      peristyle: "Peristyle: proclaim your claim with two factions behind you",
+      post: "Guard post: roll " + B.glory.guardMinRoll + " or more for " + B.glory.guardReward + " Prestige",
+      card: "Faction card: stop here and search to turn it over",
     };
     // Decorations never block clicks or hover: the street circle under
     // a chip owns the pointer and carries the tooltip.
-    const chip = (k, fill, text, parent = svg) => {
+    const chip = (k, fill, text, parent, siteClass) => {
       const [x, y] = at(k);
       // The interactive circle must cover the whole marker. Its outer
       // edge also keeps the available-move highlight visible.
       const target = svg.querySelector(`[data-k="${k}"]`);
-      target.setAttribute("r", "20");
-      target.classList.add("site-cell", parent === svg ? "city-site" : "palace-site");
+      target.classList.add("site-cell", siteClass);
       el("circle", { cx: cx(x), cy: cy(y), r: 16.5, fill,
                      stroke: "#3a2d20", "stroke-width": 2.5,
                      "pointer-events": "none" }, parent);
@@ -149,60 +159,50 @@
       if (!c) return;
       c.dataset[phase === 2 ? "palaceTitle" : "cityTitle"] = text;
     };
-    for (const [p, c] of Object.entries(B.gates)) {
-      chip(K(...c), "#5a3d6b", { P0: "N", P1: "E", P2: "S", P3: "W" }[p]);
+    const cityLayer = el("g", { id: "city-markers" });
+    for (const [p, c] of Object.entries(B.map1.gates)) {
+      chip(K(...c), "#5a3d6b", { P0: "N", P1: "E", P2: "S", P3: "W" }[p], cityLayer, "m1-site");
       tip(K(...c), TITLES.gate + " (" + p + ")");
     }
-    for (const [n, c] of Object.entries(B.districts)) {
-      chip(K(...c), "#3f6f9e", n);
+    for (const [n, c] of Object.entries(B.map1.districts)) {
+      chip(K(...c), "#3f6f9e", n, cityLayer, "m1-site");
       tip(K(...c), TITLES.entry + " (" + n + ")");
     }
-    chip(K(...B.checkpoint), "#c9972b", "X");
-    tip(K(...B.checkpoint), TITLES.checkpoint);
-    for (const c of B.gloryPosts) {
-      chip(K(...c), "#5f7a4a", "*");
+    chip(K(...B.map1.checkpoint), "#c9972b", "X", cityLayer, "m1-site");
+    tip(K(...B.map1.checkpoint), TITLES.checkpoint);
+    for (const c of B.map1.gloryPosts) {
+      chip(K(...c), "#5f7a4a", "*", cityLayer, "m1-site");
       tip(K(...c), TITLES.post);
     }
-    const palaceLayer = el("g", { id: "palace-markers", display: "none",
-      "aria-hidden": "true", "pointer-events": "none" });
-    if (!SUCCESSION) {
-    chip(K(...B.level2.emperor), "#a03d2e", "E", palaceLayer);
-    tip(K(...B.level2.emperor), TITLES.emperor, 2);
-    chip(K(...B.level2.retreat), "#4a6b7a", "r", palaceLayer);
-    tip(K(...B.level2.retreat), TITLES.retreat, 2);
-    for (const [label, site] of [["c", "cellars"], ["b", "guard_barracks"],
-                                 ["p", "peristyle"]]) {
-      const [x, y] = B.level2[site];
-      tip(K(x, y), { cellars: "Cellars: roll 3 or more for a seal",
-        guard_barracks: "Barracks: beat the guard for a seal",
-        peristyle: "Peristyle: roll 5 or 6, or spend 1 Glory for a seal" }[site], 2);
-      el("circle", { cx: cx(x) + 14, cy: cy(y) - 15, r: 8, fill: "#fffdf6",
-                     stroke: "#3a2d20", "stroke-width": 1.4,
-                     "pointer-events": "none" }, palaceLayer);
-      el("text", { x: cx(x) + 14, y: cy(y) - 11.5, "text-anchor": "middle",
-                   "font-family": "Verdana, sans-serif", "font-size": 10,
-                   fill: "#3a2d20", "pointer-events": "none" }, palaceLayer, label);
+    // The succession map: gates move (the south gate trades places),
+    // the Peristyle replaces the checkpoint, posts relocate, and six
+    // face-down faction cards wait on the card spaces.
+    const successionLayer = el("g", { id: "succession-markers", display: "none" });
+    for (const [p, c] of Object.entries(B.boardLevel2.gates)) {
+      chip(K(...c), "#5a3d6b", { P0: "N", P1: "E", P2: "S", P3: "W" }[p], successionLayer, "m2-site");
+      tip(K(...c), TITLES.gate + " on the succession map (" + p + ")", 2);
     }
+    chip(K(...B.boardLevel2.checkpoint), "#c9972b", "♛", successionLayer, "m2-site");
+    tip(K(...B.boardLevel2.checkpoint), TITLES.peristyle, 2);
+    for (const c of B.boardLevel2.gloryPosts) {
+      chip(K(...c), "#5f7a4a", "*", successionLayer, "m2-site");
+      tip(K(...c), TITLES.post, 2);
     }
-    if (SUCCESSION) {
-      const factions = el("g", { id: "faction-markers", "pointer-events": "none", "aria-hidden": "true" });
-      for (const [faction, location] of Object.entries(B.succession.factions)) {
-        const [x, y] = location, k = K(x, y);
-        el("rect", { x: cx(x) + 10, y: cy(y) - 25, width: 18, height: 16,
-          fill: "#203d35", stroke: "#f3f0e8", "stroke-width": 1 }, factions);
-        el("text", { x: cx(x) + 19, y: cy(y) - 13, "text-anchor": "middle",
-          fill: "#fffdf6", "font-family": "Verdana, sans-serif", "font-size": 9 }, factions,
-          { army: "A", officials: "O", elites: "C" }[faction]);
-        const base = svg.querySelector(`[data-k="${k}"]`).dataset.cityTitle || "Street space";
-        const supportTip = FACTIONS[faction] + ": spend " + B.succession.support_cost + " Prestige for support";
-        tip(k, base + ". " + supportTip, 2);
-        if (B.succession.support_in_city) tip(k, base + ". " + supportTip);
-      }
-      const [x, y] = B.checkpoint;
-      const claim = el("g", { id: "claim-marker", display: "none", "pointer-events": "none", "aria-hidden": "true" });
-      el("rect", { x: cx(x)-24, y: cy(y)-24, width: 48, height: 48,
-        fill: "none", stroke: "#a4772d", "stroke-width": 3 }, claim);
+    for (const c of B.boardLevel2.supportSites) {
+      const k = K(...c);
+      const card = el("g", { id: "site-" + k, "pointer-events": "none" }, successionLayer);
+      el("rect", { x: cx(c[0]) - 10.5, y: cy(c[1]) - 10.5, width: 21, height: 21,
+        fill: "#203d35", stroke: "#f3f0e8", "stroke-width": 1.2 }, card);
+      el("text", { id: "sitetext-" + k, x: cx(c[0]), y: cy(c[1]) + 6, "text-anchor": "middle",
+        fill: "#fffdf6", "font-family": "Georgia, serif", "font-size": 15,
+        "font-weight": "bold" }, card, "?");
+      svg.querySelector(`[data-k="${k}"]`).classList.add("site-cell", "m2-site");
+      tip(k, TITLES.card, 2);
     }
+    const [px, py] = B.boardLevel2.checkpoint;
+    const claim = el("g", { id: "claim-marker", display: "none", "pointer-events": "none", "aria-hidden": "true" });
+    el("rect", { x: cx(px) - 24, y: cy(py) - 24, width: 48, height: 48,
+      fill: "none", stroke: "#a4772d", "stroke-width": 3 }, claim);
     svg.addEventListener("click", onBoardClick);
     svg.addEventListener("keydown", ev => {
       if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches(".reachable")) {
@@ -217,23 +217,16 @@
     const phase = g ? g.phase : 1;
     if (boardPhase === phase) return;
     boardPhase = phase;
-    const palace = phase === 2;
-    const layer = document.getElementById("palace-markers");
-    layer.setAttribute("display", palace && !SUCCESSION ? "inline" : "none");
-    layer.setAttribute("aria-hidden", String(!palace || SUCCESSION));
-    for (const item of document.querySelectorAll("[data-phase='2']")) {
-      item.hidden = !palace || SUCCESSION;
-      item.style.display = palace && !SUCCESSION ? "" : "none";
-    }
-    document.getElementById("checkpoint-key").textContent = palace ? "Peristyle · claim" : "Checkpoint";
-    if (SUCCESSION) {
-      document.getElementById("faction-markers").setAttribute("display",
-        palace || B.succession.support_in_city ? "inline" : "none");
-    }
+    const succession = phase === 2;
+    document.getElementById("city-markers").setAttribute("display", succession ? "none" : "inline");
+    document.getElementById("succession-markers").setAttribute("display", succession ? "inline" : "none");
+    for (const plate of svg.querySelectorAll(".district-plate"))
+      plate.setAttribute("display", succession ? "none" : "inline");
+    document.getElementById("checkpoint-key").textContent = succession ? "Peristyle · claim" : "Checkpoint";
     for (const c of svg.querySelectorAll(".cell")) {
-      c.setAttribute("r", c.classList.contains("city-site") ||
-        (palace && c.classList.contains("palace-site")) ? "20" : "13");
-      const text = (palace && c.dataset.palaceTitle) || c.dataset.cityTitle;
+      const big = c.classList.contains(succession ? "m2-site" : "m1-site");
+      c.setAttribute("r", big ? "20" : "13");
+      const text = (succession && c.dataset.palaceTitle) || c.dataset.cityTitle;
       c.querySelector("title")?.remove();
       if (text) {
         el("title", {}, c, text);
@@ -253,7 +246,7 @@
                      "stroke-width": 2.2 }, grp);
       el("text", { y: 3.6, "text-anchor": "middle", fill: "#fffdf6",
                    "font-family": "Verdana, sans-serif", "font-size": 8.5,
-                   "font-weight": "bold" }, grp, SUCCESSION ? String(p.index + 1) : SEATNAMES[p.id][0]);
+                   "font-weight": "bold" }, grp, String(p.index + 1));
       svg.appendChild(grp);
       setPawn(p.id, p.pos);
     }
@@ -267,7 +260,7 @@
 
   async function animatePawn(id, fromK, toK) {
     if (reducedMotion()) { setPawn(id, toK); return; }
-    const steps = E.path(fromK, toK);
+    const steps = E.path(fromK, toK, E.mapFor(g).graph);
     if (steps.length < 2) { setPawn(id, toK); return; }
     for (const step of steps.slice(1)) {
       setPawn(id, step);
@@ -276,19 +269,53 @@
   }
 
   function showRevealed() {
-    for (const [k, item] of Object.entries(g.revealed)) {
-      if (document.getElementById("rv-" + k)) continue;
+    for (const [name, item] of Object.entries(g.revealed)) {
+      const k = K(...B.map1.districts[name]);
       const marker = document.getElementById("treasure-" + k);
       const label = document.getElementById("district-" + k);
-      if (!marker || !label) continue;
+      if (!marker || marker.dataset.item === item) continue;
+      marker.dataset.item = item;
       marker.textContent = "✧";
       marker.setAttribute("fill", "#92713b");
-      label.textContent = { pugio: "Pugio", pilum: "Pilum", galea: "Galea", scutum: "Scutum",
-        gladius: "Gladius", lorica_segmentata: "Armor" }[item] || item;
-      const mark = document.createElementNS(NS, "g");
-      mark.id = "rv-" + k;
-      mark.setAttribute("class", "revealchip");
-      svg.appendChild(mark);
+      label.textContent = ITEMS[item] || item;
+    }
+  }
+
+  // Turn the six face-down faction cards as players search them. A
+  // searched space shows its faction letter or an empty street mark.
+  function showSites() {
+    const revealed = g.factionSitesRevealed;
+    for (const c of B.boardLevel2.supportSites) {
+      const k = K(...c);
+      const card = document.getElementById("site-" + k);
+      const box = card.querySelector("rect");
+      const text = document.getElementById("sitetext-" + k);
+      const cell = svg.querySelector(`[data-k="${k}"]`);
+      if (!revealed || !(k in revealed)) {
+        box.setAttribute("fill", "#203d35");
+        text.textContent = "?";
+        cell.dataset.palaceTitle = "Faction card: stop here and search to turn it over";
+      } else {
+        const faction = revealed[k];
+        if (faction) {
+          box.setAttribute("fill", FACTIONCOLOR[faction]);
+          text.textContent = LETTER[faction];
+          cell.dataset.palaceTitle = FACTIONS[faction] + " support: spend " +
+            C.supportCost + " Prestige here for their backing";
+        } else {
+          box.setAttribute("fill", "#8a8d7f");
+          text.textContent = "–";
+          cell.dataset.palaceTitle = "Searched: no faction deals from this space";
+        }
+      }
+    }
+    if (boardPhase === 2) for (const c of svg.querySelectorAll(".cell")) {
+      const text = c.dataset.palaceTitle;
+      if (text) {
+        c.querySelector("title")?.remove();
+        el("title", {}, c, text);
+        c.setAttribute("aria-label", text);
+      }
     }
   }
 
@@ -303,18 +330,16 @@
       const d = document.createElement("div");
       d.className = "pcard" + (isActive ? " active" : "");
       const kind = p.kind === "human" ? "Human · this device" :
-        "Bot · " + ({ balanced: "balanced", greedy: "collector", aggressive: "fighter", random: "wanderer", tactical: "tactical" }[p.kind] || p.kind);
+        "Bot · " + ({ balanced: "balanced", greedy: "collector", aggressive: "fighter", random: "wanderer" }[p.kind] || p.kind);
       d.setAttribute("aria-label", p.name + (isActive ? ", current turn" : ""));
-      if (SUCCESSION) {
-        const supporters = p.support.map(f => FACTIONS[f]).join(", ") || "No faction support yet";
-        d.innerHTML = `<div class="pname"><span class="pawnchip" style="background:${COLORS[p.id]}"></span>${escapeHTML(p.name)}</div>
-          <span class="player-kind">${kind}<br>${GATES[p.gateId]}</span>
-          <div class="pstats"><span>Prestige <strong>${p.prestige}${B.gloryCap === null ? "" : "/" + B.gloryCap}</strong></span><span>Gear <strong>${p.equipment.length}/6</strong></span></div>
-          <div class="support-list"><strong>${p.support.length}/${B.succession.required_support} support</strong> · ${escapeHTML(supporters)}</div>`;
-      } else {
-        d.innerHTML = `<div class="pname">${escapeHTML(p.name)}</div><span class="player-kind">${kind}</span>
-          <div class="pstats">Glory ${p.glory} · Equipment ${p.equipment.length}/6</div>`;
-      }
+      const badges = p.support.map(f =>
+        `<span class="fbadge" title="${escapeHTML(FACTIONS[f])}">${LETTER[f]}</span>`).join("");
+      const gear = p.equipment.map(i => ITEMS[i] || i).join(", ");
+      d.innerHTML = `<div class="pname"><span class="pawnchip" style="background:${COLORS[p.id]}"></span>${escapeHTML(p.name)}</div>
+        <span class="player-kind">${kind}<br>${GATES[p.gateId]}</span>
+        <div class="pstats"><span>Prestige <strong>${p.prestige}${B.glory.cap == null ? "" : "/" + B.glory.cap}</strong></span><span>Gear <strong>${p.equipment.length}/6</strong></span></div>
+        <div class="gear-list"><strong>${p.equipment.length}/6 gear</strong>${gear ? " · " + escapeHTML(gear) : ""}</div>
+        <div class="support-list"><strong>${p.support.length}/${C.requiredSupport} support</strong> ${badges || "· none yet"}</div>`;
       box.appendChild(d);
     }
   }
@@ -349,8 +374,8 @@
     for (const line of lines) {
       const d = document.createElement("div");
       d.textContent = line;
-      if (/HIT|wins|defeats/.test(line)) d.className = "evt";
-      if (/Glory|Prestige/.test(line)) d.className = "glory";
+      if (/duel|defeats|loses/.test(line)) d.className = "evt";
+      if (/Prestige/.test(line)) d.className = "glory";
       box.appendChild(d);
     }
     box.scrollTop = box.scrollHeight;
@@ -359,32 +384,35 @@
   function renderTurnline() {
     renderBoardPhase();
     const line = document.getElementById("turnline");
-    document.getElementById("phase-label").textContent = g.phase === 1 ? "City · Preparation" : "Palace · Succession";
+    document.getElementById("phase-label").textContent = g.phase === 1 ? "City · Phase I" : "Succession · Phase II";
     document.getElementById("city-step").classList.toggle("current", g.phase === 1);
     document.getElementById("palace-step").classList.toggle("current", g.phase === 2 && !g.winner && !g.pendingClaim);
     document.getElementById("emperor-step").classList.toggle("current", Boolean(g.winner || g.pendingClaim));
     if (g.winner) {
       const p = E.player(g, g.winner);
-      line.textContent = SUCCESSION ? `${p.name} is acclaimed emperor. Game over.` : `${p.name} defeated the Emperor. Game over.`;
+      line.textContent = `${p.name} is acclaimed emperor. Game over.`;
       return;
     }
     renderClaim();
     if (g.draw) { line.textContent = "No claim prevailed before the deadline. A draw."; return; }
     const p = E.active(g);
-    const phase = g.phase === 1 ? "the city" : "the palace";
+    const phase = g.phase === 1 ? "the city" : "the succession";
     line.textContent = `Round ${g.round} in ${phase}: ${p.name}` +
       (p.kind === "human" ? " (your turn)" : " is thinking…");
   }
 
   function renderClaim() {
-    if (!SUCCESSION) return;
     const claim = g.pendingClaim;
-    document.getElementById("claim-marker").setAttribute("display", claim ? "inline" : "none");
+    const marker = document.getElementById("claim-marker");
+    marker.setAttribute("display", claim ? "inline" : "none");
     const box = document.getElementById("claim-status");
     box.hidden = !claim;
     if (!claim) { box.textContent = ""; return; }
-    const name = E.player(g, claim.claimant).name;
-    box.textContent = name + " claims the throne. " + claim.responded.length + "/3 rivals have responded. A winning challenge cancels the claim.";
+    const name = E.player(g, claim.player).name;
+    const left = Math.max(0, claim.round + C.claimWindowRounds - g.round);
+    box.textContent = name + " proclaims at the Peristyle. The claim holds for " +
+      left + (left === 1 ? " more full round" : " more full rounds") +
+      " unless a rival wins a contest duel. A beaten claimant pays 1 Prestige and walks back to the gate.";
   }
 
   /* ---------------- interaction ---------------- */
@@ -415,10 +443,10 @@
       const box0 = document.getElementById("actionbox");
       const hint = document.createElement("div");
       hint.className = "hint";
-      hint.innerHTML = "You rolled <b>" + g.currentRoll.total +
-        "</b>. Tap a lit circle. Collect equipment, earn Prestige at a guard post, or spend it for faction support." +
-        (g.pendingClaim ? " <b>A rival's claim is active.</b> Challenge them from within two street spaces, or take another action as your response." :
-          g.phase === 2 ? " With two supporters, proclaim your claim at the Peristyle." : " Your equipment and position carry into succession.");
+      hint.innerHTML = "You rolled <b>" + g.currentRoll.total + "</b>. Tap a lit circle." +
+        (g.pendingClaim ? " <b>A rival's claim stands.</b> Win a contest duel to cancel it before the window closes."
+          : g.phase === 1 ? " Collect equipment in the blocks and stand guard for Prestige. Six items open the succession."
+          : " Search a faction card, buy support at a revealed card, then proclaim at the Peristyle.");
       box0.appendChild(hint);
     } else {
       const hint = document.createElement("div");
@@ -447,10 +475,10 @@
     const k = c.getAttribute("data-k");
     const legal = byDest.get(k);
     if (!legal) return;
-    // Collecting has no cost. Walking past an available treasure adds
-    // no useful option; keep alternatives such as dueling a rival.
-    const list = legal.some(a => a.kind === "explore")
-      ? legal.filter(a => a.kind !== "move") : legal;
+    // Collecting and searching have no cost. Walking past an available
+    // card adds no useful option; keep alternatives such as dueling.
+    const pointless = a => a.kind === "explore" || a.kind === "search_site";
+    const list = legal.some(pointless) ? legal.filter(a => a.kind !== "move") : legal;
     if (list.length === 1) { humanAct(list[0]); return; }
     const box = document.getElementById("choice-actions");
     box.replaceChildren();
@@ -471,34 +499,26 @@
   }
 
   function describe(a) {
-    const siteNames = { cellars: "Cellars", guard_barracks: "Barracks",
-                        peristyle: "Peristyle" };
     switch (a.kind) {
       case "move": return "Just <b>walk</b> here";
       case "explore": {
         const known = g.revealed[a.dest];
-        return "<b>Take the treasure</b>" + (known ? " (" + escapeHTML(known.replace("lorica_segmentata", "armor")) + ")" : "");
+        return "<b>Take the treasure</b>" + (known ? " (" + escapeHTML(ITEMS[known] || known) + ")" : "");
       }
-      case "guard_post": return "<b>Stand guard</b>: roll 4 or more for 1 Prestige";
-      case "gain_support": return "<b>Secure " + FACTIONS[a.faction] + " support</b> · " + B.succession.support_cost + " Prestige";
-      case "proclaim": return "<b>Proclaim your claim</b> · Give each rival one response turn";
-      case "maintain_claim": return "<b>Maintain your claim</b> · Stay at the Peristyle";
+      case "inspect": return "<b>Consult the galea</b> · reveal district " + a.district;
+      case "search_site": return "<b>Search the card space</b> · turn the faction card";
+      case "guard_post": return "<b>Stand guard</b>: roll " + B.glory.guardMinRoll + " or more for " + B.glory.guardReward + " Prestige";
+      case "gain_support": return "<b>Secure " + FACTIONS[a.faction] + " support</b> · " + C.supportCost + " Prestige";
+      case "proclaim": return "<b>Proclaim your claim</b> · holds for " + C.claimWindowRounds + " full rounds";
+      case "maintain_claim": return "<b>Hold the Peristyle</b> · keep your claim";
       case "duel": {
         const q = E.player(g, a.target);
-        const contest = g.pendingClaim && g.pendingClaim.claimant === a.target;
+        const contest = g.pendingClaim && g.pendingClaim.player === a.target;
         const label = contest ? "Contest " + escapeHTML(q.name) + "’s claim" : "Duel " + escapeHTML(q.name);
-        const fee = contest ? (B.succession.contest_cost || 0) : 0;
-        const boost = a.spend_prestige || a.spend;
-        const total = fee + (boost ? B.succession.challenge_cost : 0);
-        return "<b>" + label + "</b> · " + total + " Prestige" + (boost ? " · +" + B.succession.challenge_bonus + " to your roll" : "");
+        const fee = contest ? (a.contest_cost || 0) : 0;
+        return "<b>" + label + "</b> · " + fee + " Prestige fee · 1d6 each, best item applies";
       }
-      case "claim_checkpoint": return "<b>Open the gate</b>: first through";
-      case "attempt_seal": return a.spend
-        ? `<b>Buy the seal</b> at the ${siteNames[a.site]} (1 Glory)`
-        : `<b>Roll for the seal</b> at the ${siteNames[a.site]}`;
-      case "attack_emperor": return a.spend
-        ? "<b>Powered strike</b>: pay 1 Glory for +2"
-        : "<b>Strike the Emperor</b>";
+      case "claim_checkpoint": return "<b>Claim the checkpoint</b> · first with all six items";
     }
     return a.kind;
   }
@@ -515,11 +535,13 @@
       const p = E.active(g), from = p.pos;
       clearHighlights();
       const rec = E.applyAction(g, a);
+      renderBoardPhase();
       await animatePawn(p.id, from, a.dest);
-      // A challenge can also return another pawn to its assigned gate.
+      // A contest or the phase change can also move other pawns.
       for (const q of g.players) setPawn(q.id, q.pos);
       renderDice(rec.dice);
       showRevealed();
+      showSites();
       renderPlayers(); renderLog(); renderTurnline();
       if (g.winner || g.draw) { showGameOver(); return; }
       refreshActions(); renderDice(); scheduleBot();
@@ -533,8 +555,7 @@
     botTimer = setTimeout(async () => {
       const acts = E.legalActions(g);
       const rng = () => g.rng();
-      const a = BOTS.choose(p.kind === "human" ? "balanced" : p.kind,
-                            { ...g, activePlayer: p }, acts, rng);
+      const a = BOTS.choose(p.kind === "human" ? "balanced" : p.kind, g, acts, rng);
       await perform(a);
     }, 650);
   }
@@ -546,7 +567,7 @@
     document.getElementById("oversub").textContent =
       `Seed ${g.seed} · ${g.round} rounds · ` +
       g.players.map(p => `${p.name}: ${p.equipment.length} gear` +
-        (SUCCESSION ? `, ${p.support.length} support, ${p.prestige} Prestige` : ""))
+        `, ${p.support.length} support, ${p.prestige} Prestige`)
         .join(" · ");
     showOverlay("gameover");
   }
@@ -565,7 +586,7 @@
          <input id="name-${pid}" value="${label}" maxlength="16" autocomplete="off">
          <select id="kind-${pid}" aria-label="${label} player type">` +
         KINDS.map(([v, t]) =>
-          `<option value="${v}" ${v === "human" ? "" : ""}>${t}</option>`)
+          `<option value="${v}">${t}</option>`)
           .join("") + `</select><select class="manual-gate" id="gate-${pid}" aria-label="${label} starting gate">` +
           Object.entries(GATES).map(([id, text]) => `<option value="${id}" ${id === pid ? "selected" : ""}>${text}</option>`).join("") +
           `</select><span class="gate-preview" id="gate-preview-${pid}"></span>`;
@@ -623,10 +644,15 @@
     clearTimeout(botTimer);
     hideOverlay("setup");
     for (const rv of [...svg.querySelectorAll(".revealchip")]) rv.remove();
-    for (const c of Object.values(B.districts)) {
-      const marker = document.getElementById("treasure-" + K(...c));
-      const label = document.getElementById("district-" + K(...c));
-      if (marker) { marker.textContent = "?"; marker.setAttribute("fill", "#8c977b"); }
+    for (const [name, c] of Object.entries(B.map1.districts)) {
+      const k = K(...c);
+      const marker = document.getElementById("treasure-" + k);
+      const label = document.getElementById("district-" + k);
+      if (marker) {
+        marker.textContent = "?";
+        marker.setAttribute("fill", "#8c977b");
+        delete marker.dataset.item;
+      }
       if (label) label.textContent = "Hidden treasure";
     }
     const seats = ["P0", "P1", "P2", "P3"].map(pid => ({
@@ -645,6 +671,7 @@
     g.log.push("The city gates open. Six treasures wait in the blocks.");
     placePawns();
     renderPlayers(); renderDice(); renderLog(); renderTurnline();
+    showSites();
     refreshActions();
     scheduleBot();
   }
