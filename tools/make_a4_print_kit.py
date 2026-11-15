@@ -21,7 +21,8 @@ Outputs into print/bw/ (black and white):
   dioclet-teaching-guide-A4-BW.pdf
   dioclet-playtest-form-A4-BW.pdf
   dioclet-print-instructions-A4-BW.pdf
-  dioclet-complete-print-kit-A4-BW.pdf (all of the above, boards first)
+  dioclet-complete-print-kit-A4-BW.pdf (all of the above: pages to read
+                                   first, pages to cut last)
 With --art, into print/ (the default edition):
   dioclet-board-4xA4-ART.pdf, dioclet-succession-map-ART.pdf,
   dioclet-cards-tokens-ART.pdf, dioclet-complete-print-kit-A4-ART.pdf
@@ -1478,8 +1479,11 @@ RULEBOOK_PAGES = [
               "from - and keeps everything it owns: items, Prestige, and any "
               "support already gained. From now on all movement, support, duels "
               "and claims happen on the succession map. Every gate there is nine "
-              "steps from the Peristyle. The succession map has four guard posts "
-              "of its own, and duels still pay, so a broke player can earn the "
+              "steps from the Peristyle. The succession map has the same streets "
+              "and blocks as the palace map, but its Peristyle is in a different "
+              "place: the octagon in the middle of the centre street, three steps "
+              "east of the palace crossing. It also has four guard posts of its "
+              "own, and duels still pay, so a broke player can earn the "
               "contest fee again."),
         ("h", "Proclaiming a claim"),
         ("n", "During the succession phase, stand at the Peristyle with support from "
@@ -1675,9 +1679,9 @@ def quick_reference_pdf(path):
                       "The palace map ends one full round after the first claim, or after "
                       "palace round 24 if nobody owns all six.",
                       "Succession map (the back of the board): support, proclaiming, "
-                      "the whole endgame.",
-                      "At the change everyone returns to their gate on the succession "
-                      "map; every gate is 9 steps from the Peristyle."]),
+                      "the whole endgame. At the change everyone returns to their gate "
+                      "there. Its Peristyle is 3 steps EAST of the palace one; every "
+                      "gate is 9 steps from it."]),
         ("ROLLS", ["Movement: two dice summed.", "Guard post: one die - 4+ earns 1 Prestige "
                    "(either map).",
                    "Duel: one die each + your one best item bonus; the pugio wins ties."]),
@@ -1901,7 +1905,10 @@ def print_instructions_pdf(path):
                  "Every other file: A4 portrait, 100%.",
                  "Any black-and-white printer works. Single-sided printing is fine.",
                  "Paper is enough. Card stock makes the cards nicer, but is not "
-                 "required."):
+                 "required.",
+                 "In the complete kit, the pages you read come first. The pages "
+                 "you cut come last: the palace board, the succession map, then "
+                 "the cards and tokens."):
         y = bullet(c, line, 19, y, PW - 38, size=9.4)
     y -= 3
     c.setFont("Times-Bold", 11)
@@ -2041,6 +2048,8 @@ PRINTED_ABILITIES = {
 # board's size, gates "9 steps from the Peristyle", six faction card
 # spaces dealt blind (one for each of the six blocks), and four guard
 # posts on the endgame map.
+# "Its Peristyle is three steps east of the palace crossing."
+PRINTED_PALACE_CHECKPOINT = [6, 6]
 PRINTED_TWIN = {
     "width": 19,
     "height": 13,
@@ -2088,6 +2097,10 @@ def main():
     if not rules["succession"].get("blind_support"):
         raise SystemExit("printed text assumes succession.blind_support (faction "
                          "cards); update the kit prose")
+    if rules["board"]["checkpoint"] != PRINTED_PALACE_CHECKPOINT:
+        raise SystemExit("printed text assumes the palace Peristyle at "
+                         f"{PRINTED_PALACE_CHECKPOINT} (three steps west of the "
+                         "succession Peristyle); update the kit prose")
     for key, value in PRINTED_TWIN.items():
         actual = twin.get(key)
         if actual != value:
@@ -2119,9 +2132,10 @@ def main():
     teaching_guide_pdf(files["teaching"])
     playtest_form_pdf(files["form"])
     print_instructions_pdf(files["instructions"])
-    combine([files["board"], files["succession"], files["instructions"],
-             files["rulebook"], files["quick"],
-             files["teaching"], files["sheets"], files["cards"], files["form"]],
+    # Pages to read first, pages to cut last.
+    combine([files["instructions"], files["rulebook"], files["quick"],
+             files["teaching"], files["sheets"], files["form"],
+             files["board"], files["succession"], files["cards"]],
             bw("dioclet-complete-print-kit-A4-BW.pdf"))
     if build_art:
         art_files = {
@@ -2132,10 +2146,10 @@ def main():
         art_board_pdf(art_files["art_board"], L)
         art_succession_pdf(art_files["art_succession"], build_succession_layout(rules))
         art_cards_tokens_pdf(art_files["art_cards"])
-        combine([art_files["art_board"], art_files["art_succession"],
-                 files["instructions"], files["rulebook"], files["quick"],
-                 files["teaching"], files["sheets"], art_files["art_cards"],
-                 files["form"]],
+        combine([files["instructions"], files["rulebook"], files["quick"],
+                 files["teaching"], files["sheets"], files["form"],
+                 art_files["art_board"], art_files["art_succession"],
+                 art_files["art_cards"]],
                 out("dioclet-complete-print-kit-A4-ART.pdf"))
         files.update(art_files)
     b = L["board"]

@@ -93,12 +93,21 @@ class DocumentPages(unittest.TestCase):
                 self.assertAlmostEqual(float(page.mediabox.height), A4_LONG_PT,
                                        places=1, msg=name)
 
-    def test_combined_kit_starts_with_the_eight_board_pages(self):
+    def test_combined_kit_puts_the_pages_to_cut_last(self):
+        # Read first; then the palace board, the succession map, and the
+        # cards and tokens, so a family can cut from the back of the pile.
         reader = PdfReader(PRINT_BW / "dioclet-complete-print-kit-A4-BW.pdf")
         expected = 4 + 4 + sum(self.FILES.values())
         self.assertEqual(len(reader.pages), expected)
-        for page in reader.pages[:8]:
-            self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
+        cards = self.FILES["dioclet-cards-tokens-A4-BW.pdf"]
+        first_board = expected - cards - 8
+        landscape = [i for i, page in enumerate(reader.pages)
+                     if float(page.mediabox.width) > float(page.mediabox.height)]
+        self.assertEqual(landscape, list(range(first_board, first_board + 8)))
+        texts = [reader.pages[i].extract_text() for i in range(expected)]
+        self.assertIn("PRINT AND ASSEMBLE", texts[0])
+        self.assertIn("TREASURE LOCATION CARDS", texts[expected - cards])
+        self.assertIn("SUCCESSION MAP", texts[first_board + 7].upper())
 
     def test_succession_map_is_four_landscape_pages(self):
         reader = PdfReader(PRINT_BW / "dioclet-succession-map-A4-BW.pdf")
@@ -257,6 +266,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("An empty street gives nothing", text)
         self.assertIn("nine steps from the Peristyle", text)        # pinwheel gates
         self.assertIn("four guard posts", text)                     # succession posts
+        self.assertIn("three steps east of the palace crossing", text)  # Peristyle moves
         self.assertIn("Guard post (star, on both maps)", text)
         self.assertNotIn("the only Prestige income there", text)
         self.assertIn("Faction cards exist only in the succession phase", text)
@@ -297,6 +307,13 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("Keep 1 in reserve: with 0 Prestige you cannot contest a claim.", quick)
         rulebook = whole_text("dioclet-rulebook-A4-BW.pdf")
         self.assertIn("Keep 1 Prestige in reserve.", rulebook)
+
+    def test_quick_reference_says_the_peristyle_moves(self):
+        # In the 0.10.2 table game three of four seats were caught out by
+        # the Peristyle sitting at (6,6) on the palace map and (9,6) on
+        # the succession map, which share one street grid.
+        quick = " ".join(whole_text("dioclet-quick-reference-A4-BW.pdf").split())
+        self.assertIn("Its Peristyle is 3 steps EAST of the palace one", quick)
 
     def test_quick_reference_states_the_six_item_checkpoint_claim(self):
         # In a four-agent playtest every seat looked for "claim the
