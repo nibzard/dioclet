@@ -1,0 +1,24 @@
+# Context
+
+## Background
+V0.10.2 (rules_v0102_bigboard.json) was declared the final design,
+so ten experiment generations of artifacts were reorganized or removed.
+
+## Why This Way
+- Rules variants moved, not deleted: engine tests still replay them
+  as regression checks, and DECISIONS.md cites them as history.
+- results/ keeps only v10-level2, v10-prestige, v10-six-blocks: the
+  direct evidence for the final rules. All older results, narr1-8,
+  v04 tournament runs, and tournaments/ live in git history only;
+  conclusions survive in docs/findings/, notes/, and DECISIONS.md.
+- run_programme FROZEN_SOURCES hashes were preserved because file
+  contents are untouched; only paths changed.
+
+## Gotchas
+- Historical prose (DECISIONS.md, notes, findings) still names rules
+  files by their pre-cleanup root paths. The files now live under
+  experiments/rules/.
+- tools/v10_six_blocks.py writes new arms into experiments/rules/,
+  not the repo root.
+- test_table_seat pins the recorded win of the kept 0.10.2 table
+  game; deleting that run breaks the suite.
