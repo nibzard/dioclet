@@ -344,8 +344,8 @@ class PrintedRulesMatchRelease(unittest.TestCase):
             self.assertIn(item.replace("_", " ").upper(), fronts.upper())
         # Six backs, each the same two-line title (one string per line).
         backs = page_text("dioclet-cards-tokens-A4-BW.pdf", 1)
-        self.assertEqual(backs.count("DIOCLETIAN'S"), 6)
-        self.assertEqual(backs.count("PALACE"), 6)
+        self.assertEqual(backs.count("IMPERIAL"), 6)
+        self.assertEqual(backs.count("RIVALS"), 6)
 
     def test_tokens_page_matches_game_limits(self):
         tokens = page_text("dioclet-cards-tokens-A4-BW.pdf", 2)

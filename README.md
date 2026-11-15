@@ -1,7 +1,11 @@
-# Diocletian's Palace: Six Treasures
+# Imperial Rivals: 305 AD
 
-A four-player board game set in Diocletian's Palace. Collect equipment,
-secure faction support, and defend your claim to imperial power.
+*The Roman Succession. Claim the throne. Survive the challenge.*
+
+A competitive four-player board game set in Diocletian's Palace, Split, in
+305 AD. Collect equipment, earn Prestige, secure faction support, and defend
+your claim to the throne through a final two-round window. Imperial Rivals is
+the series name; 305 AD is the first edition.
 
 This repository contains a deterministic Python simulator, a browser game,
 a print-and-play kit, and the experiments that guide the design.
