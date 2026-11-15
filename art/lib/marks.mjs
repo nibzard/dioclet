@@ -5,6 +5,7 @@ import { arcPoints } from "./brush.mjs";
 import { text } from "./letters.mjs";
 import { W, poly, bbox, tone, star, octagonPts, lift, laurelWreath } from "./motifs.mjs";
 import { archway } from "./motifs.mjs";
+import { PALETTE as C } from "./palette.mjs";
 
 const PI = Math.PI;
 const w = (name, extra = {}) => ({ ...W[name], ...extra });
@@ -26,9 +27,11 @@ export function streetSpace(a, x, y, r = 9.2) {
 
 export function treasureEntry(a, x, y, letter, r = 10.6) {
   lift(a, (c) => c.arc(x, y, r + 0.7, 0, PI * 2), 1);
+  const ri = r * 0.72;
+  a.paint((c) => { c.arc(x, y, r, 0, PI * 2); c.arc(x, y, ri, 0, PI * 2); }, C.gold, { alpha: 0.8, blur: 0.1, edge: 0.3, evenodd: true });
+  a.paint((c) => c.arc(x, y, ri, 0, PI * 2), C.goldLight, { alpha: 0.7, blur: 0.1, edge: 0 });
   slabShadow(a, x, y, r, Math.max(0.6, r * 0.08));
   a.circle(x, y, r, w("bold", { width: Math.max(0.4, r * 0.075), passes: 1 }));
-  const ri = r * 0.72;
   a.circle(x, y, ri, w("fine"));
   // Beads between the rings: the treasure entries read like coins.
   const n = Math.max(12, Math.round(r * 2.6));
@@ -39,8 +42,10 @@ export function treasureEntry(a, x, y, letter, r = 10.6) {
   if (letter) text(a, letter, x, y + r * 0.33, r * 0.66, { style: "inscribed", medium: "charcoal" });
 }
 
-export function gateMark(a, x, y, r = 11.4) {
+// color: the gate's metal in the colour edition (unused in grayscale).
+export function gateMark(a, x, y, r = 11.4, { color = C.stoneDark } = {}) {
   lift(a, (c) => c.arc(x, y, r + 0.7, 0, PI * 2), 1);
+  a.paint((c) => c.arc(x, y, r, 0, PI * 2), color, { alpha: 0.85, blur: 0.1, edge: 0.4 });
   slabShadow(a, x, y, r, Math.max(0.6, r * 0.08));
   a.circle(x, y, r, w("heavy", { width: Math.max(0.5, r * 0.085), passes: 1 }));
   a.circle(x, y, r * 0.88, w("fine"));
@@ -55,8 +60,10 @@ export function peristyle(a, x, y, r = 11.2) {
   const shadow = outer.map(([px, py]) => [px + 0.8, py + 0.8]);
   a.hatch(poly(shadow), bbox(shadow), { angle: -PI / 4, gap: 0.45, ...W.hair, alpha: 0.5, run: 4 });
   lift(a, poly(outer), 1);
-  a.polygon(outer, w("heavy", { width: Math.max(0.5, r * 0.07), overshoot: 0.25 }));
   const inner = octagonPts(x, y, r * 0.73);
+  a.paint((c) => { poly(outer)(c); poly(inner)(c); }, C.red, { alpha: 0.85, blur: 0.1, edge: 0.3, evenodd: true });
+  a.paint(poly(inner), C.goldLight, { alpha: 0.75, blur: 0.1, edge: 0 });
+  a.polygon(outer, w("heavy", { width: Math.max(0.5, r * 0.07), overshoot: 0.25 }));
   a.polygon(inner, w("fine", { overshoot: 0.2 }));
   // Eight columns stand in the ring between the two octagons.
   for (let i = 0; i < 8; i++) {
@@ -70,13 +77,14 @@ export function peristyle(a, x, y, r = 11.2) {
 
 export function guardPost(a, x, y, r = 9.6) {
   lift(a, (c) => c.arc(x, y, r + 0.6, 0, PI * 2), 1);
-  star(a, x, y - r * 0.12, r * 0.86, { points: 8, inner: 0.5, weight: "bold" });
+  star(a, x, y - r * 0.12, r * 0.86, { points: 8, inner: 0.5, weight: "bold", color: C.red });
   text(a, "4+", x, y + r * 0.95, r * 0.26, { medium: "charcoal", weight: 1.3 });
 }
 
 // Faction meeting places on the succession map.
 export function factionSite(a, x, y, kind, r = 7.8) {
   lift(a, (c) => c.arc(x, y, r + 0.7, 0, PI * 2), 1);
+  a.paint((c) => { c.arc(x, y, r, 0, PI * 2); c.arc(x, y, r * 0.86, 0, PI * 2); }, C.factions[kind], { alpha: 0.85, blur: 0.1, edge: 0.3, evenodd: true });
   slabShadow(a, x, y, r, Math.max(0.6, r * 0.08));
   a.circle(x, y, r, w("bold", { width: Math.max(0.4, r * 0.07) }));
   a.circle(x, y, r * 0.86, w("hair"));
@@ -92,6 +100,8 @@ export function factionEmblem(a, x, y, s, kind) {
     const pts = [[x - hw, y - hh * 0.92], [x, y - hh], [x + hw, y - hh * 0.92], [x + hw * 1.04, y], [x + hw, y + hh * 0.92],
       [x, y + hh], [x - hw, y + hh * 0.92], [x - hw * 1.04, y]];
     const side = [[x + hw * 0.55, y - hh * 0.95], [x + hw, y - hh * 0.92], [x + hw * 1.04, y], [x + hw, y + hh * 0.92], [x + hw * 0.55, y + hh * 0.95]];
+    a.paint(poly(pts), C.factions.army, { alpha: 0.8, blur: 0.06, edge: 0.3 });
+    a.paint((c) => c.arc(x, y, s * 0.2, 0, PI * 2), C.gold, { alpha: 0.8, blur: 0.04, edge: 0 });
     tone(a, poly(side), bbox(side), 0.6, { angle: PI / 2 });
     a.polygon(pts, w("firm", { overshoot: 0.1 }));
     a.circle(x, y, s * 0.2, w("firm"));
@@ -105,6 +115,7 @@ export function factionEmblem(a, x, y, s, kind) {
     const sw = s * 0.36;
     const shaft = [[x - sw / 2, top + h * 0.14], [x + sw / 2, top + h * 0.14], [x + sw / 2, top + h * 0.86], [x - sw / 2, top + h * 0.86]];
     const shade = [[x + sw * 0.1, shaft[0][1]], shaft[1], shaft[2], [x + sw * 0.1, shaft[2][1]]];
+    a.paint((c) => c.rect(x - sw * 0.85, top, sw * 1.7, h), C.factions.officials, { alpha: 0.75, blur: 0.06, edge: 0.3 });
     tone(a, poly(shade), bbox(shade), 0.55, { angle: PI / 2 });
     a.line(shaft[0], shaft[3], w("firm", { bow: 0 }));
     a.line(shaft[1], shaft[2], w("firm", { bow: 0 }));
@@ -114,6 +125,7 @@ export function factionEmblem(a, x, y, s, kind) {
     a.rect(x - sw * 0.85, top + h * 0.92, sw * 1.7, h * 0.08, w("firm", { overshoot: 0.1 }));
     a.rect(x - sw * 0.65, top + h * 0.86, sw * 1.3, h * 0.06, w("fine", { overshoot: 0.1 }));
   } else {
+    a.paint((c) => c.arc(x, y - s * 0.05, s * 0.95, 0, PI * 2), C.goldLight, { alpha: 0.5, blur: 0.2, edge: 0 });
     laurelWreath(a, x, y - s * 0.05, s * 0.78, { pairs: 5, leafLen: s * 0.42, leafWid: s * 0.15, gap: 0.55 });
   }
 }
@@ -125,6 +137,7 @@ export { tone };
 // it is searched nobody knows if a faction meets on this spot.
 export function cardSpace(a, x, y, r = 10.6) {
   lift(a, (c) => c.arc(x, y, r + 0.7, 0, PI * 2), 1);
+  a.paint((c) => c.arc(x, y, r, 0, PI * 2), C.stone, { alpha: 0.8, blur: 0.1, edge: 0.3 });
   slabShadow(a, x, y, r, Math.max(0.6, r * 0.08));
   a.circle(x, y, r, w("bold", { width: Math.max(0.4, r * 0.075), passes: 1 }));
   a.circle(x, y, r * 0.88, w("hair"));
@@ -134,6 +147,7 @@ export function cardSpace(a, x, y, r = 10.6) {
   const shadow = card.map(([px, py]) => [px + r * 0.06, py + r * 0.06]);
   a.hatch(poly(shadow), bbox(shadow), { angle: -PI / 4, gap: 0.4, ...W.hair, alpha: 0.55, run: 3 });
   lift(a, poly(card), 1);
+  a.paint(poly(card), C.factionBack, { alpha: 0.75, blur: 0.06, edge: 0.3 });
   a.polygon(card, w("firm", { overshoot: 0.15 }));
   a.polygon(card.map(([px, py]) => [x + (px - x) * 0.8, y + (py - y) * 0.86]), w("hair", { overshoot: 0.1 }));
   text(a, "?", x, y + r * 0.27, r * 0.62, { style: "inscribed", medium: "charcoal" });

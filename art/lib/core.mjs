@@ -77,8 +77,18 @@ export function makeNoise(seed) {
 
 export const MEDIA = ["wash", "graphite", "charcoal", "chalk"];
 
+// The colour edition. useColor(palette) switches every Sheet made after
+// it to colour: a warm paper, a sepia-black ink, and one more layer,
+// "pigment", that holds transparent watercolour glazes. The grayscale
+// edition never calls it, so its renders stay byte-identical.
+let colorPalette = null;
+export function useColor(palette) { colorPalette = palette; }
+export const isColor = () => colorPalette !== null;
+
+const hexRgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+
 export class Sheet {
-  constructor({ widthMm, heightMm, dpi, seed, paper = {} }) {
+  constructor({ widthMm, heightMm, dpi, seed, paper = {}, color = colorPalette }) {
     this.widthMm = widthMm;
     this.heightMm = heightMm;
     this.dpi = dpi;
@@ -89,8 +99,10 @@ export class Sheet {
     this.rng = makeRng(seed);
     this.noise = makeNoise(seed ^ 0x5eed);
     this.paper = { tone: 0.985, fibre: 0.018, tooth: 1.0, ...paper };
+    this.color = color;
+    this.media = color ? [...MEDIA, "pigment"] : MEDIA;
     this.layers = {};
-    for (const m of MEDIA) {
+    for (const m of this.media) {
       const canvas = createCanvas(this.w, this.h);
       const ctx = canvas.getContext("2d");
       ctx.scale(this.k, this.k);               // draw in mm
@@ -104,14 +116,14 @@ export class Sheet {
   // Run fn(ctx) for every medium layer with the same clip path. Callers
   // use this to keep hatching inside a block or a coin.
   clipAll(pathFn, fn) {
-    for (const m of MEDIA) {
+    for (const m of this.media) {
       const c = this.ctx(m);
       c.save();
       c.beginPath();
       pathFn(c);
       c.clip();
     }
-    try { fn(); } finally { for (const m of MEDIA) this.ctx(m).restore(); }
+    try { fn(); } finally { for (const m of this.media) this.ctx(m).restore(); }
   }
 
   // Paper tooth in [0, 1] at pixel (x, y): laid lines, fibres, and a
@@ -143,8 +155,10 @@ export class Sheet {
     return { tooth, tone };
   }
 
-  // Flatten every medium onto the paper. Returns a grayscale RGBA canvas.
+  // Flatten every medium onto the paper. Returns a grayscale RGBA canvas,
+  // or a colour one when the sheet is in colour.
   compose({ mask } = {}) {
+    if (this.color) return this._composeColor({ mask });
     const { w, h } = this;
     // An optional mask (drawn in mm by the caller) gives the output an
     // alpha channel: tokens keep a transparent background outside their
@@ -197,8 +211,71 @@ export class Sheet {
     return out;
   }
 
+  _maskData(mask) {
+    if (!mask) return null;
+    const mc = createCanvas(this.w, this.h);
+    const mctx = mc.getContext("2d");
+    mctx.scale(this.k, this.k);
+    mctx.fillStyle = "#000";
+    mctx.beginPath();
+    mask(mctx);
+    mctx.fill();
+    return mctx.getImageData(0, 0, this.w, this.h).data;
+  }
+
+  // The colour compose. The pigment layer is a transparent glaze: each
+  // channel filters the light by its colour, more where the paper's
+  // valleys hold water (granulation) and a little unevenly across the
+  // sheet (blooms). The dry media then deposit exactly as in the
+  // grayscale compose, but in a sepia-black ink, and chalk lifts back
+  // toward the paper colour.
+  _composeColor({ mask } = {}) {
+    const { w, h } = this;
+    const maskData = this._maskData(mask);
+    const { tooth, tone } = this._toothField();
+    const data = {};
+    for (const m of this.media) data[m] = this.layers[m].ctx.getImageData(0, 0, w, h).data;
+    const paper = hexRgb(this.color.paper);
+    const ink = hexRgb(this.color.ink);
+    const nz = makeNoise(this.seed ^ 0xb100);
+    const out = createCanvas(w, h);
+    const octx = out.getContext("2d");
+    const img = octx.createImageData(w, h);
+    const o = img.data;
+    const toothAmt = this.paper.tooth;
+    const pg = data.pigment;
+    for (let y = 0, i = 0, p = 0; y < h; y++) {
+      for (let x = 0; x < w; x++, i++, p += 4) {
+        const t = tooth[i];
+        const wa = data.wash[p + 3] / 255 * (1 - data.wash[p] / 255);
+        const ga = data.graphite[p + 3] / 255 * (1 - data.graphite[p] / 255);
+        const ca = data.charcoal[p + 3] / 255 * (1 - data.charcoal[p] / 255);
+        const ch = data.chalk[p + 3] / 255;
+        const gDep = ga * (1 - toothAmt * 0.5 * (1 - t) - 0.08 * (1 - ga));
+        const cDep = ca * (1 - toothAmt * 0.78 * Math.pow(1 - t, 1.3));
+        const wDep = wa * (0.88 + 0.24 * (1 - t) * toothAmt);
+        // Ink darkness as one value; it tints toward the ink colour.
+        let keep = (1 - Math.min(1, wDep)) * (1 - Math.min(1, gDep * 0.92)) * (1 - Math.min(1, cDep));
+        const pa = pg[p + 3] / 255;
+        let bloom = 1;
+        if (pa > 0) bloom = (0.86 + 0.28 * (1 - t)) * (1 + 0.14 * nz.fbm2(x / this.k * 0.08, y / this.k * 0.08, 3));
+        const lift = Math.min(1, ch * (0.35 + 0.65 * t));
+        for (let c = 0; c < 3; c++) {
+          let v = tone[i] / this.paper.tone * paper[c];
+          if (pa > 0) v *= 1 - Math.min(1, pa * bloom) * (1 - pg[p + c] / 255);
+          v *= keep + (1 - keep) * ink[c];
+          v += (paper[c] - v) * lift;
+          o[p + c] = Math.max(0, Math.min(255, Math.round(v * 255)));
+        }
+        o[p + 3] = maskData ? maskData[p + 3] : 255;
+      }
+    }
+    octx.putImageData(img, 0, 0);
+    return out;
+  }
+
   release() {
-    for (const m of MEDIA) this.layers[m].canvas.width = 1;
+    for (const m of this.media) this.layers[m].canvas.width = 1;
     this.layers = {};
   }
 }

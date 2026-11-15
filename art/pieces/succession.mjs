@@ -15,6 +15,7 @@ import { text, wrap } from "../lib/letters.mjs";
 import * as M from "../lib/motifs.mjs";
 import * as A from "../lib/architecture.mjs";
 import * as K from "../lib/marks.mjs";
+import { PALETTE as C } from "../lib/palette.mjs";
 
 const PI = Math.PI;
 const w = (name, extra = {}) => ({ ...M.W[name], ...extra });
@@ -63,7 +64,7 @@ export function renderSuccession(layout, { dpi = 200, seed = 400 } = {}) {
   for (const s of S.spaces) if (!special.has(key(s.mm))) K.streetSpace(a, s.mm[0], s.mm[1], 9.2);
   for (const p of S.card_spaces) K.cardSpace(a, p[0], p[1], 10.6);
   for (const p of S.glory_posts) K.guardPost(a, p[0], p[1], 9.6);
-  for (const p of Object.values(S.gates)) K.gateMark(a, p[0], p[1], 11.4);
+  for (const [id, p] of Object.entries(S.gates)) K.gateMark(a, p[0], p[1], 11.4, { color: C.gates[id] });
   K.peristyle(a, S.checkpoint[0], S.checkpoint[1], 11.2);
   text(a, "PERISTYLE", S.checkpoint[0], S.checkpoint[1] - 12.6, 2.5, { medium: "charcoal", weight: 1.2 });
   drawGateLabels(a, S, G);
@@ -79,6 +80,9 @@ export function renderSuccession(layout, { dpi = 200, seed = 400 } = {}) {
 
 function drawFrame(a, S) {
   const [x, y, wd, ht] = S.border_mm;
+  // Colour: the ground inside the frame, and a gold band between the rules.
+  a.paint((c) => c.rect(x, y, wd, ht), C.ground, { alpha: 0.45, blur: 0.5, edge: 0 });
+  a.paint((c) => { c.rect(x, y, wd, ht); c.rect(x + 1.6, y + 1.6, wd - 3.2, ht - 3.2); }, C.gold, { alpha: 0.8, blur: 0.1, edge: 0, evenodd: true });
   a.rect(x, y, wd, ht, w("bold", { width: 0.7, overshoot: 0.8 }));
   a.rect(x + 1.6, y + 1.6, wd - 3.2, ht - 3.2, w("fine", { overshoot: 0.5 }));
   for (const [cx, cy] of [[x, y], [x + wd, y], [x, y + ht], [x + wd, y + ht]]) {
@@ -99,6 +103,7 @@ function drawPaving(a, S) {
   for (const s of S.spaces) {
     const [cx, cy] = s.mm;
     const x0 = cx - c / 2, y0 = cy - c / 2;
+    a.paint((ctx) => ctx.rect(x0 - 0.3, y0 - 0.3, c + 0.6, c + 0.6), C.street, { alpha: 0.75, blur: 0.3, edge: 0 });
     for (let r = 0; r < 5; r++) {
       const yy = y0 + r * (c / 5);
       a.line([x0, yy], [x0 + c, yy], w("hair", { alpha: 0.22, bow: 0.05, wobble: 0.05 }));
@@ -115,6 +120,7 @@ function drawPaving(a, S) {
 function wallBand(a, x0, y0, x1, y1, horizontal) {
   const pts = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
   M.lift(a, M.poly(pts), 1);
+  a.paint(M.poly(pts), C.wall, { alpha: 0.8, blur: 0.12 });
   const n = 3;
   for (let i = 1; i < n; i++) {
     if (horizontal) {
@@ -137,6 +143,7 @@ function wallBand(a, x0, y0, x1, y1, horizontal) {
 function squareTower(a, cx, cy, s) {
   const pts = [[cx - s / 2, cy - s / 2], [cx + s / 2, cy - s / 2], [cx + s / 2, cy + s / 2], [cx - s / 2, cy + s / 2]];
   A.castShadow(a, pts, 1.2);
+  a.paint(M.poly(pts), C.roof, { alpha: 0.65, blur: 0.1 });
   const c = [cx, cy];
   const planes = [[pts[0], pts[1], c], [pts[1], pts[2], c], [pts[2], pts[3], c], [pts[3], pts[0], c]];
   const shade = [0.15, 0.55, 0.75, 0.25];
@@ -182,6 +189,8 @@ function drawQuarter(a, rect, q, keepOut, cutX, doors) {
   const ins = 2.4;
   const x = bx + ins, y = by + ins, s = bw - ins * 2, t = bh - ins * 2;
   A.castShadow(a, [[x, y], [x + s, y], [x + s, y + t], [x, y + t]], 1.4);
+  a.paint((c) => c.rect(x, y, s, t), C.court, { alpha: 0.8, blur: 0.15 });
+  a.paint((c) => { c.rect(x, y, s, t); c.rect(x + 1.7, y + 1.7, s - 3.4, t - 3.4); }, C.wall, { alpha: 0.7, blur: 0.08, edge: 0, evenodd: true });
   a.rect(x, y, s, t, w("bold", { width: 0.65, overshoot: 0.6 }));
   a.rect(x + 1.7, y + 1.7, s - 3.4, t - 3.4, w("fine", { overshoot: 0.4 }));
 
@@ -412,7 +421,7 @@ function drawKey(a, S, G) {
       a.line([iconX - 4, iy - 1.6], [iconX + 4, iy - 1.6], w("bold", { width: 0.45 }));
       drawDoor(a, iconX, iy - 1.6, "north", 0.5);
     }
-    if (kind === "post") M.star(a, iconX, iy, r, { points: 8, inner: 0.5, weight: "firm" });
+    if (kind === "post") M.star(a, iconX, iy, r, { points: 8, inner: 0.5, weight: "firm", color: C.red });
     const ty0 = iy - ((lines.length - 1) * cap * 1.75) / 2 + cap / 2;
     lines.forEach((ln, i) => text(a, ln, textX, ty0 + i * cap * 1.75, cap, { align: "left", medium: "graphite", weight: 1.05 }));
     y += hh + 1.5;

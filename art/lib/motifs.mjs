@@ -5,6 +5,7 @@
 // are built from hatching that follows the form.
 import { arcPoints, spline, dist } from "./brush.mjs";
 import { text, measure } from "./letters.mjs";
+import { PALETTE as C } from "./palette.mjs";
 
 const PI = Math.PI;
 
@@ -64,6 +65,7 @@ export function leaf(a, x, y, ang, len, wid, opts = {}) {
     [x + ux * len * 0.7 + nx * wid * 0.75 * s, y + uy * len * 0.7 + ny * wid * 0.75 * s], tip], 6);
   const left = side(1), right = side(-1);
   const outline = [...left, ...right.slice().reverse()];
+  a.paint(poly(outline), opts.color ?? C.leaf, { alpha: 0.75, blur: 0.08, edge: 0.3 });
   if (opts.shade !== false) {
     const shadePts = [...right, [x + ux * len * 0.5, y + uy * len * 0.5]];
     a.hatch(poly(shadePts), bbox(shadePts), { angle: ang + 0.9, gap: Math.max(0.28, wid * 0.22), ...W.hair, alpha: 0.6, run: wid * 2 });
@@ -134,7 +136,7 @@ export function tabulaBounds(cx, cy, wdt, hgt, { ears = true, pad = 1 } = {}) {
     y0: cy - hgt / 2 - hgt * 0.05 - pad, y1: cy + hgt / 2 + hgt * 0.05 + 0.9 + pad };
 }
 
-export function tabula(a, cx, cy, wdt, hgt, { depth = 0.5, ears = true, lifted = true, weight = "firm" } = {}) {
+export function tabula(a, cx, cy, wdt, hgt, { depth = 0.5, ears = true, lifted = true, weight = "firm", color = C.plaque } = {}) {
   const x0 = cx - wdt / 2, x1 = cx + wdt / 2, y0 = cy - hgt / 2, y1 = cy + hgt / 2;
   const ear = ears ? hgt * 0.55 : 0;
   const outline = ears ? [[x0, y0], [x1, y0], [x1 + ear * 0.25, cy - hgt * 0.18], [x1 + ear, y0 - hgt * 0.05],
@@ -142,6 +144,7 @@ export function tabula(a, cx, cy, wdt, hgt, { depth = 0.5, ears = true, lifted =
     [x0 - ear * 0.25, cy + hgt * 0.18], [x0 - ear, y1 + hgt * 0.05], [x0 - ear, y0 - hgt * 0.05],
     [x0 - ear * 0.25, cy - hgt * 0.18]] : [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
   if (lifted) lift(a, poly(outline), 0.95);
+  a.paint(poly(outline), color, { alpha: 0.8, blur: 0.15 });
   // Shadow on the lower right edge gives the plaque thickness.
   const sh = [[x1, y1], [x0, y1], [x0 + 0.8, y1 + 0.9], [x1 + 0.8, y1 + 0.9], [x1 + 0.8, y0 + 0.9]];
   a.hatch(poly(sh), bbox(sh), { angle: PI / 3, gap: 0.45, ...W.hair, alpha: 0.6 * depth / 0.5, run: 3 });
@@ -160,13 +163,14 @@ export function tabula(a, cx, cy, wdt, hgt, { depth = 0.5, ears = true, lifted =
 // ---------------------------------------------------------------------------
 // Rosettes and stars.
 
-export function star(a, cx, cy, r, { points = 8, inner = 0.45, shade = true, weight = "bold" } = {}) {
+export function star(a, cx, cy, r, { points = 8, inner = 0.45, shade = true, weight = "bold", color = C.gold } = {}) {
   const pts = [];
   for (let i = 0; i < points * 2; i++) {
     const ang = -PI / 2 + (i * PI) / points;
     const rr = i % 2 ? r * inner : r;
     pts.push([cx + Math.cos(ang) * rr, cy + Math.sin(ang) * rr]);
   }
+  a.paint(poly(pts), color, { alpha: 0.75, blur: 0.08, edge: 0.3 });
   if (shade) {
     // Each ray is a ridge: shade the half away from the light.
     for (let i = 0; i < points * 2; i += 2) {
@@ -192,8 +196,10 @@ export function octagonPts(cx, cy, r, rot = PI / 8) {
 // Coins and seals: the token language. A beaded rim, a raised field, and
 // a device in the middle.
 
-export function coin(a, cx, cy, r, { beads = true, rim = true, worn = 0.2 } = {}) {
+export function coin(a, cx, cy, r, { beads = true, rim = true, worn = 0.2, color = C.gold } = {}) {
   lift(a, (c) => c.arc(cx, cy, r, 0, PI * 2), 0.9);
+  a.paint((c) => c.arc(cx, cy, r, 0, PI * 2), color, { alpha: 0.7, blur: 0.12, edge: 0.4 });
+  a.paint((c) => { c.arc(cx, cy, r, 0, PI * 2); c.arc(cx, cy, r * 0.86, 0, PI * 2); }, color, { alpha: 0.3, blur: 0.1, edge: 0, evenodd: true });
   // Rim shadow on the lower right, light on the upper left.
   const rimPts = arcPoints(cx, cy, r, r, PI * 0.0, PI * 0.95, 30).concat(arcPoints(cx, cy, r * 0.86, r * 0.86, PI * 0.95, 0, 30));
   a.hatch(poly(rimPts), bbox(rimPts), { angle: -PI / 4, gap: 0.38, ...W.hair, alpha: 0.6, run: r });
@@ -219,14 +225,14 @@ export function arcText(a, str, cx, cy, r, capH, { start = -PI / 2, spacing = 0.
     const mid = ang + (cw / 2) / r;
     const x = cx + Math.cos(mid) * r, y = cy + Math.sin(mid) * r;
     // Rotate every layer so the letter stands on the circle.
-    for (const m of ["wash", "graphite", "charcoal", "chalk"]) {
+    for (const m of a.sheet.media) {
       const cc = a.sheet.ctx(m);
       cc.save();
       cc.translate(x, y);
       cc.rotate(mid + PI / 2 + (inside ? PI : 0));
     }
     text(a, ch, 0, capH / 2, capH, { medium, weight, serifs: false });
-    for (const m of ["wash", "graphite", "charcoal", "chalk"]) a.sheet.ctx(m).restore();
+    for (const m of a.sheet.media) a.sheet.ctx(m).restore();
     ang += (cw + spacing * capH) / r;
   }
 }
@@ -244,6 +250,8 @@ export function column(a, cx, top, h, { shaft = 0.12, fluted = true } = {}) {
   const shaftPts = [[cx - sw / 2 + taper, s0], [cx + sw / 2 - taper, s0], [cx + sw / 2, s1], [cx - sw / 2, s1]];
   // Shading: the right side of the round shaft turns from the light.
   const shadePts = [[cx + sw * 0.1, s0], [cx + sw / 2 - taper, s0], [cx + sw / 2, s1], [cx + sw * 0.12, s1]];
+  a.paint((c) => c.rect(cx - sw * 0.75, top, sw * 1.5, h), C.marble, { alpha: 0.7, blur: 0.2 });
+  a.paint(poly(shadePts), C.shadow, { alpha: 0.35, blur: 0.3 });
   a.hatch(poly(shadePts), bbox(shadePts), { angle: PI / 2 + 0.05, gap: 0.5, ...W.hair, alpha: 0.65, run: h });
   const deep = [[cx + sw * 0.32, s0], [cx + sw / 2 - taper, s0], [cx + sw / 2, s1], [cx + sw * 0.34, s1]];
   a.hatch(poly(deep), bbox(deep), { angle: PI / 4, gap: 0.6, ...W.hair, alpha: 0.5, run: 6 });
@@ -272,6 +280,7 @@ export function column(a, cx, top, h, { shaft = 0.12, fluted = true } = {}) {
 export function archway(a, cx, base, wdt, hgt, { dark = 0.7, voussoirs = 9 } = {}) {
   const r = wdt / 2, spring = base - (hgt - r);
   const inner = [[cx - r, base], ...arcPoints(cx, spring, r, r, PI, 2 * PI, 24), [cx + r, base]];
+  a.paint(poly(inner), C.ink, { alpha: 0.18 + 0.2 * dark, blur: 0.15, edge: 0 });
   tone(a, poly(inner), bbox(inner), dark, { angle: PI / 3, cross: true });
   a.stroke(inner, w("firm", { taper: [0.02, 0.02] }));
   const R = r + Math.max(0.8, wdt * 0.16);
@@ -288,6 +297,7 @@ export function cypress(a, x, base, h) {
   const pts = [[x, base - h], [x + wd * 0.32, base - h * 0.72], [x + wd * 0.48, base - h * 0.3], [x + wd * 0.3, base - h * 0.04],
     [x - wd * 0.3, base - h * 0.04], [x - wd * 0.48, base - h * 0.3], [x - wd * 0.32, base - h * 0.72]];
   const outline = spline(pts, 6, true);
+  a.paint(poly(outline), C.cypress, { alpha: 0.75, blur: 0.25 });
   // Foliage: short upward strokes that follow the flame, denser and
   // darker on the right (shadow) side.
   const n = Math.round(h * 11);
@@ -314,6 +324,7 @@ export function cypress(a, x, base, h) {
 export function treeTop(a, x, y, r) {
   // Cast shadow first; the crown is lifted over it.
   const sx = x + r * 0.45, sy = y + r * 0.4;
+  a.paint((c) => c.ellipse(sx, sy, r * 0.95, r * 0.85, 0, 0, PI * 2), C.shadow, { alpha: 0.35, blur: 0.4, edge: 0 });
   a.hatch((c) => c.ellipse(sx, sy, r * 0.95, r * 0.85, 0, 0, PI * 2), [sx - r, sy - r, 2 * r, 2 * r],
     { angle: PI / 4, gap: 0.45, ...W.hair, alpha: 0.45, run: r });
   // Crown edge: a ring of rounded scallops, one small arc per clump.
@@ -327,6 +338,7 @@ export function treeTop(a, x, y, r) {
     outline.push(...arcPoints(x + Math.cos(tm) * rc, y + Math.sin(tm) * rc, b, b, tm - 1.25, tm + 1.25, 8));
   }
   lift(a, poly(outline), 0.95);
+  a.paint(poly(outline), C.leaf, { alpha: 0.75, blur: 0.15, edge: 0.4 });
   // Shadow half of the crown: hatching clipped to the lower right.
   const half = [];
   for (let i = 0; i <= 16; i++) {
@@ -353,6 +365,7 @@ export function treeTop(a, x, y, r) {
 
 // Water: horizontal strokes that thicken in the troughs.
 export function waves(a, x0, y0, wdt, hgt, { density = 1 } = {}) {
+  a.paint((c) => c.rect(x0, y0, wdt, hgt), C.sea, { alpha: 0.6, blur: Math.min(2, hgt * 0.12), edge: 0 });
   const rows = Math.round(hgt / 1.6);
   for (let r = 0; r < rows; r++) {
     const y = y0 + (r + 0.5) * (hgt / rows);
@@ -394,6 +407,7 @@ export function meander(a, x0, y0, length, size, { vertical = false } = {}) {
 // Compass rose drawn as a mosaic star: eight rays, a laurel ring, and the
 // four winds lettered in Latin.
 export function compassRose(a, cx, cy, r) {
+  a.paint((c) => { c.arc(cx, cy, r * 0.98, 0, PI * 2); c.arc(cx, cy, r * 0.9, 0, PI * 2); }, C.gold, { alpha: 0.7, blur: 0.1, edge: 0, evenodd: true });
   a.circle(cx, cy, r * 0.98, w("fine"));
   a.circle(cx, cy, r * 0.9, w("hair"));
   for (let i = 0; i < 32; i++) {
@@ -405,6 +419,7 @@ export function compassRose(a, cx, cy, r) {
   star(a, cx, cy, r * 0.82, { points: 4, inner: 0.16, weight: "bold" });
   // North gets a solid tip so the direction reads instantly.
   const nTip = [[cx, cy - r * 0.82], [cx + r * 0.16 * Math.SQRT1_2, cy - r * 0.16 * Math.SQRT1_2], [cx, cy], [cx - r * 0.16 * Math.SQRT1_2, cy - r * 0.16 * Math.SQRT1_2]];
+  a.paint(poly(nTip), C.red, { alpha: 0.85, blur: 0.08 });
   tone(a, poly(nTip), bbox(nTip), 0.95, { cross: true });
   a.circle(cx, cy, r * 0.06, w("firm"));
   text(a, "N", cx, cy - r * 1.06, r * 0.2, { style: "inscribed", medium: "charcoal" });
@@ -413,11 +428,11 @@ export function compassRose(a, cx, cy, r) {
 // Draw fn() with every media layer translated and rotated, for vertical
 // labels and anything set at an angle.
 export function rotated(a, x, y, ang, fn) {
-  for (const m of ["wash", "graphite", "charcoal", "chalk"]) {
+  for (const m of a.sheet.media) {
     const c = a.sheet.ctx(m);
     c.save();
     c.translate(x, y);
     c.rotate(ang);
   }
-  try { fn(); } finally { for (const m of ["wash", "graphite", "charcoal", "chalk"]) a.sheet.ctx(m).restore(); }
+  try { fn(); } finally { for (const m of a.sheet.media) a.sheet.ctx(m).restore(); }
 }

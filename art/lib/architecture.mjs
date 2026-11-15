@@ -4,6 +4,7 @@
 // building casts a short shadow to the lower right.
 import { arcPoints } from "./brush.mjs";
 import { W, poly, bbox, tone, octagonPts, treeTop } from "./motifs.mjs";
+import { PALETTE as C } from "./palette.mjs";
 
 const PI = Math.PI;
 const w = (name, extra = {}) => ({ ...W[name], ...extra });
@@ -11,6 +12,7 @@ const w = (name, extra = {}) => ({ ...W[name], ...extra });
 // Cast shadow: an L-shaped band below and to the right of a footprint.
 export function castShadow(a, pts, depth = 1.6) {
   const sh = pts.map(([x, y]) => [x + depth, y + depth]);
+  a.paint(poly(sh), C.shadow, { alpha: 0.4, blur: 0.25, edge: 0 });
   // Draw the shadow polygon minus the footprint by drawing it first; the
   // roof drawn later covers the overlap with its own marks and erasure.
   a.hatch(poly(sh), bbox(sh), { angle: PI / 4, gap: 0.55, ...W.hair, alpha: 0.55, run: 5 });
@@ -22,6 +24,10 @@ export function castShadow(a, pts, depth = 1.6) {
 export function hall(a, x, y, wd, ht, { ridge = wd >= ht ? "h" : "v", shadow = 1.4, tiles = true } = {}) {
   const pts = [[x, y], [x + wd, y], [x + wd, y + ht], [x, y + ht]];
   if (shadow) castShadow(a, pts, shadow);
+  a.paint(poly(pts), C.roof, { alpha: 0.62, blur: 0.12 });
+  const half = ridge === "h" ? [[x, y + ht / 2], [x + wd, y + ht / 2], [x + wd, y + ht], [x, y + ht]]
+    : [[x + wd / 2, y], [x + wd, y], [x + wd, y + ht], [x + wd / 2, y + ht]];
+  a.paint(poly(half), C.roofShade, { alpha: 0.3, blur: 0.1, edge: 0 });
   if (ridge === "h") {
     const my = y + ht / 2;
     const lightPlane = [[x, y], [x + wd, y], [x + wd, my], [x, my]];
@@ -90,6 +96,7 @@ export function court(a, x, y, wd, ht, { colonnade = true, spacing = 3.2, paving
 // A dome in plan: concentric rings, shading on the lower right.
 export function dome(a, cx, cy, r, { ribs = 16, lantern = true } = {}) {
   castShadow(a, arcPoints(cx, cy, r, r, 0, PI * 2, 40), r * 0.12);
+  a.paint((c) => c.arc(cx, cy, r, 0, PI * 2), C.dome, { alpha: 0.6, blur: 0.12 });
   const shade = arcPoints(cx, cy, r, r, -PI / 4, PI * 0.75, 30).concat(arcPoints(cx - r * 0.25, cy - r * 0.25, r * 0.8, r * 0.8, PI * 0.75, -PI / 4, 30));
   a.hatch(poly(shade), bbox(shade), { angle: PI / 4 + PI / 2, gap: 0.6, ...W.hair, alpha: 0.6, run: r });
   for (let i = 0; i < ribs; i++) {
@@ -105,6 +112,7 @@ export function dome(a, cx, cy, r, { ribs = 16, lantern = true } = {}) {
 export function temple(a, x, y, wd, ht, { front = "n", columns = [4, 6] } = {}) {
   const pts = [[x, y], [x + wd, y], [x + wd, y + ht], [x, y + ht]];
   castShadow(a, pts, 1.6);
+  a.paint(poly(pts), C.marble, { alpha: 0.8, blur: 0.12 });
   a.rect(x, y, wd, ht, w("firm"));
   // Steps at the front.
   const steps = 5;
@@ -147,6 +155,7 @@ export function roundTemple(a, cx, cy, r, n = 10) {
 export function mausoleum(a, cx, cy, r) {
   const outer = octagonPts(cx, cy, r);
   castShadow(a, outer, 1.8);
+  a.paint(poly(outer), C.stone, { alpha: 0.85, blur: 0.12 });
   a.polygon(outer, w("bold", { overshoot: 0.3 }));
   a.polygon(octagonPts(cx, cy, r * 0.92), w("hair"));
   for (let i = 0; i < 24; i++) {
@@ -187,6 +196,7 @@ export function apseHall(a, x, y, wd, ht, side = "s") {
   if (side === "e") { cx = x + wd; cy = y + ht / 2; a0 = -PI / 2; a1 = PI / 2; }
   if (side === "w") { cx = x; cy = y + ht / 2; a0 = PI / 2; a1 = 1.5 * PI; }
   const pts = arcPoints(cx, cy, r, r, a0, a1, 20);
+  a.paint(poly(pts), C.roof, { alpha: 0.62, blur: 0.12 });
   tone(a, poly(pts), bbox(pts), 0.35, { angle: PI / 3 });
   a.stroke(pts, w("firm"));
 }

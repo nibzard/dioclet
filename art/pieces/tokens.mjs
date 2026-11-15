@@ -7,6 +7,7 @@ import { Artist } from "../lib/brush.mjs";
 import { text, measure } from "../lib/letters.mjs";
 import * as M from "../lib/motifs.mjs";
 import { factionEmblem } from "../lib/marks.mjs";
+import { PALETTE as C } from "../lib/palette.mjs";
 
 const PI = Math.PI;
 const w = (name, extra = {}) => ({ ...M.W[name], ...extra });
@@ -15,16 +16,20 @@ const PW = 210, PH = 297;
 // A pawn: a small standing figure - a citizen in a toga, seen from the
 // front, with the player numeral on the base. Simple enough to read at
 // 17 mm wide once cut and folded.
-function pawn(a, cx, cy, h) {
+// color: the player's colour in the colour edition.
+function pawn(a, cx, cy, h, color) {
   const u = h / 26;
   const top = cy - h / 2;
   a.smudge((c) => c.ellipse(cx + 2 * u, cy + h / 2, 7 * u, 1.6 * u, 0, 0, PI * 2), { alpha: 0.22, blur: 1.2 });
   // Head.
+  a.paint((c) => c.arc(cx, top + 3.4 * u, 2.4 * u, 0, PI * 2), C.goldLight, { alpha: 0.8, blur: 0.05 });
   a.circle(cx, top + 3.4 * u, 2.4 * u, w("firm"));
   M.tone(a, (c) => c.arc(cx + 0.8 * u, top + 3.4 * u, 2.1 * u, 0, PI * 2), [cx - 2.4 * u, top + 1 * u, 4.8 * u, 4.8 * u], 0.4, { angle: PI / 2.2 });
   // Shoulders and toga body, a bell shape.
   const body = [[cx - 3.2 * u, top + 7.2 * u], [cx + 3.2 * u, top + 7.2 * u],
     [cx + 4.4 * u, top + 15 * u], [cx + 5.4 * u, top + 21.6 * u], [cx - 5.4 * u, top + 21.6 * u], [cx - 4.4 * u, top + 15 * u]];
+  a.paint(M.poly(body), color, { alpha: 0.9, blur: 0.08, edge: 0.3 });
+  a.paint((c) => c.rect(cx - 6 * u, top + 21.6 * u, 12 * u, 3.2 * u), C.gold, { alpha: 0.8, blur: 0.05 });
   M.tone(a, M.poly(body), M.bbox(body, 0.5), 0.3, { angle: PI / 2.6 });
   M.tone(a, M.poly([[cx + 1 * u, top + 6.4 * u], [cx + 3.2 * u, top + 7.2 * u], [cx + 4.4 * u, top + 15 * u], [cx + 5.4 * u, top + 21.6 * u],
     [cx + 2.6 * u, top + 21.6 * u], [cx + 2.2 * u, top + 13 * u]]), M.bbox(body, 0.5), 0.3, { angle: PI / 2.2 });
@@ -57,7 +62,8 @@ export function renderTokens(_layout, { dpi = 300, seed = 600 } = {}) {
     const px = 20 + i * 44;
     for (const half of [0, 1]) {
       const hcx = px + 8.5 + half * 17;
-      pawn(a, hcx, y + 13, 22);
+      a.paint((c) => c.rect(hcx - 8.5, y - 1, 17, 28), C.players[i], { alpha: 0.18, blur: 0.1, edge: 0 });
+      pawn(a, hcx, y + 13, 22, C.players[i]);
       text(a, num, hcx, y + 24.4, 3.2, { style: "inscribed", medium: "charcoal" });
     }
     // Fold line down the middle, cut line around the box.
@@ -84,7 +90,7 @@ export function renderTokens(_layout, { dpi = 300, seed = 600 } = {}) {
   kinds.forEach(([kind, label], i) => {
     for (let j = 0; j < 2; j++) {
       const cx = 33 + i * 58 + j * 20, cy = y + 7;
-      M.coin(a, cx, cy, 7.4, { beads: false, worn: 0.15 });
+      M.coin(a, cx, cy, 7.4, { beads: false, worn: 0.15, color: C.factions[kind] });
       factionEmblem(a, cx, cy, 4.2, kind);
       a.cutCircle(cx, cy, 7.8);
     }
@@ -96,24 +102,24 @@ export function renderTokens(_layout, { dpi = 300, seed = 600 } = {}) {
   y += 7;
   // Each cut line encloses the whole plaque, ears included, and the two
   // markers keep a gap between them.
-  const marker = (cx, wd) => {
-    M.tabula(a, cx, y + 11, wd, 18, { depth: 0.6 });
+  const marker = (cx, wd, color) => {
+    M.tabula(a, cx, y + 11, wd, 18, { depth: 0.6, color });
     const b = M.tabulaBounds(cx, y + 11, wd, 18, { pad: 1.2 });
     a.cutRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0);
   };
-  marker(52, 40);
+  marker(52, 40, C.redLight);
   text(a, "CLAIM", 52, y + 12.3, 5.0, { style: "inscribed", medium: "charcoal" });
   text(a, "PENDING", 52, y + 17.0, 1.9, { medium: "graphite", weight: 1.05 });
-  marker(134, 46);
+  marker(134, 46, C.goldLight);
   text(a, "FIRST", 134, y + 10.6, 4.2, { style: "inscribed", medium: "charcoal" });
   text(a, "CHALLENGER", 134, y + 15.8, 2.3, { medium: "graphite", weight: 1.1, track: 0.1 });
   y += 30;
 
   sectionLabel(a, "ROUND AND PHASE TRACK", y);
   y += 6;
-  trackRow(a, "CITY PHASE", y);
+  trackRow(a, "CITY PHASE", y, C.stone);
   y += 9.5;
-  trackRow(a, "SUCCESSION PHASE", y);
+  trackRow(a, "SUCCESSION PHASE", y, C.redLight);
   y += 11;
   text(a, "TRACK ROUNDS ONLY IF YOU USE THE 24-ROUND LIMITS.", PW / 2, y, 1.7, { medium: "graphite", alpha: 0.8 });
 
@@ -129,10 +135,11 @@ function sectionLabel(a, label, y) {
   a.line([x + len + 3, y - 1], [PW - 20, y - 1], w("hair", { alpha: 0.5 }));
 }
 
-function trackRow(a, label, y) {
+function trackRow(a, label, y, color) {
   text(a, label, 20, y, 1.9, { align: "left", medium: "graphite", weight: 1.05 });
   for (let i = 0; i < 24; i++) {
     const bx = 78 + i * 5.0;
+    a.paint((c) => c.rect(bx, y - 4.6, 4.2, 4.8), color, { alpha: (i + 1) % 6 === 0 ? 0.9 : 0.55, blur: 0.05, edge: 0 });
     a.rect(bx, y - 4.6, 4.2, 4.8, w("hair", { overshoot: 0.1 }));
     if ((i + 1) % 6 === 0) text(a, String(i + 1), bx + 2.1, y + 3.4, 1.6, { medium: "graphite", alpha: 0.75 });
   }

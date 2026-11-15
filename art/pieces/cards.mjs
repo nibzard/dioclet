@@ -6,6 +6,7 @@ import { Artist } from "../lib/brush.mjs";
 import { text, wrap, measure } from "../lib/letters.mjs";
 import * as M from "../lib/motifs.mjs";
 import { DEVICES } from "../lib/devices.mjs";
+import { PALETTE as C } from "../lib/palette.mjs";
 
 const PI = Math.PI;
 const w = (name, extra = {}) => ({ ...M.W[name], ...extra });
@@ -32,6 +33,10 @@ export { renderCardBack as renderBack };
 function drawCard(a, item, index, cw, ch, bleed) {
   const cx = bleed + cw / 2;
   const y0 = bleed, y1 = bleed + ch;
+
+  // Colour: an imperial red border out to the bleed, a parchment field.
+  a.paint((c) => { c.rect(0, 0, cw + bleed * 2, ch + bleed * 2); c.rect(bleed + 3.6, y0 + 3.6, cw - 7.2, ch - 7.2); }, C.red, { alpha: 0.85, blur: 0.1, edge: 0, evenodd: true });
+  a.paint((c) => c.rect(bleed + 3.6, y0 + 3.6, cw - 7.2, ch - 7.2), C.plaque, { alpha: 0.45, blur: 0.2, edge: 0 });
 
   // Double frame with corner rosettes.
   a.rect(bleed + 2.4, y0 + 2.4, cw - 4.8, ch - 4.8, w("bold", { width: 0.55, overshoot: 0.5 }));
@@ -79,8 +84,10 @@ function drawCard(a, item, index, cw, ch, bleed) {
     c.closePath();
   };
   // Wall around the niche: a light tone, so the object reads on it.
+  a.paint((c) => c.rect(bleed + 6, topY, cw - 12, sill - topY), C.stone, { alpha: 0.9, blur: 0.15 });
   M.tone(a, (c) => { c.rect(bleed + 6, topY, cw - 12, sill - topY); }, [bleed + 6, topY, cw - 12, sill - topY], 0.16, { angle: PI / 4 });
   M.lift(a, opening, 0.92);
+  a.paint(opening, C.goldLight, { alpha: 0.5, blur: 0.4, edge: 0.5 });
   // The arch drawn firm, with radiating soffit joints.
   a.line([wcx - aw, sill], [wcx - aw, springY], w("firm"));
   a.line([wcx + aw, sill], [wcx + aw, springY], w("firm"));
@@ -101,6 +108,7 @@ function drawCard(a, item, index, cw, ch, bleed) {
   // height instead of shrinking to fit.
   const plateY0 = y1 - 15.5, plateY1 = y1 - 4.5;
   M.lift(a, (c) => c.rect(bleed + 6, plateY0, cw - 12, plateY1 - plateY0), 0.95);
+  a.paint((c) => c.rect(bleed + 6, plateY0, cw - 12, plateY1 - plateY0), C.plaque, { alpha: 0.8, blur: 0.1 });
   a.rect(bleed + 6, plateY0, cw - 12, plateY1 - plateY0, w("hair", { overshoot: 0.3 }));
   let cap = 2.1;
   let lines = wrap(item.text.toUpperCase(), cap, cw - 13);
@@ -122,6 +130,11 @@ export function renderCardBack(layout, { dpi = 300, seed = 560 } = {}) {
   const sheet = new Sheet({ widthMm: cw + BLEED * 2, heightMm: ch + BLEED * 2, dpi, seed });
   const a = new Artist(sheet, { seed: 23 });
   const cx = BLEED + cw / 2, cy = BLEED + ch / 2;
+  // Colour: an imperial red field to the bleed around a parchment panel
+  // that holds the whole wreath and the brand lines.
+  const panel = (c) => c.roundRect(cx - 22.8, cy - 26, 45.6, 58.5, 9);
+  a.paint((c) => { c.rect(0, 0, cw + BLEED * 2, ch + BLEED * 2); panel(c); }, C.red, { alpha: 0.9, blur: 0.15, edge: 0.2, evenodd: true });
+  a.paint(panel, C.plaque, { alpha: 0.75, blur: 0.15, edge: 0.3 });
   a.rect(BLEED + 2.4, BLEED + 2.4, cw - 4.8, ch - 4.8, w("bold", { width: 0.55, overshoot: 0.5 }));
   a.rect(BLEED + 3.6, BLEED + 3.6, cw - 7.2, ch - 7.2, w("hair", { overshoot: 0.4 }));
   for (const [rx, ry] of [[BLEED + 2.4, BLEED + 2.4], [BLEED + cw - 2.4, BLEED + 2.4], [BLEED + 2.4, BLEED + ch - 2.4], [BLEED + cw - 2.4, BLEED + ch - 2.4]]) {
@@ -149,8 +162,11 @@ import * as K from "../lib/marks.mjs";
 
 const FACTION_KIND = { shield: "army", column: "officials", laurel: "elites" };
 
-function cardFrame(a, cw, ch) {
+// color: the border colour in the colour edition.
+function cardFrame(a, cw, ch, color) {
   const y0 = BLEED, y1 = BLEED + ch;
+  a.paint((c) => { c.rect(0, 0, cw + BLEED * 2, ch + BLEED * 2); c.rect(BLEED + 3.6, y0 + 3.6, cw - 7.2, ch - 7.2); }, color, { alpha: 0.85, blur: 0.1, edge: 0, evenodd: true });
+  a.paint((c) => c.rect(BLEED + 3.6, y0 + 3.6, cw - 7.2, ch - 7.2), C.plaque, { alpha: 0.45, blur: 0.2, edge: 0 });
   a.rect(BLEED + 2.4, y0 + 2.4, cw - 4.8, ch - 4.8, w("bold", { width: 0.55, overshoot: 0.5 }));
   a.rect(BLEED + 3.6, y0 + 3.6, cw - 7.2, ch - 7.2, w("hair", { overshoot: 0.4 }));
   for (const [rx, ry] of [[BLEED + 2.4, y0 + 2.4], [BLEED + cw - 2.4, y0 + 2.4], [BLEED + 2.4, y1 - 2.4], [BLEED + cw - 2.4, y1 - 2.4]]) {
@@ -168,15 +184,17 @@ export function renderFactionCards(layout, { dpi = 300, seed = 600 } = {}) {
     const sheet = new Sheet({ widthMm: cw + BLEED * 2, heightMm: ch + BLEED * 2, dpi, seed: seed + i * 13 });
     const a = new Artist(sheet, { seed: 31 + i });
     const cx = BLEED + cw / 2;
-    cardFrame(a, cw, ch);
+    cardFrame(a, cw, ch, card.badge ? C.factions[FACTION_KIND[card.badge]] : C.stoneDark);
     text(a, card.name, cx, BLEED + 11, 4.2, { style: "inscribed", medium: "charcoal", track: 0.05 });
     a.line([BLEED + 8, BLEED + 15], [BLEED + cw - 8, BLEED + 15], w("fine", { bow: 0.1 }));
     const ry = BLEED + 37, r = 16;
     if (card.badge) {
+      a.paint((c) => c.arc(cx, ry, r + 2.5, 0, PI * 2), C.factions[FACTION_KIND[card.badge]], { alpha: 0.3, blur: 0.4, edge: 0.4 });
       M.tone(a, (c) => c.arc(cx, ry, r + 2.5, 0, PI * 2), [cx - r - 3, ry - r - 3, 2 * r + 6, 2 * r + 6], 0.14, { angle: PI / 4 });
       K.factionSite(a, cx, ry, FACTION_KIND[card.badge], r);
     } else {
       // An empty street: a plain roundel on bare paving.
+      a.paint((c) => c.rect(cx - r - 4, ry - 12, 2 * r + 8, 24), C.street, { alpha: 0.85, blur: 0.6, edge: 0 });
       for (let k = -2; k <= 2; k++) {
         a.line([cx - r - 4, ry + k * 5], [cx + r + 4, ry + k * 5], w("hair", { alpha: 0.3, bow: 0.05 }));
       }
@@ -184,6 +202,7 @@ export function renderFactionCards(layout, { dpi = 300, seed = 600 } = {}) {
     }
     const plateY0 = BLEED + ch - 17.5, plateY1 = BLEED + ch - 5;
     M.lift(a, (c) => c.rect(BLEED + 6, plateY0, cw - 12, plateY1 - plateY0), 0.95);
+    a.paint((c) => c.rect(BLEED + 6, plateY0, cw - 12, plateY1 - plateY0), C.plaque, { alpha: 0.8, blur: 0.1 });
     a.rect(BLEED + 6, plateY0, cw - 12, plateY1 - plateY0, w("hair", { overshoot: 0.3 }));
     const cap = 2.1;
     card.lines.forEach((ln, k) => text(a, ln.toUpperCase(), cx, plateY0 + 5 + k * cap * 1.9, cap, { medium: "graphite", weight: 1.05 }));
@@ -201,7 +220,8 @@ export function renderFactionBack(layout, { dpi = 300, seed = 660 } = {}) {
   const sheet = new Sheet({ widthMm: cw + BLEED * 2, heightMm: ch + BLEED * 2, dpi, seed });
   const a = new Artist(sheet, { seed: 41 });
   const cx = BLEED + cw / 2, cy = BLEED + ch / 2;
-  cardFrame(a, cw, ch);
+  cardFrame(a, cw, ch, C.factionBack);
+  a.paint((c) => c.rect(BLEED + 6, BLEED + 6, cw - 12, ch - 12), C.factionBack, { alpha: 0.45, blur: 0.2, edge: 0.3 });
   M.tone(a, (c) => c.rect(BLEED + 6, BLEED + 6, cw - 12, ch - 12), [BLEED + 6, BLEED + 6, cw - 12, ch - 12], 0.12, { angle: -PI / 4 });
   M.lift(a, (c) => c.arc(cx, cy - 7, 15.5, 0, PI * 2), 1);
   M.coin(a, cx, cy - 7, 15, { beads: true, worn: 0.08 });
