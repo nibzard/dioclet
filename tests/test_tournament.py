@@ -16,7 +16,7 @@ import tournament  # noqa: E402
 
 MOCK_CONFIG = {
     "tournament_id": "t_mock",
-    "rules": "rules_v03_base.json",
+    "rules": "experiments/rules/rules_v03_base.json",
     "provider": "mock",
     "schedules": [
         {"type": "mirror", "policy": "decisions", "games": 2,

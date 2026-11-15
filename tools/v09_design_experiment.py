@@ -34,9 +34,9 @@ GAMES_PER_ARM = 480
 SEED_BASE = 300000
 OUT_ROOT = os.path.join(ROOT, "results", "v09-design-003")
 ARMS = (
-    ("a-baseline", "rules_v08_succession.json"),
-    ("c-abilities", "rules_v09_abilities.json"),
-    ("d-checkpoint3", "rules_v09_checkpoint3.json"),
+    ("a-baseline", "experiments/rules/rules_v08_succession.json"),
+    ("c-abilities", "experiments/rules/rules_v09_abilities.json"),
+    ("d-checkpoint3", "experiments/rules/rules_v09_checkpoint3.json"),
 )
 ITEMS = ("gladius", "scutum", "pilum", "pugio", "galea", "lorica_segmentata")
 

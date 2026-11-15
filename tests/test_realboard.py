@@ -12,7 +12,7 @@ import engine  # noqa: E402
 
 def load_v06():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return engine.load_rules(os.path.join(root, "rules_v06_realboard.json"))
+    return engine.load_rules(os.path.join(root, "experiments/rules/rules_v06_realboard.json"))
 
 
 class TestBlockedCells(unittest.TestCase):

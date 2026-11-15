@@ -361,7 +361,7 @@ def evaluate_rules(rules_path, out, games=24, seed_base=10000, split="screen",
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--rules", default="rules_v08_succession.json")
+    parser.add_argument("--rules", default="experiments/rules/rules_v08_succession.json")
     parser.add_argument("--out", required=True)
     parser.add_argument("--games", type=int, default=24, help="Games per rule variant")
     parser.add_argument("--seed-base", type=int)

@@ -44,7 +44,7 @@ STREET_COLS, STREET_ROWS = (0, 6, 12, 18), (0, 6, 12)
 BLOCK_COLS, BLOCK_ROWS = ((1, 5), (7, 11), (13, 17)), ((1, 5), (7, 11))
 GATES = {"P0": (6, 0), "P1": (18, 6), "P2": (12, 12), "P3": (0, 6)}
 CHECKPOINT = (9, 6)
-BASE_FILE = "rules_v0101_bigboard.json"
+BASE_FILE = "experiments/rules/rules_v0101_bigboard.json"
 
 # Three card spreads from the search, far to near (Peristyle distances
 # in brackets). Each is listed with its faction-placeholder cells first.
@@ -146,7 +146,7 @@ def arm_rules(name):
 
 
 def rules_file(name):
-    return f"rules_v10_six_{name}.json"
+    return os.path.join("experiments/rules", f"rules_v10_six_{name}.json")
 
 
 def cmd_search(_args):

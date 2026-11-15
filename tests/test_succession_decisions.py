@@ -40,7 +40,7 @@ def response(choice, kind="choice"):
 
 class TestSuccessionProjection(unittest.TestCase):
     def setUp(self):
-        self.rules = engine.load_rules(str(ROOT / "rules_v08_succession.json"))
+        self.rules = engine.load_rules(str(ROOT / "experiments/rules/rules_v08_succession.json"))
         self.state = engine.new_game(self.rules, 2026, "succession-decisions")
         self.obs = engine.observe(self.state, self.state["active_player"])
 
@@ -145,7 +145,7 @@ class TestExperimentBudget(unittest.TestCase):
         self.assertEqual(set(experiments.schedule(0)[1].values()), set(experiments.PROFILES))
 
     def test_alternative_audit_does_not_mutate_state(self):
-        rules = engine.load_rules(str(ROOT / "rules_v08_succession.json"))
+        rules = engine.load_rules(str(ROOT / "experiments/rules/rules_v08_succession.json"))
         state = engine.new_game(rules, 2026, "audit")
         before = copy.deepcopy(state)
         action = engine.legal_actions(state)[0]
@@ -169,7 +169,7 @@ class TestTwinBoardShortlist(unittest.TestCase):
         # KeyError (found in a live four-agent game at turn 98).
         import random
         import policies
-        rules = engine.load_rules(str(ROOT / "rules_v094_twinboard.json"))
+        rules = engine.load_rules(str(ROOT / "experiments/rules/rules_v094_twinboard.json"))
         state = engine.new_game(rules, 20261114, "twin-shortlist")
         rng = random.Random(7)
         phases = set()

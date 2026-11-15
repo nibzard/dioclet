@@ -16,7 +16,7 @@ from v10_level2_experiment import summarize
 
 POSTS = [[0, 3], [18, 9], [3, 0], [15, 12]]
 def arm_rules(name):
-    r = engine.load_rules(os.path.join(ROOT, "rules_v010_bigboard.json"))
+    r = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v010_bigboard.json"))
     if "shame0" in name: r["succession"]["duel_loser_cost"] = 0
     if "free" in name: r["succession"]["contest_cost"] = 0
     if "posts" in name: r["board_level2"]["glory_posts"] = POSTS

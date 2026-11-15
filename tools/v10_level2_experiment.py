@@ -45,14 +45,14 @@ from v09_geometry_sweep import wilson  # noqa: E402
 from v09_hillclimb import schedule  # noqa: E402
 
 ARMS = {
-    "v094": "rules_v094_twinboard.json",
-    "big_public": "rules_v10_big_public.json",
-    "big_blind": "rules_v10_big_blind.json",
-    "flip_blind": "rules_v10_flip_blind.json",
-    "small_pin_public": "rules_v10_small_pin_public.json",
-    "big_pin_public": "rules_v10_big_pin_public.json",
-    "big_pin_blind": "rules_v10_big_pin_blind.json",
-    "small_pin_blind": "rules_v10_small_pin_blind.json",
+    "v094": "experiments/rules/rules_v094_twinboard.json",
+    "big_public": "experiments/rules/rules_v10_big_public.json",
+    "big_blind": "experiments/rules/rules_v10_big_blind.json",
+    "flip_blind": "experiments/rules/rules_v10_flip_blind.json",
+    "small_pin_public": "experiments/rules/rules_v10_small_pin_public.json",
+    "big_pin_public": "experiments/rules/rules_v10_big_pin_public.json",
+    "big_pin_blind": "experiments/rules/rules_v10_big_pin_blind.json",
+    "small_pin_blind": "experiments/rules/rules_v10_small_pin_blind.json",
 }
 SEED_BASE = 1030000
 QUICK_L2_ROUNDS = 4          # "won level 2 too quickly": at most this many rounds

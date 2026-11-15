@@ -15,7 +15,7 @@ import report
 RULES_PATH = os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "rules_baseline.json")
 V03_BASE = os.path.join(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))), "rules_v03_base.json")
+    os.path.abspath(__file__))), "experiments/rules/rules_v03_base.json")
 
 
 def load(path=RULES_PATH):

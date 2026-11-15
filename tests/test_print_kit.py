@@ -233,7 +233,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         import sys as _sys
         result = subprocess.run(
             [_sys.executable, "tools/make_a4_print_kit.py",
-             "--rules", "rules_v08_succession.json"],
+             "--rules", "experiments/rules/rules_v08_succession.json"],
             capture_output=True, text=True, cwd=str(REPO))
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("update the kit prose", result.stderr)
@@ -305,7 +305,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         import sys as _sys
         result = subprocess.run(
             [_sys.executable, "tools/make_a4_print_kit.py",
-             "--rules", "rules_v093_succession.json"],
+             "--rules", "experiments/rules/rules_v093_succession.json"],
             capture_output=True, text=True, cwd=str(REPO))
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("update the kit prose", result.stderr)

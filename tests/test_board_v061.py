@@ -13,7 +13,7 @@ import policies  # noqa: E402
 
 def load_board_rules():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return engine.load_rules(os.path.join(root, "rules_v073_sixblocks_cardo.json"))
+    return engine.load_rules(os.path.join(root, "experiments/rules/rules_v073_sixblocks_cardo.json"))
 
 
 class TestBoardFactsV073(unittest.TestCase):
@@ -49,7 +49,7 @@ class TestBoardFactsV073(unittest.TestCase):
 
     def test_old_eight_block_map_fails_the_layout_contract(self):
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        rules = engine.load_rules(os.path.join(root, "rules_v072_cardo.json"))
+        rules = engine.load_rules(os.path.join(root, "experiments/rules/rules_v072_cardo.json"))
         with self.assertRaisesRegex(ValueError, "six intact blocks, found 8"):
             board.validate_six_block_layout(rules)
 

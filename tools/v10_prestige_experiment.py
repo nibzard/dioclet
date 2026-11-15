@@ -44,7 +44,7 @@ import policies  # noqa: E402
 from v09_hillclimb import schedule  # noqa: E402
 from v10_level2_experiment import summarize  # noqa: E402
 
-ARMS = {"base": "rules_v010_bigboard.json", "posts": "rules_v10_l2posts.json"}
+ARMS = {"base": "experiments/rules/rules_v010_bigboard.json", "posts": "experiments/rules/rules_v10_l2posts.json"}
 PLAYERS = ("probes", "spender")
 SEED_BASE = 1060000
 

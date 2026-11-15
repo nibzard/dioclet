@@ -270,7 +270,7 @@ def run_arm(name, rules, seed_base, games):
 
 def confirm(arm_names, out_name="geometry_confirm.json"):
     """Reproduce the confirmation run with the committed code."""
-    base = engine.load_rules(os.path.join(ROOT, "rules_v091_succession.json"))
+    base = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v091_succession.json"))
     all_arms = {
         "inc": (),
         "midpair": (MIDPAIR,),
@@ -302,7 +302,7 @@ def confirm(arm_names, out_name="geometry_confirm.json"):
 
 def main():
     os.makedirs(OUT_ROOT, exist_ok=True)
-    base = engine.load_rules(os.path.join(ROOT, "rules_v091_succession.json"))
+    base = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v091_succession.json"))
     all_arms = {
         "inc": (base,),
         "cardo12": (CARDO12,),

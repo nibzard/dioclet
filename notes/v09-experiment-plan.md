@@ -1,6 +1,6 @@
 # V0.9 design experiment: treasure identity
 
-Status: complete. Results: [FINDINGS_V09](../FINDINGS_V09.md),
+Status: complete. Results: [FINDINGS_V09](../docs/findings/FINDINGS_V09.md),
 `results/v09-design-001/` (C1, superseded) and
 `results/v09-design-002/` (C2, the simplified set the same
 direction produced after review; recommended), and
@@ -15,8 +15,8 @@ approved experiment for them. This note is that experiment.
 
 Research date: 2026-11-11.
 
-Sources: user design direction (2026-11-11), [V0.8 findings](../FINDINGS_V08.md),
-[treasure incentives note](treasure-incentives.md), [V0.8 rules](../rules_v08_succession.json).
+Sources: user design direction (2026-11-11), [V0.8 findings](../docs/findings/FINDINGS_V08.md),
+[treasure incentives note](treasure-incentives.md), [V0.8 rules](../../experiments/rules/rules_v08_succession.json).
 
 ## Goal
 

@@ -34,7 +34,7 @@ modifier applies per duel side.
 The browser engine is a port of the Python engine. The parity check
 replays seeded games against `succession.py` and matches every legal
 action, die, and state. See the
-[V0.10 findings](FINDINGS_V10.md) and the
+[V0.10 findings](docs/findings/FINDINGS_V10.md) and the
 [V0.10 notes](notes/v10-level2-2026-11-14.md) for the evidence and open
 questions.
 
@@ -222,20 +222,21 @@ Provider decisions, latency, token counts, and estimated costs are recorded
 in `decisions.jsonl`. Budget exhaustion records an `incomplete.json` file.
 Replay verification works offline.
 
-For tournament setup and analysis:
+For tournament setup and analysis, write a tournament config (see
+[`tournament.py`](tournament.py) and [`analyze_v041.py`](analyze_v041.py)):
 
 ```bash
-python3 sim.py tournament --config tournaments/v041_tournament_a.json \
+python3 sim.py tournament --config my-tournament.json \
   --out results/tournament-demo --dry-run
-python3 analyze_v041.py analyze results/v041
-python3 analyze_v041.py report results/v041
+python3 analyze_v041.py report results/tournament-demo
 ```
 
-The dry run estimates calls and cost. The analysis commands use the retained
-V0.4.1 tournament logs. See [model player findings](FINDINGS_V04.md),
-[tournament findings](FINDINGS_V041.md), and
-[`decisions_config.json`](decisions_config.json) for details.
-Follow the budget and authorization rules in `programme.md` before paid runs.
+The dry run estimates calls and cost. See
+[model player findings](docs/findings/FINDINGS_V04.md) and
+[tournament findings](docs/findings/FINDINGS_V041.md) for the V0.4.1
+measurements; the full logs of that study live in git history and the
+release artifacts. Follow the budget and authorization rules in
+`programme.md` before paid runs.
 
 ## Check changes
 
@@ -273,8 +274,9 @@ engine on the twin-board rules.
 | [`tools/`](tools/) | Generators, evaluators, experiment runners, and browser checks |
 | [`web/`](web/), [`print/`](print/) | Browser game and printable materials |
 | [`tests/`](tests/) | Engine, policy, experiment, and print checks |
-| [`results/`](results/), [`runs/`](runs/) | Experiment results and retained games |
-| [`notes/`](notes/), [`docs/`](docs/) | Research, design plans, and implementation notes |
+| [`results/`](results/), [`runs/`](runs/) | Retained V0.10 experiment evidence and games |
+| [`experiments/rules/`](experiments/rules/) | Superseded V0.2–V0.10 rules variants (archive) |
+| [`notes/`](notes/), [`docs/`](docs/) | Research, design plans, findings, and implementation notes |
 
 ## Design history and evidence
 
@@ -283,18 +285,20 @@ can be superseded by later experiments.
 
 | Stage | Evidence |
 | --- | --- |
-| V0.1: original rules | [Specification](SPEC.md), [baseline findings](FINDINGS.md) |
-| V0.2–V0.3: combat and duel consequences | [Combat and fairness](FINDINGS_V02.md), [duel experiments](FINDINGS_V03.md) |
-| V0.4–V0.5: model play and rule trials | [Model players](FINDINGS_V04.md), [tournaments](FINDINGS_V041.md), [rule trials](FINDINGS_V05.md) |
-| V0.6–V0.7: physical board geometry | [Board validation](BOARD_VALIDATION_V061.md), [playability scorecard](PLAYABILITY_SCORECARD_V061.md), [findings](FINDINGS_V061.md), [board comparison](notes/board-comparison.md) |
-| V0.8: imperial succession | [Redesign plan](docs/intervention-plan.md), [succession findings](FINDINGS_V08.md) |
-| V0.9–V0.9.3: equipment, claim windows, and movement | [Trial findings](FINDINGS_V09.md), [simplification study](notes/v09-simplification-study.md), [geometry sweep](notes/v09-geometry-sweep-2026-11-13.md) |
+| V0.1: original rules | [Specification](SPEC.md), [baseline findings](docs/findings/FINDINGS.md) |
+| V0.2–V0.3: combat and duel consequences | [Combat and fairness](docs/findings/FINDINGS_V02.md), [duel experiments](docs/findings/FINDINGS_V03.md) |
+| V0.4–V0.5: model play and rule trials | [Model players](docs/findings/FINDINGS_V04.md), [tournaments](docs/findings/FINDINGS_V041.md), [rule trials](docs/findings/FINDINGS_V05.md) |
+| V0.6–V0.7: physical board geometry | [Board validation](docs/findings/BOARD_VALIDATION_V061.md), [playability scorecard](docs/findings/PLAYABILITY_SCORECARD_V061.md), [findings](docs/findings/FINDINGS_V061.md), [board comparison](notes/board-comparison.md) |
+| V0.8: imperial succession | [Redesign plan](docs/intervention-plan.md), [succession findings](docs/findings/FINDINGS_V08.md) |
+| V0.9–V0.9.3: equipment, claim windows, and movement | [Trial findings](docs/findings/FINDINGS_V09.md), [simplification study](notes/v09-simplification-study.md), [geometry sweep](notes/v09-geometry-sweep-2026-11-13.md) |
 | V0.9.4: separate succession map | [Twin-board findings](notes/v094-twinboard-2026-11-13.md), [human playtest protocol](playtest/protocol-v09.md) |
-| V0.10: big succession map and faction cards | [Findings](FINDINGS_V10.md), [notes](notes/v10-level2-2026-11-14.md), [Haiku table game](runs/haiku-table-v010/REPORT.md) |
+| V0.10: big succession map and faction cards | [Findings](docs/findings/FINDINGS_V10.md), [notes](notes/v10-level2-2026-11-14.md), [Haiku table game](runs/haiku-table-v0102/REPORT.md) |
 
 [`DECISIONS.md`](DECISIONS.md) records rule interpretations and design decisions.
-Earlier rules files remain available for comparisons and historical replays.
-See [`runs/README.md`](runs/README.md) for replay caveats in the oldest logs.
+The superseded rules variants of every stage remain available in
+[`experiments/rules/`](experiments/rules/) for comparisons and historical
+replays; earlier documents cite them by their original root paths.
+See [`runs/README.md`](runs/README.md) for the retained runs.
 
 ## License
 

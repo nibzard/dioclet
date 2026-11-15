@@ -15,7 +15,7 @@ import tournament
 
 MOCK_CONFIG = {
     "tournament_id": "t_analyze",
-    "rules": "rules_v03_base.json",
+    "rules": "experiments/rules/rules_v03_base.json",
     "provider": "mock",
     "schedules": [
         {"type": "rotation", "policies": ["decisions", "tactical",
