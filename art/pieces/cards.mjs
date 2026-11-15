@@ -123,10 +123,10 @@ export function renderCardBack(layout, { dpi = 300, seed = 560 } = {}) {
     M.star(a, rx, ry, 1.5, { points: 8, inner: 0.45, weight: "firm", shade: false });
   }
   M.laurelWreath(a, cx, cy - 4, 19, { pairs: 10, leafLen: 6, leafWid: 1.9, gap: 0.55 });
-  text(a, "DP", cx, cy - 1.2, 8.5, { style: "inscribed", medium: "charcoal" });
-  M.rotated(a, cx, cy - 4, -Math.PI / 2, () => {
-    M.arcText(a, "DIOCLETIAN'S PALACE", 0, 0, 25.5, 1.7, { medium: "charcoal" });
-  });
+  text(a, "IR", cx, cy - 1.2, 8.5, { style: "inscribed", medium: "charcoal" });
+  // The brand under the wreath, clear of the leaves.
+  text(a, "IMPERIAL RIVALS", cx, cy + 25, 2.6, { medium: "charcoal", weight: 1.15, track: 0.12 });
+  text(a, "305 AD", cx, cy + 29.4, 2.0, { medium: "graphite", track: 0.12 });
   a.cutRect(BLEED, BLEED, cw, ch);
   const canvas = sheet.compose();
   sheet.release();

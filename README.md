@@ -1,7 +1,11 @@
-# Diocletian's Palace: Six Treasures
+# Imperial Rivals: 305 AD
 
-A four-player board game set in Diocletian's Palace. Collect equipment,
-secure faction support, and defend your claim to imperial power.
+*The Roman Succession. Claim the throne. Survive the challenge.*
+
+A competitive four-player board game set in Diocletian's Palace, Split, in
+305 AD. Collect equipment, earn Prestige, secure faction support, and defend
+your claim to the throne through a final two-round window. Imperial Rivals is
+the series name; 305 AD is the first edition.
 
 This repository contains a deterministic Python simulator, a browser game,
 a print-and-play kit, and the experiments that guide the design.
@@ -57,31 +61,31 @@ browser to V0.9.4. Cloudflare hosting is configured in
 
 ## Print and play
 
-The default edition is the [drawn kit](print/dioclet-complete-print-kit-A4-ART.pdf).
+The default edition is the [drawn kit](print/imperial-rivals-305ad-complete-print-kit-A4-ART.pdf).
 It carries hand-drawn grayscale artwork (boards, cards, and tokens drawn
 programmatically, see `art/`):
 
-- [Palace board, drawn art: four A4 tiles](print/dioclet-board-4xA4-ART.pdf)
-- [Succession map, drawn art: four A4 tiles](print/dioclet-succession-map-ART.pdf)
-- [Cards and tokens, drawn art](print/dioclet-cards-tokens-ART.pdf)
+- [Palace board, drawn art: four A4 tiles](print/imperial-rivals-305ad-board-4xA4-ART.pdf)
+- [Succession map, drawn art: four A4 tiles](print/imperial-rivals-305ad-succession-map-ART.pdf)
+- [Cards and tokens, drawn art](print/imperial-rivals-305ad-cards-tokens-ART.pdf)
 
 Both complete kits start with the rulebook, quick reference, teaching guide,
 and player sheets. The print instructions come next, right before the pages to
 cut: the palace board, the succession map, then the cards and tokens.
 
-The [black-and-white kit](print/bw/dioclet-complete-print-kit-A4-BW.pdf)
+The [black-and-white kit](print/bw/imperial-rivals-305ad-complete-print-kit-A4-BW.pdf)
 uses black ink only and is the source of the rules documents:
 
-- [Palace board: four A4 tiles](print/bw/dioclet-board-4xA4-BW.pdf)
-- [Succession map: four A4 tiles](print/bw/dioclet-succession-map-A4-BW.pdf)
-- [Player sheets](print/bw/dioclet-player-sheets-A4-BW.pdf)
-- [Cards and tokens](print/bw/dioclet-cards-tokens-A4-BW.pdf)
-- [Rulebook](print/bw/dioclet-rulebook-A4-BW.pdf)
-- [Quick reference](print/bw/dioclet-quick-reference-A4-BW.pdf)
-- [Teaching guide](print/bw/dioclet-teaching-guide-A4-BW.pdf)
-- [Playtest form](print/bw/dioclet-playtest-form-A4-BW.pdf) (separate file,
+- [Palace board: four A4 tiles](print/bw/imperial-rivals-305ad-board-4xA4-BW.pdf)
+- [Succession map: four A4 tiles](print/bw/imperial-rivals-305ad-succession-map-A4-BW.pdf)
+- [Player sheets](print/bw/imperial-rivals-305ad-player-sheets-A4-BW.pdf)
+- [Cards and tokens](print/bw/imperial-rivals-305ad-cards-tokens-A4-BW.pdf)
+- [Rulebook](print/bw/imperial-rivals-305ad-rulebook-A4-BW.pdf)
+- [Quick reference](print/bw/imperial-rivals-305ad-quick-reference-A4-BW.pdf)
+- [Teaching guide](print/bw/imperial-rivals-305ad-teaching-guide-A4-BW.pdf)
+- [Playtest form](print/bw/imperial-rivals-305ad-playtest-form-A4-BW.pdf) (separate file,
   not in the complete kits)
-- [Print and assembly instructions](print/bw/dioclet-print-instructions-A4-BW.pdf)
+- [Print and assembly instructions](print/bw/imperial-rivals-305ad-print-instructions-A4-BW.pdf)
 
 Each board assembles to 580 × 406 mm from four A4 tiles. The two boards
 share their cut lines, so you can tape them back to back. Follow the print

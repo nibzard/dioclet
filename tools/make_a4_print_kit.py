@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the V0.10 A4 print-and-play kit.
+"""Generate the A4 print-and-play kit for Imperial Rivals: 305 AD.
 
 Everything prints on ordinary A4 paper with black ink only. The game
 uses two boards. The palace board is one complete vector drawing of
@@ -12,21 +12,21 @@ tiles onto four pages the same way, so the two boards can be taped back
 to back. All other documents are A4 portrait.
 
 Outputs into print/bw/ (black and white):
-  dioclet-board-4xA4-BW.pdf        four tiled palace-board pages (landscape)
-  dioclet-succession-map-A4-BW.pdf four tiled succession-map pages (landscape)
-  dioclet-player-sheets-A4-BW.pdf  four player mats (two per page)
-  dioclet-cards-tokens-A4-BW.pdf   treasure cards, tokens, faction cards
-  dioclet-rulebook-A4-BW.pdf       family rulebook
-  dioclet-quick-reference-A4-BW.pdf
-  dioclet-teaching-guide-A4-BW.pdf
-  dioclet-playtest-form-A4-BW.pdf
-  dioclet-print-instructions-A4-BW.pdf
-  dioclet-complete-print-kit-A4-BW.pdf (rules, quick reference, guide
+  imperial-rivals-305ad-board-4xA4-BW.pdf        four tiled palace-board pages (landscape)
+  imperial-rivals-305ad-succession-map-A4-BW.pdf four tiled succession-map pages (landscape)
+  imperial-rivals-305ad-player-sheets-A4-BW.pdf  four player mats (two per page)
+  imperial-rivals-305ad-cards-tokens-A4-BW.pdf   treasure cards, tokens, faction cards
+  imperial-rivals-305ad-rulebook-A4-BW.pdf       family rulebook
+  imperial-rivals-305ad-quick-reference-A4-BW.pdf
+  imperial-rivals-305ad-teaching-guide-A4-BW.pdf
+  imperial-rivals-305ad-playtest-form-A4-BW.pdf
+  imperial-rivals-305ad-print-instructions-A4-BW.pdf
+  imperial-rivals-305ad-complete-print-kit-A4-BW.pdf (rules, quick reference, guide
                                    and sheets first; then the print instructions
                                    and every page to cut; no playtest form)
 With --art, into print/ (the default edition):
-  dioclet-board-4xA4-ART.pdf, dioclet-succession-map-ART.pdf,
-  dioclet-cards-tokens-ART.pdf, dioclet-complete-print-kit-A4-ART.pdf
+  imperial-rivals-305ad-board-4xA4-ART.pdf, imperial-rivals-305ad-succession-map-ART.pdf,
+  imperial-rivals-305ad-cards-tokens-ART.pdf, imperial-rivals-305ad-complete-print-kit-A4-ART.pdf
 Always into print/:
   kit-manifest.json (layout facts used by the tests)
 
@@ -49,7 +49,15 @@ from board import Board, validate_six_block_layout  # noqa: E402
 RULES_FILE = "rules_v0102_bigboard.json"
 OUT_DIR = "print"                         # ART edition and the manifest
 BW_DIR = os.path.join(OUT_DIR, "bw")      # black-and-white edition
-KIT_VERSION = "V0.10 print kit (V0.10 big-board rules)"
+KIT_VERSION = "prototype print kit V0.10.2"
+
+# Brand names (Brand & Naming Specification v1.0, 15 November 2026).
+# "Diocletian's Palace" stays in story copy only, never as the title.
+BRAND = "Imperial Rivals"
+EDITION = "305 AD"
+PRODUCT = f"{BRAND}: {EDITION}"
+DESCRIPTOR = "The Roman Succession"
+TAGLINE = "Claim the throne. Survive the challenge."
 
 # ---------------------------------------------------------------------------
 # Board layout, in millimetres. Y grows upward; north is at the top.
@@ -250,10 +258,10 @@ def draw_board(c, L):
 
     # Title band, above the north row of the grid.
     c.setLineWidth(0.0)
-    _centered(c, (art[0] + art[2]) / 2.0, art[3] - 15.0, "DIOCLETIAN'S PALACE",
+    _centered(c, (art[0] + art[2]) / 2.0, art[3] - 15.0, BRAND.upper(),
               "Times-Bold", 30)
     _centered(c, (art[0] + art[2]) / 2.0, art[3] - 23.0,
-              "THE SUCCESSION  ·  SIX TREASURES", "Times-Roman", 12.5)
+              f"{EDITION}  ·  DIOCLETIAN'S PALACE, SPLIT", "Times-Roman", 12.5)
     # Version lives on the document footers and in kit-manifest.json,
     # not on the board artwork itself.
 
@@ -458,7 +466,7 @@ def draw_tile_furniture(c, L, page_no, window):
 
 def board_pdf(path, L):
     c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
-    c.setTitle("Diocletian's Palace - board (4 x A4, black and white)")
+    c.setTitle(f"{PRODUCT} - board (4 x A4, black and white)")
     c.setAuthor("dioclet print kit")
     for page_no in ("1", "2", "3", "4"):
         x0, y0, _ = L["tiles"][page_no]
@@ -602,7 +610,7 @@ def draw_succession_map(c, S):
     _centered(c, (art[0] + art[2]) / 2.0, art[3] - 15.0, "THE SUCCESSION MAP",
               "Times-Bold", 30)
     _centered(c, (art[0] + art[2]) / 2.0, art[3] - 23.0,
-              "DIOCLETIAN'S PALACE  ·  THE CONTEST FOR THE THRONE", "Times-Roman", 12.5)
+              f"{PRODUCT.upper()}  ·  {DESCRIPTOR.upper()}", "Times-Roman", 12.5)
     nx, ny = art[2] - 37.0, art[3] - 22.0
     c.setLineWidth(1.0)
     p = c.beginPath()
@@ -735,7 +743,7 @@ def draw_succession_map(c, S):
 def succession_map_pdf(path, rules):
     S = build_succession_layout(rules)
     c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
-    c.setTitle("Diocletian's Palace - succession map (4 x A4, black and white)")
+    c.setTitle(f"{PRODUCT} - succession map (4 x A4, black and white)")
     c.setAuthor("dioclet print kit")
     for page_no in ("1", "2", "3", "4"):
         x0, y0, _ = S["tiles"][page_no]
@@ -760,7 +768,7 @@ PW, PH = 210.0, 297.0
 def new_doc(path, title, landscape_pages=False):
     c = pdfcanvas.Canvas(path, pagesize=A4)
     c.setTitle(title)
-    c.setAuthor("Diocletian's Palace print kit")
+    c.setAuthor(f"{BRAND} print kit")
     return c
 
 
@@ -779,7 +787,7 @@ def doc_header(c, title, subtitle=None):
 def doc_footer(c, page, total=None):
     c.setFont("Helvetica", 6.5)
     c.drawCentredString(PW / 2.0 * mm, 9 * mm,
-                        f"Diocletian's Palace - {KIT_VERSION} - page {page}"
+                        f"{PRODUCT} - {KIT_VERSION} - page {page}"
                         + (f" of {total}" if total else ""))
     c.setLineWidth(0.4)
     c.line(16 * mm, 13 * mm, (PW - 16) * mm, 13 * mm)
@@ -1043,7 +1051,7 @@ def player_mat(c, x, y, w, h, numeral):
 
 
 def player_sheets_pdf(path):
-    c = new_doc(path, "Diocletian's Palace - player sheets")
+    c = new_doc(path, f"{PRODUCT} - player sheets")
     for page in range(2):
         doc_header(c, "PLAYER SHEETS", "one mat per player - pencil ticks, one counter on the Prestige track")
         w, h = PW - 32.0, 114.0
@@ -1139,7 +1147,7 @@ def draw_equipment_icon(c, kind, x, y, s):
 
 
 def cards_tokens_pdf(path):
-    c = new_doc(path, "Diocletian's Palace - cards and tokens")
+    c = new_doc(path, f"{PRODUCT} - cards and tokens")
 
     # Page 1: the six treasure location cards.
     doc_header(c, "TREASURE LOCATION CARDS", "cut on the outer border - identical backs on the next page")
@@ -1191,9 +1199,9 @@ def cards_tokens_pdf(path):
         c.setLineWidth(0.9)
         _laurel(c, (cx + CARD_W / 2.0) * mm, (cy + CARD_H / 2.0 + 3.5) * mm, 12.5 * mm)
         _centered(c, cx + CARD_W / 2.0, cy + CARD_H / 2.0 - 10.5,
-                  "DIOCLETIAN'S", "Times-Bold", 9.5)
+                  "IMPERIAL", "Times-Bold", 9.5)
         _centered(c, cx + CARD_W / 2.0, cy + CARD_H / 2.0 - 15.5,
-                  "PALACE", "Times-Bold", 9.5)
+                  "RIVALS", "Times-Bold", 9.5)
     doc_footer(c, 2)
     c.showPage()
 
@@ -1394,7 +1402,7 @@ def art_asset(name):
 
 def art_board_pdf(path, L):
     """The palace board with the drawn artwork under the same tiling."""
-    art_tiled_pdf(path, L, "palace-board.png", "Diocletian's Palace - board (4 x A4, drawn art)")
+    art_tiled_pdf(path, L, "palace-board.png", f"{PRODUCT} - board (4 x A4, drawn art)")
 
 
 def art_tiled_pdf(path, L, asset, title):
@@ -1429,12 +1437,12 @@ def art_tiled_pdf(path, L, asset, title):
 def art_succession_pdf(path, S):
     """The succession map: same footprint, tiles and cut lines as the board."""
     art_tiled_pdf(path, S, "succession-map.png",
-                  "Diocletian's Palace - succession map (4 x A4, drawn art)")
+                  f"{PRODUCT} - succession map (4 x A4, drawn art)")
 
 
 def art_cards_tokens_pdf(path):
     """Card fronts with bleed, identical art backs, and the token sheet."""
-    c = new_doc(path, "Diocletian's Palace - cards and tokens (drawn art)")
+    c = new_doc(path, f"{PRODUCT} - cards and tokens (drawn art)")
     back = art_asset("card-back.png")
     cards = [art_asset(f"card-{i + 1}-{icon}.png")
              for i, (_n, icon, _t) in enumerate(CARDS)]
@@ -1501,7 +1509,8 @@ def art_cards_tokens_pdf(path):
 RULEBOOK_PAGES = [
     ("The goal", [
         ("h", "What you are trying to do"),
-        ("p", "Diocletian has retired. Four rivals prepare a claim to the throne. "
+        ("p", "305 AD. Diocletian has retired to his palace at Split, and four "
+              "rivals prepare a claim to the throne. "
               "Collect equipment to become strong, earn Prestige to pay for help, and "
               "win the support of two of the three factions in the city. Then stand at "
               "the Peristyle, the great crossing of the palace, and proclaim your claim. "
@@ -1738,11 +1747,14 @@ RULEBOOK_PAGES = [
 
 
 def rulebook_pdf(path):
-    c = new_doc(path, "Diocletian's Palace - rulebook")
+    c = new_doc(path, f"{PRODUCT} - rulebook")
     page = 1
-    doc_header(c, "DIOCLETIAN'S PALACE", "The Succession - rules for four players")
+    doc_header(c, PRODUCT.upper(), f"{DESCRIPTOR} - rules for four players")
 
     y = PH - 36
+    c.setFont("Times-Bold", 11)
+    c.drawString(22 * mm, y * mm, TAGLINE)
+    y -= 6
     c.setFont("Times-Italic", 9.5)
     y = para(c, "Read pages 1 to 4 before the first turn. Use pages 5 to 8 for "
                 "the succession phase and common questions.", 22, y, PW - 44)
@@ -1753,7 +1765,7 @@ def rulebook_pdf(path):
         doc_footer(c, page)
         c.showPage()
         page += 1
-        doc_header(c, "DIOCLETIAN'S PALACE - RULES", "The Succession")
+        doc_header(c, f"{BRAND.upper()} - RULES", f"{EDITION} - {DESCRIPTOR}")
         y = PH - 36
 
     for section_index, (section_title, blocks) in enumerate(RULEBOOK_PAGES):
@@ -1830,7 +1842,7 @@ def rulebook_pdf(path):
 # Quick reference, teaching guide, playtest form, print instructions.
 
 def quick_reference_pdf(path):
-    c = new_doc(path, "Diocletian's Palace - quick reference")
+    c = new_doc(path, f"{PRODUCT} - quick reference")
     doc_header(c, "QUICK REFERENCE", "keep this beside the board")
     y = PH - 36
     blocks = [
@@ -1909,7 +1921,7 @@ def quick_reference_pdf(path):
 
 
 def teaching_guide_pdf(path):
-    c = new_doc(path, "Diocletian's Palace - five-minute teaching guide")
+    c = new_doc(path, f"{PRODUCT} - five-minute teaching guide")
     page = 1
     doc_header(c, "TEACH IN FIVE MINUTES",
                "read aloud - seven steps, then two short demonstrations")
@@ -1973,7 +1985,7 @@ def teaching_guide_pdf(path):
 
 
 def playtest_form_pdf(path):
-    c = new_doc(path, "Diocletian's Palace - playtest form")
+    c = new_doc(path, f"{PRODUCT} - playtest form")
     for page in (1, 2):
         doc_header(c, "PLAYTEST RECORD", "observations only - no invented results")
         y = PH - 36
@@ -2054,7 +2066,7 @@ def playtest_form_pdf(path):
 
 
 def print_instructions_pdf(path):
-    c = new_doc(path, "Diocletian's Palace - print and assembly instructions")
+    c = new_doc(path, f"{PRODUCT} - print and assembly instructions")
     doc_header(c, "PRINT AND ASSEMBLE", "everything prints on plain A4, black ink, 100% scale")
 
     # Page 1: printing, scale check, cutting.
@@ -2062,9 +2074,9 @@ def print_instructions_pdf(path):
     c.setFont("Times-Bold", 11)
     c.drawString(16 * mm, y * mm, "1. Print")
     y -= 5.4
-    for line in ("Board file 'dioclet-board-4xA4': four pages, A4 LANDSCAPE, "
+    for line in ("Board file 'imperial-rivals-305ad-board-4xA4': four pages, A4 LANDSCAPE, "
                  "scale 100% (Actual size). Do not tick 'fit to page'.",
-                 "Succession map 'dioclet-succession-map': four pages, A4 "
+                 "Succession map 'imperial-rivals-305ad-succession-map': four pages, A4 "
                  "LANDSCAPE, 100%. It assembles exactly like the board.",
                  "Every other file: A4 portrait, 100%.",
                  "Any black-and-white printer works. Single-sided printing is fine.",
@@ -2277,15 +2289,15 @@ def main():
     out = lambda name: os.path.join(OUT_DIR, name)
     bw = lambda name: os.path.join(BW_DIR, name)
     files = {
-        "board": bw("dioclet-board-4xA4-BW.pdf"),
-        "succession": bw("dioclet-succession-map-A4-BW.pdf"),
-        "sheets": bw("dioclet-player-sheets-A4-BW.pdf"),
-        "cards": bw("dioclet-cards-tokens-A4-BW.pdf"),
-        "rulebook": bw("dioclet-rulebook-A4-BW.pdf"),
-        "quick": bw("dioclet-quick-reference-A4-BW.pdf"),
-        "teaching": bw("dioclet-teaching-guide-A4-BW.pdf"),
-        "form": bw("dioclet-playtest-form-A4-BW.pdf"),
-        "instructions": bw("dioclet-print-instructions-A4-BW.pdf"),
+        "board": bw("imperial-rivals-305ad-board-4xA4-BW.pdf"),
+        "succession": bw("imperial-rivals-305ad-succession-map-A4-BW.pdf"),
+        "sheets": bw("imperial-rivals-305ad-player-sheets-A4-BW.pdf"),
+        "cards": bw("imperial-rivals-305ad-cards-tokens-A4-BW.pdf"),
+        "rulebook": bw("imperial-rivals-305ad-rulebook-A4-BW.pdf"),
+        "quick": bw("imperial-rivals-305ad-quick-reference-A4-BW.pdf"),
+        "teaching": bw("imperial-rivals-305ad-teaching-guide-A4-BW.pdf"),
+        "form": bw("imperial-rivals-305ad-playtest-form-A4-BW.pdf"),
+        "instructions": bw("imperial-rivals-305ad-print-instructions-A4-BW.pdf"),
     }
     board_pdf(files["board"], L)
     succession_map_pdf(files["succession"], rules)
@@ -2301,12 +2313,12 @@ def main():
     # playtest form prints on its own.
     combine([files["rulebook"], files["quick"], files["teaching"], files["sheets"],
              files["instructions"], files["board"], files["succession"], files["cards"]],
-            bw("dioclet-complete-print-kit-A4-BW.pdf"))
+            bw("imperial-rivals-305ad-complete-print-kit-A4-BW.pdf"))
     if build_art:
         art_files = {
-            "art_board": out("dioclet-board-4xA4-ART.pdf"),
-            "art_succession": out("dioclet-succession-map-ART.pdf"),
-            "art_cards": out("dioclet-cards-tokens-ART.pdf"),
+            "art_board": out("imperial-rivals-305ad-board-4xA4-ART.pdf"),
+            "art_succession": out("imperial-rivals-305ad-succession-map-ART.pdf"),
+            "art_cards": out("imperial-rivals-305ad-cards-tokens-ART.pdf"),
         }
         art_board_pdf(art_files["art_board"], L)
         art_succession_pdf(art_files["art_succession"], build_succession_layout(rules))
@@ -2314,7 +2326,7 @@ def main():
         combine([files["rulebook"], files["quick"], files["teaching"], files["sheets"],
                  files["instructions"], art_files["art_board"],
                  art_files["art_succession"], art_files["art_cards"]],
-                out("dioclet-complete-print-kit-A4-ART.pdf"))
+                out("imperial-rivals-305ad-complete-print-kit-A4-ART.pdf"))
         files.update(art_files)
     b = L["board"]
     S = build_succession_layout(rules)

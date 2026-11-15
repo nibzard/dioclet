@@ -119,9 +119,9 @@ class ArtKitPdfs(unittest.TestCase):
             "import sys; sys.path.insert(0, '.'); sys.path.insert(0, 'tools');"
             "import make_a4_print_kit as kit;"
             f"rules = kit.engine.load_rules({rules_arg!r});"
-            f"kit.art_board_pdf({str(cls.out / 'dioclet-board-4xA4-ART.pdf')!r}, kit.build_layout(rules));"
-            f"kit.art_succession_pdf({str(cls.out / 'dioclet-succession-map-ART.pdf')!r}, kit.build_succession_layout(rules));"
-            f"kit.art_cards_tokens_pdf({str(cls.out / 'dioclet-cards-tokens-ART.pdf')!r})"
+            f"kit.art_board_pdf({str(cls.out / 'imperial-rivals-305ad-board-4xA4-ART.pdf')!r}, kit.build_layout(rules));"
+            f"kit.art_succession_pdf({str(cls.out / 'imperial-rivals-305ad-succession-map-ART.pdf')!r}, kit.build_succession_layout(rules));"
+            f"kit.art_cards_tokens_pdf({str(cls.out / 'imperial-rivals-305ad-cards-tokens-ART.pdf')!r})"
         )
         subprocess.run([sys.executable, "-c", script], cwd=str(REPO), check=True)
 
@@ -130,14 +130,14 @@ class ArtKitPdfs(unittest.TestCase):
         shutil.rmtree(cls.out, ignore_errors=True)
 
     def test_board_is_four_landscape_pages(self):
-        reader = PdfReader(self.out / "dioclet-board-4xA4-ART.pdf")
+        reader = PdfReader(self.out / "imperial-rivals-305ad-board-4xA4-ART.pdf")
         self.assertEqual(len(reader.pages), 4)
         for page in reader.pages:
             self.assertAlmostEqual(float(page.mediabox.width), A4_LONG_PT, places=1)
             self.assertAlmostEqual(float(page.mediabox.height), A4_SHORT_PT, places=1)
 
     def test_every_art_board_page_carries_an_image(self):
-        reader = PdfReader(self.out / "dioclet-board-4xA4-ART.pdf")
+        reader = PdfReader(self.out / "imperial-rivals-305ad-board-4xA4-ART.pdf")
         for page in reader.pages:
             xobjs = page.get("/Resources", {}).get("/XObject", {})
             self.assertTrue(any(xobjs[k].get("/Subtype") == "/Image" for k in xobjs),
@@ -149,7 +149,7 @@ class ArtKitPdfs(unittest.TestCase):
         # so all four sheets printed the same corner of the board.
         L = kit.build_layout(engine.load_rules(str(REPO / kit.RULES_FILE)))
         ax0, ay0, ax1, ay1 = L["art"]
-        reader = PdfReader(self.out / "dioclet-board-4xA4-ART.pdf")
+        reader = PdfReader(self.out / "imperial-rivals-305ad-board-4xA4-ART.pdf")
         origins = []
         for page_no, page in zip(("1", "2", "3", "4"), reader.pages):
             x0, y0, _ = L["tiles"][page_no]
@@ -166,7 +166,7 @@ class ArtKitPdfs(unittest.TestCase):
     def test_succession_map_is_four_tiles_with_their_own_windows(self):
         S = kit.build_succession_layout(engine.load_rules(str(REPO / kit.RULES_FILE)))
         ax0, ay0, ax1, ay1 = S["art"]
-        reader = PdfReader(self.out / "dioclet-succession-map-ART.pdf")
+        reader = PdfReader(self.out / "imperial-rivals-305ad-succession-map-ART.pdf")
         self.assertEqual(len(reader.pages), 4)
         for page_no, page in zip(("1", "2", "3", "4"), reader.pages):
             x0, y0, _ = S["tiles"][page_no]
@@ -176,7 +176,7 @@ class ArtKitPdfs(unittest.TestCase):
             self.assertIn(f"SUCCESSION MAP - PAGE {page_no} OF 4", page.extract_text())
 
     def test_cards_page_places_six_card_images(self):
-        reader = PdfReader(self.out / "dioclet-cards-tokens-ART.pdf")
+        reader = PdfReader(self.out / "imperial-rivals-305ad-cards-tokens-ART.pdf")
         self.assertEqual(len(reader.pages), 5)
         self.assertIn("FACTION CARDS", reader.pages[3].extract_text())
         self.assertIn("FACTION CARD BACKS", reader.pages[4].extract_text())

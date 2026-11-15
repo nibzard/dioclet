@@ -381,7 +381,7 @@ function drawKey(a, S, G) {
   let y = 232;
   text(a, "KEY", cx, y, 4.2, { style: "inscribed", medium: "charcoal" });
   y += 3.5;
-  text(a, "THE CONTEST FOR THE THRONE", cx, y + 2.2, 1.7, { medium: "graphite" });
+  text(a, "IMPERIAL RIVALS · 305 AD", cx, y + 2.2, 1.7, { medium: "graphite" });
   y += 5;
   a.line([x0 + 4, y], [x1 - 4, y], w("fine"));
   y += 7;

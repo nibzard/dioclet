@@ -341,7 +341,7 @@ const PLANS = {
 function drawTitle(a, P) {
   const cx = P.size_mm[0] / 2;
   const base = 18.2, cap = 7.6;
-  const wdt = text(a, "DIOCLETIAN'S PALACE", cx, base, cap, { style: "inscribed", medium: "charcoal", track: 0.06 });
+  const wdt = text(a, "IMPERIAL RIVALS", cx, base, cap, { style: "inscribed", medium: "charcoal", track: 0.06 });
   // Laurel sprigs either side of the title.
   for (const s of [-1, 1]) {
     const x0 = cx + s * (wdt / 2 + 3);
@@ -386,7 +386,7 @@ function drawKey(a, P, G) {
   let y = 232;
   text(a, "KEY", cx, y, 4.2, { style: "inscribed", medium: "charcoal" });
   y += 3.5;
-  text(a, "THE SUCCESSION · SIX TREASURES", cx, y + 2.2, 1.7, { medium: "graphite" });
+  text(a, "305 AD · DIOCLETIAN'S PALACE", cx, y + 2.2, 1.7, { medium: "graphite" });
   y += 5;
   a.line([x0 + 4, y], [x1 - 4, y], w("fine"));
   y += 7;
