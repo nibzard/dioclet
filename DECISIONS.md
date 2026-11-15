@@ -639,3 +639,24 @@ practical. No baseline rule values were changed.
   `rules_v0102_bigboard.json` ("0.10.2-bigboard"); it equals
   `rules_v10_six_spread.json` except for the version and the name.
   Details: `notes/v10-six-blocks-2026-11-14.md`.
+
+- **D54 Pugio presentation, mechanic unchanged (V0.10.2, 2026-11-15).**
+  A playtest disagreement showed the pugio rules could be read two
+  ways: the player sheet listed it under IN DEFENSE next to the
+  scutum, and the card said only "Wins tied duels", so players read
+  it as a defense-only extra that could not combine with the gladius,
+  and the both-holders case was nowhere on the table. The engine and
+  D42 are unchanged: exactly one holder wins ties; with both or
+  neither, the attacker wins (the base tie rule). Only the printed
+  kit changed. The sheet now files the pugio under its own
+  "TIE-BREAK - ALWAYS ON" group; the card spells out the lone holder,
+  both-or-neither, and always-active facts (art edition: the foot
+  plate grows one millimetre and steps the cap height down to fit);
+  the rulebook separates number bonuses (gladius, pilum, scutum -
+  never a sum) from the passive tie-break that works next to the
+  chosen bonus, resolves duels in five numbered steps (pugio applied
+  only after the totals compare equal), and adds the full-equipment
+  example (both hold all six, 3 vs 3, attacker wins); the quick
+  reference and the teaching guide state the lone-holder rule. Rules
+  JSON, PRINTED_ABILITIES, and the build guard are untouched; the
+  rulebook keeps its 8 pages and section placement.

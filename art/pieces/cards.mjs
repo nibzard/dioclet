@@ -95,12 +95,19 @@ function drawCard(a, item, index, cw, ch, bleed) {
   // The device itself, standing on the sill.
   (DEVICES[item.icon] || DEVICES.dagger)(a, wcx, (topY + sill) / 2 + 4, 30);
 
-  // Ability text on a lifted plate at the foot.
-  const plateY0 = y1 - 14.5, plateY1 = y1 - 4.5;
+  // Ability text on a lifted plate at the foot. The plate reaches up to
+  // a millimetre below the niche sill so the longer ability texts (the
+  // pugio card spells out the both-or-neither case) keep a legible cap
+  // height instead of shrinking to fit.
+  const plateY0 = y1 - 15.5, plateY1 = y1 - 4.5;
   M.lift(a, (c) => c.rect(bleed + 6, plateY0, cw - 12, plateY1 - plateY0), 0.95);
   a.rect(bleed + 6, plateY0, cw - 12, plateY1 - plateY0, w("hair", { overshoot: 0.3 }));
-  const cap = 2.1;
-  const lines = wrap(item.text.toUpperCase(), cap, cw - 17);
+  let cap = 2.1;
+  let lines = wrap(item.text.toUpperCase(), cap, cw - 13);
+  while (lines.length * cap * 1.7 > plateY1 - plateY0 - 1.0 && cap > 1.5) {
+    cap -= 0.1;
+    lines = wrap(item.text.toUpperCase(), cap, cw - 13);
+  }
   const ty0 = (plateY0 + plateY1) / 2 - ((lines.length - 1) * cap * 1.7) / 2 + cap / 2 - 0.4;
   lines.forEach((ln, i) => text(a, ln, cx, ty0 + i * cap * 1.7, cap, { medium: "graphite", weight: 1.05 }));
 

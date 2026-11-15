@@ -935,8 +935,8 @@ def player_mat(c, x, y, w, h, numeral):
     ty -= 6.6
     groups = [("IN ATTACK", [("Gladius", "+1 when you attack", False),
                              ("Pilum", "+1 attacking the claimant", False)]),
-              ("IN DEFENSE", [("Scutum", "+1 when you defend", False),
-                              ("Pugio", "you win tied duels", False)]),
+              ("IN DEFENSE", [("Scutum", "+1 when you defend", False)]),
+              ("TIE-BREAK - ALWAYS ON", [("Pugio", "you win tied duels", False)]),
               ("ONCE PER GAME - tick used", [("Galea", "action: reveal a card", True),
                                              ("Lorica", "segmentata: stay if beaten", True)])]
     for title, items in groups:
@@ -1068,7 +1068,9 @@ def player_sheets_pdf(path):
 
 CARD_W, CARD_H = 55.0, 75.0
 CARDS = [
-    ("Pugio", "dagger", "Wins tied duels."),
+    ("Pugio", "dagger",
+     "You win tied duels if only you hold it. Both or neither: "
+     "the attacker wins. Always active."),
     ("Pilum", "pilum", "+1 attack vs the claimant."),
     ("Galea", "helmet", "Once a game: reveal any district."),
     ("Scutum", "scutum", "+1 to your defense."),
@@ -1176,14 +1178,27 @@ def cards_tokens_pdf(path):
         c.line((cx + 7) * mm, (cy + 25) * mm,
                (cx + CARD_W - 7) * mm, (cy + 25) * mm)
         _centered(c, cx + CARD_W / 2.0, cy + 20.0, name.upper(), "Times-Bold", 10.5)
-        _centered(c, cx + CARD_W / 2.0, cy + 13.5, flavor, "Times-Italic", 7.0)
+        # The ability text may run to several lines (the pugio card spells
+        # out the both-or-neither case); keep it inside the frame above the
+        # footer line by stepping the size down before it grows past three
+        # lines.
+        size = 7.0
+        lines = wrap_lines(c, flavor, CARD_W - 10.0, size=size, font="Times-Italic")
+        while len(lines) > 3 and size > 5.8:
+            size -= 0.2
+            lines = wrap_lines(c, flavor, CARD_W - 10.0, size=size, font="Times-Italic")
+        fy = cy + 13.5 + (len(lines) - 1) * 1.7
+        for ln in lines:
+            _centered(c, cx + CARD_W / 2.0, fy, ln, "Times-Italic", size)
+            fy -= 3.4
         _centered(c, cx + CARD_W / 2.0, cy + 5.5, "PALACE TREASURE - LOCATION CARD",
                   "Helvetica", 5.2)
     y = y0 - (CARD_H + 5.0) - 9.0
     para(c, "Shuffle face down and deal one card to each treasure entry A-F. Then turn "
             "two of the six face up at random - everyone sees those two treasures from "
-            "the start. Each card states its ability; in a duel count one best bonus "
-            "per side, never a sum.", 16, y, PW - 32, size=8.4)
+            "the start. Each card states its ability; in a duel count one best number "
+            "bonus per side, never a sum - the pugio is a tie-break, not a number "
+            "bonus, and it works next to the one you counted.", 16, y, PW - 32, size=8.4)
     doc_footer(c, 1)
     c.showPage()
 
@@ -1584,8 +1599,13 @@ RULEBOOK_PAGES = [
                ["Lorica segmentata", "armor", "once per game: when your claim is "
                 "beaten, keep your square instead of returning to your gate"]]),
         ("p", "In a duel each side adds at most one item bonus - the best one that "
-              "applies, never a sum. If you hold both the gladius and the pilum and "
-              "attack the claimant, you still add only +1. Cross an item out on "
+              "applies, never a sum. The gladius, the pilum and the scutum are "
+              "number bonuses: they never stack. If you hold both the gladius and "
+              "the pilum and attack the claimant, you still add only +1."),
+        ("p", "The pugio is not a number bonus. It is a passive tie-break that "
+              "works by itself, next to your chosen number bonus, whenever the two "
+              "final duel totals are equal - gladius and pugio together are legal, "
+              "gladius and pilum together still add only +1. Cross an item out on "
               "your sheet when its once-per-game ability is used."),
         ("p", "Collecting happens only while the palace phase lasts. When the "
               "succession begins the palace map leaves the table and your items "
@@ -1601,12 +1621,16 @@ RULEBOOK_PAGES = [
               "spend it or waste it."),
         ("h", "Duels"),
         ("p", "End your move within two street circles of a rival and you may duel "
-              "them as your action. The attacker and the defender each roll one die "
-              "and add their best item bonus for that side. The higher total wins; "
-              "on a tie the attacker wins - unless exactly one side holds the "
-              "pugio, whose holder then wins the tie. The winner earns 1 Prestige. "
-              "The loser pays 1 Prestige to the bank as shame, as much as they "
-              "hold. Nobody loses equipment or support."),
+              "them as your action. Resolve the duel in this order:"),
+        ("n", "Both players roll one die."),
+        ("n", "Each side adds its one best item bonus for that side - never a sum. "
+              "The pugio adds no number; do nothing with it yet."),
+        ("n", "Compare the final totals. The higher total wins the duel."),
+        ("n", "Only if the totals are equal, apply the tie-break: if exactly one "
+              "side holds the pugio, that side wins. If both or neither hold one, "
+              "the tie is ordinary - on a tie the attacker wins."),
+        ("n", "The winner earns 1 Prestige. The loser pays 1 Prestige to the bank "
+              "as shame, as much as they hold. Nobody loses equipment or support."),
         ("h", "Spending Prestige"),
         ("b", "1 Prestige: one faction's support (next page). Searching a "
               "faction card is free."),
@@ -1679,8 +1703,9 @@ RULEBOOK_PAGES = [
               "circles of the claimant and duel them. Challenging a standing claim "
               "costs a mandatory fee of 1 Prestige, paid before you roll - even if "
               "you lose. Without at least 1 Prestige you cannot contest at all."),
-        ("p", "The challenge itself is a normal duel: one die each, add your best "
-              "item bonus, the pugio wins ties. A full challenge costs only the "
+        ("p", "The challenge itself is a normal duel, resolved in the five steps "
+              "under Duels: one die each, your one best item bonus, then the "
+              "tie-break if the totals match. A full challenge costs only the "
               "1 Prestige fee."),
         ("h", "What happens on each result"),
         ("b", "You win: the claim is canceled. The claimant's pawn returns to their "
@@ -1701,6 +1726,14 @@ RULEBOOK_PAGES = [
               "unused, so she stays at the Peristyle instead of walking back to her "
               "gate on the succession map. Marcus earns 1 Prestige for the duel "
               "win, leaving him with 2."),
+        ("h", "An example with all six items"),
+        ("p", "Marcus challenges Livia's claim. Both players own all six items. "
+              "Marcus attacks with the gladius (+1); Livia defends with the scutum "
+              "(+1). Both roll a 2, so both finish on 3. Each holds a pugio, so "
+              "neither has the tie-break alone - the normal tie rule applies and "
+              "Marcus, the attacker, wins. The claim is canceled, Livia pays 1 "
+              "Prestige shame, and she may still use the lorica segmentata to stay "
+              "at the Peristyle. Marcus earns 1 Prestige."),
         ("h", "If nobody wins"),
         ("p", "If no claim survives by the end of round 24 of the succession phase, "
               "the game ends in a draw - the throne stays empty. This is rare."),
@@ -1860,11 +1893,12 @@ def quick_reference_pdf(path):
                       "gate is 9 steps from it."]),
         ("ROLLS", ["Movement: two dice summed.", "Guard post: one die - 4+ earns 1 Prestige "
                    "(either map).",
-                   "Duel: one die each + your one best item bonus; the pugio wins ties."]),
-        ("EQUIPMENT (one best bonus per side)", [
+                   "Duel: one die each + your one best item bonus; tie: the lone "
+                   "pugio holder wins, else the attacker."]),
+        ("EQUIPMENT (one best number bonus per side)", [
             "Gladius +1 attack · Scutum +1 defense · Pilum +1 vs the claimant.",
-            "Pugio wins ties · Galea once: reveal a district · Lorica once: stay "
-            "when beaten."]),
+            "Pugio: lone holder wins ties (not a number bonus) · Galea once: "
+            "reveal a district · Lorica once: stay when beaten."]),
         ("PRESTIGE (cap 3)", ["Earn: guard post 4+ (either map) · any duel win.",
                               "Spend: 1 = faction support · 1 = fee to contest a claim. "
                               "Searching is free.",
@@ -1936,8 +1970,9 @@ def teaching_guide_pdf(path):
         ("Equipment (45 seconds)", "The double circles A to F each hold one piece "
          "of gear - two start face up. Stop on one and mark it on your sheet. Each "
          "piece does one thing forever: the sword adds +1 to attacks, the shield "
-         "+1 to defense, the javelin +1 against a claimant, the dagger wins ties, "
-         "the helmet reveals a district once, the armor saves you once. In a duel "
+         "+1 to defense, the javelin +1 against a claimant, the dagger breaks "
+         "ties for its lone holder, the helmet reveals a district once, the "
+         "armor saves you once. In a duel "
          "you count your one best bonus - never a sum."),
         ("Prestige (60 seconds)", "This coin symbol is Prestige - political clout. "
          "Earn it at a star space: stop there, roll one die, 4 or higher pays 1. "
@@ -1973,8 +2008,8 @@ def teaching_guide_pdf(path):
                 "a 5 - and take a Prestige. Done.", 19, y, PW - 38, size=9.4) - 1.4
     y = para(c, "Claim response: a rival proclaims at the Peristyle. On your turn, "
                 "move next to them, put 1 Prestige aside (the fee), then each roll "
-                "one die and add your one best item bonus. Higher total wins; the "
-                "pugio wins ties.",
+                "one die and add your one best item bonus. Higher total wins; on a "
+                "tie the lone pugio holder wins, else the attacker.",
              19, y, PW - 38, size=9.4) - 1.4
     y = para(c, "Answer everything else when it comes up. Rare cases live in the "
                 "rulebook, not in the introduction.", 19, y, PW - 38, size=9.4,

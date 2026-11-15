@@ -259,6 +259,26 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("face up at random", text)                    # start reveals
         self.assertNotIn("acclaimed emperor", text)                 # window replaced it
 
+    def test_pugio_tiebreak_is_stated_everywhere(self):
+        # A playtest disagreement: the sheet filed the pugio under defense
+        # and the card said only "Wins tied duels", so players read the
+        # tie-break as a defense-only extra that cannot combine with the
+        # gladius. The mechanic is unchanged (D42, D54); the wording pins
+        # it down in every printed place a player looks.
+        rulebook = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
+        self.assertIn("passive tie-break", rulebook)
+        self.assertIn("gladius and pugio together are legal", rulebook)
+        self.assertIn("Compare the final totals", rulebook)      # order of ops
+        self.assertIn("If both or neither hold one", rulebook)   # the tie case
+        self.assertIn("Both players own all six items", rulebook)  # example
+        cards = whole_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf")
+        self.assertIn("Both or neither: the attacker wins", cards)
+        self.assertIn("Always active", cards)
+        sheets = whole_text("imperial-rivals-305ad-player-sheets-A4-BW.pdf")
+        self.assertIn("TIE-BREAK - ALWAYS ON", sheets)           # own group
+        quick = " ".join(whole_text("imperial-rivals-305ad-quick-reference-A4-BW.pdf").split())
+        self.assertIn("tie: the lone pugio holder wins, else the attacker", quick)
+
     def test_rulebook_pins_the_twin_board_flow(self):
         text = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
         self.assertIn("succession map", text)                       # the second board
