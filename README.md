@@ -295,3 +295,8 @@ can be superseded by later experiments.
 [`DECISIONS.md`](DECISIONS.md) records rule interpretations and design decisions.
 Earlier rules files remain available for comparisons and historical replays.
 See [`runs/README.md`](runs/README.md) for replay caveats in the oldest logs.
+
+## License
+
+Copyright (c) 2026 Nikola Balic. All rights reserved.
+See [`LICENSE`](LICENSE).
