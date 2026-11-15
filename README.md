@@ -2,7 +2,7 @@
 
 *The Roman Succession. Claim the throne. Survive the challenge.*
 
-![The palace board, hand-drawn edition](docs/images/palace-board.jpg)
+![The palace board, full-colour edition](docs/images/palace-board.jpg)
 
 Imperial Rivals is a competitive board game for four players. It is set in
 Diocletian's Palace, Split, in 305 AD. The emperor steps down, and you race
@@ -43,7 +43,8 @@ The faction cards hide among blanks until a player searches them.
 ![The faction cards: Army, Elites, Officials, an empty street, and the card back](docs/images/faction-cards.jpg)
 
 All artwork is drawn by code: seeded pen, graphite, and charcoal strokes on
-a paper texture, with hand-lettered Roman capitals. See [`art/`](art/).
+a paper texture, with hand-lettered Roman capitals. The colour edition adds
+watercolour glazes. See [`art/`](art/).
 
 ## What this repository holds
 
@@ -172,7 +173,7 @@ draws the same lines from the same seeds as the grayscale edition and adds
 one pigment layer, so `node render.mjs` without `--color` stays
 byte-identical.
 
-The README images in `docs/images/` are reduced copies of these assets.
+The README images in `docs/images/` are reduced copies of the colour assets.
 Rebuild them with ImageMagick:
 
 ```bash

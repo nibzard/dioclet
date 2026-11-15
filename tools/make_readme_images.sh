@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Build the web-sized README images in docs/images/ from the drawn art
-# assets in art/build/assets/. Requires ImageMagick (`convert`).
-# Run from the repository root after you re-render the art.
+# Build the web-sized README images in docs/images/ from the full-colour
+# art assets in art/build/assets-color/. Requires ImageMagick (`convert`).
+# Run from the repository root after you re-render the art with --color.
 set -euo pipefail
 
-A=art/build/assets
+A=art/build/assets-color
 OUT=docs/images
 mkdir -p "$OUT"
 
