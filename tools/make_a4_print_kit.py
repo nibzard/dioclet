@@ -21,8 +21,9 @@ Outputs into print/bw/ (black and white):
   dioclet-teaching-guide-A4-BW.pdf
   dioclet-playtest-form-A4-BW.pdf
   dioclet-print-instructions-A4-BW.pdf
-  dioclet-complete-print-kit-A4-BW.pdf (all of the above: pages to read
-                                   first, pages to cut last)
+  dioclet-complete-print-kit-A4-BW.pdf (rules, quick reference, guide
+                                   and sheets first; then the print instructions
+                                   and every page to cut; no playtest form)
 With --art, into print/ (the default edition):
   dioclet-board-4xA4-ART.pdf, dioclet-succession-map-ART.pdf,
   dioclet-cards-tokens-ART.pdf, dioclet-complete-print-kit-A4-ART.pdf
@@ -507,10 +508,61 @@ def build_succession_layout(rules):
         ys = [c[1] for c in group]
         blocks.append((min(xs), min(ys), max(xs), max(ys)))
     blocks.sort(key=lambda r: (r[1], r[0]))    # north-west first (y 0 is north)
-    S.update(blocks=blocks,
-             card_spaces=[tuple(c) for c in rules["board_level2"]["support_sites"]],
+    cards = [tuple(c) for c in rules["board_level2"]["support_sites"]]
+    S.update(blocks=blocks, card_spaces=cards,
+             card_doors=_card_doors(cards, blocks, tuple(b.checkpoint)),
              grid_w=S["cols"] * CELL, grid_h=S["rows"] * CELL)
     return S
+
+
+def _card_doors(cards, blocks, checkpoint):
+    """Which block each faction card space opens: {card: (block index, side)}.
+
+    A card that touches one block opens that block. A card on the
+    centre street touches the block north of it and the block south of
+    it: west of the Peristyle it opens the south block, east of it the
+    north block, so the doors look the same after a half-turn. Every
+    block must get exactly one card. Side is the block edge that holds
+    the door ("north" or "south"; y 0 is north).
+    """
+    def touches(cell, block):
+        x0, y0, x1, y1 = block
+        return x0 <= cell[0] <= x1 and cell[1] in (y0 - 1, y1 + 1)
+
+    doors = {}
+    for cell in cards:
+        near = [i for i, block in enumerate(blocks) if touches(cell, block)]
+        if len(near) > 1:
+            want_south = cell[0] < checkpoint[0]
+            near = [i for i in near if (blocks[i][1] > cell[1]) == want_south]
+        if len(near) != 1:
+            raise SystemExit(f"faction card space {cell} does not open exactly one block")
+        i = near[0]
+        doors[cell] = (i, "north" if blocks[i][1] > cell[1] else "south")
+    if sorted(i for i, _ in doors.values()) != list(range(len(blocks))):
+        raise SystemExit("every block needs exactly one faction card space")
+    return doors
+
+
+def _door(c, x, y, side, scale=1.0):
+    """A doorway in a block wall at (x, y) mm, opening toward its card.
+
+    Drawn as if the card sits above the wall; a south-edge door is the
+    same drawing turned half a circle.
+    """
+    c.saveState()
+    c.translate(x * mm, y * mm)
+    if side == "south":
+        c.rotate(180)
+    c.scale(scale, scale)
+    c.setFillColorRGB(1, 1, 1)
+    c.rect(-6.8 * mm, -7.0 * mm, 13.6 * mm, 7.6 * mm, stroke=0, fill=1)
+    c.setFillColorRGB(0, 0, 0)
+    c.rect(-6.8 * mm, -6.2 * mm, 1.8 * mm, 6.2 * mm, stroke=0, fill=1)
+    c.rect(5.0 * mm, -6.2 * mm, 1.8 * mm, 6.2 * mm, stroke=0, fill=1)
+    c.setLineWidth(1.0)
+    _arch(c, 0, -3.3 * mm, 3.0 * mm)
+    c.restoreState()
 
 
 def _card_space(c, x, y, r):
@@ -586,6 +638,13 @@ def draw_succession_map(c, S):
         _centered(c, cx, cy - 2.6, numerals[index], "Times-Bold", 34)
         _centered(c, cx, cy - 15.5, "CITY BLOCK", "Helvetica", 8)
 
+    # Doors: each block opens toward its one faction card space.
+    for cell, (index, side) in S["card_doors"].items():
+        x0, y0, x1, y1 = S["blocks"][index]
+        edge = (mb + (S["rows"] - y0) * CELL - 2.4 if side == "north"
+                else mb + (S["rows"] - 1 - y1) * CELL + 2.4)
+        _door(c, pos(cell)[0], edge, side)
+
     # Streets: open circles; special cells carry their own symbols.
     special = ({tuple(g) for g in b.gates.values()} | set(S["card_spaces"])
                | {tuple(g) for g in b.glory_posts} | {tuple(b.checkpoint)})
@@ -634,6 +693,7 @@ def draw_succession_map(c, S):
                       ("arch", "gate / return here"),
                       ("octagon", "Peristyle - proclaim here")]),
         (by0 + 7.2, [("hatch", "building - no entry"),
+                     ("door", "door: the block a card space opens"),
                      ("star", "guard post: roll 4+ for 1 Prestige")]),
     ]
     for sy, entries in row_defs:
@@ -655,6 +715,11 @@ def draw_succession_map(c, S):
             elif kind == "star":
                 _star(c, x * mm, sy * mm, 3.6 * mm)
                 x += 8.5
+            elif kind == "door":
+                c.setLineWidth(0.8)
+                c.line((x - 4.0) * mm, (sy + 2.6) * mm, (x + 5.0) * mm, (sy + 2.6) * mm)
+                _door(c, x + 0.5, sy + 2.6, "north", scale=0.55)
+                x += 9.0
             elif kind == "hatch":
                 c.setLineWidth(0.8)
                 c.rect(x * mm, (sy - 2.8) * mm, 5.6 * mm, 5.6 * mm)
@@ -800,89 +865,187 @@ def ruler100(c, x, y):
 # ---------------------------------------------------------------------------
 # Player sheets.
 
+def _mat_head(c, x, y, w, title):
+    """A section title with a thin rule under it."""
+    c.setFont("Helvetica-Bold", 7.8)
+    c.drawString(x * mm, y * mm, title)
+    c.setLineWidth(0.5)
+    c.line(x * mm, (y - 1.6) * mm, (x + w) * mm, (y - 1.6) * mm)
+
+
+def _fit(c, text, font, size, width):
+    """The largest size up to `size` at which `text` fits in `width` mm."""
+    while size > 6.0 and c.stringWidth(text, font, size) / mm > width:
+        size -= 0.2
+    return size
+
+
 def player_mat(c, x, y, w, h, numeral):
-    c.setLineWidth(1.3)
+    """One player's mat: identity, equipment, Prestige, and the succession.
+
+    Built around what players asked about in play: which item bonus
+    counts, why to keep 1 Prestige, which supports they hold, and when
+    a standing claim wins.
+    """
+    c.setLineWidth(1.4)
     c.rect(x * mm, y * mm, w * mm, h * mm)
-    c.setFont("Times-Bold", 13)
-    c.drawString((x + 4) * mm, (y + h - 8) * mm, f"PLAYER {numeral}")
-    c.setFont("Times-Roman", 9)
-    c.drawString((x + w * 0.42) * mm, (y + h - 8) * mm, "Name ______________________")
-    c.drawString((x + w * 0.42) * mm, (y + h - 13.5) * mm, "Gate ______________________")
+    c.setLineWidth(0.5)
+    c.rect((x + 1.4) * mm, (y + 1.4) * mm, (w - 2.8) * mm, (h - 2.8) * mm)
 
-    col1 = x + 4.0
-    col2 = x + w * 0.44
-    colw = w * 0.40
+    # Header: the numeral plate, name, and the gate to circle.
+    top = y + h
+    c.setLineWidth(1.0)
+    c.rect((x + 5) * mm, (top - 17) * mm, 24 * mm, 12.5 * mm)
+    _centered(c, x + 17, top - 8.6, "PLAYER", "Helvetica-Bold", 6.4)
+    _centered(c, x + 17, top - 15.2, numeral, "Times-Bold", 17)
+    c.setFont("Times-Roman", 9.5)
+    c.drawString((x + 34) * mm, (top - 9) * mm, "Name ____________________________")
+    c.setFont("Helvetica-Bold", 6.8)
+    c.drawString((x + 34) * mm, (top - 15.4) * mm, "YOUR GATE (circle one; the same on both maps):")
+    gx = x + 34 + c.stringWidth("YOUR GATE (circle one; the same on both maps):",
+                                "Helvetica-Bold", 6.8) / mm + 3
+    for gate in ("GOLDEN · N", "SILVER · E", "BRONZE · S", "IRON · W"):
+        gw = c.stringWidth(gate, "Helvetica", 7.2) / mm + 4
+        c.setLineWidth(0.5)
+        c.roundRect(gx * mm, (top - 17.4) * mm, gw * mm, 5.4 * mm, 1.2 * mm)
+        c.setFont("Helvetica", 7.2)
+        c.drawString((gx + 2) * mm, (top - 15.4) * mm, gate)
+        gx += gw + 2
+    c.setLineWidth(0.8)
+    c.line((x + 4) * mm, (top - 20.5) * mm, (x + w - 4) * mm, (top - 20.5) * mm)
 
-    ty = y + h - 22
-    c.setFont("Helvetica-Bold", 8.2)
-    c.drawString(col1 * mm, ty * mm, "EQUIPMENT (mark each item you collect)")
-    ty -= 6.2
-    items = [("Pugio", "wins tied duels"), ("Pilum", "+1 vs the claimant"),
-             ("Galea", "once: reveal a district"), ("Scutum", "+1 defense"),
-             ("Gladius", "+1 attack"), ("Lorica segmentata", "once: stay when beaten")]
-    for name, hint in items:
-        checkbox(c, col1, ty)
-        c.setFont("Times-Bold", 9.5)
-        c.drawString((col1 + 6.5) * mm, (ty + 0.7) * mm, name)
-        c.setFont("Times-Italic", 7)
-        c.drawString((col1 + 6.5 + c.stringWidth(name, "Times-Bold", 9.5) / mm + 2.5) * mm,
-                     (ty + 0.9) * mm, hint)
-        ty -= 7.2
-    ty -= 1.4
-    c.setFont("Helvetica-Bold", 8.2)
-    c.drawString(col1 * mm, ty * mm, "EQUIPMENT IN DUELS")
-    ty -= 5.4
-    c.setFont("Times-Roman", 8.8)
-    c.drawString(col1 * mm, ty * mm, "Add your one best item bonus - never a sum.")
+    colw = (w - 16) / 3.0
+    cols = [x + 4, x + 8 + colw, x + 12 + 2 * colw]
+    c.setLineWidth(0.4)
+    for cx in cols[1:]:
+        c.line((cx - 2) * mm, (y + 24) * mm, (cx - 2) * mm, (top - 23) * mm)
+    y0 = top - 27
 
-    ty = y + h - 22
-    c.setFont("Helvetica-Bold", 8.2)
-    c.drawString(col2 * mm, ty * mm, "PRESTIGE (hold at most 3 - extra is lost)")
-    ty -= 8.4
-    for i in range(3):
-        cx = col2 + 4.5 + i * 11.5
-        c.setLineWidth(1.0)
-        c.circle(cx * mm, (ty + 2.2) * mm, 4.2 * mm)
-        _centered(c, cx, ty + 0.9, str(i + 1), "Times-Bold", 9)
-    c.setFont("Times-Italic", 7)
-    c.drawString((col2 + 41) * mm, (ty + 1.2) * mm, "place one counter per point")
+    # Column 1: equipment, grouped by when it helps.
+    cx, ty = cols[0], y0
+    _mat_head(c, cx, ty, colw, "EQUIPMENT - tick what you collect")
+    ty -= 6.6
+    groups = [("IN ATTACK", [("Gladius", "+1 when you attack", False),
+                             ("Pilum", "+1 attacking the claimant", False)]),
+              ("IN DEFENSE", [("Scutum", "+1 when you defend", False),
+                              ("Pugio", "you win tied duels", False)]),
+              ("ONCE PER GAME - tick used", [("Galea", "action: reveal a card", True),
+                                             ("Lorica", "segmentata: stay if beaten", True)])]
+    for title, items in groups:
+        c.setFont("Helvetica-Oblique", 6.4)
+        c.drawString(cx * mm, ty * mm, title)
+        ty -= 5.6
+        for name, hint, once in items:
+            checkbox(c, cx, ty - 0.6, 4.0)
+            c.setFont("Times-Bold", 9.2)
+            c.drawString((cx + 5.6) * mm, ty * mm, name)
+            hx = cx + 5.6 + max(13.5, c.stringWidth(name, "Times-Bold", 9.2) / mm + 2.0)
+            room = colw - (hx - cx) - (6.0 if once else 0)
+            size = _fit(c, hint, "Times-Italic", 7.8, room)
+            c.setFont("Times-Italic", size)
+            c.drawString(hx * mm, ty * mm, hint)
+            if once:
+                c.setLineWidth(0.7)
+                c.circle((cx + colw - 2.2) * mm, (ty + 1.3) * mm, 2.0 * mm)
+            ty -= 6.0
+        ty -= 0.8
+    note = "In a duel add ONE best bonus - never a sum."
+    c.setFont("Times-Bold", _fit(c, note, "Times-Bold", 8.4, colw - 1))
+    c.drawString(cx * mm, ty * mm, note)
 
-    ty -= 9.5
-    c.setFont("Helvetica-Bold", 8.2)
-    c.drawString(col2 * mm, ty * mm, "FACTION SUPPORT (2 different groups to proclaim)")
-    ty -= 6.4
+    # Column 2: the Prestige track and where Prestige comes from and goes.
+    cx, ty = cols[1], y0
+    _mat_head(c, cx, ty, colw, "PRESTIGE - one counter on the track")
+    ty -= 15.5
+    box = (colw - 3) / 4.0
+    notes = {0: ("cannot", "contest"), 1: ("keep in", "reserve"), 3: ("cap - more", "is lost")}
+    for i in range(4):
+        bx = cx + i * (box + 1)
+        c.setLineWidth(1.6 if i == 1 else 0.9)
+        c.rect(bx * mm, ty * mm, box * mm, 10 * mm)
+        _centered(c, bx + box / 2, ty + 3.2, str(i), "Times-Bold", 13)
+        for k, line in enumerate(notes.get(i, ())):
+            _centered(c, bx + box / 2, ty - 3.4 - k * 3.0, line, "Helvetica", 6.3)
+    ty -= 13.5
+    rows = [("EARN", ["+1  win any duel", "+1  guard post: roll 4+"]),
+            ("SPEND", ["-1  a faction's support", "-1  fee to contest a claim"]),
+            ("LOSE", ["-1  to the bank when you lose a duel"])]
+    for label, lines in rows:
+        c.setFont("Helvetica-Bold", 6.8)
+        c.drawString(cx * mm, ty * mm, label)
+        for line in lines:
+            size = _fit(c, line, "Times-Roman", 8.6, colw - 12)
+            c.setFont("Times-Roman", size)
+            c.drawString((cx + 11) * mm, ty * mm, line)
+            ty -= 4.4
+        ty -= 1.4
+
+    # Column 3: supports, the claim window, and the turn.
+    cx, ty = cols[2], y0
+    _mat_head(c, cx, ty, colw, "SUPPORT - two different to proclaim")
+    ty -= 7.6
     for name, sym in (("Army", "shield"), ("Imperial officials", "column"), ("City elites", "laurel")):
-        checkbox(c, col2, ty)
-        c.setFont("Times-Bold", 9.5)
-        c.drawString((col2 + 6.5) * mm, (ty + 0.7) * mm, name)
-        sx = col2 + 6.5 + c.stringWidth(name, "Times-Bold", 9.5) / mm + 3.0
+        checkbox(c, cx, ty - 0.6, 4.0)
+        c.setFont("Times-Bold", 9.2)
+        c.drawString((cx + 5.6) * mm, ty * mm, name)
+        sx = cx + colw - 4
         c.setLineWidth(0.8)
         if sym == "shield":
-            _shield(c, sx * mm, (ty + 2.2) * mm, 2.6 * mm)
+            _shield(c, sx * mm, (ty + 1.4) * mm, 2.4 * mm)
         elif sym == "column":
-            _column(c, sx * mm, (ty + 2.4) * mm, 2.4 * mm)
+            _column(c, sx * mm, (ty + 1.6) * mm, 2.2 * mm)
         else:
-            _laurel(c, sx * mm, (ty + 2.4) * mm, 2.8 * mm)
-        ty -= 7.2
+            _laurel(c, sx * mm, (ty + 1.6) * mm, 2.6 * mm)
+        ty -= 6.2
+    ty -= 2.6
+    _mat_head(c, cx, ty, colw, "CLAIM WINDOW")
+    ty -= 6.2
+    for line in ("A claim wins at the END of the round", "AFTER the round it is proclaimed."):
+        c.setFont("Times-Roman", _fit(c, line, "Times-Roman", 8.4, colw))
+        c.drawString(cx * mm, ty * mm, line)
+        ty -= 4.2
+    ty -= 2.2
+    c.setFont("Times-Roman", 8.4)
+    c.drawString(cx * mm, ty * mm, "Proclaimed round ____  wins ____")
+    ty -= 5.6
+    c.drawString(cx * mm, ty * mm, "Contest: fee 1, within 2 circles.")
+    ty -= 5.6
+    c.setFont("Times-Bold", 8.4)
+    c.drawString(cx * mm, ty * mm, "Your turn: roll 2 dice, move, one action.")
 
-    ty -= 1.2
-    c.setFont("Helvetica-Bold", 8.2)
-    c.drawString(col2 * mm, ty * mm, "SUCCESSION REMINDERS")
-    ty -= 5.4
-    for line in ("Two maps: palace for treasure, succession map for the throne.",
-                 "Support: search the ? cards, then 1 Prestige at a faction.",
-                 "Proclaim: at the Peristyle with 2 different backers.",
-                 "Claim window: a claim that stands 2 full rounds wins.",
-                 "Contest a claim: pay the 1 Prestige fee, then duel.",
-                 "Duel loser: pay 1 Prestige to the bank (shame).",
-                 "Setup: two treasure districts start revealed."):
-        ty = para(c, line, col2, ty, w - (col2 - x) - 4, size=8.3, leading=4.9)
+    # The road to the throne: the whole game in five steps.
+    c.setLineWidth(0.8)
+    c.line((x + 4) * mm, (y + 21.5) * mm, (x + w - 4) * mm, (y + 21.5) * mm)
+    c.setFont("Helvetica-Bold", 7.8)
+    c.drawString((x + 4) * mm, (y + 16.5) * mm, "THE ROAD TO THE THRONE")
+    steps = [("PALACE MAP", "Collect all six items"),
+             ("PALACE MAP", "Claim at the Peristyle"),
+             ("SUCCESSION MAP", "Search the ? cards"),
+             ("SUCCESSION MAP", "Buy two different supports"),
+             ("SUCCESSION MAP", "Proclaim, then hold the claim")]
+    sx0 = x + 4
+    sw = (w - 8 - 4 * 3.0) / 5.0
+    for i, (where, what) in enumerate(steps):
+        bx = sx0 + i * (sw + 3.0)
+        c.setLineWidth(0.6)
+        c.roundRect(bx * mm, (y + 4.5) * mm, sw * mm, 9.6 * mm, 1.4 * mm)
+        _centered(c, bx + sw / 2, y + 10.6, f"{i + 1}  {where}", "Helvetica-Bold", 5.8)
+        size = _fit(c, what, "Times-Roman", 8.0, sw - 2)
+        _centered(c, bx + sw / 2, y + 6.4, what, "Times-Roman", size)
+        if i < 4:
+            ax = bx + sw + 0.4
+            p = c.beginPath()
+            p.moveTo(ax * mm, (y + 10.3) * mm)
+            p.lineTo((ax + 2.2) * mm, (y + 9.3) * mm)
+            p.lineTo(ax * mm, (y + 8.3) * mm)
+            p.close()
+            c.drawPath(p, stroke=0, fill=1)
 
 
 def player_sheets_pdf(path):
     c = new_doc(path, "Diocletian's Palace - player sheets")
     for page in range(2):
-        doc_header(c, "PLAYER SHEETS", "one mat per player - mark with pencil or counters")
+        doc_header(c, "PLAYER SHEETS", "one mat per player - pencil ticks, one counter on the Prestige track")
         w, h = PW - 32.0, 114.0
         y0 = PH - 40 - h
         for i, numeral in enumerate(("I", "II") if page == 0 else ("III", "IV")):
@@ -1456,7 +1619,8 @@ RULEBOOK_PAGES = [
                ["Empty street (3 cards)", "none", "nothing - search another card"]]),
         ("h", "Searching the faction cards"),
         ("n", "At the change, shuffle the six faction cards face down and put one "
-              "on each card space - the circles marked ? on the succession map."),
+              "on each card space - the circles marked ? on the succession map. "
+              "Each block has one card space, in front of its door."),
         ("n", "End your move on a card space and turn its card face up as your "
               "action. That is a search. Everyone sees the card, and it stays "
               "face up for the rest of the game."),
@@ -1906,9 +2070,9 @@ def print_instructions_pdf(path):
                  "Any black-and-white printer works. Single-sided printing is fine.",
                  "Paper is enough. Card stock makes the cards nicer, but is not "
                  "required.",
-                 "In the complete kit, the pages you read come first. The pages "
-                 "you cut come last: the palace board, the succession map, then "
-                 "the cards and tokens."):
+                 "In the complete kit, these instructions come right before the "
+                 "pages you cut: the palace board, the succession map, then the "
+                 "cards and tokens."):
         y = bullet(c, line, 19, y, PW - 38, size=9.4)
     y -= 3
     c.setFont("Times-Bold", 11)
@@ -2132,10 +2296,11 @@ def main():
     teaching_guide_pdf(files["teaching"])
     playtest_form_pdf(files["form"])
     print_instructions_pdf(files["instructions"])
-    # Pages to read first, pages to cut last.
-    combine([files["instructions"], files["rulebook"], files["quick"],
-             files["teaching"], files["sheets"], files["form"],
-             files["board"], files["succession"], files["cards"]],
+    # The rules first; then the print instructions, right before the
+    # pages they explain: the boards, then the cards and tokens. The
+    # playtest form prints on its own.
+    combine([files["rulebook"], files["quick"], files["teaching"], files["sheets"],
+             files["instructions"], files["board"], files["succession"], files["cards"]],
             bw("dioclet-complete-print-kit-A4-BW.pdf"))
     if build_art:
         art_files = {
@@ -2146,10 +2311,9 @@ def main():
         art_board_pdf(art_files["art_board"], L)
         art_succession_pdf(art_files["art_succession"], build_succession_layout(rules))
         art_cards_tokens_pdf(art_files["art_cards"])
-        combine([files["instructions"], files["rulebook"], files["quick"],
-                 files["teaching"], files["sheets"], files["form"],
-                 art_files["art_board"], art_files["art_succession"],
-                 art_files["art_cards"]],
+        combine([files["rulebook"], files["quick"], files["teaching"], files["sheets"],
+                 files["instructions"], art_files["art_board"],
+                 art_files["art_succession"], art_files["art_cards"]],
                 out("dioclet-complete-print-kit-A4-ART.pdf"))
         files.update(art_files)
     b = L["board"]
