@@ -17,7 +17,7 @@ import policies
 import succession
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RULES_FILE = os.path.join(ROOT, "rules_v010_bigboard.json")
+RULES_FILE = os.path.join(ROOT, "experiments/rules/rules_v010_bigboard.json")
 
 
 def rules():
@@ -160,8 +160,8 @@ class TestSuccessionGuardPostsExperiment(unittest.TestCase):
 
     def test_adopted_file_is_the_experiment_file(self):
         # D52: 0.10.1-bigboard adopts the experiment arm unchanged.
-        adopted = engine.load_rules(os.path.join(ROOT, "rules_v0101_bigboard.json"))
-        posts = engine.load_rules(os.path.join(ROOT, "rules_v10_l2posts.json"))
+        adopted = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v0101_bigboard.json"))
+        posts = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v10_l2posts.json"))
         engine.validate_rules(adopted)
         self.assertEqual(adopted["rules_version"], "0.10.1-bigboard")
         for value in (adopted, posts):
@@ -170,7 +170,7 @@ class TestSuccessionGuardPostsExperiment(unittest.TestCase):
         self.assertEqual(adopted, posts)
 
     def test_posts_file_differs_from_v010_only_by_the_posts(self):
-        base, posts = rules(), engine.load_rules(os.path.join(ROOT, "rules_v10_l2posts.json"))
+        base, posts = rules(), engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v10_l2posts.json"))
         engine.validate_rules(posts)
         self.assertEqual(posts["board_level2"]["glory_posts"], [[0, 3], [18, 9], [3, 0], [15, 12]])
         for value in (base, posts):
@@ -180,7 +180,7 @@ class TestSuccessionGuardPostsExperiment(unittest.TestCase):
         self.assertEqual(base, posts)
 
     def test_every_gate_sees_the_same_post_distances(self):
-        value = engine.load_rules(os.path.join(ROOT, "rules_v10_l2posts.json"))
+        value = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v10_l2posts.json"))
         b2 = engine.Board(value, "board_level2")
         cp = tuple(value["board_level2"]["checkpoint"])
         posts = [tuple(c) for c in value["board_level2"]["glory_posts"]]
@@ -195,7 +195,7 @@ class TestSixBlockExperiment(unittest.TestCase):
     def test_adopted_file_is_the_spread_arm(self):
         # D53: 0.10.2-bigboard adopts the "spread" arm unchanged.
         adopted = engine.load_rules(os.path.join(ROOT, "rules_v0102_bigboard.json"))
-        spread = engine.load_rules(os.path.join(ROOT, "rules_v10_six_spread.json"))
+        spread = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v10_six_spread.json"))
         engine.validate_rules(adopted)
         self.assertEqual(adopted["rules_version"], "0.10.2-bigboard")
         for value in (adopted, spread):

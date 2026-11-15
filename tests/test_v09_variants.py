@@ -15,15 +15,15 @@ PROBES = ("collector", "early_support", "prestige_farmer", "counterleader")
 
 
 def rules_v08_raw():
-    return engine.load_rules(os.path.join(ROOT, "rules_v08_succession.json"))
+    return engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v08_succession.json"))
 
 
 def rules_v09b_raw():
-    return engine.load_rules(os.path.join(ROOT, "rules_v09_reveal2.json"))
+    return engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v09_reveal2.json"))
 
 
 def rules_v09c_raw():
-    return engine.load_rules(os.path.join(ROOT, "rules_v09_abilities.json"))
+    return engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v09_abilities.json"))
 
 
 def rules_v09c(start_reveals=0):
@@ -304,7 +304,7 @@ class TestV09Abilities(unittest.TestCase):
 
 class TestV09Checkpoint(unittest.TestCase):
     def rules_d(self):
-        value = engine.load_rules(os.path.join(ROOT, "rules_v09_checkpoint3.json"))
+        value = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v09_checkpoint3.json"))
         value["succession"]["gate_assignment"] = "manual"
         return value
 
@@ -400,7 +400,7 @@ if __name__ == "__main__":
 
 class TestV09Court(unittest.TestCase):
     def rules_f3(self):
-        value = engine.load_rules(os.path.join(ROOT, "rules_v09f_court.json"))
+        value = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v09f_court.json"))
         value["succession"].update(gate_assignment="manual", contest_cost=0)
         return value
 
@@ -517,7 +517,7 @@ class TestV09Court(unittest.TestCase):
 
 class TestV092Geometry(unittest.TestCase):
     def rules_v092(self):
-        return engine.load_rules(os.path.join(ROOT, "rules_v092_succession.json"))
+        return engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v092_succession.json"))
 
     def test_crossflow_file_validates_with_interior_placements(self):
         rules = self.rules_v092()
@@ -543,7 +543,7 @@ class TestV092Geometry(unittest.TestCase):
 
     def test_east_gate_reaches_the_far_treasure_faster_than_before(self):
         from board import Board
-        before = Board(engine.load_rules(os.path.join(ROOT, "rules_v091_succession.json")))
+        before = Board(engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v091_succession.json")))
         after = Board(self.rules_v092())
         east = tuple(before.gates["P1"])
         self.assertGreater(
@@ -562,7 +562,7 @@ class TestCombatKeyGuard(unittest.TestCase):
         # The S2 screen once zeroed a nonexistent combat.challenge_bonus
         # while the live knob (succession.challenge_bonus) stayed on:
         # a silent no-op arm. Validation now refuses dead combat keys.
-        rules = engine.load_rules(os.path.join(ROOT, "rules_v092_succession.json"))
+        rules = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v092_succession.json"))
         rules["combat"]["challenge_bonus"] = 0
         with self.assertRaises(engine.EngineError):
             engine.validate_rules(rules)
@@ -570,18 +570,18 @@ class TestCombatKeyGuard(unittest.TestCase):
 
 class TestV093NoBoost(unittest.TestCase):
     def test_v093_file_validates_without_the_duel_boost(self):
-        rules = engine.load_rules(os.path.join(ROOT, "rules_v093_succession.json"))
+        rules = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v093_succession.json"))
         engine.validate_rules(rules)
         self.assertEqual(rules["succession"]["challenge_bonus"], 0)
         self.assertNotIn("challenge_bonus", rules["combat"])
 
     def test_boost_purchase_never_appears_without_the_knob(self):
-        rules = engine.load_rules(os.path.join(ROOT, "rules_v093_succession.json"))
+        rules = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v093_succession.json"))
         for action in engine.legal_actions(game(rules)):
             self.assertNotIn("spend_prestige", action)
 
     def test_no_paid_duel_offer_when_the_bonus_is_zero(self):
-        rules = engine.load_rules(os.path.join(ROOT, "rules_v093_succession.json"))
+        rules = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v093_succession.json"))
         state = game(rules)
         # Two adjacent seats with Prestige to burn: the trap offer
         # (pay 1 for a +0 boost) must not exist once the bonus is 0.
@@ -598,7 +598,7 @@ class TestV093NoBoost(unittest.TestCase):
 
 class TestV094TwinBoard(unittest.TestCase):
     def rules_twin(self):
-        return engine.load_rules(os.path.join(ROOT, "rules_v094_twinboard.json"))
+        return engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v094_twinboard.json"))
 
     def test_twin_file_validates_and_declares_its_map(self):
         rules = self.rules_twin()
@@ -680,7 +680,7 @@ class TestV094TwinBoard(unittest.TestCase):
     def test_level2_gate_cannot_start_on_content(self):
         rules = self.rules_twin()
         for pid, cell in (("P0", [6, 4]), ("P1", [9, 4]), ("P2", [6, 3])):
-            candidate = engine.load_rules(os.path.join(ROOT, "rules_v094_twinboard.json"))
+            candidate = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v094_twinboard.json"))
             candidate["board_level2"]["gates"][pid] = cell
             with self.subTest(gate=pid, cell=cell), self.assertRaises(engine.EngineError):
                 engine.validate_rules(candidate)

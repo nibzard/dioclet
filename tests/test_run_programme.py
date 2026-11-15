@@ -244,7 +244,7 @@ class StopPaths(unittest.TestCase):
 
     def test_no_op_proposal_stops_the_run(self):
         incumbent = json.loads(
-            Path("rules_v08_succession.json").read_text())["succession"]["contest_cost"]
+            Path("experiments/rules/rules_v08_succession.json").read_text())["succession"]["contest_cost"]
         code, stop = self.run_main([self.proposal("succession.contest_cost", incumbent)])
         self.assertEqual(code, 3)
         self.assertEqual(stop["reason"], "no_op_proposal")
@@ -263,11 +263,11 @@ class Prompt(unittest.TestCase):
                                 "reset_positions": False},
                  "glory": {"cap": 3}, "level1": {"grace_full_rounds": 1}}
         prompt, schema = rp.build_prompt(
-            cfg, 1, 3, rules, "rules_v08_succession.json", [],
+            cfg, 1, 3, rules, "experiments/rules/rules_v08_succession.json", [],
             [{"game_id": "g", "turn_id": 1, "choice_rich": True}])
         self.assertIn("Output ONLY a JSON object", prompt)
         self.assertIn("succession.contest_cost", prompt)
-        self.assertIn("rules_v08_succession.json", prompt)
+        self.assertIn("experiments/rules/rules_v08_succession.json", prompt)
         self.assertEqual(schema["required"],
                          ["rule_path", "value", "hypothesis", "prediction",
                           "refutation_evidence"])

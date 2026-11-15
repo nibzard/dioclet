@@ -27,7 +27,7 @@ No game rules change as part of this review.
 
 ## Glory cap review, 2026-11-08
 
-Sources: [V0.2 experiments](../FINDINGS_V02.md), [browser rulebook](../web/rules.js), and [narrative game five](narrative-game-5.md).
+Sources: [V0.2 experiments](../docs/findings/FINDINGS_V02.md), [browser rulebook](../web/rules.js), and [narrative game five](narrative-game-5.md).
 
 A cap limits stored bonuses and creates a choice between a guaranteed seal and boosted Emperor attacks. This is a design interpretation; the reviewed sources do not establish why two is the uniquely appropriate limit. Both purchases cost one Glory. Glory has no spending option during the city phase, so players at the cap cannot convert further wins or the checkpoint reward into stored value.
 

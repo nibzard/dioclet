@@ -16,7 +16,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def rules():
-    value = engine.load_rules(os.path.join(ROOT, "rules_v08_succession.json"))
+    value = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v08_succession.json"))
     value["succession"]["gate_assignment"] = "manual"
     value["succession"]["contest_cost"] = 0
     return value
@@ -81,7 +81,7 @@ class TestSuccessionRules(unittest.TestCase):
 
     def test_succession_cannot_restore_the_eight_block_map(self):
         candidate = rules()
-        with open(os.path.join(ROOT, "rules_v072_cardo.json"), encoding="utf-8") as source:
+        with open(os.path.join(ROOT, "experiments/rules/rules_v072_cardo.json"), encoding="utf-8") as source:
             candidate["board"] = json.load(source)["board"]
         with self.assertRaisesRegex(engine.EngineError, "six intact blocks"):
             engine.validate_rules(candidate)

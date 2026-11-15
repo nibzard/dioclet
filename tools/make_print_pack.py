@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import engine  # noqa: E402
 from board import Board, validate_six_block_layout  # noqa: E402
 
-RULES_FILE = "rules_v08_succession.json"
+RULES_FILE = "experiments/rules/rules_v08_succession.json"
 OUT_FILE = "playtest/playtest-pack.html"
 
 CELL = 44

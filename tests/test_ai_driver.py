@@ -18,7 +18,7 @@ import tactical_policy
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULES_PATH = os.path.join(BASE_DIR, "rules_baseline.json")
-V03_BASE = os.path.join(BASE_DIR, "rules_v03_base.json")
+V03_BASE = os.path.join(BASE_DIR, "experiments/rules/rules_v03_base.json")
 
 CONFIG = {"provider": "mock", "model": "gpt-6-luna", "candidate_cap": 16,
           "prompt_version": "v04-1", "selection_mode": "top",

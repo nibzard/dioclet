@@ -83,7 +83,7 @@ FROZEN_SOURCES = (
     "tools/succession_experiments.py",
     "tests/test_succession.py", "tests/test_succession_decisions.py",
     "web/succession-engine.js", "web/succession-bots.js",
-    "rules_v073_sixblocks_cardo.json", "rules_v08_succession.json",
+    "experiments/rules/rules_v073_sixblocks_cardo.json", "experiments/rules/rules_v08_succession.json",
 )
 
 DRAW_IMPROVEMENT_REGIME = 0.05   # incumbent draw fraction that binds the improvement check

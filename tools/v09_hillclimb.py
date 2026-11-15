@@ -162,7 +162,7 @@ def apply_knob(base, patch):
 
 def main():
     os.makedirs(OUT_ROOT, exist_ok=True)
-    incumbent_rules = engine.load_rules(os.path.join(ROOT, "rules_v09e_court.json"))
+    incumbent_rules = engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v09e_court.json"))
     cycle = 0
     log = []
     while cycle < 3:
@@ -206,8 +206,8 @@ def main():
     # Confirmation: finalist vs V0.8.1 and C2 on fresh seeds.
     finals = {
         "finalist": incumbent_rules,
-        "v081": engine.load_rules(os.path.join(ROOT, "rules_v08_succession.json")),
-        "c2": engine.load_rules(os.path.join(ROOT, "rules_v09_abilities.json")),
+        "v081": engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v08_succession.json")),
+        "c2": engine.load_rules(os.path.join(ROOT, "experiments/rules/rules_v09_abilities.json")),
     }
     print(f"=== confirmation: {CONFIRM_GAMES} fresh games per arm", flush=True)
     with concurrent.futures.ProcessPoolExecutor(max_workers=3) as pool:
