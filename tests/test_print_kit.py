@@ -94,10 +94,11 @@ class DocumentPages(unittest.TestCase):
                                        places=1, msg=name)
 
     def test_combined_kit_puts_the_pages_to_cut_last(self):
-        # Read first; then the palace board, the succession map, and the
-        # cards and tokens, so a family can cut from the back of the pile.
+        # The rules first; the print instructions right before the
+        # pages to cut (boards, then cards and tokens); no playtest form.
         reader = PdfReader(PRINT_BW / "dioclet-complete-print-kit-A4-BW.pdf")
-        expected = 4 + 4 + sum(self.FILES.values())
+        form = self.FILES["dioclet-playtest-form-A4-BW.pdf"]
+        expected = 4 + 4 + sum(self.FILES.values()) - form
         self.assertEqual(len(reader.pages), expected)
         cards = self.FILES["dioclet-cards-tokens-A4-BW.pdf"]
         first_board = expected - cards - 8
@@ -105,9 +106,12 @@ class DocumentPages(unittest.TestCase):
                      if float(page.mediabox.width) > float(page.mediabox.height)]
         self.assertEqual(landscape, list(range(first_board, first_board + 8)))
         texts = [reader.pages[i].extract_text() for i in range(expected)]
-        self.assertIn("PRINT AND ASSEMBLE", texts[0])
+        self.assertIn("RULES", texts[0].upper())
+        self.assertIn("PRINT AND ASSEMBLE", texts[first_board - 2])
+        self.assertIn("PRINT AND ASSEMBLE", texts[first_board - 1])
         self.assertIn("TREASURE LOCATION CARDS", texts[expected - cards])
         self.assertIn("SUCCESSION MAP", texts[first_board + 7].upper())
+        self.assertFalse(any("PLAYTEST RECORD" in t for t in texts))
 
     def test_succession_map_is_four_landscape_pages(self):
         reader = PdfReader(PRINT_BW / "dioclet-succession-map-A4-BW.pdf")
@@ -327,7 +331,10 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         text = whole_text("dioclet-player-sheets-A4-BW.pdf")
         for item in self.rules["equipment"]:
             self.assertIn(item.upper().replace("_", " "), text.upper())
-        self.assertIn("PRESTIGE (hold at most 3", text)
+        self.assertIn("PRESTIGE - one counter on the track", text)
+        self.assertIn("keep in", text)                              # the reserve
+        self.assertIn("A claim wins at the END of the round", text)  # claim window
+        self.assertNotIn("Setup: two treasure districts", text)
         for faction in ("Army", "Imperial officials", "City elites"):
             self.assertIn(faction, text)
 
@@ -397,6 +404,27 @@ class SuccessionMapMatchesRules(unittest.TestCase):
                          [[round(v, 2) for v in self.S["pos"](tuple(c))]
                           for c in self.rules["board_level2"]["glory_posts"]])
         self.assertEqual(self.board.glory_posts, [(0, 2), (18, 10), (2, 0), (16, 12)])
+
+    def test_every_card_space_opens_one_block_through_a_door(self):
+        # The four centre-street cards touch two blocks each; the door
+        # shows which one. West of the Peristyle a card opens the block
+        # to the south, east of it the block to the north.
+        doors = self.S["card_doors"]
+        blocks = self.S["blocks"]
+        self.assertEqual(set(doors), set(self.S["card_spaces"]))
+        self.assertEqual(sorted(i for i, _ in doors.values()), list(range(6)))
+        numerals = ("I", "II", "III", "IV", "V", "VI")
+        opened = {cell: numerals[i] for cell, (i, _) in doors.items()}
+        self.assertEqual(opened, {(3, 0): "I", (15, 12): "VI", (3, 6): "IV",
+                                  (15, 6): "III", (7, 6): "V", (11, 6): "II"})
+        for (x, y), (i, side) in doors.items():
+            x0, y0, x1, y1 = blocks[i]
+            self.assertTrue(x0 <= x <= x1)
+            self.assertEqual(y, y0 - 1 if side == "north" else y1 + 1)
+            # Half-turn symmetry: the turned card opens the turned block.
+            j, other = doors[(18 - x, 12 - y)]
+            self.assertEqual(blocks[j], (18 - x1, 12 - y1, 18 - x0, 12 - y0))
+            self.assertNotEqual(side, other)
 
     def test_one_card_for_each_block(self):
         # D53: six blocks, one faction card space beside each.

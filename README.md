@@ -65,6 +65,10 @@ programmatically, see `art/`):
 - [Succession map, drawn art: four A4 tiles](print/dioclet-succession-map-ART.pdf)
 - [Cards and tokens, drawn art](print/dioclet-cards-tokens-ART.pdf)
 
+Both complete kits start with the rulebook, quick reference, teaching guide,
+and player sheets. The print instructions come next, right before the pages to
+cut: the palace board, the succession map, then the cards and tokens.
+
 The [black-and-white kit](print/bw/dioclet-complete-print-kit-A4-BW.pdf)
 uses black ink only and is the source of the rules documents:
 
@@ -75,7 +79,8 @@ uses black ink only and is the source of the rules documents:
 - [Rulebook](print/bw/dioclet-rulebook-A4-BW.pdf)
 - [Quick reference](print/bw/dioclet-quick-reference-A4-BW.pdf)
 - [Teaching guide](print/bw/dioclet-teaching-guide-A4-BW.pdf)
-- [Playtest form](print/bw/dioclet-playtest-form-A4-BW.pdf)
+- [Playtest form](print/bw/dioclet-playtest-form-A4-BW.pdf) (separate file,
+  not in the complete kits)
 - [Print and assembly instructions](print/bw/dioclet-print-instructions-A4-BW.pdf)
 
 Each board assembles to 580 × 406 mm from four A4 tiles. The two boards

@@ -48,7 +48,8 @@ export function renderSuccession(layout, { dpi = 200, seed = 400 } = {}) {
   drawSea(a, S, G);
   drawPaving(a, S);
   drawWalls(a, S, G);
-  S.blocks.forEach((rect, i) => drawQuarter(a, rect, QUARTERS[i], keepOut, S.cut_mm.x));
+  S.blocks.forEach((rect, i) => drawQuarter(a, rect, QUARTERS[i], keepOut, S.cut_mm.x,
+    S.card_doors.filter((d) => d.block === i)));
   drawMargins(a, S, G);
   drawTitle(a, S);
 
@@ -176,7 +177,7 @@ function drawWalls(a, S, G) {
 // middle quarters straddle the vertical tile cut, so their court moves
 // to the west lots and the plaque stays on one sheet.
 
-function drawQuarter(a, rect, q, keepOut, cutX) {
+function drawQuarter(a, rect, q, keepOut, cutX, doors) {
   const [bx, by, bw, bh] = rect;
   const ins = 2.4;
   const x = bx + ins, y = by + ins, s = bw - ins * 2, t = bh - ins * 2;
@@ -211,9 +212,28 @@ function drawQuarter(a, rect, q, keepOut, cutX) {
     }
   }
   LOTS.court(a, cx0, cy0, cw, lh, [box]);
+  // The door: the wall opens toward this quarter's faction card space.
+  for (const d of doors) drawDoor(a, d.card[0], d.side === "north" ? y : y + t, d.side);
   M.tabula(a, px, py, PLAQUE[0], PLAQUE[1], { depth: 0.6 });
   text(a, q.numeral, px, py + 5, 13, { style: "inscribed", medium: "charcoal" });
   text(a, q.name, px, py + 9.6, 2.2, { medium: "graphite", weight: 1.15, track: 0.15 });
+}
+
+// A doorway in a quarter wall at (x, wy), drawn as if the card sits
+// north of the wall (negative y); a south door is turned half a circle.
+function drawDoor(a, x, wy, side, k = 1) {
+  M.rotated(a, x, wy, side === "north" ? 0 : PI, () => {
+    const pier = (x0) => {
+      const pts = [[x0, 0], [x0 + 1.8 * k, 0], [x0 + 1.8 * k, 6.2 * k], [x0, 6.2 * k]];
+      a.polygon(pts, w("firm", { overshoot: 0.15 }));
+      a.hatch(M.poly(pts), M.bbox(pts), { angle: PI / 4, gap: 0.45, ...M.W.hair, alpha: 0.7 });
+    };
+    M.lift(a, (c) => c.rect(-6.8 * k, -0.9 * k, 13.6 * k, 7.8 * k), 1);
+    pier(-6.8 * k);
+    pier(5.0 * k);
+    M.archway(a, 0, 6.0 * k, 6.2 * k, 6.4 * k, { dark: 0.4, voussoirs: 7 });
+    a.line([-5.0 * k, 0], [5.0 * k, 0], w("fine", { bow: 0 }));
+  });
 }
 
 const THEMES = {
@@ -371,6 +391,7 @@ function drawKey(a, S, G) {
     ["gate", "GATE - RETURN HERE WHEN THE MAP OPENS"],
     ["peri", "PERISTYLE - PROCLAIM HERE"],
     ["block", "BUILDING - NO ENTRY"],
+    ["door", "DOOR: THE QUARTER A CARD SPACE OPENS"],
     ["post", "GUARD POST: ROLL 4+ FOR 1 PRESTIGE"],
   ];
   const iconX = x0 + 5, textX = x0 + 11.5, textW = x1 - textX, cap = 1.9;
@@ -386,6 +407,10 @@ function drawKey(a, S, G) {
     if (kind === "block") {
       a.rect(iconX - r, iy - r, 2 * r, 2 * r, w("bold", { width: 0.45 }));
       A.hall(a, iconX - r + 1, iy - r + 1, 2 * r - 2, 2 * r - 2, { shadow: 0 });
+    }
+    if (kind === "door") {
+      a.line([iconX - 4, iy - 1.6], [iconX + 4, iy - 1.6], w("bold", { width: 0.45 }));
+      drawDoor(a, iconX, iy - 1.6, "north", 0.5);
     }
     if (kind === "post") M.star(a, iconX, iy, r, { points: 8, inner: 0.5, weight: "firm" });
     const ty0 = iy - ((lines.length - 1) * cap * 1.75) / 2 + cap / 2;

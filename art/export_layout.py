@@ -98,6 +98,9 @@ def succession(rules):
         "checkpoint": at(b.checkpoint),
         "glory_posts": [at(c) for c in b.glory_posts],
         "card_spaces": [at(c) for c in S["card_spaces"]],
+        # Which block each card space opens, and on which edge (y 0 north).
+        "card_doors": [{"card": at(c), "block": i, "side": side}
+                       for c, (i, side) in S["card_doors"].items()],
         "rows": S["rows"], "cols": S["cols"],
     }
 
