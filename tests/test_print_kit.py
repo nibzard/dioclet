@@ -130,11 +130,11 @@ class BoardMatchesRules(unittest.TestCase):
         cls.manifest = json.loads((PRINT / "kit-manifest.json").read_text())
 
     def test_counts(self):
-        blocked = {tuple(cell) for cell in self.rules["board"]["blocked"]}
+        blocked = {tuple(cell) for cell in self.rules["palace"]["map"]["blocked"]}
         spaces = {cell for cell, _ in self.L["spaces"]}
         self.assertEqual(len(spaces), 97)
         self.assertEqual(len(blocked), 150)
-        self.assertEqual(len(self.rules["board"]["buildings"]), 6)
+        self.assertEqual(len(self.rules["palace"]["map"]["buildings"]), 6)
         # A cell is either walkable or blocked, never both.
         self.assertFalse(spaces & blocked)
         counts = self.manifest["counts"]
@@ -144,7 +144,7 @@ class BoardMatchesRules(unittest.TestCase):
         self.assertEqual(counts["gates"], len(self.board.gates))
         self.assertEqual(counts["districts"], len(self.board.districts))
         self.assertEqual(counts["glory_posts"], len(self.board.glory_posts))
-        self.assertEqual(self.rules["gameplay_mode"], "succession-v1")
+        self.assertEqual(self.rules["game"]["rules_version"], "0.10.2")
 
     def test_special_positions_match_rules(self):
         layout = self.manifest["layout"]
@@ -214,27 +214,30 @@ class PrintedRulesMatchRelease(unittest.TestCase):
 
     def test_guarded_values_still_match_the_rules(self):
         for (section, key), value in kit.PRINTED_RULES_VALUES.items():
-            actual = self.rules[section].get(key)
-            if actual is None and value == 0:
-                actual = 0   # the engine reads absent cost keys as free
-            self.assertEqual(actual, value,
+            self.assertEqual(self.rules[section][key], value,
                              f"{section}.{key} drifted from the printed prose")
-        for key, value in kit.PRINTED_TOP_LEVEL.items():
-            self.assertEqual(self.rules.get(key), value)
-        abilities = self.rules["combat"].get("abilities")
+        for (section, key), value in kit.PRINTED_TOP_LEVEL.items():
+            self.assertEqual(self.rules[section][key], value)
+        abilities = self.rules["treasures"]["abilities"]
         self.assertEqual(abilities,
                          {name: {"type": kind, "value": value}
                           for name, (kind, value) in kit.PRINTED_ABILITIES.items()})
 
-    def test_refuse_to_build_guard_rejects_v081(self):
-        # The V0.8.1 rules pay a first-claim reward and carry no ability
-        # table; the guard must stop before printing the old game.
+    def test_refuse_to_build_guard_rejects_a_changed_fee(self):
+        # Any drift from the printed numbers must stop the build before a
+        # family prints prose that no longer matches the rules.
         import subprocess
         import sys as _sys
-        result = subprocess.run(
-            [_sys.executable, "tools/make_a4_print_kit.py",
-             "--rules", "experiments/rules/rules_v08_succession.json"],
-            capture_output=True, text=True, cwd=str(REPO))
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            mutated = Path(tmp) / "rules.json"
+            rules = json.loads((REPO / kit.RULES_FILE).read_text())
+            rules["succession"]["contest_fee"] = 2
+            mutated.write_text(json.dumps(rules))
+            result = subprocess.run(
+                [_sys.executable, "tools/make_a4_print_kit.py",
+                 "--rules", str(mutated)],
+                capture_output=True, text=True, cwd=str(REPO))
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("update the kit prose", result.stderr)
 
@@ -298,17 +301,17 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("the palace map leaves the table", text)
         self.assertNotIn("You may gain support in either phase", text)
 
-    def test_refuse_to_build_guard_rejects_v093_single_board(self):
-        # V0.9.3 has no board_level2; the twin-board prose must not
-        # print on top of a single-board ruleset.
+    def test_pre_cleanup_rules_files_no_longer_load(self):
+        # The retired experiment rules carry switches the engine no
+        # longer reads; the loader must refuse them outright.
         import subprocess
         import sys as _sys
         result = subprocess.run(
             [_sys.executable, "tools/make_a4_print_kit.py",
-             "--rules", "experiments/rules/rules_v093_succession.json"],
+             "--rules", "experiments/rules/rules_v08_succession.json"],
             capture_output=True, text=True, cwd=str(REPO))
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("update the kit prose", result.stderr)
+        self.assertIn("missing top-level keys", result.stderr)
 
     def test_no_boost_prose_survives_anywhere(self):
         # 0.9.3 removed the optional +2 duel boost; if it ever comes
@@ -349,7 +352,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
 
     def test_player_sheets_list_all_trackers(self):
         text = whole_text("imperial-rivals-305ad-player-sheets-A4-BW.pdf")
-        for item in self.rules["equipment"]:
+        for item in self.rules["treasures"]["items"]:
             self.assertIn(item.upper().replace("_", " "), text.upper())
         self.assertIn("PRESTIGE - one counter on the track", text)
         self.assertIn("keep in", text)                              # the reserve
@@ -360,7 +363,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
 
     def test_cards_cover_the_six_items_and_identical_backs(self):
         fronts = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 0)
-        for item in self.rules["equipment"]:
+        for item in self.rules["treasures"]["items"]:
             self.assertIn(item.replace("_", " ").upper(), fronts.upper())
         # Six backs, each the same two-line title (one string per line).
         backs = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 1)
@@ -396,7 +399,7 @@ class SuccessionMapMatchesRules(unittest.TestCase):
         return out
 
     def test_counts(self):
-        blocked = {tuple(cell) for cell in self.rules["board_level2"]["blocked"]}
+        blocked = {tuple(cell) for cell in self.rules["succession"]["map"]["blocked"]}
         spaces = {cell for cell, _ in self.S["spaces"]}
         self.assertEqual(len(spaces), 97)
         self.assertEqual(len(blocked), 150)
@@ -419,10 +422,10 @@ class SuccessionMapMatchesRules(unittest.TestCase):
                          [round(v, 2) for v in self.S["pos"](tuple(self.board.checkpoint))])
         self.assertEqual(specials["card_spaces"],
                          [[round(v, 2) for v in self.S["pos"](tuple(c))]
-                          for c in self.rules["board_level2"]["support_sites"]])
+                          for c in self.rules["succession"]["map"]["card_spaces"]])
         self.assertEqual(specials["glory_posts"],
                          [[round(v, 2) for v in self.S["pos"](tuple(c))]
-                          for c in self.rules["board_level2"]["glory_posts"]])
+                          for c in self.rules["succession"]["map"]["guard_posts"]])
         self.assertEqual(self.board.glory_posts, [(0, 2), (18, 10), (2, 0), (16, 12)])
 
     def test_every_card_space_opens_one_block_through_a_door(self):

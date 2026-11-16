@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dioclet.dev/rules/imperial-rivals.schema.json",
+  "$comment": "Imperial Rivals: 305 AD rules file contract. Every key is required; unknown keys are rejected. engine.validate_rules mirrors this schema and adds the cross-checks a schema cannot state (map geometry, reachability, and the arithmetic between sections).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["game", "turns", "movement", "treasures", "prestige", "duels", "palace", "succession"],
+  "properties": {
+    "game": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "rules_version", "players"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "rules_version": {"type": "string", "minLength": 1},
+        "players": {"const": 4}
+      }
+    },
+    "turns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rotate_first_player_each_round"],
+      "properties": {
+        "rotate_first_player_each_round": {"type": "boolean"}
+      }
+    },
+    "movement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dice", "die_sides", "allow_early_stop", "pass_through_pawns", "allow_stationary_special_actions"],
+      "properties": {
+        "dice": {"type": "integer", "minimum": 1, "maximum": 4},
+        "die_sides": {"type": "integer", "minimum": 2, "maximum": 12},
+        "allow_early_stop": {"type": "boolean"},
+        "pass_through_pawns": {"type": "boolean"},
+        "allow_stationary_special_actions": {"type": "boolean"}
+      }
+    },
+    "treasures": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items", "start_face_up", "abilities", "bonus_per_side"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {"enum": ["pugio", "pilum", "galea", "scutum", "gladius", "lorica_segmentata"]}
+        },
+        "start_face_up": {"type": "integer", "minimum": 0, "maximum": 6},
+        "abilities": {
+          "type": "object",
+          "minProperties": 6,
+          "maxProperties": 6,
+          "propertyNames": {"enum": ["pugio", "pilum", "galea", "scutum", "gladius", "lorica_segmentata"]},
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "value"],
+            "properties": {
+              "type": {"enum": ["attack_bonus", "defense_bonus", "attack_vs_claimant", "win_ties", "reveal_district", "prevent_displacement"]},
+              "value": {"type": "integer", "minimum": 0, "maximum": 3}
+            }
+          }
+        },
+        "bonus_per_side": {"const": "best"}
+      }
+    },
+    "prestige": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cap", "guard_post_min_roll", "guard_post_reward", "duel_win_reward", "duel_loss_penalty"],
+      "properties": {
+        "cap": {"type": ["integer", "null"], "minimum": 0},
+        "guard_post_min_roll": {"type": "integer", "minimum": 1, "maximum": 12},
+        "guard_post_reward": {"type": "integer", "minimum": 0},
+        "duel_win_reward": {"type": "integer", "minimum": 0},
+        "duel_loss_penalty": {"type": "integer", "minimum": 0, "maximum": 3}
+      }
+    },
+    "duels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["range", "tie_winner"],
+      "properties": {
+        "range": {"type": "integer", "minimum": 0, "maximum": 8},
+        "tie_winner": {"enum": ["attacker", "defender"]}
+      }
+    },
+    "palace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_rounds", "checkpoint_items_required", "rounds_after_checkpoint", "map"],
+      "properties": {
+        "max_rounds": {"type": "integer", "minimum": 1},
+        "checkpoint_items_required": {"type": "integer", "minimum": 1, "maximum": 6},
+        "rounds_after_checkpoint": {"type": "integer", "minimum": 0},
+        "map": {"$ref": "#/$defs/palaceMap"}
+      }
+    },
+    "succession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_rounds", "support_cost", "factions_to_proclaim", "contest_fee", "claim_window_rounds", "proclaim_cost", "faction_cards", "gate_assignment", "map"],
+      "properties": {
+        "max_rounds": {"type": "integer", "minimum": 1},
+        "support_cost": {"type": "integer", "minimum": 1},
+        "factions_to_proclaim": {"type": "integer", "minimum": 1, "maximum": 3},
+        "contest_fee": {"type": "integer", "minimum": 0},
+        "claim_window_rounds": {"type": "integer", "minimum": 0, "maximum": 6},
+        "proclaim_cost": {"type": "integer", "minimum": 0, "maximum": 3},
+        "faction_cards": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["factions", "empty"],
+          "properties": {
+            "factions": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "uniqueItems": true,
+              "items": {"enum": ["army", "officials", "elites"]}
+            },
+            "empty": {"type": "integer", "minimum": 0}
+          }
+        },
+        "gate_assignment": {"const": "random"},
+        "map": {"$ref": "#/$defs/successionMap"}
+      }
+    }
+  },
+  "$defs": {
+    "cell": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {"type": "integer", "minimum": 0}
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["north", "east", "south", "west"],
+      "properties": {
+        "north": {"$ref": "#/$defs/cell"},
+        "east": {"$ref": "#/$defs/cell"},
+        "south": {"$ref": "#/$defs/cell"},
+        "west": {"$ref": "#/$defs/cell"}
+      }
+    },
+    "street": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["axis", "coordinate"],
+      "properties": {
+        "axis": {"enum": ["north-south", "east-west"]},
+        "coordinate": {"type": "integer", "minimum": 0}
+      }
+    },
+    "building": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "district", "x0", "x1", "y0", "y1"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "district": {"enum": ["A", "B", "C", "D", "E", "F"]},
+        "x0": {"type": "integer", "minimum": 0},
+        "x1": {"type": "integer", "minimum": 0},
+        "y0": {"type": "integer", "minimum": 0},
+        "y1": {"type": "integer", "minimum": 0}
+      }
+    },
+    "palaceMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height", "streets", "blocked", "buildings", "gates", "checkpoint", "guard_posts", "treasure_entries"],
+      "properties": {
+        "width": {"type": "integer", "minimum": 5},
+        "height": {"type": "integer", "minimum": 5},
+        "streets": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cardo", "decumanus", "secondary"],
+          "properties": {
+            "cardo": {"$ref": "#/$defs/street"},
+            "decumanus": {"$ref": "#/$defs/street"},
+            "secondary": {"$ref": "#/$defs/street"}
+          }
+        },
+        "blocked": {"type": "array", "items": {"$ref": "#/$defs/cell"}},
+        "buildings": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/building"}},
+        "gates": {"$ref": "#/$defs/gates"},
+        "checkpoint": {"$ref": "#/$defs/cell"},
+        "guard_posts": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/cell"}},
+        "treasure_entries": {
+          "type": "object",
+          "minProperties": 6,
+          "maxProperties": 6,
+          "propertyNames": {"enum": ["A", "B", "C", "D", "E", "F"]},
+          "additionalProperties": {"$ref": "#/$defs/cell"}
+        }
+      }
+    },
+    "successionMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height", "blocked", "gates", "checkpoint", "guard_posts", "card_spaces"],
+      "properties": {
+        "width": {"type": "integer", "minimum": 5},
+        "height": {"type": "integer", "minimum": 5},
+        "blocked": {"type": "array", "items": {"$ref": "#/$defs/cell"}},
+        "gates": {"$ref": "#/$defs/gates"},
+        "checkpoint": {"$ref": "#/$defs/cell"},
+        "guard_posts": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/cell"}},
+        "card_spaces": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/cell"}}
+      }
+    }
+  }
+}

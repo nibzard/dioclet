@@ -12,6 +12,11 @@ import engine
 import policies
 import tactical_policy
 
+# Batch-log retention, previously the rules file's logging section.
+SAMPLE_GAMES_PER_BATCH = 5
+SAVE_ANOMALOUS_GAME_LOGS = True
+SAVE_FULL_BATCH_LOGS = False
+
 
 def _act(name, obs, rules, rng):
     """Dispatch a policy action, including the V0.4 tactical bot."""
@@ -31,9 +36,9 @@ def play_game(rules, seed, game_id, policies_map, check=True):
     guard = 0
     while not engine.is_finished(state):
         guard += 1
-        if guard > 4 * (rules["level1"]["max_rounds"]
-                        + rules["level1"]["grace_full_rounds"]
-                        + rules["level2"]["max_rounds"]) + 8:
+        if guard > 4 * (rules["palace"]["max_rounds"]
+                        + rules["palace"]["rounds_after_checkpoint"]
+                        + rules["succession"]["max_rounds"]) + 8:
             raise RuntimeError(f"game {game_id} exceeded its turn limit")
         obs = engine.observe(state, state["active_player"])
         action_id, reason = _act(
@@ -385,8 +390,8 @@ def run_batch(rules, out_dir, games, seed_base, schedule, rules_file,
               progress_every=200):
     """Play `games` games; write results; return (rows, summary, states)."""
     os.makedirs(out_dir, exist_ok=True)
-    sample_n = rules["logging"]["sample_games_per_batch"]
-    save_anomalous = rules["logging"]["save_anomalous_game_logs"]
+    sample_n = SAMPLE_GAMES_PER_BATCH
+    save_anomalous = SAVE_ANOMALOUS_GAME_LOGS
     rows, states = [], []
     action_counts = {}
     started = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()) + "Z"
@@ -403,7 +408,7 @@ def run_batch(rules, out_dir, games, seed_base, schedule, rules_file,
             action_counts[kind] = action_counts.get(kind, 0) + 1
         keep = i < sample_n or (save_anomalous and (
             res["outcome"] == "draw" or res["total_turns"] > 150))
-        if rules["logging"]["save_full_batch_logs"] or keep:
+        if SAVE_FULL_BATCH_LOGS or keep:
             write_run_dir(os.path.join(out_dir, "sample_games", game_id), state)
         if progress_every and (i + 1) % progress_every == 0:
             print(f"  ... {i + 1}/{games} games", flush=True)

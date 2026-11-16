@@ -1,14 +1,15 @@
-# ABOUTME: Strict loader for Dioclet succession rules JSON files used by Arena.
-# ABOUTME: It requires every key, rejects unknown keys, then defers to the engine validators.
+# ABOUTME: Structural loader for the Dioclet rules file used by Arena.
+# ABOUTME: It states the key contract with its own error, then defers to the engine validator.
 
-"""Load a rules file under a strict structural contract.
+"""Load a rules file under a structural contract.
 
-The engine validators accept partial files and apply in-code defaults for
-absent keys, so a typo silently changes the game. This module removes that
-gap for Arena: every key the engine reads must be present in the file, and
-any key the contract does not name is an error. Semantic checks (ranges,
-reachability, layout) stay in `engine.validate_rules` and
-`succession.validate_rules`, which run as the final gate.
+`rules/rules.schema.json` and `engine.validate_rules` state the full
+contract; this module gives Arena an importable, dependency-free statement
+of the same key sets, enums, and ranges, and reports structural breaks as
+`RulesError` so match configuration can name the file, not the engine, as
+the problem. Semantic checks (map geometry, reachability, arithmetic
+between sections) stay in `engine.validate_rules`, which runs as the final
+gate.
 """
 
 import json
@@ -28,112 +29,96 @@ class RulesError(Exception):
 #   ("bool",) ("int",) ("str",)
 #   ("int_range", lo, hi)         inclusive integer range
 #   ("const", value) ("enum", values)
+#   ("nullable", inner)           null, or whatever the inner spec accepts
 _CELL = ("cell",)
 _BOOL = ("bool",)
 _INT = ("int",)
 _STR = ("str",)
 
-_board = {
-    "width": _INT, "height": _INT,
-    "gates": ("map", _CELL, 4, 4),
-    "districts": ("map", _CELL, 6, 6),
-    "checkpoint": _CELL,
-    "glory_posts": ("array", _CELL, 4, 4),
-    "level2_sites": ("obj", {
-        "cellars": _CELL, "guard_barracks": _CELL, "peristyle": _CELL,
-        "emperor": _CELL, "retreat": _CELL,
-    }, {}),
-    "blocked": ("array", _CELL, 0, None),
-    "buildings": ("array", ("obj", {
-        "name": _STR, "district": _STR,
-        "x0": _INT, "x1": _INT, "y0": _INT, "y1": _INT,
-    }, {}), 0, None),
-    "streets": ("map", ("obj", {"axis": _STR, "coordinate": _INT}, {}), 0, None),
-}
+_TREASURE = ("enum", ("pugio", "pilum", "galea", "scutum", "gladius",
+                      "lorica_segmentata"))
+_ABILITY = ("obj", {
+    "type": ("enum", ("attack_bonus", "defense_bonus", "attack_vs_claimant",
+                      "win_ties", "reveal_district", "prevent_displacement")),
+    "value": ("int_range", 0, 3),
+}, {})
+_GATES = ("obj", {name: _CELL for name in ("north", "east", "south", "west")}, {})
+_STREET = ("obj", {"axis": ("enum", ("north-south", "east-west")),
+                   "coordinate": ("int_range", 0, None)}, {})
+_BUILDING = ("obj", {
+    "name": _STR, "district": ("enum", ("A", "B", "C", "D", "E", "F")),
+    "x0": _INT, "x1": _INT, "y0": _INT, "y1": _INT,
+}, {})
 
-_BOARD_LEVEL2 = {
-    "width": _INT, "height": _INT,
-    "gates": ("map", _CELL, 4, 4),
-    "checkpoint": _CELL,
-    "glory_posts": ("array", _CELL, 0, None),
-    "support_sites": ("array", _CELL, 3, None),
+_PALACE_MAP = ("obj", {
+    "width": ("int_range", 5, None), "height": ("int_range", 5, None),
+    "streets": ("obj", {"cardo": _STREET, "decumanus": _STREET,
+                        "secondary": _STREET}, {}),
     "blocked": ("array", _CELL, 0, None),
-}
+    "buildings": ("array", _BUILDING, 6, 6),
+    "gates": _GATES,
+    "checkpoint": _CELL,
+    "guard_posts": ("array", _CELL, 1, None),
+    "treasure_entries": ("obj", {name: _CELL for name in "ABCDEF"}, {}),
+}, {})
+
+_SUCCESSION_MAP = ("obj", {
+    "width": ("int_range", 5, None), "height": ("int_range", 5, None),
+    "blocked": ("array", _CELL, 0, None),
+    "gates": _GATES,
+    "checkpoint": _CELL,
+    "guard_posts": ("array", _CELL, 1, None),
+    "card_spaces": ("array", _CELL, 3, None),
+}, {})
 
 SPEC = ("obj", {
-    "rules_version": _STR,
-    "game_name": _STR,
-    "gameplay_mode": ("const", "succession-v1"),
-    "players": ("const", 4),
-    "start_reveals": ("int_range", 0, 6),
-    "equipment": ("array", _STR, 6, 6),
-    "board": ("obj", _board, {}),
-    "board_level2": ("obj", _BOARD_LEVEL2, {}),
+    "game": ("obj", {"name": _STR, "rules_version": _STR,
+                     "players": ("const", 4)}, {}),
+    "turns": ("obj", {"rotate_first_player_each_round": _BOOL}, {}),
     "movement": ("obj", {
-        "die_sides": _INT,
-        "dice_count": ("int_range", 1, None),
-        "duel_range": ("int_range", 0, None),
-        "die_is_max_steps": _BOOL,
+        "dice": ("int_range", 1, 4),
+        "die_sides": ("int_range", 2, 12),
         "allow_early_stop": _BOOL,
-        "pass_through_players": _BOOL,
+        "pass_through_pawns": _BOOL,
         "allow_stationary_special_actions": _BOOL,
     }, {}),
-    "glory": ("obj", {
-        "cap": ("int_range", 0, None),
-        "duel_win_reward": ("int_range", 0, None),
+    "treasures": ("obj", {
+        "items": ("array", _TREASURE, 6, 6),
+        "start_face_up": ("int_range", 0, 6),
+        "abilities": ("map", _ABILITY, 6, 6),
+        "bonus_per_side": ("const", "best"),
+    }, {}),
+    "prestige": ("obj", {
+        "cap": ("nullable", ("int_range", 0, None)),
+        "guard_post_min_roll": ("int_range", 1, 12),
         "guard_post_reward": ("int_range", 0, None),
-        "first_challenger_reward": ("int_range", 0, None),
-        "guard_post_success_min_roll": _INT,
-        "set_completion_reward": ("int_range", 0, None),
+        "duel_win_reward": ("int_range", 0, None),
+        "duel_loss_penalty": ("int_range", 0, 3),
     }, {}),
-    "combat": ("obj", {
-        "equipment_bonus_tiers": ("array", ("obj", {
-            "min_count": _INT, "max_count": _INT, "bonus": _INT,
-        }, {}), 1, None),
-        "tie_goes_to_defender": _BOOL,
-        "imperial_guard_bonus": ("int_range", 0, None),
-        "emperor_bonus": ("int_range", 0, None),
-        "glory_attack_bonus": ("int_range", 0, None),
-        "emperor_hits_to_win": ("int_range", 1, None),
-        "abilities": ("map", ("obj", {"type": _STR, "value": _INT}, {}),
-                      0, None),
-        "ability_stacking": ("enum", ("best", "sum")),
+    "duels": ("obj", {
+        "range": ("int_range", 0, 8),
+        "tie_winner": ("enum", ("attacker", "defender")),
     }, {}),
-    "level1": ("obj", {
+    "palace": ("obj", {
         "max_rounds": ("int_range", 1, None),
-        "grace_full_rounds": ("int_range", 0, None),
-        "auto_equip_at_transition": ("const", False),
-        "claim_required_equipment": ("int_range", 1, 6),
-    }, {}),
-    "level2": ("obj", {
-        "max_rounds": ("int_range", 1, None),
-        "required_distinct_seals": ("int_range", 1, 3),
-        "cellars_success_min_roll": _INT,
-        "peristyle_success_min_roll": _INT,
-        "peristyle_glory_cost": ("int_range", 0, None),
+        "checkpoint_items_required": ("int_range", 1, 6),
+        "rounds_after_checkpoint": ("int_range", 0, None),
+        "map": _PALACE_MAP,
     }, {}),
     "succession": ("obj", {
+        "max_rounds": ("int_range", 1, None),
         "support_cost": ("int_range", 1, None),
-        "required_support": ("int_range", 1, None),
-        "support_in_city": _BOOL,
-        "challenge_cost": ("int_range", 1, None),
-        "challenge_bonus": ("int_range", 0, None),
-        "contest_cost": ("int_range", 0, None),
-        "reset_positions": _BOOL,
-        "gate_assignment": ("enum", ("random", "manual", "rotation")),
-        "gate_rotation": ("int_range", 0, 3),
-        "factions": ("map", _CELL, 3, 3),
+        "factions_to_proclaim": ("int_range", 1, 3),
+        "contest_fee": ("int_range", 0, None),
         "claim_window_rounds": ("int_range", 0, 6),
-        "challenge_radius": ("int_range", 0, 8),
-        "duel_loser_cost": ("int_range", 0, 3),
         "proclaim_cost": ("int_range", 0, 3),
-        "blind_support": _BOOL,
-    }, {"gate_order": ("array", _STR, 4, 4)}),
-    "turns": ("obj", {"rotate_first_player_each_round": _BOOL}, {}),
-    "logging": ("obj", {
-        "save_full_batch_logs": _BOOL,
-        "sample_games_per_batch": ("int_range", 0, None),
-        "save_anomalous_game_logs": _BOOL,
+        "faction_cards": ("obj", {
+            "factions": ("array", ("enum", ("army", "officials", "elites")),
+                         3, 3),
+            "empty": ("int_range", 0, None),
+        }, {}),
+        "gate_assignment": ("const", "random"),
+        "map": _SUCCESSION_MAP,
     }, {}),
 }, {})
 
@@ -154,6 +139,8 @@ def _describe(spec):
         return f"exactly {spec[1]!r}"
     if kind == "enum":
         return f"one of {list(spec[1])}"
+    if kind == "nullable":
+        return f"null or {_describe(spec[1])}"
     if kind == "array":
         return "an array"
     return "an object"
@@ -217,6 +204,10 @@ def _check(value, spec, path):
     elif kind == "const":
         if value != spec[1] or type(value) is not type(spec[1]):
             raise RulesError(f"{where} must be {_describe(spec)}")
+    elif kind == "nullable":
+        if value is None:
+            return
+        _check(value, spec[1], path)
     elif kind == "enum":
         if value not in spec[1]:
             raise RulesError(f"{where} must be {_describe(spec)}")

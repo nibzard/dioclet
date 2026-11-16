@@ -18,7 +18,7 @@ import unittest
 import engine
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RULES_PATH = os.path.join(ROOT, "rules_v0102_bigboard.json")
+RULES_PATH = os.path.join(ROOT, "rules", "imperial-rivals-v0.10.2.json")
 
 
 def played_state(rules=None, seed=31):
@@ -48,8 +48,8 @@ class TestRulesHash(unittest.TestCase):
 class TestLoadRules(unittest.TestCase):
     def test_loads_and_validates_the_default_rules(self):
         rules = engine.load_rules(RULES_PATH)
-        self.assertEqual(rules["players"], 4)
-        self.assertEqual(rules["gameplay_mode"], "succession-v1")
+        self.assertEqual(rules["game"]["players"], 4)
+        self.assertEqual(rules["game"]["rules_version"], "0.10.2")
 
     def test_invalid_file_raises_invalid_rules_code(self):
         with tempfile.TemporaryDirectory() as tmp:

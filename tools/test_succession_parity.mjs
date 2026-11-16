@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import vm from 'node:vm';
 const root = new URL('../', import.meta.url);
-const rules = JSON.parse(readFileSync(new URL('rules_v0102_bigboard.json', root), 'utf8'));
+const rules = JSON.parse(readFileSync(new URL('rules/imperial-rivals-v0.10.2.json', root), 'utf8'));
 const python = String.raw`
 import copy,json,sys,random
 import engine
@@ -35,14 +35,14 @@ cases=[]
 for scenario in ['city','prepared','blind']:
  for fee in [0,1]:
   for seed in [1,2026,71519]:
-   r=copy.deepcopy(payload['rules']);r['succession']['contest_cost']=fee
-   if seed==71519:r['succession']['gate_assignment']='rotation';r['succession']['gate_rotation']=2;r['glory']['cap']=None
+   r=copy.deepcopy(payload['rules']);r['succession']['contest_fee']=fee
+   if seed==71519:r['prestige']['cap']=None
    if seed==1:r['turns']['rotate_first_player_each_round']=False
    g=engine.new_game(r,seed,'parity');prng=random.Random(seed+fee)
    if scenario=='prepared':
     g['phase']=2
     for i,(pid,p) in enumerate(g['players'].items()):
-     p['pos']=r['board_level2']['checkpoint'][:];p['prestige']=2;p['support']=['army','elites'];p['equipment']=r['equipment'][:3+i%2*3]
+     p['pos']=r['succession']['map']['checkpoint'][:];p['prestige']=2;p['support']=['army','elites'];p['equipment']=r['treasures']['items'][:3+i%2*3]
    if scenario=='blind':
     g['first_challenger']='P0';g['trigger_round']=g['round']
    case={'rules':r,'seed':seed,'scenario':scenario,'initial':snapshot(g),'steps':[]}
@@ -73,9 +73,8 @@ function load(caseRules) {
   const B = ctx.DIOCLET_BOARD;
   // The Python side mutates its rules per case; the engines read these
   // board fields live, so the same mutations apply here.
-  B.succession.contestCost = caseRules.succession.contest_cost;
-  if (caseRules.succession.gate_assignment === 'rotation') B.succession.gateAssignment = 'rotation';
-  if (caseRules.glory.cap === null) B.glory.cap = null;
+  B.succession.contestCost = caseRules.succession.contest_fee;
+  if (caseRules.prestige.cap === null) B.glory.cap = null;
   if (caseRules.turns.rotate_first_player_each_round === false) B.rotateFirst = false;
   vm.runInContext(readFileSync(new URL('web/engine.js',root),'utf8'),ctx);
   vm.runInContext(readFileSync(new URL('web/succession-engine.js',root),'utf8'),ctx);
@@ -95,17 +94,14 @@ let turns=0;
 for(const c of cases){
  const {E,B}=load(c.rules);
  const seats=['P0','P1','P2','P3'].map(id=>({id,name:id,kind:'human'}));
- const opts={};
- if(c.rules.succession.gate_assignment==='rotation')opts.gateMode='rotation';
- if(c.rules.succession.gate_rotation)opts.gateRotation=c.rules.succession.gate_rotation;
- const g=E.newGame(c.seed,seats,opts);
+ const g=E.newGame(c.seed,seats);
  if(c.scenario==='prepared'){
   g.phase=2;g.players.forEach((p,i)=>{p.pos=B.boardLevel2.checkpoint.join(',');p.prestige=2;p.support=['army','elites'];p.equipment=B.equipment.slice(0,3+i%2*3);});
  }
  if(c.scenario==='blind'){
   g.firstClaimer='P0';g.triggerRound=g.round;g.transitionAt=Math.min(g.round+B.graceRounds,B.l1MaxRounds);
  }
- const label=`${c.scenario} seed=${c.seed} fee=${c.rules.succession.contest_cost}`;
+ const label=`${c.scenario} seed=${c.seed} fee=${c.rules.succession.contest_fee}`;
  assert.deepEqual(snapshot(g,E),c.initial,label+' initial state');
  for(const [i,step] of c.steps.entries()){
   const legal=E.legalActions(g);

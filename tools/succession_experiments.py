@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded V0.8 strategy experiments and alternative-play audits.
+"""Bounded succession strategy experiments and alternative-play audits.
 
 Offline policy probes and live Decisions games are labeled separately.
 No scalar score claims to measure human fun. Live calls use the existing
@@ -10,7 +10,6 @@ import argparse
 import copy
 import fcntl
 import hashlib
-import itertools
 import json
 import math
 import os
@@ -103,26 +102,23 @@ class LedgerBudget(decisions_policy.Budget):
 def variants(base, economy_grid=False):
     if not economy_grid:
         return [("base", copy.deepcopy(base))]
+    # The economy grid varies the only economy switch left: the Prestige
+    # storage cap. Gate assignment comes from each game's seed.
     out = []
-    for cap, early in itertools.product((2, 3, None), (True, False)):
+    for cap in (2, 3, None):
         rules = copy.deepcopy(base)
-        rules["glory"]["cap"] = cap
-        rules["succession"]["support_in_city"] = early
-        name = f"cap{cap if cap is not None else 'none'}-{'early' if early else 'late'}"
+        rules["prestige"]["cap"] = cap
+        name = f"cap{cap if cap is not None else 'none'}"
         out.append((name, rules))
     return out
 
 
 def schedule(index, profiles=PROFILES):
-    # For a fixed index, every rule variant gets the same policy/gate pair.
-    # All 24 gate permutations occur before repeating. Policy identities
-    # rotate after a complete gate-permutation block.
-    gate_permutations = tuple(itertools.permutations(IDS))
-    gate_order = gate_permutations[index % len(gate_permutations)]
-    policy_rotation = (index // len(gate_permutations)) % len(IDS)
-    assignment = {pid: profiles[(i + policy_rotation) % len(profiles)]
-                  for i, pid in enumerate(IDS)}
-    return gate_order, assignment
+    # Policy identities rotate between blocks of 24 games, so a fixed
+    # seat holds every profile once across one 96-game rotation.
+    rotation = (index // 24) % len(profiles)
+    return {pid: profiles[(i + rotation) % len(profiles)]
+            for i, pid in enumerate(IDS)}
 
 
 def _categories(obs):
@@ -141,7 +137,7 @@ def _categories(obs):
 def run_offline(rules, seed, game_id, assignment, out_dir, before_action=None):
     state = engine.new_game(rules, seed, game_id, assignment)
     rng = random.Random(f"probe:{seed}")
-    cap = 4 * (rules["level1"]["max_rounds"] + rules["level2"]["max_rounds"] + 3)
+    cap = 4 * (rules["palace"]["max_rounds"] + rules["succession"]["max_rounds"] + 3)
     for _ in range(cap):
         if engine.is_finished(state):
             break
@@ -361,7 +357,7 @@ def evaluate_rules(rules_path, out, games=24, seed_base=10000, split="screen",
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--rules", default="experiments/rules/rules_v08_succession.json")
+    parser.add_argument("--rules", default="rules/imperial-rivals-v0.10.2.json")
     parser.add_argument("--out", required=True)
     parser.add_argument("--games", type=int, default=24, help="Games per rule variant")
     parser.add_argument("--seed-base", type=int)
@@ -394,8 +390,6 @@ def main(argv=None):
     if out.exists() and any(out.iterdir()):
         parser.error("output directory is not empty; use a new directory for each experiment")
     rules = engine.load_rules(args.rules)
-    if rules.get("gameplay_mode") != "succession-v1":
-        parser.error("this evaluator needs a succession-v1 ruleset")
     out.mkdir(parents=True, exist_ok=True)
     base_seed = args.seed_base if args.seed_base is not None else 10000 if args.split == "screen" else 50000
     budget = LedgerBudget(args.budget_ledger, args.max_decisions_calls, args.max_cost_usd,
@@ -404,7 +398,7 @@ def main(argv=None):
                "split": args.split, "seed_base": base_seed, "games_per_variant": args.games,
                "policy_version": POLICY_VERSION, "profiles": profiles,
                "rules_hash": engine.rules_hash(rules), "variants": {},
-               "notes": "Gate permutations are covered in blocks of 24; policy identities rotate between blocks. Use at least 96 games for one full profile/gate rotation."}
+               "notes": "Policy identities rotate between blocks of 24 games; use at least 96 games for one full profile rotation. Gate assignments come from each game's seed."}
     snapshots = []
     snapshot_categories = set()
     try:
@@ -415,10 +409,8 @@ def main(argv=None):
             variant_dir.mkdir()
             write_json(variant_dir / "rules.json", variant)
             for index in range(args.games):
-                gate_order, assignment = schedule(index, profiles)
+                assignment = schedule(index, profiles)
                 game_rules = copy.deepcopy(variant)
-                game_rules["succession"]["gate_assignment"] = "manual"
-                game_rules["succession"]["gate_order"] = list(gate_order)
                 seed = base_seed + index
                 game_id = f"{name}-{args.split}-{seed}"
                 if budget:

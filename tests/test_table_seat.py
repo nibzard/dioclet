@@ -10,7 +10,7 @@ sys.path[:0] = [ROOT, os.path.join(ROOT, "tools")]
 import engine  # noqa: E402
 import table_seat  # noqa: E402
 
-RULES = engine.load_rules(os.path.join(ROOT, "rules_v0102_bigboard.json"))
+RULES = engine.load_rules(os.path.join(ROOT, "rules", "imperial-rivals-v0.10.2.json"))
 GAME = os.path.join(ROOT, "runs", "haiku-table-v0102", "game1")
 
 
@@ -42,7 +42,9 @@ class ClaimLines(unittest.TestCase):
         self.assertEqual((pending["claim_id"], pending["round"]), (86, 9))
         self.assertEqual((state["end_reason"], state["round"]), ("survived_window", 11))
         obs = {"phase": 2, "pending_claim": pending, "progress": {}}
-        (line,) = table_seat.claim_lines(obs, state["rules"])
+        # The recorded state embeds the pre-cleanup rules shape, so the
+        # adopted rules file supplies the window and fee numbers.
+        (line,) = table_seat.claim_lines(obs, RULES)
         self.assertIn("standing claim: P0 (proclaimed in round 9)", line)
         self.assertIn("wins at the end of round 10", line)
         self.assertIn("fee 1 Prestige", line)

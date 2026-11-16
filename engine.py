@@ -19,7 +19,8 @@ import random
 import tempfile
 import time
 
-from board import Board, ENGINE_VERSION, validate_six_block_layout
+from board import (Board, ENGINE_VERSION, GATE_NAMES, validate_six_block_layout,
+                   gate_cells)
 
 MODE = "succession-v1"
 VERSION = "succession-0.9.1-experiment"
@@ -42,13 +43,14 @@ ITEM_PREFERENCES = {
     "counterleader": {"pilum": 1, "gladius": 1},
 }
 IDS = ("P0", "P1", "P2", "P3")
+ITEMS = ("pugio", "pilum", "galea", "scutum", "gladius", "lorica_segmentata")
+FACTION_NAMES = ("army", "officials", "elites")
+TREASURE_ENTRY_NAMES = ("A", "B", "C", "D", "E", "F")
 _BOARDS = {}
 
-# Top-level keys every rules file must state.
-REQUIRED_KEYS = {
-    "rules_version", "game_name", "players", "equipment", "board",
-    "movement", "glory", "combat", "level1", "level2", "logging",
-}
+# Top-level keys every rules file must state, and nothing more.
+REQUIRED_KEYS = {"game", "turns", "movement", "treasures", "prestige",
+                 "duels", "palace", "succession"}
 
 
 class EngineError(Exception):
@@ -79,210 +81,281 @@ def _error(code, message):
     raise EngineError(code, message)
 
 
-def _validate_abilities(rules, abilities):
-    if not isinstance(abilities, dict):
-        _error("invalid_rules", "combat.abilities must be an object keyed by equipment name")
-    if set(abilities) != set(rules["equipment"]):
-        _error("invalid_rules", "combat.abilities must define one ability for each equipment name")
+def _exact_keys(obj, where, keys):
+    """Every key in `keys` must be present; no other key may be."""
+    if not isinstance(obj, dict):
+        _error("invalid_rules", f"{where} must be an object")
+    missing = set(keys) - set(obj)
+    if missing:
+        _error("invalid_rules", f"missing {where} keys: {sorted(missing)}")
+    unknown = set(obj) - set(keys)
+    if unknown:
+        _error("invalid_rules", f"unknown {where} keys: {sorted(unknown)}")
+
+
+def _require_int(value, where, low=None, high=None):
+    """A plain integer (bool does not count) inside the given bounds."""
+    bounds = "" if low is None and high is None else f" from {low} to {high}"
+    if type(value) is not int:
+        _error("invalid_rules", f"{where} must be an integer{bounds}")
+    if low is not None and value < low or high is not None and value > high:
+        _error("invalid_rules", f"{where} must be an integer{bounds}")
+
+
+def _require_bool(value, where):
+    if not isinstance(value, bool):
+        _error("invalid_rules", f"{where} must be true or false")
+
+
+def _require_cell(cell, where, width, height, blocked=frozenset()):
+    if (not isinstance(cell, list) or len(cell) != 2
+            or any(type(v) is not int or v < 0 for v in cell)):
+        _error("invalid_rules", f"{where} must be an [x, y] cell of nonnegative integers")
+    if cell[0] >= width or cell[1] >= height:
+        _error("invalid_rules", f"{where} out of bounds")
+    if tuple(cell) in blocked:
+        _error("invalid_rules", f"{where} sits on a blocked cell")
+
+
+def _require_gates(gates, where, width, height, blocked):
+    _exact_keys(gates, f"{where}.gates", GATE_NAMES)
+    for name in GATE_NAMES:
+        _require_cell(gates[name], f"{where}.gates.{name}", width, height, blocked)
+    if len({tuple(c) for c in gates.values()}) != 4:
+        _error("invalid_rules", f"{where}.gates must be distinct")
+
+
+def _validate_abilities(abilities):
+    _exact_keys(abilities, "treasures.abilities", ITEMS)
     for item, spec in sorted(abilities.items()):
-        if not isinstance(spec, dict) or set(spec) != {"type", "value"}:
-            _error("invalid_rules", f"combat.abilities.{item} must be an object with type and value")
+        _exact_keys(spec, f"treasures.abilities.{item}", ("type", "value"))
         if spec["type"] not in ABILITY_TYPES:
             _error("invalid_rules",
-                   f"combat.abilities.{item}.type must be one of: {', '.join(ABILITY_TYPES)}")
-        if type(spec["value"]) is not int or not 0 <= spec["value"] <= 3:
-            _error("invalid_rules", f"combat.abilities.{item}.value must be an integer from 0 to 3")
+                   f"treasures.abilities.{item}.type must be one of: {', '.join(ABILITY_TYPES)}")
+        _require_int(spec["value"], f"treasures.abilities.{item}.value", 0, 3)
+
+
+def _validate_palace_map(rules):
+    """The palace map carries the six-block contract and its own gates."""
+    board_map = rules["palace"]["map"]
+    _exact_keys(board_map, "palace.map",
+                ("width", "height", "streets", "blocked", "buildings", "gates",
+                 "checkpoint", "guard_posts", "treasure_entries"))
+    width, height = board_map["width"], board_map["height"]
+    _require_int(width, "palace.map.width", 5)
+    _require_int(height, "palace.map.height", 5)
+    blocked = _validate_blocked(board_map["blocked"], "palace.map.blocked")
+    _require_gates(board_map["gates"], "palace.map", width, height, blocked)
+    _require_cell(board_map["checkpoint"], "palace.map.checkpoint", width, height, blocked)
+
+    streets = board_map["streets"]
+    _exact_keys(streets, "palace.map.streets", ("cardo", "decumanus", "secondary"))
+    for name in ("cardo", "decumanus", "secondary"):
+        street = streets[name]
+        _exact_keys(street, f"palace.map.streets.{name}", ("axis", "coordinate"))
+        if street["axis"] not in ("north-south", "east-west"):
+            _error("invalid_rules",
+                   f"palace.map.streets.{name}.axis must be north-south or east-west")
+        _require_int(street["coordinate"], f"palace.map.streets.{name}.coordinate", 0)
+
+    buildings = board_map["buildings"]
+    if not isinstance(buildings, list) or len(buildings) != 6:
+        _error("invalid_rules", "palace.map.buildings must list six blocks")
+    for i, building in enumerate(buildings):
+        where = f"palace.map.buildings[{i}]"
+        _exact_keys(building, where,
+                    ("name", "district", "x0", "x1", "y0", "y1"))
+        if not isinstance(building["name"], str) or not building["name"]:
+            _error("invalid_rules", f"{where}.name must be a nonempty string")
+        if building["district"] not in TREASURE_ENTRY_NAMES:
+            _error("invalid_rules", f"{where}.district must be one of {list(TREASURE_ENTRY_NAMES)}")
+        for key in ("x0", "x1", "y0", "y1"):
+            _require_int(building[key], f"{where}.{key}", 0)
+
+    posts = board_map["guard_posts"]
+    if not isinstance(posts, list) or not posts:
+        _error("invalid_rules", "palace.map.guard_posts must be a nonempty list")
+    for i, cell in enumerate(posts):
+        _require_cell(cell, f"palace.map.guard_posts[{i}]", width, height, blocked)
+
+    entries = board_map["treasure_entries"]
+    if not isinstance(entries, dict):
+        _error("invalid_rules", "palace.map.treasure_entries must be an object")
+    _exact_keys(entries, "palace.map.treasure_entries", TREASURE_ENTRY_NAMES)
+    for name in TREASURE_ENTRY_NAMES:
+        _require_cell(entries[name], f"palace.map.treasure_entries.{name}",
+                      width, height, blocked)
+
+
+def _validate_blocked(blocked, where):
+    if not isinstance(blocked, list):
+        _error("invalid_rules", f"{where} must be a list")
+    for i, cell in enumerate(blocked):
+        if (not isinstance(cell, list) or len(cell) != 2
+                or any(type(v) is not int or v < 0 for v in cell)):
+            _error("invalid_rules", f"{where}[{i}] must be an [x, y] cell of nonnegative integers")
+    return {tuple(c) for c in blocked}
+
+
+def _validate_succession_map(rules):
+    """The succession map: four gates, a checkpoint, guard posts, and the
+    face-down faction card spaces. No districts and no six-block contract
+    (that layout is the palace map's)."""
+    board_map = rules["succession"]["map"]
+    _exact_keys(board_map, "succession.map",
+                ("width", "height", "blocked", "gates", "checkpoint",
+                 "guard_posts", "card_spaces"))
+    width, height = board_map["width"], board_map["height"]
+    _require_int(width, "succession.map.width", 5)
+    _require_int(height, "succession.map.height", 5)
+    blocked = _validate_blocked(board_map["blocked"], "succession.map.blocked")
+    gates = board_map["gates"]
+    _require_gates(gates, "succession.map", width, height, blocked)
+    for pid, cell in gates.items():
+        if tuple(cell) == tuple(board_map["checkpoint"]):
+            _error("invalid_rules", f"succession.map gate {pid} sits on the checkpoint")
+    _require_cell(board_map["checkpoint"], "succession.map.checkpoint", width, height, blocked)
+
+    posts = board_map["guard_posts"]
+    if not isinstance(posts, list) or not posts:
+        _error("invalid_rules", "succession.map.guard_posts must be a nonempty list")
+    for i, cell in enumerate(posts):
+        _require_cell(cell, f"succession.map.guard_posts[{i}]", width, height, blocked)
+
+    # Blind faction cards: three factions and blanks dealt face down onto
+    # these street cells at the transition.
+    sites = board_map["card_spaces"]
+    if not isinstance(sites, list) or len(sites) < 3:
+        _error("invalid_rules", "succession.map.card_spaces must list at least three cells")
+    for i, cell in enumerate(sites):
+        _require_cell(cell, f"succession.map.card_spaces[{i}]", width, height, blocked)
+    if len({tuple(c) for c in sites}) != len(sites):
+        _error("invalid_rules", "succession.map.card_spaces must be distinct")
+    occupied = {tuple(c) for c in gates.values()} | {tuple(board_map["checkpoint"])}
+    for cell in sites:
+        if tuple(cell) in occupied:
+            _error("invalid_rules",
+                   "succession.map card space cannot be a gate or the checkpoint")
+    for cell in posts:
+        if tuple(cell) in {tuple(c) for c in gates.values()}:
+            _error("invalid_rules", "succession.map gate sits on a guard post")
+
+    b = Board(rules, "succession")
+    reach = b.distances(b.gates["P0"])
+    for cell in sites:
+        if tuple(cell) not in reach:
+            _error("invalid_rules", "succession.map card space must be a reachable street")
+    for cell in b.glory_posts:
+        if cell not in reach:
+            _error("invalid_rules", "succession.map guard post must be reachable")
+    for pid, gate in b.gates.items():
+        if b.checkpoint not in b.distances(gate):
+            _error("invalid_rules", f"succession.map checkpoint unreachable from gate {pid}")
 
 
 def validate_rules(rules):
-    """Reject invalid succession configurations with clear errors."""
-    config = rules.get("succession")
-    if rules.get("gameplay_mode") != MODE or not isinstance(config, dict):
-        _error("invalid_rules", "succession-v1 needs a succession object")
-    missing = REQUIRED_KEYS - set(rules)
-    if missing:
-        _error("invalid_rules", f"missing top-level keys: {sorted(missing)}")
-    allowed = {"support_cost", "required_support", "support_in_city", "challenge_cost",
-               "challenge_bonus", "contest_cost", "reset_positions", "gate_assignment",
-               "gate_order", "gate_rotation", "factions",
-               "claim_window_rounds", "challenge_radius", "duel_loser_cost",
-               "proclaim_cost", "blind_support"}
-    unknown = set(config) - allowed
-    if unknown:
-        _error("invalid_rules", f"unknown succession keys: {sorted(unknown)}")
-    for name, ceiling in (("claim_window_rounds", 6), ("challenge_radius", 8),
-                          ("duel_loser_cost", 3), ("proclaim_cost", 3)):
-        value = config.get(name, 0)
-        if type(value) is not int or not 0 <= value <= ceiling:
-            _error("invalid_rules", f"succession.{name} must be an integer from 0 to {ceiling}")
-    if type(config.get("blind_support", False)) is not bool:
-        _error("invalid_rules", "succession.blind_support must be boolean")
-    stacking = rules["combat"].get("ability_stacking", "best")
-    if stacking not in ("best", "sum"):
-        _error("invalid_rules", "combat.ability_stacking must be best or sum")
-    # The engine reads only these combat keys; anything else is a dead
-    # key that silently no-ops an experiment arm (the S2 screen set a
-    # nonexistent combat.challenge_bonus while the live knob sits under
-    # succession.challenge_bonus).
-    known_combat = {"equipment_bonus_tiers", "tie_goes_to_defender",
-                    "imperial_guard_bonus", "emperor_bonus", "glory_attack_bonus",
-                    "emperor_hits_to_win", "duel_displacement", "duel_glory_theft",
-                    "duel_lost_turn", "abilities", "ability_stacking"}
-    unknown_combat = set(rules["combat"]) - known_combat
-    if unknown_combat:
+    """Reject rules that deviate from the Imperial Rivals contract.
+
+    This walk mirrors rules/rules.schema.json: every key the engine reads
+    must be present, and no other key may exist. Geometry and arithmetic
+    checks that a schema cannot state run last.
+    """
+    if not isinstance(rules, dict):
+        _error("invalid_rules", "rules must be a JSON object")
+    _exact_keys(rules, "top-level", REQUIRED_KEYS)
+
+    game = rules["game"]
+    _exact_keys(game, "game", ("name", "rules_version", "players"))
+    for key in ("name", "rules_version"):
+        if not isinstance(game[key], str) or not game[key]:
+            _error("invalid_rules", f"game.{key} must be a nonempty string")
+    if game["players"] != 4:
+        _error("invalid_rules", "game.players must be 4")
+
+    turns = rules["turns"]
+    _exact_keys(turns, "turns", ("rotate_first_player_each_round",))
+    _require_bool(turns["rotate_first_player_each_round"], "turns.rotate_first_player_each_round")
+
+    movement = rules["movement"]
+    _exact_keys(movement, "movement",
+                ("dice", "die_sides", "allow_early_stop", "pass_through_pawns",
+                 "allow_stationary_special_actions"))
+    _require_int(movement["dice"], "movement.dice", 1, 4)
+    _require_int(movement["die_sides"], "movement.die_sides", 2, 12)
+    for key in ("allow_early_stop", "pass_through_pawns",
+                "allow_stationary_special_actions"):
+        _require_bool(movement[key], f"movement.{key}")
+
+    treasures = rules["treasures"]
+    _exact_keys(treasures, "treasures",
+                ("items", "start_face_up", "abilities", "bonus_per_side"))
+    if not isinstance(treasures["items"], list) or sorted(treasures["items"]) != sorted(ITEMS):
+        _error("invalid_rules", f"treasures.items must list each of {list(ITEMS)} once")
+    _require_int(treasures["start_face_up"], "treasures.start_face_up", 0, 6)
+    _validate_abilities(treasures["abilities"])
+    if treasures["bonus_per_side"] != "best":
+        _error("invalid_rules", 'treasures.bonus_per_side must be "best"')
+
+    prestige = rules["prestige"]
+    _exact_keys(prestige, "prestige",
+                ("cap", "guard_post_min_roll", "guard_post_reward",
+                 "duel_win_reward", "duel_loss_penalty"))
+    cap = prestige["cap"]
+    if cap is not None:
+        _require_int(cap, "prestige.cap", 0)
+    _require_int(prestige["guard_post_min_roll"], "prestige.guard_post_min_roll", 1, 12)
+    _require_int(prestige["guard_post_reward"], "prestige.guard_post_reward", 0)
+    _require_int(prestige["duel_win_reward"], "prestige.duel_win_reward", 0)
+    _require_int(prestige["duel_loss_penalty"], "prestige.duel_loss_penalty", 0, 3)
+
+    duels = rules["duels"]
+    _exact_keys(duels, "duels", ("range", "tie_winner"))
+    _require_int(duels["range"], "duels.range", 0, 8)
+    if duels["tie_winner"] not in ("attacker", "defender"):
+        _error("invalid_rules", 'duels.tie_winner must be "attacker" or "defender"')
+
+    palace = rules["palace"]
+    _exact_keys(palace, "palace",
+                ("max_rounds", "checkpoint_items_required", "rounds_after_checkpoint", "map"))
+    _require_int(palace["max_rounds"], "palace.max_rounds", 1)
+    _require_int(palace["checkpoint_items_required"], "palace.checkpoint_items_required", 1, 6)
+    _require_int(palace["rounds_after_checkpoint"], "palace.rounds_after_checkpoint", 0)
+    if not isinstance(palace["map"], dict):
+        _error("invalid_rules", "palace.map must be an object")
+
+    config = rules["succession"]
+    _exact_keys(config, "succession",
+                ("max_rounds", "support_cost", "factions_to_proclaim", "contest_fee",
+                 "claim_window_rounds", "proclaim_cost", "faction_cards",
+                 "gate_assignment", "map"))
+    _require_int(config["max_rounds"], "succession.max_rounds", 1)
+    _require_int(config["support_cost"], "succession.support_cost", 1)
+    _require_int(config["factions_to_proclaim"], "succession.factions_to_proclaim", 1, 3)
+    _require_int(config["contest_fee"], "succession.contest_fee", 0)
+    _require_int(config["claim_window_rounds"], "succession.claim_window_rounds", 0, 6)
+    _require_int(config["proclaim_cost"], "succession.proclaim_cost", 0, 3)
+    if config["gate_assignment"] != "random":
+        _error("invalid_rules", 'succession.gate_assignment must be "random"')
+    cards = config["faction_cards"]
+    _exact_keys(cards, "succession.faction_cards", ("factions", "empty"))
+    if (not isinstance(cards["factions"], list)
+            or sorted(cards["factions"]) != sorted(FACTION_NAMES)):
         _error("invalid_rules",
-               f"unknown combat keys (nothing reads them): {sorted(unknown_combat)}")
-    start_reveals = rules.get("start_reveals", 0)
-    if type(start_reveals) is not int or not 0 <= start_reveals <= 6:
-        _error("invalid_rules", "start_reveals must be an integer from 0 to 6")
-    required = rules["level1"].get("claim_required_equipment", 6)
-    if type(required) is not int or not 1 <= required <= 6:
-        _error("invalid_rules", "level1.claim_required_equipment must be an integer from 1 to 6")
-    set_reward = rules["glory"].get("set_completion_reward", 0)
-    if type(set_reward) is not int or set_reward < 0:
-        _error("invalid_rules", "glory.set_completion_reward must be a nonnegative integer")
-    abilities = rules["combat"].get("abilities")
-    if abilities is not None:
-        _validate_abilities(rules, abilities)
-        nonzero_tiers = [t["bonus"] for t in rules["combat"]["equipment_bonus_tiers"] if t["bonus"]]
-        if nonzero_tiers:
-            _error("invalid_rules",
-                   "combat.abilities replace the count tiers; every equipment_bonus_tiers bonus must be 0")
-    cap = rules["glory"]["cap"]
-    # A top-level key outside this vocabulary is a dead key: nothing reads
-    # it, so a typo silently no-ops an experiment arm. Reject it outright.
-    unknown_top = set(rules) - REQUIRED_KEYS - {"turns", "gameplay_mode",
-                                                "succession", "start_reveals",
-                                                "board_level2"}
-    if unknown_top:
-        _error("invalid_rules", f"unknown top-level keys: {sorted(unknown_top)}")
+               f"succession.faction_cards.factions must list each of {list(FACTION_NAMES)} once")
+    _require_int(cards["empty"], "succession.faction_cards.empty", 0)
+    if not isinstance(config["map"], dict):
+        _error("invalid_rules", "succession.map must be an object")
+
+    if cap is not None and cap < config["support_cost"]:
+        _error("invalid_rules",
+               "Prestige cap must cover at least one support purchase, or be null")
     try:
+        _validate_palace_map(rules)
         validate_six_block_layout(rules)
+        _validate_succession_map(rules)
     except (KeyError, TypeError, ValueError) as exc:
-        _error("invalid_rules", f"invalid succession layout: {exc}")
-    if rules["level1"]["auto_equip_at_transition"] is not False:
-        _error("invalid_rules", "succession keeps collected equipment; auto-equipping must be false")
-    for name in ("support_cost", "challenge_cost", "required_support"):
-        if type(config.get(name)) is not int or config[name] < 1:
-            _error("invalid_rules", f"succession.{name} must be a positive integer")
-    if cap is not None and (type(cap) is not int or cap < config["support_cost"]):
-        _error("invalid_rules", "Prestige cap must cover at least one support purchase, or be null")
-    if type(config.get("contest_cost", 0)) is not int or config.get("contest_cost", 0) < 0:
-        _error("invalid_rules", "succession.contest_cost must be a nonnegative integer")
-    if type(config.get("challenge_bonus")) is not int or config["challenge_bonus"] < 0:
-        _error("invalid_rules", "succession.challenge_bonus must be a nonnegative integer")
-    for name in ("support_in_city", "reset_positions"):
-        if not isinstance(config.get(name), bool):
-            _error("invalid_rules", f"succession.{name} must be boolean")
-    if config.get("gate_assignment", "random") not in ("random", "manual", "rotation"):
-        _error("invalid_rules", "gate_assignment must be random, manual, or rotation")
-    if config.get("gate_order") is not None and (
-            not isinstance(config["gate_order"], list) or sorted(config["gate_order"]) != list(IDS)):
-        _error("invalid_rules", "gate_order must contain each of P0..P3 once")
-    rotation = config.get("gate_rotation", 0)
-    if type(rotation) is not int or not 0 <= rotation < 4:
-        _error("invalid_rules", "gate_rotation must be 0..3")
-    factions = config.get("factions")
-    if not isinstance(factions, dict) or set(factions) != {"army", "officials", "elites"}:
-        _error("invalid_rules", "factions must define army, officials, and elites")
-    b = Board(rules, "board_level2") if "board_level2" in rules else Board(rules)
-    reachable = b.distances(b.gates["P0"])
-    for name, cell in factions.items():
-        if not isinstance(cell, list) or len(cell) != 2 or tuple(cell) not in reachable:
-            board_name = "board_level2" if "board_level2" in rules else "board"
-            _error("invalid_rules",
-                   f"faction {name} must occupy a reachable street on {board_name}")
-    if len(set(map(tuple, factions.values()))) != 3:
-        _error("invalid_rules", "faction meeting places must be distinct")
-    if config["required_support"] > len(factions):
-        _error("invalid_rules", "required_support exceeds the number of factions")
-    if "board_level2" in rules:
-        _validate_board_level2(rules, config)
+        _error("invalid_rules", f"invalid map layout: {exc}")
     return True
-
-
-def _validate_board_level2(rules, config):
-    """A separate succession map: four gates, a checkpoint, optional
-    posts, no districts and no six-block contract (that layout is the
-    palace level's)."""
-    twin = rules["board_level2"]
-    if not isinstance(twin, dict):
-        _error("invalid_rules", "board_level2 must be an object")
-    for key in ("width", "height"):
-        value = twin.get(key)
-        if type(value) is not int or value < 5:
-            _error("invalid_rules", f"board_level2.{key} must be an integer of at least 5")
-    blocked = {tuple(c) for c in twin.get("blocked", [])}
-    def in_bounds(cell):
-        return (isinstance(cell, list) and len(cell) == 2
-                and all(isinstance(v, int) for v in cell)
-                and 0 <= cell[0] < twin["width"] and 0 <= cell[1] < twin["height"])
-    gates = twin.get("gates")
-    if not isinstance(gates, dict) or set(gates) != set(IDS):
-        _error("invalid_rules", "board_level2.gates must define P0..P3")
-    for pid, cell in gates.items():
-        if not in_bounds(cell) or tuple(cell) in blocked:
-            _error("invalid_rules", f"board_level2 gate {pid} out of bounds or blocked")
-    if len({tuple(c) for c in gates.values()}) != 4:
-        _error("invalid_rules", "board_level2 gates must be distinct")
-    if not in_bounds(twin.get("checkpoint")) or tuple(twin["checkpoint"]) in blocked:
-        _error("invalid_rules", "board_level2.checkpoint out of bounds or blocked")
-    if twin.get("districts"):
-        _error("invalid_rules", "board_level2 carries no districts; treasures live on the palace map")
-    posts = twin.get("glory_posts", [])
-    if not isinstance(posts, list):
-        _error("invalid_rules", "board_level2.glory_posts must be a list")
-    for cell in posts:
-        if not in_bounds(cell) or tuple(cell) in blocked:
-            _error("invalid_rules", "board_level2 glory post out of bounds or blocked")
-    sites = twin.get("support_sites")
-    if sites is not None:
-        # Blind faction cards on the succession map: three factions and
-        # blanks dealt face down onto these street cells at the change.
-        if not isinstance(sites, list) or len(sites) < 3:
-            _error("invalid_rules", "board_level2.support_sites must list at least three cells")
-        reachable = Board(rules, "board_level2").distances(tuple(gates["P0"]))
-        for cell in sites:
-            if not in_bounds(cell) or tuple(cell) not in reachable:
-                _error("invalid_rules", "board_level2 support site must be a reachable street")
-            if tuple(cell) in {tuple(c) for c in gates.values()} or tuple(cell) == tuple(twin["checkpoint"]):
-                _error("invalid_rules", "board_level2 support site cannot be a gate or the checkpoint")
-        if len({tuple(c) for c in sites}) != len(sites):
-            _error("invalid_rules", "board_level2 support sites must be distinct")
-    if config.get("blind_support") and sites is None:
-        _error("invalid_rules",
-               "blind_support with board_level2 needs board_level2.support_sites")
-    b = Board(rules, "board_level2")
-    if set(b.districts) or b.district_at:
-        _error("invalid_rules", "board_level2 must not declare districts")
-    claimed = [(name, tuple(cell)) for name, cell in config["factions"].items()]
-    claimed += [("glory post", tuple(cell)) for cell in twin.get("glory_posts", [])]
-    for pid, cell in gates.items():
-        occupied = tuple(cell)
-        if occupied == tuple(twin["checkpoint"]):
-            _error("invalid_rules", f"board_level2 gate {pid} sits on the checkpoint")
-        for name, site in claimed:
-            if occupied == site:
-                _error("invalid_rules",
-                       f"board_level2 gate {pid} sits on {name} - seats may not start on content")
-    for pid, gate in b.gates.items():
-        reach = b.distances(gate)
-        if b.checkpoint not in reach:
-            _error("invalid_rules", f"board_level2 checkpoint unreachable from gate {pid}")
-    reach = b.distances(b.gates["P0"])
-    for cell in b.glory_posts:
-        if cell not in reach:
-            _error("invalid_rules", "board_level2 glory post unreachable")
-    for name, cell in config["factions"].items():
-        if tuple(cell) == b.checkpoint:
-            _error("invalid_rules", f"faction {name} sits on the board_level2 checkpoint")
-
-
-def equipment_bonus(count, rules):
-    for tier in rules["combat"]["equipment_bonus_tiers"]:
-        if tier["min_count"] <= count <= tier["max_count"]:
-            return tier["bonus"]
-    return 0
 
 
 # ---------------------------------------------------------------------------
@@ -332,10 +405,11 @@ def _load_rng(state_blob):
 # ---------------------------------------------------------------------------
 
 def _board(rules, phase=1):
-    """The active Board: the level-1 palace map, or the separate
-    succession map in phase 2 when the rules declare one."""
-    section = "board_level2" if (phase == 2 and "board_level2" in rules) else "board"
-    key = json.dumps([section, rules.get(section)], sort_keys=True, separators=(",", ":"))
+    """The active Board: the palace map, or the succession map in
+    phase 2."""
+    section = "succession" if phase == 2 else "palace"
+    key = json.dumps([section, rules[section]["map"]],
+                     sort_keys=True, separators=(",", ":"))
     if key not in _BOARDS:
         b = Board(rules, section)
         b._succ_distances = {}
@@ -345,11 +419,11 @@ def _board(rules, phase=1):
 
 
 def _gate_cell(state, player, phase=None):
-    """The player's gate on the ACTIVE board (twin-board games move
-    the gates to the succession map in phase 2)."""
+    """The player's gate on the ACTIVE board (the gates move to the
+    succession map in phase 2)."""
     phase = state["phase"] if phase is None else phase
-    section = "board_level2" if ("board_level2" in state["rules"] and phase == 2) else "board"
-    return list(state["rules"][section]["gates"][player["gate_id"]])
+    section = "succession" if phase == 2 else "palace"
+    return list(gate_cells(state["rules"][section]["map"])[player["gate_id"]])
 
 
 def _distances(b, start):
@@ -373,10 +447,19 @@ def _path(b, start, end):
     return [list(c) for c in b._succ_paths[cachekey]]
 
 
+def _faction_cells(rules):
+    """Faction name to meeting-place cell, for phase-2 states built
+    without the blind deal (the dealt layout otherwise defines the
+    cells). The first three card spaces hold the factions."""
+    cards = rules["succession"]["faction_cards"]["factions"]
+    spaces = rules["succession"]["map"]["card_spaces"][:len(cards)]
+    return dict(zip(sorted(cards), (list(c) for c in spaces)))
+
+
 def _usable_ability(player, rules, ability_type):
     """Return (item, spec) for an owned, unused, nonzero ability of this type."""
     for item in player["equipment"]:
-        spec = rules["combat"].get("abilities", {}).get(item)
+        spec = rules["treasures"]["abilities"].get(item)
         if (spec and spec["type"] == ability_type and spec["value"] > 0
                 and not player["abilities_used"].get(ability_type)):
             return item, spec
@@ -387,7 +470,7 @@ def _ability_total(player, rules, ability_type):
     """Public rule fact: total value of owned abilities of this type."""
     total = 0
     for item in player["equipment"]:
-        spec = rules["combat"].get("abilities", {}).get(item)
+        spec = rules["treasures"]["abilities"].get(item)
         if spec and spec["type"] == ability_type and spec["value"] > 0:
             total += spec["value"]
     return total
@@ -417,14 +500,13 @@ def _stats():
 
 def new_game(rules, seed, game_id, policies=None):
     validate_rules(rules)
-    config = rules["succession"]
     state = {
         "gameplay_mode": MODE, "engine_version": VERSION,
         "rules": copy.deepcopy(rules), "rules_hash": rules_hash(rules),
         "game_id": game_id, "seed": seed,
         "rng": {name: ((int(seed) & 0xFFFFFFFF) ^ salt) or 1 for name, salt in SALTS.items()},
         "players": {}, "turn_order": [], "round_start": 0, "turn_index": 0,
-        "rotate_first": rules.get("turns", {}).get("rotate_first_player_each_round", False),
+        "rotate_first": rules["turns"]["rotate_first_player_each_round"],
         "turn_id": 0, "round": 1, "phase": 1, "current_roll": None,
         "pending_claim": None, "first_challenger": None, "trigger_round": None,
         "district_equipment": {}, "revealed": {}, "equipment_at_transition": {},
@@ -435,28 +517,26 @@ def new_game(rules, seed, game_id, policies=None):
         "policy_version": POLICY_VERSION,
         "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
-    gate_order = list(config.get("gate_order") or IDS)
-    if config.get("gate_assignment", "random") == "random" and not config.get("gate_order"):
-        gate_order = _shuffle(state, IDS, "gates")
-    rotation = config.get("gate_rotation", 0)
-    gate_order = gate_order[rotation:] + gate_order[:rotation]
+    gate_order = _shuffle(state, IDS, "gates")
     state["gate_assignments"] = dict(zip(IDS, gate_order))
+    palace_gates = gate_cells(rules["palace"]["map"])
     for pid, gateid in state["gate_assignments"].items():
-        gate = list(rules["board"]["gates"][gateid])
+        gate = list(palace_gates[gateid])
         state["players"][pid] = {"gate_id": gateid, "gate": gate, "pos": gate[:],
-                                  "equipment": [], "prestige": 0, "support": [],
-                                  "turns": 0, "stats": _stats(),
-                                  "abilities_used": {}, "set_rewarded": False}
+                                 "equipment": [], "prestige": 0, "support": [],
+                                 "turns": 0, "stats": _stats(),
+                                 "abilities_used": {}}
     state["turn_order"] = _shuffle(state, IDS, "order")
-    equipment = _shuffle(state, rules["equipment"], "equipment")
-    state["district_equipment"] = dict(zip(sorted(rules["board"]["districts"]), equipment))
+    equipment = _shuffle(state, rules["treasures"]["items"], "equipment")
+    entries = rules["palace"]["map"]["treasure_entries"]
+    state["district_equipment"] = dict(zip(sorted(entries), equipment))
     # Start-of-game public reveals (variant B). Drawn from the equipment stream
     # AFTER the district shuffle: no other code consumes that stream, so gates,
     # turn order, the district mapping, and every die stay identical across
     # arms on matched seeds.
-    reveal_count = rules.get("start_reveals", 0)
+    reveal_count = rules["treasures"]["start_face_up"]
     if reveal_count:
-        for name in _shuffle(state, sorted(rules["board"]["districts"]), "equipment")[:reveal_count]:
+        for name in _shuffle(state, sorted(entries), "equipment")[:reveal_count]:
             state["revealed"][name] = state["district_equipment"][name]
         state["setup_reveals"] = sorted(state["revealed"])
     else:
@@ -468,7 +548,7 @@ def new_game(rules, seed, game_id, policies=None):
 def _start_turn(state):
     state["active_player"] = current_order(state)[state["turn_index"]]
     movement = state["rules"]["movement"]
-    state["current_dice"] = [_die(state, "movement") for _ in range(movement.get("dice_count", 1))]
+    state["current_dice"] = [_die(state, "movement") for _ in range(movement["dice"])]
     state["current_roll"] = sum(state["current_dice"])
     state["turn_id"] += 1
     state["players"][state["active_player"]]["turns"] += 1
@@ -484,7 +564,7 @@ def legal_actions(state):
     me = state["players"][pid]
     pos = tuple(me["pos"])
     distances = _distances(b, pos)
-    cap = rules["glory"]["cap"]
+    cap = rules["prestige"]["cap"]
     actions = []
 
     def add(kind, dest, **extra):
@@ -502,11 +582,9 @@ def legal_actions(state):
             if district is not None and (district not in state["revealed"] or
                     state["district_equipment"][district] not in me["equipment"]):
                 add("explore", dest)
-            if (state["phase"] == 2
-                    or (config["support_in_city"] and not config.get("blind_support")
-                        and "board_level2" not in rules)):
-                if state["phase"] == 2 and config.get("blind_support") and state["faction_sites"]:
-                    # Blind support sites: search unrevealed cells (the offer
+            if state["phase"] == 2:
+                if state["faction_sites"] is not None:
+                    # Blind faction cards: search unrevealed cells (the offer
                     # never depends on the hidden faction - DECISIONS.md D1),
                     # buy support only at revealed sites that hold a faction.
                     key = f"{dest[0]},{dest[1]}"
@@ -516,40 +594,33 @@ def legal_actions(state):
                     if revealed.get(key) and revealed[key] not in me["support"] and me["prestige"] >= config["support_cost"]:
                         add("gain_support", dest, faction=revealed[key])
                 else:
-                    for faction, location in sorted(config["factions"].items()):
+                    for faction, location in sorted(_faction_cells(rules).items()):
                         if tuple(location) == dest and faction not in me["support"] and me["prestige"] >= config["support_cost"]:
                             add("gain_support", dest, faction=faction)
             if dest == b.checkpoint:
                 if (state["phase"] == 1 and state["first_challenger"] is None
-                        and len(me["equipment"]) >= rules["level1"].get("claim_required_equipment", 6)):
+                        and len(me["equipment"]) >= rules["palace"]["checkpoint_items_required"]):
                     add("claim_checkpoint", dest)
                 if (state["phase"] == 2 and state["pending_claim"] is None
-                        and len(me["support"]) >= config["required_support"]
-                        and me["prestige"] >= config.get("proclaim_cost", 0)):
+                        and len(me["support"]) >= config["factions_to_proclaim"]
+                        and me["prestige"] >= config["proclaim_cost"]):
                     add("proclaim", dest)
         if moved:
             if dest in b.glory_posts and (cap is None or me["prestige"] < cap):
                 add("guard_post", dest)
             for other, target in sorted(state["players"].items()):
-                if other == pid or _distances(b, dest)[tuple(target["pos"])] > rules["movement"]["duel_range"]:
+                if other == pid or _distances(b, dest)[tuple(target["pos"])] > rules["duels"]["range"]:
                     continue
                 pending = state["pending_claim"]
-                # Human redesign: challenging the claimant requires standing
-                # within the painted radius of the Peristyle.
-                if (pending and pending["player"] == other and config.get("challenge_radius", 0)
-                        and _distances(b, dest)[tuple(target["pos"])] > config["challenge_radius"]):
-                    continue
-                contest_cost = config.get("contest_cost", 0) if pending and pending["player"] == other else 0
+                contest_cost = config["contest_fee"] if pending and pending["player"] == other else 0
                 if me["prestige"] < contest_cost:
                     continue
                 add("duel", dest, target=other, spend_prestige=False, contest_cost=contest_cost)
-                if config["challenge_bonus"] and me["prestige"] >= config["challenge_cost"] + contest_cost:
-                    add("duel", dest, target=other, spend_prestige=True, contest_cost=contest_cost)
     # Galea: a stationary, once-per-game public reveal of any unexplored
     # district. The offer never depends on the hidden item (DECISIONS.md D1).
     if rules["movement"]["allow_stationary_special_actions"]:
         if _usable_ability(me, rules, "reveal_district")[0]:
-            for name in sorted(rules["board"]["districts"]):
+            for name in sorted(rules["palace"]["map"]["treasure_entries"]):
                 if name not in state["revealed"]:
                     add("inspect", pos, district=name)
     pending = state["pending_claim"]
@@ -575,7 +646,7 @@ def observe(state, player):
         players[pid] = {"gate": list(pdata["gate"]), "gate_id": pdata["gate_id"],
                         "position": list(pdata["pos"]), "equipment": sorted(pdata["equipment"]),
                         "equipment_count": len(pdata["equipment"]),
-                        "equipment_bonus": equipment_bonus(len(pdata["equipment"]), rules),
+                        "equipment_bonus": 0,
                         "attack_bonus": _ability_total(pdata, rules, "attack_bonus"),
                         "defense_bonus": _ability_total(pdata, rules, "defense_bonus"),
                         "attack_vs_claimant_bonus": _ability_total(pdata, rules, "attack_vs_claimant"),
@@ -583,28 +654,19 @@ def observe(state, player):
                         "turns": pdata["turns"]}
     progress = {"first_challenger": state["first_challenger"],
                 "players_with_full_equipment": [p for p in IDS
-                                                if len(state["players"][p]["equipment"]) >= rules["level1"].get("claim_required_equipment", 6)],
-                "claim_required_equipment": rules["level1"].get("claim_required_equipment", 6),
-                "set_completion_reward": rules["glory"].get("set_completion_reward", 0),
-                "level1_max_rounds": rules["level1"]["max_rounds"],
-                "level2_max_rounds": rules["level2"]["max_rounds"],
-                "grace_full_rounds": rules["level1"]["grace_full_rounds"],
-                **{key: config[key] for key in ("support_cost", "required_support", "support_in_city",
-                                                "challenge_cost", "challenge_bonus")}}
-    progress["contest_cost"] = config.get("contest_cost", 0)
-    progress["claim_window_rounds"] = config.get("claim_window_rounds", 0)
-    progress["challenge_radius"] = config.get("challenge_radius", 0)
-    progress["proclaim_cost"] = config.get("proclaim_cost", 0)
-    progress["duel_loser_cost"] = config.get("duel_loser_cost", 0)
-    if config.get("blind_support"):
-        # Blind support replaces city-phase support: the meeting places exist
-        # only as hidden palace-level sites.
-        progress["support_in_city"] = False
-    if "board_level2" in rules and state["phase"] == 1:
-        # Twin-board game: no meeting places exist on the palace map.
-        progress["support_in_city"] = False
+                                                if len(state["players"][p]["equipment"]) >= rules["palace"]["checkpoint_items_required"]],
+                "claim_required_equipment": rules["palace"]["checkpoint_items_required"],
+                "level1_max_rounds": rules["palace"]["max_rounds"],
+                "level2_max_rounds": rules["succession"]["max_rounds"],
+                "grace_full_rounds": rules["palace"]["rounds_after_checkpoint"],
+                "support_cost": config["support_cost"],
+                "required_support": config["factions_to_proclaim"],
+                "contest_cost": config["contest_fee"],
+                "claim_window_rounds": config["claim_window_rounds"],
+                "proclaim_cost": config["proclaim_cost"],
+                "duel_loser_cost": rules["prestige"]["duel_loss_penalty"]}
     if state["first_challenger"] is not None:
-        progress["transition_after_round"] = min(state["trigger_round"] + rules["level1"]["grace_full_rounds"], rules["level1"]["max_rounds"])
+        progress["transition_after_round"] = min(state["trigger_round"] + rules["palace"]["rounds_after_checkpoint"], rules["palace"]["max_rounds"])
     return {"gameplay_mode": MODE, "game_id": state["game_id"], "seed": state["seed"],
             "engine_version": VERSION, "status": state["status"], "phase": state["phase"],
             "round": state["round"], "turn_id": state["turn_id"],
@@ -618,13 +680,13 @@ def observe(state, player):
                       "districts": {n: list(c) for n, c in b.districts.items()},
                       "glory_posts": [list(c) for c in b.glory_posts],
                       "checkpoint": list(b.checkpoint),
-                      **({"factions": ({} if ("board_level2" in rules and state["phase"] == 1)
-                                      else copy.deepcopy(config["factions"]))}
-                         if not (state["phase"] == 2 and config.get("blind_support") and state["faction_sites"])
-                         else {"support_sites": {"candidates": [[int(x) for x in k.split(",")] for k in sorted(state["faction_sites"])],
-                                                  "revealed": {k: v for k, v in sorted(state["faction_sites_revealed"].items())}}})},
+                      **({"support_sites": {"candidates": [[int(x) for x in k.split(",")] for k in sorted(state["faction_sites"])],
+                                            "revealed": {k: v for k, v in sorted(state["faction_sites_revealed"].items())}}}
+                         if state["faction_sites"] is not None
+                         else {"factions": ({} if state["phase"] == 1
+                                            else copy.deepcopy(_faction_cells(rules)))})},
             "revealed_districts": dict(sorted(state["revealed"].items())),
-            "prestige_cap": rules["glory"]["cap"], "equipment_names": sorted(rules["equipment"]),
+            "prestige_cap": rules["prestige"]["cap"], "equipment_names": sorted(rules["treasures"]["items"]),
             "players": players, "pending_claim": copy.deepcopy(state["pending_claim"]),
             "progress": progress, "legal_actions": legal_actions(state)}
 
@@ -635,7 +697,7 @@ def observe(state, player):
 
 def _award(state, pid, amount, cause, events):
     player = state["players"][pid]
-    cap = state["rules"]["glory"]["cap"]
+    cap = state["rules"]["prestige"]["cap"]
     got = amount if cap is None else min(amount, max(0, cap - player["prestige"]))
     player["prestige"] += got
     player["stats"]["prestige_earned"] += got
@@ -701,11 +763,6 @@ def apply_action(state, player, turn_id, action_id, reason=None):
             me["equipment"].append(item)
             me["stats"]["equipment_collected"] += 1
             events.append({"type": "equipment_collected", "player": player, "district": district, "item": item})
-            if (len(me["equipment"]) == 6 and not me["set_rewarded"]
-                    and rules["glory"].get("set_completion_reward", 0) > 0):
-                me["set_rewarded"] = True
-                me["stats"]["set_completion_awards"] += 1
-                _award(state, player, rules["glory"]["set_completion_reward"], "set_completion", events)
         else:
             me["stats"]["explore_no_gain"] += 1
             events.append({"type": "explore_no_gain", "player": player, "district": district})
@@ -724,11 +781,11 @@ def apply_action(state, player, turn_id, action_id, reason=None):
     elif kind == "guard_post":
         me["stats"]["guard_post_attempts"] += 1
         roll = die()
-        success = roll >= rules["glory"]["guard_post_success_min_roll"]
+        success = roll >= rules["prestige"]["guard_post_min_roll"]
         events.append({"type": "guard_post", "player": player, "roll": roll, "success": success})
         if success:
             me["stats"]["guard_post_successes"] += 1
-            _award(state, player, rules["glory"]["guard_post_reward"], "guard_post", events)
+            _award(state, player, rules["prestige"]["guard_post_reward"], "guard_post", events)
     elif kind == "search_site":
         key = f"{me['pos'][0]},{me['pos'][1]}"
         faction = state["faction_sites"][key]
@@ -746,12 +803,11 @@ def apply_action(state, player, turn_id, action_id, reason=None):
         state["first_challenger"] = player
         state["trigger_round"] = state["round"]
         me["stats"]["checkpoint_claims"] += 1
-        _award(state, player, rules["glory"]["first_challenger_reward"], "checkpoint", events)
         events.append({"type": "first_challenger", "player": player})
     elif kind == "proclaim":
         state["pending_claim"] = {"player": player, "claim_id": turn_id, "responded": [],
                                   "round": state["round"]}
-        if config.get("proclaim_cost", 0):
+        if config["proclaim_cost"]:
             _spend(state, player, config["proclaim_cost"], "proclaim", events)
             me["stats"]["proclaims_paid"] += 1
         me["stats"]["claims_made"] += 1
@@ -763,22 +819,13 @@ def apply_action(state, player, turn_id, action_id, reason=None):
         them = state["players"][target]
         me["stats"]["duels_initiated"] += 1
         them["stats"]["duels_defended"] += 1
-        paid = action["spend_prestige"]
         if action["contest_cost"]:
             _spend(state, player, action["contest_cost"], "claim_contest", events)
             me["stats"]["contest_prestige_spent"] += action["contest_cost"]
-        if paid:
-            _spend(state, player, config["challenge_cost"], "challenge", events)
-            me["stats"]["challenge_boosts"] += 1
         attack_roll, defense_roll = die(), die()
-        abilities = rules["combat"].get("abilities", {})
-        # Count tiers apply when no ability table is present (baseline V0.8.1).
-        # With abilities, every tier bonus is zero by validation, and at most
-        # one ability modifier applies per side: the best one, never the sum
-        # (DECISIONS.md D42). The paid challenge boost is separate because it
-        # is not equipment.
-        tier_attack = equipment_bonus(len(me["equipment"]), rules)
-        tier_defense = equipment_bonus(len(them["equipment"]), rules)
+        abilities = rules["treasures"]["abilities"]
+        # At most one ability modifier applies per duel side: the best
+        # one, never the sum (DECISIONS.md D42).
         attack_mods = []
         for item in me["equipment"]:
             spec = abilities.get(item)
@@ -797,9 +844,8 @@ def apply_action(state, player, turn_id, action_id, reason=None):
             if spec and spec["type"] == "defense_bonus" and spec["value"] > 0:
                 defense_mods.append(spec["value"])
                 them["stats"]["defense_bonus_uses"] += 1
-        stacking = sum if rules["combat"].get("ability_stacking", "best") == "sum" else max
-        attack_bonus = tier_attack + (stacking(attack_mods) if attack_mods else 0) + (config["challenge_bonus"] if paid else 0)
-        defense_bonus = tier_defense + (stacking(defense_mods) if defense_mods else 0)
+        attack_bonus = max(attack_mods) if attack_mods else 0
+        defense_bonus = max(defense_mods) if defense_mods else 0
         attack_score, defense_score = attack_roll + attack_bonus, defense_roll + defense_bonus
         # Pugio: the holder wins tied duels. If both hold one, the base tie
         # rule decides.
@@ -815,18 +861,18 @@ def apply_action(state, player, turn_id, action_id, reason=None):
                            "ability": next(i for i in (me if attacker_pugio else them)["equipment"]
                                            if abilities.get(i, {}).get("type") == "win_ties")})
         else:
-            won = not rules["combat"]["tie_goes_to_defender"]
+            won = rules["duels"]["tie_winner"] == "attacker"
         winner = player if won else target
         state["players"][winner]["stats"]["duels_won_attacker" if won else "duels_won_defender"] += 1
         events.append({"type": "duel", "attacker": player, "defender": target,
                        "winner": winner, "attacker_roll": attack_roll, "defender_roll": defense_roll,
                        "attacker_bonus": attack_bonus, "defender_bonus": defense_bonus,
                        "attacker_score": attack_score, "defender_score": defense_score,
-                       "spend_prestige": paid})
-        _award(state, winner, rules["glory"]["duel_win_reward"], "duel", events)
-        # Human redesign option: the beaten duelist is shamed and pays the
-        # bank up to one Prestige of what they hold.
-        shame = config.get("duel_loser_cost", 0)
+                       "spend_prestige": False})
+        _award(state, winner, rules["prestige"]["duel_win_reward"], "duel", events)
+        # The beaten duelist is shamed and pays the bank up to one Prestige
+        # of what they hold.
+        shame = rules["prestige"]["duel_loss_penalty"]
         if shame:
             loser = target if won else player
             lplayer = state["players"][loser]
@@ -855,7 +901,7 @@ def apply_action(state, player, turn_id, action_id, reason=None):
             pending["responded"].append(player)
             me["stats"]["response_turns"] += 1
             events.append({"type": "claim_response", "player": player, "claim_id": pending["claim_id"]})
-        if len(set(pending["responded"])) == 3 and not config.get("claim_window_rounds", 0):
+        if len(set(pending["responded"])) == 3 and not config["claim_window_rounds"]:
             # Under a claim window the rivals must act inside the window
             # (challenge or cancel); mere responses no longer crown.
             claimant = pending["player"]
@@ -887,13 +933,13 @@ def _advance(state):
         if state["rotate_first"]:
             state["round_start"] = (state["round_start"] + 1) % 4
         rules = state["rules"]
-        window = rules["succession"].get("claim_window_rounds", 0)
+        window = rules["succession"]["claim_window_rounds"]
         pending = state["pending_claim"]
         if (window and state["phase"] == 2 and pending
                 and state["round"] - pending["round"] >= window):
-            # Human redesign: a claim that survived the window unchallenged
-            # wins the game outright (end_reason survived_window). The event
-            # rides the last turn record, like phase_transition and game_draw.
+            # A claim that survived the window unchallenged wins the game
+            # outright (end_reason survived_window). The event rides the
+            # last turn record, like phase_transition and game_draw.
             claimant = pending["player"]
             state["winner"], state["status"], state["end_reason"] = claimant, "finished", "survived_window"
             state["players"][claimant]["stats"]["claims_survived"] += 1
@@ -902,47 +948,37 @@ def _advance(state):
             state["current_roll"] = None
             return
         if state["phase"] == 1:
-            end = rules["level1"]["max_rounds"]
+            end = rules["palace"]["max_rounds"]
             if state["first_challenger"] is not None:
-                end = min(end, state["trigger_round"] + rules["level1"]["grace_full_rounds"])
+                end = min(end, state["trigger_round"] + rules["palace"]["rounds_after_checkpoint"])
             if state["round"] > end:
                 state["rounds_level1"] = state["round"] - 1
                 state["phase1_timeout"] = state["first_challenger"] is None
                 state["equipment_at_transition"] = {p: len(d["equipment"]) for p, d in state["players"].items()}
-                if "board_level2" in rules:
-                    # Twin-board game: the succession map takes over and every
-                    # seat returns to its gate on that map (the playtest's
-                    # table rule, now structural). Phase is set first so the
-                    # gate lookup sees the new map.
-                    state["phase"] = 2
-                    for player in state["players"].values():
-                        player["pos"] = _gate_cell(state, player)
-                elif rules["succession"]["reset_positions"]:
-                    for player in state["players"].values():
-                        player["pos"] = player["gate"][:]
-                state["phase"], state["round"], state["round_start"] = 2, 1, 0
-                if rules["succession"].get("blind_support"):
-                    # Human redesign: the three faction meeting places are
-                    # dealt blind - onto board_level2.support_sites on a
-                    # twin map, else onto the six district entry cells.
-                    # Three hold a faction, the rest are decoys.
-                    # Drawn from the order stream, which nothing uses after
-                    # setup, so matched seeds stay aligned across arms.
-                    if "board_level2" in rules:
-                        cells = sorted(list(c) for c in rules["board_level2"]["support_sites"])
-                    else:
-                        cells = sorted(list(c) for c in rules["board"]["districts"].values())
-                    state["faction_sites"] = {f"{c[0]},{c[1]}": None for c in cells}
-                    for cell, name in zip(_shuffle(state, cells, "order")[:3],
-                                          sorted(rules["succession"]["factions"])):
-                        state["faction_sites"][f"{cell[0]},{cell[1]}"] = name
-                    state["faction_sites_revealed"] = {}
+                # The succession map takes over and every seat returns to
+                # its gate on that map (the playtest's table rule, now
+                # structural). Phase is set first so the gate lookup sees
+                # the new map.
+                state["phase"] = 2
+                for player in state["players"].values():
+                    player["pos"] = _gate_cell(state, player)
+                state["round"], state["round_start"] = 1, 0
+                # The three faction cards are dealt blind onto the
+                # succession map's card spaces; the rest are blanks.
+                # Drawn from the order stream, which nothing uses after
+                # setup, so matched seeds stay aligned across arms.
+                cells = sorted(list(c) for c in rules["succession"]["map"]["card_spaces"])
+                state["faction_sites"] = {f"{c[0]},{c[1]}": None for c in cells}
+                for cell, name in zip(_shuffle(state, cells, "order")[:3],
+                                      sorted(rules["succession"]["faction_cards"]["factions"])):
+                    state["faction_sites"][f"{cell[0]},{cell[1]}"] = name
+                state["faction_sites_revealed"] = {}
                 state["events"][-1]["events"].append({"type": "phase_transition", "from_phase": 1,
                     "to_phase": 2, "auto_granted": {}, "phase1_timeout": state["phase1_timeout"]})
-        elif state["round"] > rules["level2"]["max_rounds"]:
+        elif state["round"] > rules["succession"]["max_rounds"]:
             state["status"], state["winner"], state["end_reason"] = "finished", None, "phase2_timeout"
             state["phase2_timeout"] = True
-            state["round"] = rules["level2"]["max_rounds"]
+            state["round"] = rules["succession"]["max_rounds"]
             state["current_roll"] = None
             state["events"][-1]["events"].append({"type": "game_draw", "reason": "phase2_timeout"})
             return
@@ -995,16 +1031,16 @@ def result(state):
 
 def check_invariants(state):
     b = _board(state["rules"], state["phase"])
-    cap = state["rules"]["glory"]["cap"]
+    cap = state["rules"]["prestige"]["cap"]
     for pid, player in state["players"].items():
         assert tuple(player["pos"]) in _distances(b, _gate_cell(state, player)), f"{pid} outside street graph"
         assert player["prestige"] >= 0 and (cap is None or player["prestige"] <= cap), "invalid Prestige"
         assert len(set(player["equipment"])) == len(player["equipment"]), "duplicate equipment"
-        assert set(player["equipment"]) <= set(state["rules"]["equipment"]), "unknown equipment"
+        assert set(player["equipment"]) <= set(state["rules"]["treasures"]["items"]), "unknown equipment"
         assert len(set(player["support"])) == len(player["support"]), "duplicate support"
-        assert set(player["support"]) <= set(state["rules"]["succession"]["factions"]), "unknown support"
+        assert set(player["support"]) <= set(state["rules"]["succession"]["faction_cards"]["factions"]), "unknown support"
         assert set(player["abilities_used"]) <= set(ABILITY_TYPES), "unknown ability type used"
-        assert set(player["abilities_used"].values()) <= set(state["rules"]["equipment"]), "unknown ability item"
+        assert set(player["abilities_used"].values()) <= set(state["rules"]["treasures"]["items"]), "unknown ability item"
     assert sorted(state["gate_assignments"].values()) == list(IDS), "gate assignment not a permutation"
     pending = state["pending_claim"]
     if pending:
@@ -1014,12 +1050,12 @@ def check_invariants(state):
     if state["winner"]:
         if state["end_reason"] == "survived_window":
             assert pending, "window win without a pending claim"
-            window = state["rules"]["succession"].get("claim_window_rounds", 0)
+            window = state["rules"]["succession"]["claim_window_rounds"]
             assert window and state["round"] - pending["round"] >= window, "claim window not actually survived"
         else:
             assert state["end_reason"] == "acclamation" and pending and len(pending["responded"]) == 3, "incomplete acclamation"
     if state["faction_sites"]:
-        names = set(state["rules"]["succession"]["factions"])
+        names = set(state["rules"]["succession"]["faction_cards"]["factions"])
         held = sorted(f for f in state["faction_sites"].values() if f)
         assert held == sorted(names), "blind support sites must hold each faction exactly once"
         assert set(state["faction_sites_revealed"]) <= set(state["faction_sites"]), "revealed site is not a candidate"
@@ -1158,9 +1194,7 @@ def choose_policy(policy_name, obs, rng=None):
                 - other["equipment_bonus"] - other.get("defense_bonus", 0))
         if pending and pending["player"] == action["target"]:
             edge += me.get("attack_vs_claimant_bonus", 0)
-        bonus = edge + (progress["challenge_bonus"] if action["spend_prestige"] else 0)
-        wins = sum(1 for a in range(1, 7) for d in range(1, 7) if a + bonus >= d)
-        # Paid duels are useful against a claimant but not for farming.
+        wins = sum(1 for a in range(1, 7) for d in range(1, 7) if a + edge >= d)
         return (-wins, bool(action["spend_prestige"]), len(action["path"]), action["action_id"])
 
     if pending and pending["player"] == obs["viewer"] and bykind("maintain_claim"):
@@ -1169,7 +1203,7 @@ def choose_policy(policy_name, obs, rng=None):
         challenges = [a for a in bykind("duel") if a["target"] == pending["player"]]
         if challenges:
             return select(min(challenges, key=duel_key), "challenge the claimant")
-        if prestige < progress.get("contest_cost", 0):
+        if prestige < progress["contest_cost"]:
             if bykind("guard_post"):
                 return select(nearest(bykind("guard_post")), "earn Prestige for a future contest")
             available_duels = [a for a in bykind("duel") if not a["spend_prestige"]]
@@ -1191,12 +1225,11 @@ def choose_policy(policy_name, obs, rng=None):
     farmer = policy_name == "prestige_farmer"
     aggressive = policy_name == "aggressive"
     supports_needed = len(me["support"]) < progress["required_support"]
-    faction_accessible = obs["phase"] == 2 or progress["support_in_city"]
+    faction_accessible = obs["phase"] == 2
     # Gear targets read the rule parameters (D41/D43): collectors rush to the
-    # checkpoint requirement; other profiles complete the set only when the
-    # completion reward exists, and otherwise stop at three items as before.
-    claim_requirement = progress.get("claim_required_equipment", 6)
-    set_target = 6 if progress.get("set_completion_reward", 0) else 3
+    # checkpoint requirement; other profiles stop at three items.
+    claim_requirement = progress["claim_required_equipment"]
+    set_target = 3
     gear_needed = len(me["equipment"]) < (claim_requirement if collector else set_target)
     explores = bykind("explore")
     public_dist = _public_distances(obs, me["position"])
@@ -1212,7 +1245,7 @@ def choose_policy(policy_name, obs, rng=None):
                             if name not in revealed or revealed[name] not in owned]
         explore_target = min(district_targets, key=lambda c: (public_dist[tuple(c)], c)) if district_targets else None
     if "support_sites" in obs["board"]:
-        # Blind palace-level sites: target revealed faction sites, else hunt
+        # Blind card spaces: target revealed faction sites, else hunt
         # the nearest unrevealed candidate cell.
         sites = obs["board"]["support_sites"]
         revealed = sites["revealed"]

@@ -93,25 +93,25 @@ CANCELLATION_REGIME = 1.0        # incumbent canceled claims per finished game t
 HOLDOUT_STRIDE = 1000            # fresh holdout seeds per cycle never overlap
 
 SCRIPTED_PROPOSALS = (
-    {"rule_path": "succession.contest_cost", "value": 1,
-     "hypothesis": "Scripted smoke proposal, not model output. Free opposition lets any "
-                   "rival cancel any claim, so claims never survive three responses.",
-     "prediction": "A mandatory fee of one Prestige should cut draws and cancellations "
-                   "sharply while keeping challenges affordable.",
+    {"rule_path": "succession.contest_fee", "value": 0,
+     "hypothesis": "Scripted smoke proposal, not model output. A fee of one may keep "
+                   "poor rivals from ever contesting a claim.",
+     "prediction": "Free contests should raise the challenged-claim fraction while "
+                   "keeping cancellations affordable.",
      "refutation_evidence": "Draws or cancellations stay near the incumbent level, or "
                             "challenged-claim fraction falls below the counterplay floor."},
-    {"rule_path": "glory.cap", "value": 4,
+    {"rule_path": "prestige.cap", "value": 4,
      "hypothesis": "Scripted smoke proposal, not model output. A cap of three may force "
                    "wasted rewards and idle guard turns before a claim.",
      "prediction": "Cap four should reduce wasted Prestige without changing win profiles "
                    "much.",
      "refutation_evidence": "Median rounds rise past the guard, or one profile takes "
                             "nearly every win."},
-    {"rule_path": "succession.challenge_bonus", "value": 1,
-     "hypothesis": "Scripted smoke proposal, not model output. A +2 boost for one Prestige "
-                   "may dominate the unboosted challenge.",
-     "prediction": "Reducing the boost to +1 should make boosted and plain challenges "
-                   "closer substitutes.",
+    {"rule_path": "succession.claim_window_rounds", "value": 1,
+     "hypothesis": "Scripted smoke proposal, not model output. A two-round window may "
+                   "outlast every rival's patience to contest.",
+     "prediction": "A one-round window should keep contest pressure while shortening "
+                   "endgames.",
      "refutation_evidence": "Challenged-claim fraction falls below the counterplay floor, "
                             "or draws increase."},
 )
@@ -672,7 +672,7 @@ def main(argv=None):
         #    replay-verified audits.
         promo = cfg["promotion"]
         veto_cfg = cfg.get("counterplay_veto")
-        candidate_fee = candidate_rules["succession"].get("contest_cost")
+        candidate_fee = candidate_rules["succession"].get("contest_fee")
         screen_checks = promotion_checks(incumbent["screen_suite"]["metrics"],
                                          screen_candidate["metrics"], promo)
         holdout_checks = promotion_checks(holdout_incumbent["metrics"],

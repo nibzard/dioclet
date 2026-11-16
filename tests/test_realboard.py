@@ -15,10 +15,17 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load_v06():
-    """The raw map JSON; this file predates the current rules schema."""
+    """The raw V0.6 map JSON, re-keyed into the current map shape.
+
+    This file predates the rules schema, so its seat-id gate keys are
+    translated to the compass names the board module reads.
+    """
     with open(os.path.join(ROOT, "experiments/rules/rules_v06_realboard.json"),
               encoding="utf-8") as fh:
-        return json.load(fh)
+        raw = json.load(fh)["board"]
+    raw["gates"] = dict(zip(("north", "east", "south", "west"),
+                            (raw["gates"][pid] for pid in ("P0", "P1", "P2", "P3"))))
+    return {"palace": {"map": raw}}
 
 
 class TestBlockedCells(unittest.TestCase):

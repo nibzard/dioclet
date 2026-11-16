@@ -11,7 +11,8 @@ from arena import match as match_mod
 from arena.providers import Decision
 
 ARENA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RULES_PATH = os.path.join(ARENA_DIR, "rules", "v0102.json")
+RULES_PATH = os.path.join(ARENA_DIR, "..", "rules",
+                          "imperial-rivals-v0.10.2.json")
 SENTINEL = "SENTINEL-HIDDEN-9f3a"
 
 
@@ -52,8 +53,8 @@ def test_hidden_sentinel_never_reaches_provider_or_logs(tmp_path, monkeypatch):
     monkeypatch.setenv("TYPESAFE_API_KEY", "test-key")
     with open(RULES_PATH, "r", encoding="utf-8") as fh:
         rules = json.load(fh)
-    rules["level1"]["max_rounds"] = 1
-    rules["level2"]["max_rounds"] = 1
+    rules["palace"]["max_rounds"] = 1
+    rules["succession"]["max_rounds"] = 1
     tiny = tmp_path / "tiny.json"
     tiny.write_text(json.dumps(rules), encoding="utf-8")
     config = match_mod.make_config(str(tiny), 5,

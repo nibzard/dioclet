@@ -35,8 +35,10 @@ import engine
 def audit_game(variant_dir, record, choices, rules):
     game_id = record["game_id"]
     game_dir = variant_dir / game_id
-    fee = rules["succession"].get("contest_cost", 0)
-    boost_price = fee + rules["succession"]["challenge_cost"]
+    fee = rules["succession"]["contest_fee"]
+    # The paid-challenge boost is gone from the rules; affording the
+    # contest (the fee) is the only question left.
+    boost_price = fee
     events = [json.loads(line) for line in (game_dir / "events.jsonl").open(encoding="utf-8") if line.strip()]
     choices_by_turn = {c["turn_id"]: c for c in choices if c["game_id"] == game_id}
     # Walk the event log itself: Prestige changes on any turn (a
@@ -100,8 +102,7 @@ def audit_game(variant_dir, record, choices, rules):
 
 
 def summarize(rows, claims, games, rules):
-    fee = rules["succession"].get("contest_cost", 0)
-    boost_cost = rules["succession"]["challenge_cost"]
+    fee = rules["succession"]["contest_fee"]
     response_turns = len(rows)
     purses = [r["responder_prestige_before"] for r in rows]
 
@@ -119,7 +120,7 @@ def summarize(rows, claims, games, rules):
         "incomplete": len(games) - len(finished),
         "draws": draws,
         "median_rounds": statistics.median(rounds) if rounds else None,
-        "contest_fee": fee, "challenge_cost": boost_cost,
+        "contest_fee": fee,
         "response_turns": response_turns,
         "claims": len(claims),
         "contest_offered_rate": rate(lambda r: r["contest_offered"]),
@@ -153,8 +154,8 @@ def summarize(rows, claims, games, rules):
                           "Claim and cancellation statistics cover finished games only, matching the "
                           "evaluator's claim_statistics_scope; rows from a stopped incomplete game are "
                           "excluded (the AR1.1 erratum records why). A contested claim is a claim with "
-                          "at least one chosen contest; boost affordability is a separate question "
-                          "(responder Prestige at or above fee plus challenge cost).",
+                          "at least one chosen contest; affordability asks whether the responder held "
+                          "at least the contest fee.",
     }
 
 

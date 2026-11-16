@@ -15,7 +15,7 @@ const plain = v => JSON.parse(JSON.stringify(v));
 // keep dead engine branches alive.
 {
   assert.equal(B.mode, 'succession-v1');
-  assert.equal(B.rulesVersion, '0.10.2-bigboard');
+  assert.equal(B.rulesVersion, '0.10.2');
   for (const gone of ['level2','sealsRequired','hitsToWin','prestigeRules','combatRules','gloryCap','districts','blocked','gates','checkpoint','gloryPosts'])
     assert.ok(!Object.hasOwn(B, gone), `legacy top-level key ${gone} must be gone`);
   assert.ok(!('support_in_city' in B.succession) && !('factions' in B.succession) && !('reset_positions' in B.succession));

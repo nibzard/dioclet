@@ -44,7 +44,7 @@ class LiveAuditScope(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         variant = Path(self.tmp.name) / "base"
         variant.mkdir()
-        shutil.copy(REPO / "experiments/rules/rules_v08_succession.json", variant / "rules.json")
+        shutil.copy(REPO / "rules/imperial-rivals-v0.10.2.json", variant / "rules.json")
 
         finished = [
             turn(1, "P0", {"kind": "proclaim"},

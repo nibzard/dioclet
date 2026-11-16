@@ -55,7 +55,7 @@ for (const [id, c] of Object.entries(B.boardLevel2.gates)) {
   gate2Transform[id] = `translate(${36 + c[0] * 44 + 22},${36 + c[1] * 44 + 22})`;
 }
 check("board artifact is the V0.10.2 twin-board mode",
-  B.mode === "succession-v1" && B.rulesVersion === "0.10.2-bigboard");
+  B.mode === "succession-v1" && B.rulesVersion === "0.10.2");
 
 // --- rules overlay --------------------------------------------------
 const overlay = document.getElementById("rules");

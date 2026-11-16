@@ -2,7 +2,6 @@
 
 import copy
 import importlib.util
-import itertools
 import json
 from pathlib import Path
 import tempfile
@@ -40,7 +39,7 @@ def response(choice, kind="choice"):
 
 class TestSuccessionProjection(unittest.TestCase):
     def setUp(self):
-        self.rules = engine.load_rules(str(ROOT / "experiments/rules/rules_v08_succession.json"))
+        self.rules = engine.load_rules(str(ROOT / "rules/imperial-rivals-v0.10.2.json"))
         self.state = engine.new_game(self.rules, 2026, "succession-decisions")
         self.obs = engine.observe(self.state, self.state["active_player"])
 
@@ -82,14 +81,14 @@ class TestSuccessionProjection(unittest.TestCase):
 
     def test_every_counterclaim_is_kept_and_costed(self):
         rules = copy.deepcopy(self.rules)
-        rules["succession"]["contest_cost"] = 1
+        rules["succession"]["contest_fee"] = 1
         state = engine.new_game(rules, 1, "response")
         state["phase"] = 2
         state["active_player"] = "P1"
         state["current_roll"] = 12
-        state["players"]["P0"]["pos"] = rules["board"]["checkpoint"][:]
+        state["players"]["P0"]["pos"] = rules["succession"]["map"]["checkpoint"][:]
         state["players"]["P0"]["support"] = ["army", "officials"]
-        state["players"]["P1"]["pos"] = [6, 5]
+        state["players"]["P1"]["pos"] = [8, 6]
         state["players"]["P1"]["prestige"] = 3
         state["pending_claim"] = {"player": "P0", "claim_id": 1, "responded": ["P2", "P3"]}
         obs = engine.observe(state, "P1")
@@ -139,13 +138,13 @@ class TestExperimentBudget(unittest.TestCase):
             with self.assertRaises(ValueError):
                 experiments.LedgerBudget(path, 3, 0.75)
 
-    def test_gate_schedule_covers_every_permutation(self):
-        gates = {experiments.schedule(i)[0] for i in range(24)}
-        self.assertEqual(gates, set(itertools.permutations(experiments.IDS)))
-        self.assertEqual(set(experiments.schedule(0)[1].values()), set(experiments.PROFILES))
+    def test_profile_rotation_puts_every_profile_in_every_seat(self):
+        blocks = [experiments.schedule(i * 24) for i in range(4)]
+        for seat in experiments.IDS:
+            self.assertEqual({block[seat] for block in blocks}, set(experiments.PROFILES))
 
     def test_alternative_audit_does_not_mutate_state(self):
-        rules = engine.load_rules(str(ROOT / "experiments/rules/rules_v08_succession.json"))
+        rules = engine.load_rules(str(ROOT / "rules/imperial-rivals-v0.10.2.json"))
         state = engine.new_game(rules, 2026, "audit")
         before = copy.deepcopy(state)
         action = engine.legal_actions(state)[0]
@@ -169,7 +168,7 @@ class TestTwinBoardShortlist(unittest.TestCase):
         # KeyError (found in a live four-agent game at turn 98).
         import random
         import policies
-        rules = engine.load_rules(str(ROOT / "experiments/rules/rules_v094_twinboard.json"))
+        rules = engine.load_rules(str(ROOT / "rules/imperial-rivals-v0.10.2.json"))
         state = engine.new_game(rules, 20261114, "twin-shortlist")
         rng = random.Random(7)
         phases = set()

@@ -43,7 +43,7 @@ class ApplyChange(unittest.TestCase):
 
 class ProposalValidation(unittest.TestCase):
     def make(self, **overrides):
-        proposal = {"rule_path": "succession.contest_cost", "value": 1,
+        proposal = {"rule_path": "succession.contest_fee", "value": 0,
                     "hypothesis": "Free opposition lets rivals cancel every claim.",
                     "prediction": "Draws and cancellations drop sharply with a fee.",
                     "refutation_evidence": "Draws stay near the incumbent level instead."}
@@ -51,25 +51,25 @@ class ProposalValidation(unittest.TestCase):
         return proposal
 
     def test_valid_proposal_passes(self):
-        self.assertIsNone(rp.validate_proposal(self.make(), {"succession": {"contest_cost": 0},
-                                                            "glory": {"cap": 3}}, ALLOWED))
+        self.assertIsNone(rp.validate_proposal(self.make(), {"succession": {"contest_fee": 1},
+                                                            "prestige": {"cap": 3}}, ALLOWED))
 
     def test_wrong_shape_is_invalid_output(self):
-        self.assertEqual(rp.validate_proposal({"rule_path": "glory.cap"}, {}, ALLOWED),
+        self.assertEqual(rp.validate_proposal({"rule_path": "prestige.cap"}, {}, ALLOWED),
                          "invalid_output")
         self.assertEqual(rp.validate_proposal(self.make(hypothesis="short"), {}, ALLOWED),
                          "invalid_output")
 
     def test_paths_and_values_outside_the_space_are_rejected(self):
-        rules = {"succession": {"contest_cost": 0, "support_cost": 1},
-                 "glory": {"cap": 3}, "level1": {"grace_full_rounds": 1}}
+        rules = {"succession": {"contest_fee": 1, "support_cost": 1},
+                 "prestige": {"cap": 3}, "palace": {"rounds_after_checkpoint": 1}}
         self.assertEqual(rp.validate_proposal(self.make(rule_path="movement.sides"),
                                               rules, ALLOWED), "path_outside_permitted_space")
         self.assertEqual(rp.validate_proposal(self.make(value=5), rules, ALLOWED),
                          "value_outside_permitted_space")
 
     def test_incumbent_value_is_a_no_op(self):
-        rules = {"succession": {"contest_cost": 1}, "glory": {"cap": 3}}
+        rules = {"succession": {"contest_fee": 0}, "prestige": {"cap": 3}}
         self.assertEqual(rp.validate_proposal(self.make(), rules, ALLOWED), "no_op_proposal")
 
 
@@ -210,8 +210,9 @@ class CounterplayVeto(unittest.TestCase):
 
 class ScriptedProposals(unittest.TestCase):
     def test_every_scripted_proposal_is_permitted_and_labeled(self):
-        rules = {"succession": {"contest_cost": 0, "support_cost": 1, "challenge_bonus": 2},
-                 "glory": {"cap": 3}, "level1": {"grace_full_rounds": 1}}
+        rules = {"succession": {"contest_fee": 1, "support_cost": 1, "claim_window_rounds": 2,
+                                "factions_to_proclaim": 2},
+                 "prestige": {"cap": 3}, "palace": {"rounds_after_checkpoint": 1}}
         for proposal in rp.SCRIPTED_PROPOSALS:
             self.assertIn("Scripted smoke proposal", proposal["hypothesis"])
             self.assertIsNone(rp.validate_proposal(proposal, rules, ALLOWED))
@@ -244,13 +245,13 @@ class StopPaths(unittest.TestCase):
 
     def test_no_op_proposal_stops_the_run(self):
         incumbent = json.loads(
-            Path("experiments/rules/rules_v08_succession.json").read_text())["succession"]["contest_cost"]
-        code, stop = self.run_main([self.proposal("succession.contest_cost", incumbent)])
+            Path("rules/imperial-rivals-v0.10.2.json").read_text())["succession"]["contest_fee"]
+        code, stop = self.run_main([self.proposal("succession.contest_fee", incumbent)])
         self.assertEqual(code, 3)
         self.assertEqual(stop["reason"], "no_op_proposal")
 
     def test_value_outside_space_stops_the_run(self):
-        code, stop = self.run_main([self.proposal("succession.contest_cost", 7)])
+        code, stop = self.run_main([self.proposal("succession.contest_fee", 7)])
         self.assertEqual(code, 3)
         self.assertEqual(stop["reason"], "value_outside_permitted_space")
 
@@ -258,16 +259,15 @@ class StopPaths(unittest.TestCase):
 class Prompt(unittest.TestCase):
     def test_prompt_carries_the_contract(self):
         cfg = json.loads(Path("experiments/v08-programme.json").read_text())
-        rules = {"succession": {"contest_cost": 0, "support_cost": 1,
-                                "support_in_city": True, "challenge_bonus": 2,
-                                "reset_positions": False},
-                 "glory": {"cap": 3}, "level1": {"grace_full_rounds": 1}}
+        rules = {"succession": {"contest_fee": 1, "support_cost": 1,
+                                "claim_window_rounds": 2, "factions_to_proclaim": 2},
+                 "prestige": {"cap": 3}, "palace": {"rounds_after_checkpoint": 1}}
         prompt, schema = rp.build_prompt(
-            cfg, 1, 3, rules, "experiments/rules/rules_v08_succession.json", [],
+            cfg, 1, 3, rules, "rules/imperial-rivals-v0.10.2.json", [],
             [{"game_id": "g", "turn_id": 1, "choice_rich": True}])
         self.assertIn("Output ONLY a JSON object", prompt)
-        self.assertIn("succession.contest_cost", prompt)
-        self.assertIn("experiments/rules/rules_v08_succession.json", prompt)
+        self.assertIn("succession.contest_fee", prompt)
+        self.assertIn("rules/imperial-rivals-v0.10.2.json", prompt)
         self.assertEqual(schema["required"],
                          ["rule_path", "value", "hypothesis", "prediction",
                           "refutation_evidence"])

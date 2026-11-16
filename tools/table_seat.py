@@ -111,13 +111,13 @@ def claim_lines(obs, rules):
     pending = obs.get("pending_claim")
     if not pending:
         return [f"standing claim: none - stand at the Peristyle with "
-                f"{config['required_support']} supports to proclaim"]
-    window = config.get("claim_window_rounds", 0)
-    fee = config.get("contest_cost", 0)
+                f"{config['factions_to_proclaim']} supports to proclaim"]
+    window = config["claim_window_rounds"]
+    fee = config["contest_fee"]
     last = pending["round"] + window - 1
     return [f"standing claim: {pending['player']} (proclaimed in round {pending['round']}). "
             f"It wins at the end of round {last} unless a rival wins a contest duel "
-            f"first (fee {fee} Prestige, within {rules['movement']['duel_range']} "
+            f"first (fee {fee} Prestige, within {rules['duels']['range']} "
             f"circles of the claimant)."]
 
 

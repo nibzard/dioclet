@@ -21,7 +21,7 @@ class TestMirrorBatchDispatch(unittest.TestCase):
     def test_runs_non_tactical_policy(self):
         res = subprocess.run(
             [sys.executable, os.path.join(ROOT, "tools/mirror_batch.py"),
-             "--rules", os.path.join(ROOT, "experiments/rules/rules_v08_succession.json"),
+             "--rules", os.path.join(ROOT, "rules/imperial-rivals-v0.10.2.json"),
              "--policy", "greedy", "--games", "3", "--seed-base", "9900",
              "--out", tempfile.mkdtemp(prefix="mb-")],
             capture_output=True, text=True)

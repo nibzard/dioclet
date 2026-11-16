@@ -1,4 +1,6 @@
-"""Observation-only projection and candidate shortlists (V0.4).
+# ABOUTME: Observation-only projection and candidate shortlists for the
+# ABOUTME: succession game; reads public observations and rules only.
+"""Observation-only projection and candidate shortlists.
 
 Everything here is a pure function of one public observation plus the
 public rules file. Nothing reads engine internals, `state.json`, or
@@ -7,9 +9,10 @@ only filters, groups, and annotates the engine's `legal_actions`.
 """
 
 import json
-import math
 
-PROJECTION_SCHEMA_VERSION = "v04-proj-1"
+from board import Board
+
+SUCCESSION_SCHEMA_VERSION = "v08-succession-proj-1"
 
 
 def _enumerate_with_sides(sides):
@@ -54,28 +57,39 @@ def duel_win_probability(attacker_bonus, defender_bonus, tie_attacker_wins,
 
 def rule_summary(rules):
     """Public mechanics summary sent to the model (no secrets exist)."""
-    return {
-        "glory_cap": rules["glory"]["cap"],
-        "emperor_hits_to_win": rules["combat"]["emperor_hits_to_win"],
-        "seals_required": rules["level2"]["required_distinct_seals"],
-        "duel_tie_goes_to": "attacker" if not rules["combat"][
-            "tie_goes_to_defender"] else "defender",
-        "duel_lost_turn": bool(rules["combat"].get("duel_lost_turn")),
-        "duel_displacement": bool(rules["combat"].get("duel_displacement")),
-        "duel_glory_theft": bool(rules["combat"].get("duel_glory_theft")),
-        "peristyle_glory_cost": rules["level2"]["peristyle_glory_cost"],
-        "glory_attack_bonus": rules["combat"]["glory_attack_bonus"],
-        "grace_full_rounds": rules["level1"]["grace_full_rounds"],
-        "rotate_first_player": bool(
-            rules.get("turns", {}).get("rotate_first_player_each_round")),
+    cfg = rules["succession"]
+    window = cfg["claim_window_rounds"]
+    summary = {
+        "prestige_cap": rules["prestige"]["cap"],
+        "support_cost": cfg["support_cost"],
+        "required_support": cfg["factions_to_proclaim"],
+        "contest_cost": cfg["contest_fee"],
+        "support_is_permanent": True,
+        "equipment_is_persistent": True,
+        "free_equipment_at_transition": False,
+        "successful_challenge": "Cancel the claim; claimant returns to their own assigned gate.",
+        "duel_tie_goes_to": rules["duels"]["tie_winner"],
+        "guard_success_min_roll": rules["prestige"]["guard_post_min_roll"],
+        "duel_range": rules["duels"]["range"],
+        "grace_full_rounds": rules["palace"]["rounds_after_checkpoint"],
     }
-
-
-def _equipment_bonus(count, rules):
-    for tier in rules["combat"]["equipment_bonus_tiers"]:
-        if tier["min_count"] <= count <= tier["max_count"]:
-            return tier["bonus"]
-    return 0
+    if window:
+        summary["claim_response_rule"] = (
+            f"The claim wins after surviving {window} full round(s) uncancelled; "
+            "responses do not crown it - rivals must cancel it inside the window.")
+    else:
+        summary["claim_response_rule"] = "Each distinct rival completes one response turn."
+    if rules["prestige"]["duel_loss_penalty"]:
+        summary["duel_loser_cost"] = rules["prestige"]["duel_loss_penalty"]
+    if cfg["proclaim_cost"]:
+        summary["proclaim_cost"] = cfg["proclaim_cost"]
+    count = len(cfg["map"]["card_spaces"])
+    summary["support_sites"] = (
+        f"Succession map: the three faction meeting places are hidden among "
+        f"{count} candidate cells; end movement on one and search to reveal it.")
+    summary["equipment_abilities"] = {
+        item: spec["type"] for item, spec in sorted(rules["treasures"]["abilities"].items())}
+    return summary
 
 
 # ---------------------------------------------------------------------------
@@ -84,357 +98,6 @@ def _equipment_bonus(count, rules):
 
 def project_observation(obs, rules):
     """Compact, stable, fully public projection for the model."""
-    if _is_succession(obs, rules):
-        return _project_succession(obs, rules)
-    me = obs["players"][obs["viewer"]]
-    board = obs["board"]
-    opponents = []
-    for pid, pdata in obs["players"].items():
-        if pid == obs["viewer"]:
-            continue
-        opponents.append({
-            "id": pid,
-            "position": pdata["position"],
-            "equipment_count": pdata["equipment_count"],
-            "equipment_bonus": pdata["equipment_bonus"],
-            "glory": pdata["glory"],
-            "seals": pdata["seals"],
-            "emperor_hits": pdata["emperor_hits"],
-        })
-    projection = {
-        "schema": PROJECTION_SCHEMA_VERSION,
-        "game_id": obs["game_id"],
-        "objective": ("Be the first player to land the required Emperor "
-                      "hits in level 2. Maximize your eventual win "
-                      "chance; level 1 collects equipment, Glory, and "
-                      "triggers the transition."),
-        "turn": {
-            "id": obs["turn_id"], "round": obs["round"], "phase": obs["phase"],
-            "player": obs["viewer"], "movement_die": obs["movement_die"],
-            "turn_order_this_round": obs["turn_order"],
-        },
-        "self": {
-            "position": me["position"],
-            "equipment_count": me["equipment_count"],
-            "equipment_bonus": me["equipment_bonus"],
-            "missing_equipment": sorted(
-                set(obs["equipment_names"]) - set(me["equipment"])),
-            "glory": me["glory"],
-            "seals": me["seals"],
-            "emperor_hits": me["emperor_hits"],
-            "skip_next_turn": me.get("skip_next_turn", False),
-        },
-        "opponents": sorted(opponents, key=lambda o: o["id"]),
-        "public_locations": {
-            "emperor": board["emperor"], "retreat": board["retreat"],
-            "seal_sites": board["seal_sites"],
-            "districts": board["districts"],
-            "glory_posts": board["glory_posts"],
-            "checkpoint": board["checkpoint"],
-            "gates": board["gates"],
-        },
-        "revealed_districts": obs["revealed_districts"],
-        "progress": obs["progress"],
-        "rule_summary": rule_summary(rules),
-    }
-    return projection
-
-
-def projection_hash(projection):
-    blob = json.dumps(projection, sort_keys=True, separators=(",", ":"))
-    import hashlib
-    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
-
-
-# ---------------------------------------------------------------------------
-# Candidate shortlist
-# ---------------------------------------------------------------------------
-
-MANDATORY_KINDS = ("attack_emperor", "claim_checkpoint", "attempt_seal",
-                   "explore")
-
-
-def _manhattan(a, b):
-    return abs(a[0] - b[0]) + abs(a[1] - b[1])
-
-
-def _goal_cell(obs, rules):
-    """Nearest current objective cell for move grouping (public data)."""
-    board = obs["board"]
-    me = obs["players"][obs["viewer"]]
-    if obs["phase"] == 2:
-        lacking = [cell for name, cell in board["seal_sites"].items()
-                   if name not in me["seals"]]
-        if lacking and len(me["seals"]) < obs["progress"].get(
-                "seals_required", 2):
-            return min(lacking, key=lambda c: (
-                _manhattan(me["position"], c), c[0], c[1]))
-        return board["emperor"]
-    revealed = obs["revealed_districts"]
-    mine = set(me["equipment"])
-    known_missing = [list(cell) for name, cell in board["districts"].items()
-                     if name in revealed and revealed[name] not in mine]
-    unknown = [list(cell) for name, cell in board["districts"].items()
-               if name not in revealed]
-    pool = known_missing or unknown
-    if pool:
-        return min(pool, key=lambda c: (
-            _manhattan(me["position"], c), c[0], c[1]))
-    return board["checkpoint"]
-
-
-def _action_features(action, obs, rules):
-    """Deterministic per-action feature block (exact odds or heuristic)."""
-    board = obs["board"]
-    me = obs["players"][obs["viewer"]]
-    emperor = board["emperor"]
-    feats = {
-        "path_steps": len(action.get("path", [])) - 1,
-        "distance_to_emperor_after": _manhattan(action["destination"],
-                                                emperor),
-    }
-    kind = action["kind"]
-    if kind == "duel":
-        target = obs["players"][action["target"]]
-        p_win = duel_win_probability(
-            me["equipment_bonus"], target["equipment_bonus"],
-            not rules["combat"]["tie_goes_to_defender"])
-        feats["duel_win_probability_exact"] = round(p_win, 4)
-        feats["target_glory"] = target["glory"]
-        feats["target_emperor_hits"] = target["emperor_hits"]
-        feats["target_seals"] = len(target["seals"])
-        feats["target_distance_to_emperor"] = _manhattan(
-            target["position"], emperor)
-    elif kind == "attack_emperor":
-        bonus = me["equipment_bonus"] + (
-            rules["combat"]["glory_attack_bonus"]
-            if action.get("spend_glory") else 0)
-        feats["hit_probability_exact"] = round(contest_probability(
-            bonus, rules["combat"]["emperor_bonus"], tie_wins=False), 4)
-        feats["would_win_game_if_hit"] = (
-            me["emperor_hits"] + 1 >= obs["progress"].get(
-                "emperor_hits_to_win", 2))
-    elif kind == "attempt_seal":
-        site = next(name for name, cell in board["seal_sites"].items()
-                    if list(cell) == action["destination"])
-        if action.get("spend_glory"):
-            feats["seal_success_probability_exact"] = 1.0
-        elif site == "cellars":
-            feats["seal_success_probability_exact"] = round(
-                threshold_probability(rules["level2"]["cellars_success_min_roll"]), 4)
-        elif site == "peristyle":
-            feats["seal_success_probability_exact"] = round(
-                threshold_probability(rules["level2"]["peristyle_success_min_roll"]), 4)
-        else:  # guard barracks contest
-            feats["seal_success_probability_exact"] = round(
-                contest_probability(me["equipment_bonus"],
-                                    rules["combat"]["imperial_guard_bonus"],
-                                    tie_wins=False), 4)
-    elif kind == "guard_post":
-        feats["glory_probability_exact"] = round(threshold_probability(
-            rules["glory"]["guard_post_success_min_roll"]), 4)
-        feats["glory_room"] = obs["glory_cap"] - me["glory"]
-    elif kind == "explore":
-        district = next((name for name, cell in board["districts"].items()
-                         if list(cell) == action["destination"]), None)
-        feats["district"] = district
-        feats["district_revealed"] = district in obs["revealed_districts"]
-    goal = _goal_cell(obs, rules)
-    feats["distance_to_current_goal_after"] = _manhattan(action["destination"],
-                                                         goal)
-    return feats
-
-
-def _describe(action, obs, feats):
-    kind = action["kind"]
-    dest = action["destination"]
-    if kind == "attack_emperor":
-        spend = ", spending 1 Glory for +2" if action.get("spend_glory") \
-            else " without Glory"
-        win = " (wins the game on a hit)" if feats.get("would_win_game_if_hit") \
-            else ""
-        return (f"Attack the Emperor{spend}; exact hit chance "
-                f"{feats['hit_probability_exact']:.0%}{win}.")
-    if kind == "duel":
-        return (f"Duel {action['target']} "
-                f"(exact win chance {feats['duel_win_probability_exact']:.0%}; "
-                f"target has {feats['target_emperor_hits']} Emperor hits, "
-                f"{feats['target_glory']} Glory).")
-    if kind == "attempt_seal":
-        spend = " by spending 1 Glory (guaranteed)" \
-            if action.get("spend_glory") else " by rolling"
-        return (f"Attempt a seal at {dest}{spend}; exact success chance "
-                f"{feats['seal_success_probability_exact']:.0%}.")
-    if kind == "claim_checkpoint":
-        return "Claim the checkpoint: trigger the level transition and +1 Glory."
-    if kind == "explore":
-        known = "revealed" if feats["district_revealed"] else "unrevealed"
-        return f"Move to district {feats['district']} ({known}) and explore it."
-    if kind == "guard_post":
-        return (f"Work a guard post at {dest}; exact Glory chance "
-                f"{feats['glory_probability_exact']:.0%}.")
-    return (f"Move to {dest} ({feats['path_steps']} step(s); now "
-            f"{feats['distance_to_current_goal_after']} from the current goal).")
-
-
-def build_candidates(obs, rules, cap=16, max_cap=24):
-    """Deterministic shortlist plus an audit trail of exclusions.
-
-    Mandatory actions (winning Emperor attacks, checkpoint, seals,
-    explores, duels per distinct target) are always kept; if they
-    exceed `cap` the cap grows (never silently dropping a win) and the
-    growth is logged. Ordinary moves are grouped by destination value.
-    """
-    if _is_succession(obs, rules):
-        return _build_succession_candidates(obs, rules, cap=cap)
-    legal = obs["legal_actions"]
-    if not legal:
-        raise ValueError("no legal actions in a live turn")
-    if len(legal) == 1:
-        return _finalize(legal, [], obs, rules), []
-
-    mandatory, moves, duels = [], [], {}
-    for action in legal:
-        kind = action["kind"]
-        if kind in MANDATORY_KINDS:
-            mandatory.append(action)
-        elif kind == "duel":
-            key = (action["target"],
-                   1 if action.get("spend_glory") else 0)
-            # Keep one duel per distinct target (and spend variant),
-            # preferring the shortest approach.
-            if key not in duels or len(action["path"]) < len(duels[key]["path"]):
-                duels[key] = action
-        else:
-            moves.append(action)
-
-    mandatory.extend(duels.values())
-    mandatory.sort(key=_action_sort_key)
-    effective_cap = max(cap, len(mandatory))
-    if effective_cap > max_cap:
-        raise ValueError(
-            f"mandatory candidates ({len(mandatory)}) exceed max_cap "
-            f"{max_cap}; refusing to discard wins silently")
-
-    goal = _goal_cell(obs, rules)
-    # Group moves: one per distinct destination, ranked by usefulness
-    # (progress toward the goal first), then keep one deliberately
-    # non-greedy alternative (the move furthest from the goal).
-    ranked = sorted(moves, key=lambda a: (
-        _manhattan(a["destination"], goal),
-        a["destination"][0], a["destination"][1]))
-    seen_dest = set()
-    grouped = []
-    for action in ranked:
-        key = tuple(action["destination"])
-        if key not in seen_dest:
-            seen_dest.add(key)
-            grouped.append(action)
-    room = effective_cap - len(mandatory)
-    kept_moves = grouped[:max(0, room - 1)] if len(grouped) > 1 else grouped
-    if room > 0 and len(grouped) > len(kept_moves):
-        non_greedy = grouped[-1]
-        kept_moves.append(non_greedy)
-        kept_moves = kept_moves[:room]
-    selected = mandatory + kept_moves
-    selected.sort(key=_action_sort_key)
-
-    excluded = []
-    kept_ids = {a["action_id"] for a in selected}
-    for action in legal:
-        if action["action_id"] in kept_ids:
-            continue
-        if action["kind"] == "duel":
-            reason = "duplicate duel target (longer approach kept)"
-        else:
-            reason = "grouped move (a closer or distinct destination kept)"
-        excluded.append({"action_id": action["action_id"],
-                         "kind": action["kind"],
-                         "destination": action["destination"],
-                         "reason": reason})
-    if effective_cap > cap:
-        excluded.append({"note": f"cap raised {cap} -> {effective_cap} to "
-                                 f"keep all mandatory candidates"})
-    return _finalize(selected, excluded, obs, rules), excluded
-
-
-def _action_sort_key(action):
-    return (action["kind"], action["destination"][0], action["destination"][1],
-            action.get("target") or "", 1 if action.get("spend_glory") else 0)
-
-
-def _finalize(selected, excluded, obs, rules):
-    candidates = []
-    for action in selected:
-        feats = _action_features(action, obs, rules)
-        candidates.append({
-            "action_id": action["action_id"],
-            "kind": action["kind"],
-            "destination": action["destination"],
-            "path_steps": len(action.get("path", [])) - 1,
-            "target": action.get("target"),
-            "spend_glory": bool(action.get("spend_glory")),
-            "description": _describe(action, obs, feats),
-            "features": feats,
-        })
-    return candidates
-
-
-# ---------------------------------------------------------------------------
-# V0.8 succession projection. Public observation only.
-# ---------------------------------------------------------------------------
-
-SUCCESSION_SCHEMA_VERSION = "v08-succession-proj-1"
-
-
-def _is_succession(obs=None, rules=None):
-    return (obs or {}).get("gameplay_mode") == "succession-v1" or \
-        (rules or {}).get("gameplay_mode") == "succession-v1"
-
-
-def _succession_rule_summary(rules):
-    cfg = rules["succession"]
-    window = cfg.get("claim_window_rounds", 0)
-    summary = {
-        "prestige_cap": rules["glory"]["cap"],
-        "support_cost": cfg["support_cost"],
-        "required_support": cfg["required_support"],
-        "support_in_city": (cfg["support_in_city"] and not cfg.get("blind_support")),
-        "challenge_cost": cfg["challenge_cost"],
-        "challenge_bonus": cfg["challenge_bonus"],
-        "contest_cost": cfg.get("contest_cost", 0),
-        "support_is_permanent": True,
-        "equipment_is_persistent": True,
-        "free_equipment_at_transition": False,
-        "successful_challenge": "Cancel the claim; claimant returns to their own assigned gate.",
-        "duel_tie_goes_to": "defender" if rules["combat"]["tie_goes_to_defender"] else "attacker",
-        "guard_success_min_roll": rules["glory"]["guard_post_success_min_roll"],
-        "duel_range": rules["movement"]["duel_range"],
-        "grace_full_rounds": rules["level1"]["grace_full_rounds"],
-    }
-    if window:
-        summary["claim_response_rule"] = (
-            f"The claim wins after surviving {window} full round(s) uncancelled; "
-            "responses do not crown it - rivals must cancel it inside the window.")
-    else:
-        summary["claim_response_rule"] = "Each distinct rival completes one response turn."
-    if cfg.get("duel_loser_cost"):
-        summary["duel_loser_cost"] = cfg["duel_loser_cost"]
-    if cfg.get("proclaim_cost"):
-        summary["proclaim_cost"] = cfg["proclaim_cost"]
-    if cfg.get("blind_support"):
-        where = "Succession map" if "board_level2" in rules else "Palace level only"
-        count = len(rules["board_level2"]["support_sites"]) if "board_level2" in rules else 6
-        summary["support_sites"] = (f"{where}: the three faction meeting places "
-                                    f"are hidden among {count} candidate cells; end movement on "
-                                    "one and search to reveal it.")
-    abilities = rules["combat"].get("abilities")
-    if abilities:
-        summary["equipment_abilities"] = {item: spec["type"] for item, spec in sorted(abilities.items())}
-    return summary
-
-
-def _project_succession(obs, rules):
     me = obs["players"][obs["viewer"]]
     public_players = []
     for pid, p in sorted(obs["players"].items()):
@@ -454,7 +117,7 @@ def _project_succession(obs, rules):
             "reach the Peristyle in phase 2, proclaim a claim, and survive "
             "one completed response turn from each rival. Collect equipment "
             "for lasting duel strength. Earn and spend Prestige on support "
-            "or a declared challenge bonus. A rival's successful challenge "
+            "or contesting a claim. A rival's successful challenge "
             "cancels your claim. A pending rival claim must be stopped before "
             "its final outstanding response ends. Choose to maximize your "
             "eventual chance of winning, not merely immediate resources."),
@@ -468,8 +131,8 @@ def _project_succession(obs, rules):
         "public_locations": {key: obs["board"][key] for key in (
             "width", "height", "blocked", "gates", "districts", "glory_posts",
             "checkpoint") if key in obs["board"]},
-        # Blind palace-level support sites replace the printed faction cells;
-        # only candidates and already-revealed sites are public (D17/D25).
+        # Blind card spaces replace the printed faction cells; only
+        # candidates and already-revealed sites are public (D17/D25).
         **({"support_sites": obs["board"]["support_sites"]}
            if "support_sites" in obs["board"] else
            {"factions": obs["board"]["factions"]}),
@@ -478,7 +141,7 @@ def _project_succession(obs, rules):
         "equipment_names": list(obs["equipment_names"]),
         "missing_equipment": sorted(set(obs["equipment_names"]) - set(me["equipment"])),
         "progress": dict(obs["progress"]),
-        "rule_summary": _succession_rule_summary(rules),
+        "rule_summary": rule_summary(rules),
         "limits": (
             "Only one-step dice probabilities are exact. Action choice "
             "probabilities are model preferences, not win rates or human fun scores. "
@@ -486,11 +149,20 @@ def _project_succession(obs, rules):
     }
 
 
+def projection_hash(projection):
+    blob = json.dumps(projection, sort_keys=True, separators=(",", ":"))
+    import hashlib
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+# ---------------------------------------------------------------------------
+# Candidate shortlist
+# ---------------------------------------------------------------------------
+
 def _succession_distances(obs, rules, start):
     # The public rules contain only geometry. No state or secret is read.
-    # Phase 2 is played on the second map when the rules define one.
-    from board import Board
-    level = "board_level2" if obs.get("phase") == 2 and "board_level2" in rules else "board"
+    # Phase 2 is played on the succession map.
+    level = "succession" if obs.get("phase") == 2 else "palace"
     return Board(rules, level).distances(tuple(start))
 
 
@@ -536,13 +208,12 @@ def _succession_features(action, obs, rules):
             feats["distance_to_" + category + "_after"] = min(dists[tuple(c)] for c in targets)
     if action["kind"] == "duel":
         target = obs["players"][action["target"]]
-        bonus = rules["succession"]["challenge_bonus"] if action.get("spend_prestige") else 0
         feats.update({
             "duel_win_probability_exact": round(duel_win_probability(
-                me["equipment_bonus"] + bonus, target["equipment_bonus"],
-                not rules["combat"]["tie_goes_to_defender"],
+                me["equipment_bonus"], target["equipment_bonus"],
+                rules["duels"]["tie_winner"] == "attacker",
                 rules["movement"]["die_sides"]), 6),
-            "prestige_cost": action.get("contest_cost", 0) + (rules["succession"]["challenge_cost"] if action.get("spend_prestige") else 0),
+            "prestige_cost": action.get("contest_cost", 0),
             "target_support_count": len(target["support"]),
             "target_equipment_bonus": target["equipment_bonus"],
             "would_cancel_claim_if_won": feats["counterclaim"],
@@ -552,7 +223,7 @@ def _succession_features(action, obs, rules):
         feats["prestige_cost"] = rules["succession"]["support_cost"]
     elif action["kind"] == "guard_post":
         feats["prestige_probability_exact"] = threshold_probability(
-            rules["glory"]["guard_post_success_min_roll"], rules["movement"]["die_sides"])
+            rules["prestige"]["guard_post_min_roll"], rules["movement"]["die_sides"])
     elif action["kind"] == "explore":
         district = next(name for name, cell in obs["board"]["districts"].items() if list(cell) == dest)
         feats["district"] = district
@@ -598,7 +269,14 @@ def _succession_candidate(action, obs, rules):
             "description": _describe_succession(action, feats), "features": feats}
 
 
-def _build_succession_candidates(obs, rules, cap=16, max_cap=400):
+def build_candidates(obs, rules, cap=16, max_cap=400):
+    """Deterministic shortlist plus an audit trail of exclusions.
+
+    Essential actions (claim actions, support, explores, searches, and
+    duels against a pending claimant) are always kept; if they exceed
+    `cap` the cap grows (never silently dropping a win) and the growth
+    is logged. Ordinary moves are grouped by destination value.
+    """
     legal = obs["legal_actions"]
     if not legal:
         raise ValueError("no legal actions in a live turn")

@@ -15,10 +15,20 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load_board_rules(name="rules_v073_sixblocks_cardo.json"):
-    """The raw map JSON; these files predate the current rules schema."""
+    """The raw V0.7 map JSON, wrapped in the current palace-map shape.
+
+    These files predate the rules schema, so the loader translates their
+    seat-id gate keys to compass names and renames the districts and
+    glory posts to the keys the board module reads.
+    """
     with open(os.path.join(ROOT, "experiments/rules", name),
               encoding="utf-8") as fh:
-        return json.load(fh)
+        raw = json.load(fh)["board"]
+    raw["gates"] = dict(zip(("north", "east", "south", "west"),
+                            (raw["gates"][pid] for pid in ("P0", "P1", "P2", "P3"))))
+    raw["treasure_entries"] = raw.pop("districts")
+    raw["guard_posts"] = raw.pop("glory_posts")
+    return {"palace": {"map": raw}}
 
 
 class TestBoardFactsV073(unittest.TestCase):
@@ -48,7 +58,7 @@ class TestBoardFactsV073(unittest.TestCase):
             components.append(component)
         self.assertEqual(len(components), 6)
         self.assertEqual(sorted(map(len, components)), [25] * 6)
-        buildings = rules["board"]["buildings"]
+        buildings = rules["palace"]["map"]["buildings"]
         self.assertEqual({bld["district"] for bld in buildings}, set("ABCDEF"))
         self.assertTrue(all(not bld.get("pierced_by") for bld in buildings))
 

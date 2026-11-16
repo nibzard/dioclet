@@ -85,24 +85,14 @@ END_MAP = {
     "phase2_timeout": "timeout",
 }
 
-# The default rules file changes name in Phase 2 of the cleanup. Try the
-# new name first, then the name used when these fixtures were recorded.
-RULES_CANDIDATES = (
-    "rules/imperial-rivals-v0.10.2.json",
-    "rules_v0102_bigboard.json",
-)
+RULES_FILE = "rules/imperial-rivals-v0.10.2.json"
 
 GOLDEN_DIR = os.path.join("tests", "fixtures", "golden")
 
 
 def load_default_rules(root):
     """Return (rules, relative path) for the current default rules file."""
-    for rel in RULES_CANDIDATES:
-        path = os.path.join(root, rel)
-        if os.path.exists(path):
-            return engine.load_rules(path), rel
-    raise FileNotFoundError(
-        "no rules file found; tried: " + ", ".join(RULES_CANDIDATES))
+    return engine.load_rules(os.path.join(root, RULES_FILE)), RULES_FILE
 
 
 # ---------------------------------------------------------------------------
@@ -147,7 +137,7 @@ def _items(state):
 
 def _faction_names(state):
     config = state["rules"].get("succession") or {}
-    return sorted(config.get("factions") or {})
+    return sorted(config.get("faction_cards", {}).get("factions") or [])
 
 
 def _support(state):
@@ -252,9 +242,9 @@ def build_game_line(rules, index, seed):
     seat_bots = {f"P{i}": bots[i] for i in range(SEATS)}
     state = engine.new_game(rules, seed, game_id, seat_bots)
     prng = random.Random(f"policy:{game_id}:{seed}")
-    limit = 4 * (rules["level1"]["max_rounds"]
-                 + rules["level1"]["grace_full_rounds"]
-                 + rules["level2"]["max_rounds"]) + 8
+    limit = 4 * (rules["palace"]["max_rounds"]
+                 + rules["palace"]["rounds_after_checkpoint"]
+                 + rules["succession"]["max_rounds"]) + 8
     trace, played = [], 0
     while not engine.is_finished(state):
         played += 1
@@ -299,7 +289,7 @@ def write_fixtures(root, games=GAMES, seed_base=SEED_BASE):
         "bot_pool": list(BOT_POOL),
         "rules_file": rules_rel,
         "rules_hash": engine.rules_hash(rules),
-        "rules_version": rules["rules_version"],
+        "rules_version": rules["game"]["rules_version"],
     }
     meta_path = os.path.join(out_dir, "meta.json")
     with open(meta_path, "w", encoding="utf-8") as fh:

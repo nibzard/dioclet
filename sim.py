@@ -38,8 +38,8 @@ def cmd_validate(args):
     _print_json({
         "ok": True,
         "rules_file": os.path.abspath(args.rules),
-        "rules_version": rules["rules_version"],
-        "game_name": rules["game_name"],
+        "rules_version": rules["game"]["rules_version"],
+        "game_name": rules["game"]["name"],
         "rules_hash": engine.rules_hash(rules),
         "engine_version": engine.ENGINE_VERSION,
     })
