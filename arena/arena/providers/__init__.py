@@ -6,7 +6,16 @@ from typing import Protocol
 
 
 class ProviderError(Exception):
-    """One decision attempt failed. The runner retries once, then stops."""
+    """One decision attempt failed. The runner retries once, then stops.
+
+    `exchange` holds the request sent and the response received, when
+    the failure happened after the request was built. It never holds
+    keys or HTTP headers.
+    """
+
+    def __init__(self, message, exchange=None):
+        super().__init__(message)
+        self.exchange = exchange
 
 
 class TransportError(ProviderError):
@@ -29,6 +38,9 @@ class Decision:
     usage: dict | None = None
     cost_usd: float = 0.0
     reason: str = "provider_choice"
+    confidence: float | None = None
+    # {"request": <exact body sent>, "response": {"status_code", "body"}}.
+    exchange: dict | None = None
 
 
 @dataclass(frozen=True)

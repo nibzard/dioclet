@@ -1,6 +1,7 @@
 # ABOUTME: Shared System One client used by the Jev, Clef, and Perplexity seats.
 # ABOUTME: One choice question per turn; HTTP and answer errors map to the contract.
 
+import dataclasses
 import math
 import time
 
@@ -71,12 +72,20 @@ class SystemOneProvider:
 
     def decide(self, view: TurnView) -> Decision:
         request = self.build_request(view)
+        exchange = {"request": request, "response": None}
         started = time.monotonic()
-        response = self._send(request)
-        latency_ms = round((time.monotonic() - started) * 1000, 1)
-        payload = self._json(response)
-        return self._parse(payload, view.legal_ids, latency_ms,
-                           self._extra_usage(response))
+        try:
+            response = self._send(request)
+            latency_ms = round((time.monotonic() - started) * 1000, 1)
+            exchange["response"] = _recorded(response)
+            payload = self._json(response)
+            decision = self._parse(payload, view.legal_ids, latency_ms,
+                                   self._extra_usage(response))
+        except ProviderError as exc:
+            if exc.exchange is None:
+                exc.exchange = exchange
+            raise
+        return dataclasses.replace(decision, exchange=exchange)
 
     def _send(self, request) -> httpx.Response:
         client = self._client if self._client is not None else httpx.Client()
@@ -100,10 +109,11 @@ class SystemOneProvider:
             return response
         detail = (f"{self.name} HTTP {response.status_code}: "
                   f"{response.text[:200]}")
+        exchange = {"request": request, "response": _recorded(response)}
         if response.status_code in TRANSIENT_STATUS \
                 or response.status_code >= 500:
-            raise TransportError(detail)
-        raise ProviderError(detail)
+            raise TransportError(detail, exchange=exchange)
+        raise ProviderError(detail, exchange=exchange)
 
     def _json(self, response) -> dict:
         try:
@@ -140,14 +150,30 @@ class SystemOneProvider:
         cost = 0.0
         if isinstance(input_tokens, (int, float)) and input_tokens > 0:
             cost = round(input_tokens / 1_000_000 * self.rate(), 8)
+        confidence = answer.get("confidence")
         return Decision(
             action_id=choice,
+            confidence=confidence if _unit(confidence) else None,
             probabilities=_validated_probabilities(
                 answer.get("probabilities"), legal_ids),
             latency_ms=latency_ms,
             usage=usage or None,
             cost_usd=cost,
             reason=f"{self.name}_choice")
+
+
+def _recorded(response) -> dict:
+    """The status and full body, JSON when it parses; never headers."""
+    try:
+        body = response.json()
+    except ValueError:
+        body = response.text
+    return {"status_code": response.status_code, "body": body}
+
+
+def _unit(value) -> bool:
+    return not isinstance(value, bool) and isinstance(value, (int, float)) \
+        and math.isfinite(value) and 0.0 <= value <= 1.0
 
 
 def _validated_probabilities(raw, legal_ids):

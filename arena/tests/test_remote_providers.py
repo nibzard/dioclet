@@ -444,3 +444,68 @@ class TestGateway:
         gateway.build()
         assert seen == {"base_url": "https://ai-gateway.vercel.sh/v1",
                         "api_key": "gw-key"}
+
+
+class TestExchangeCapture:
+    """Every adapter returns what it sent and what it got, for training."""
+
+    @pytest.fixture(autouse=True)
+    def env(self, monkeypatch):
+        monkeypatch.setenv("TYPESAFE_API_KEY", "ts-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "oa-key")
+        monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "cf-token")
+        monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "acct-123")
+
+    def test_systemone_success_keeps_request_raw_body_and_confidence(
+            self, view):
+        payload = _payload(view.candidates[0]["action_id"])
+        provider = jev.build(http_client=_capture_client(
+            lambda request: httpx.Response(200, json=payload)))
+        decision = provider.decide(view)
+        assert decision.exchange["request"] == provider.build_request(view)
+        assert decision.exchange["response"] == {"status_code": 200,
+                                                 "body": payload}
+        assert decision.confidence == 0.6
+        assert "ts-key" not in json.dumps(decision.exchange)
+
+    def test_clef_keeps_the_whole_envelope(self, view):
+        envelope = _workers_ai(_payload(view.candidates[0]["action_id"]))
+        provider = clef.build(http_client=_capture_client(
+            lambda request: httpx.Response(200, json=envelope)))
+        assert provider.decide(view).exchange["response"]["body"] == envelope
+
+    def test_systemone_invalid_answer_carries_exchange(self, view):
+        payload = _payload("nope")
+        provider = jev.build(http_client=_capture_client(
+            lambda request: httpx.Response(200, json=payload)))
+        with pytest.raises(InvalidAnswerError) as info:
+            provider.decide(view)
+        assert info.value.exchange["response"]["body"] == payload
+
+    def test_systemone_http_error_carries_status_and_body(self, view):
+        provider = jev.build(http_client=_capture_client(
+            lambda request: httpx.Response(400, text="bad request")))
+        with pytest.raises(ProviderError) as info:
+            provider.decide(view)
+        assert info.value.exchange["response"] == {"status_code": 400,
+                                                   "body": "bad request"}
+        assert info.value.exchange["request"]["model"] == "jev-latest"
+
+    def test_openai_success_keeps_request_dump_and_confidence(self, view):
+        ids = [c["action_id"] for c in view.candidates]
+        answer = _FakeAnswer(choice=ids[0])
+        answer.confidence = 0.8
+        client = _FakeClient(_FakeResponse([answer], usage=_usage()))
+        decision = openai_decisions.build(client=client).decide(view)
+        assert decision.exchange["request"] == client.calls[0]
+        body = decision.exchange["response"]["body"]
+        assert body["answers"][0]["choice"] == ids[0]
+        assert body["usage"]["input_tokens"] == 1000
+        assert decision.confidence == 0.8
+
+    def test_openai_transport_error_carries_request(self, view):
+        client = _FakeClient(error=RuntimeError("reset"))
+        with pytest.raises(TransportError) as info:
+            openai_decisions.build(client=client).decide(view)
+        assert info.value.exchange["request"]["model"] == "gpt-6-luna"
+        assert info.value.exchange["response"] is None
