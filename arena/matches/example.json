@@ -1,0 +1,11 @@
+{
+  "rules": "rules/v0102.json",
+  "seed": 42,
+  "seats": [
+    {"provider": "openai", "model": "gpt-6-luna"},
+    {"provider": "jev", "model": "jev-latest"},
+    {"provider": "clef", "model": "clef-flash"},
+    {"provider": "pplx", "model": "pplx-decider-v1.3"}
+  ],
+  "budget": {"max_calls": 400, "max_usd": 0.50}
+}
