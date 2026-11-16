@@ -3,7 +3,7 @@
 
 import os
 
-from arena.providers import ProviderError
+from arena.providers import InvalidAnswerError, ProviderError
 from arena.providers.systemone import SystemOneProvider
 
 DEFAULT_MODEL = "clef-flash"
@@ -13,6 +13,22 @@ BASE_URL = ("https://api.cloudflare.com/client/v4/accounts/"
             "{account_id}/ai/run/@cf/cloudflare/{model}")
 
 
+class ClefProvider(SystemOneProvider):
+
+    def _json(self, response) -> dict:
+        """Workers AI wraps the System One answer in a result envelope."""
+        envelope = super()._json(response)
+        if envelope.get("success") is False:
+            messages = "; ".join(str(e.get("message", e))
+                                 for e in envelope.get("errors") or [])
+            raise InvalidAnswerError(
+                f"clef call was not successful: {messages or 'no detail'}")
+        result = envelope.get("result")
+        if not isinstance(result, dict):
+            raise InvalidAnswerError("clef response has no result object")
+        return result
+
+
 def _bare_model(model: str) -> str:
     prefix = "@cf/cloudflare/"
     if model.startswith(prefix):
@@ -20,7 +36,7 @@ def _bare_model(model: str) -> str:
     return model
 
 
-def build(model: str | None = None, http_client=None) -> SystemOneProvider:
+def build(model: str | None = None, http_client=None) -> ClefProvider:
     model = _bare_model(model or DEFAULT_MODEL)
     token = os.environ.get("CLOUDFLARE_API_TOKEN")
     account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
@@ -30,7 +46,7 @@ def build(model: str | None = None, http_client=None) -> SystemOneProvider:
     if missing:
         raise ProviderError(
             f"clef needs {' and '.join(missing)} in the environment")
-    return SystemOneProvider(
+    return ClefProvider(
         name="clef",
         base_url=BASE_URL.format(account_id=account_id, model=model),
         headers={"Authorization": f"Bearer {token}"},

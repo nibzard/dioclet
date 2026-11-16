@@ -37,11 +37,15 @@ SUCCESSION_INSTRUCTIONS = (
 class OpenAIDecisions:
     """One seat backed by client.decisions.create; no silent fallbacks."""
 
-    def __init__(self, client, model):
-        self.name = "openai"
+    def __init__(self, client, model, name="openai", pricing=None,
+                 per_request_usd=None, timeout_s=TIMEOUT_S):
+        self.name = name
         self.client = client
         self.model = model
-        self.timeout_s = TIMEOUT_S
+        self.pricing = pricing or PRICING
+        # Flat fee for each request, in USD, keyed like pricing.
+        self.per_request_usd = per_request_usd or {}
+        self.timeout_s = timeout_s
 
     def build_request(self, view: TurnView) -> dict:
         if view.projection.get("gameplay_mode") == "succession-v1":
@@ -75,7 +79,10 @@ class OpenAIDecisions:
         }
 
     def rate(self) -> float:
-        return PRICING["*"]
+        return self.pricing.get(self.model, self.pricing.get("*", 0.0))
+
+    def request_fee(self) -> float:
+        return self.per_request_usd.get(self.model, 0.0)
 
     def decide(self, view: TurnView) -> Decision:
         request = self.build_request(view)
@@ -88,7 +95,7 @@ class OpenAIDecisions:
             response = client.decisions.create(**request)
         except Exception as exc:
             raise TransportError(
-                f"openai decisions call failed: {exc}") from None
+                f"{self.name} decisions call failed: {exc}") from None
         latency_ms = round((time.monotonic() - started) * 1000, 1)
         return self._parse(response, view.legal_ids, latency_ms)
 
@@ -118,7 +125,8 @@ class OpenAIDecisions:
         input_tokens = usage.get("input_tokens")
         cost = 0.0
         if isinstance(input_tokens, (int, float)) and input_tokens > 0:
-            cost = round(input_tokens / 1_000_000 * self.rate(), 8)
+            cost = input_tokens / 1_000_000 * self.rate()
+        cost = round(cost + self.request_fee(), 8)
         return Decision(
             action_id=choice,
             probabilities=_parse_probabilities(
@@ -126,7 +134,7 @@ class OpenAIDecisions:
             latency_ms=latency_ms,
             usage=usage or None,
             cost_usd=cost,
-            reason="openai_decisions_choice")
+            reason=f"{self.name}_decisions_choice")
 
 
 def _parse_probabilities(raw, legal_ids):

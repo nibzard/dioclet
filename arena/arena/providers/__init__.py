@@ -59,9 +59,10 @@ REQUIRED_ENV = {
     "jev": ("TYPESAFE_API_KEY",),
     "clef": ("CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"),
     "pplx": ("PERPLEXITY_API_KEY",),
+    "gateway": ("AI_GATEWAY_API_KEY",),
 }
 
-REMOTE_PROVIDERS = ("openai", "jev", "clef", "pplx")
+REMOTE_PROVIDERS = ("openai", "jev", "clef", "pplx", "gateway")
 
 # Default model per remote provider, per the plan's example match config.
 DEFAULT_MODELS = {
@@ -69,6 +70,7 @@ DEFAULT_MODELS = {
     "jev": "jev-latest",
     "clef": "clef-flash",
     "pplx": "pplx-decider-v1.3",
+    "gateway": "nace-ai/drex-v2.0",
 }
 
 
@@ -94,7 +96,8 @@ def build_provider(name: str, model: str | None = None):
         modules = {"openai": "arena.providers.openai_decisions",
                    "jev": "arena.providers.jev",
                    "clef": "arena.providers.clef",
-                   "pplx": "arena.providers.pplx"}
+                   "pplx": "arena.providers.pplx",
+                   "gateway": "arena.providers.gateway"}
         import importlib
 
         module = importlib.import_module(modules[name])

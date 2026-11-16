@@ -11,7 +11,8 @@ import pytest
 from arena import engine_adapter
 from arena.providers import (InvalidAnswerError, ProviderError,
                              RefusalError, TransportError, TurnView)
-from arena.providers import clef, jev, openai_decisions, pplx
+from arena.providers import (REMOTE_PROVIDERS, REQUIRED_ENV, clef, gateway,
+                             jev, openai_decisions, pplx)
 from arena.rules_loader import load_rules_strict
 
 RULES_PATH = Path(__file__).resolve().parents[1] / "rules" / "v0102.json"
@@ -185,6 +186,12 @@ class TestSystemOneCore:
         assert provider.decide(view).probabilities is None
 
 
+def _workers_ai(result, success=True, errors=()):
+    """Workers AI wraps every model result in this envelope."""
+    return {"result": result, "success": success, "errors": list(errors),
+            "messages": []}
+
+
 class TestClef:
     @pytest.fixture(autouse=True)
     def env(self, monkeypatch):
@@ -197,8 +204,8 @@ class TestClef:
         def handler(request):
             captured["url"] = str(request.url)
             captured["body"] = json.loads(request.content)
-            return httpx.Response(200, json=_payload(
-                view.candidates[0]["action_id"], model="clef-flash"))
+            return httpx.Response(200, json=_workers_ai(_payload(
+                view.candidates[0]["action_id"], model="clef-flash")))
 
         provider = clef.build(http_client=_capture_client(handler))
         decision = provider.decide(view)
@@ -215,8 +222,8 @@ class TestClef:
         def handler(request):
             captured["url"] = str(request.url)
             captured["body"] = json.loads(request.content)
-            return httpx.Response(200, json=_payload(
-                view.candidates[0]["action_id"], model="clef"))
+            return httpx.Response(200, json=_workers_ai(_payload(
+                view.candidates[0]["action_id"], model="clef")))
 
         provider = clef.build(model="@cf/cloudflare/clef",
                               http_client=_capture_client(handler))
@@ -224,6 +231,16 @@ class TestClef:
         assert captured["url"].endswith("/ai/run/@cf/cloudflare/clef")
         assert captured["body"]["model"] == "clef"
         assert decision.cost_usd == pytest.approx(1000 / 1e6 * 0.24)
+
+    def test_unsuccessful_envelope_reports_errors(self, view):
+        def handler(request):
+            return httpx.Response(200, json=_workers_ai(
+                None, success=False,
+                errors=[{"code": 5007, "message": "model unavailable"}]))
+
+        provider = clef.build(http_client=_capture_client(handler))
+        with pytest.raises(InvalidAnswerError, match="model unavailable"):
+            provider.decide(view)
 
     def test_missing_account_id_is_a_clear_error(self, monkeypatch):
         monkeypatch.delenv("CLOUDFLARE_ACCOUNT_ID", raising=False)
@@ -377,3 +394,53 @@ class TestOpenAI:
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         with pytest.raises(ProviderError, match="OPENAI_API_KEY"):
             openai_decisions.build(client=object())
+
+
+class TestGateway:
+    @pytest.fixture(autouse=True)
+    def env(self, monkeypatch):
+        monkeypatch.setenv("AI_GATEWAY_API_KEY", "gw-key")
+
+    def _decide(self, view, model, input_tokens=1000):
+        ids = [c["action_id"] for c in view.candidates]
+        client = _FakeClient(_FakeResponse(
+            [_FakeAnswer(choice=ids[0])], usage=_usage(input_tokens),
+            model=model))
+        decision = gateway.build(model, client=client).decide(view)
+        return client, decision
+
+    def test_registered_with_its_key(self):
+        assert "gateway" in REMOTE_PROVIDERS
+        assert REQUIRED_ENV["gateway"] == ("AI_GATEWAY_API_KEY",)
+
+    def test_request_uses_gateway_model_id(self, view):
+        client, decision = self._decide(view, "typesafe-ai/jev")
+        assert client.calls[0]["model"] == "typesafe-ai/jev"
+        assert client.calls[0]["questions"][0]["name"] == "best_action"
+        assert decision.reason == "gateway_decisions_choice"
+        assert decision.cost_usd == pytest.approx(1000 / 1e6 * 0.04)
+
+    def test_default_model_is_priced(self):
+        assert gateway.DEFAULT_MODEL in gateway.PRICING
+
+    def test_per_request_fee_is_added(self, view):
+        _, decision = self._decide(view, "perplexity/pplx-decider-flash-v1.3")
+        assert decision.cost_usd == pytest.approx(1000 / 1e6 * 0.01 + 0.001)
+
+    def test_unpriced_model_is_rejected(self):
+        with pytest.raises(ProviderError, match="no price"):
+            gateway.build("acme/unknown-decider", client=object())
+
+    def test_missing_key_is_a_clear_error(self, monkeypatch):
+        monkeypatch.delenv("AI_GATEWAY_API_KEY", raising=False)
+        with pytest.raises(ProviderError, match="AI_GATEWAY_API_KEY"):
+            gateway.build(client=object())
+
+    def test_real_client_points_at_gateway(self, monkeypatch):
+        import openai
+        seen = {}
+        monkeypatch.setattr(openai, "OpenAI",
+                            lambda **kwargs: seen.update(kwargs) or object())
+        gateway.build()
+        assert seen == {"base_url": "https://ai-gateway.vercel.sh/v1",
+                        "api_key": "gw-key"}

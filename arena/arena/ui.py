@@ -42,6 +42,7 @@ def wizard(console):
         model = None
         if provider in REMOTE_PROVIDERS:
             model = Prompt.ask(f"{seat} model",
+                               choices=_model_choices(provider),
                                default=default_model(provider))
         seat_specs.append({"provider": provider, "model": model})
     max_calls = IntPrompt.ask("Budget: max provider calls (0 = no cap)",
@@ -65,6 +66,15 @@ def wizard(console):
     return match_mod.make_config(rules_label, seed, seat_specs,
                                  {"max_calls": max_calls,
                                   "max_usd": max_usd_value})
+
+
+def _model_choices(provider):
+    """Gateway models must be priced, so offer only the priced ids."""
+    if provider == "gateway":
+        from arena.providers import gateway
+
+        return sorted(gateway.PRICING)
+    return None
 
 
 class MatchStreamer:

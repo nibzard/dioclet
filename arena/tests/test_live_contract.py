@@ -23,7 +23,7 @@ def _first_turn_view():
                     candidates=candidates[:3], rules=rules)
 
 
-@pytest.mark.parametrize("provider", ["openai", "jev", "clef", "pplx"])
+@pytest.mark.parametrize("provider", ["openai", "jev", "clef", "pplx", "gateway"])
 def test_live_contract_call(provider, capsys):
     if os.environ.get("ARENA_LIVE_CONTRACT") != "1":
         pytest.skip("set ARENA_LIVE_CONTRACT=1 to spend money")
