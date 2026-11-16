@@ -270,6 +270,17 @@ inform human playtests; they do not establish player enjoyment.
 
 ## Optional model players
 
+**Arena** is the main way to make decision models play. It gives each seat
+its own provider (OpenAI, TypeSafe Jev, Cloudflare Clef, Perplexity, or
+Vercel AI Gateway), streams each turn in the terminal, and keeps a full log
+for model training. See [`arena/README.md`](arena/README.md):
+
+```bash
+cd arena && uv run arena --match matches/bots.json
+```
+
+The older `sim.py` model player is below.
+
 The OpenAI Decisions provider adds model players. Mock and playback providers
 work offline. Live calls require the optional dependency, `OPENAI_API_KEY`,
 explicit opt-in, and budget limits.
@@ -339,6 +350,7 @@ engine on the twin-board rules.
 | [`candidate_actions.py`](candidate_actions.py), [`decisions_policy.py`](decisions_policy.py), [`ai_driver.py`](ai_driver.py) | Model observations, providers, and budgeted game driver |
 | [`report.py`](report.py), [`compare.py`](compare.py) | Batch statistics and comparisons |
 | [`tournament.py`](tournament.py), [`analyze_v041.py`](analyze_v041.py) | Model tournaments and offline analysis |
+| [`arena/`](arena/) | Terminal app: decision models from different providers play each other |
 | [`tools/`](tools/) | Generators, evaluators, experiment runners, and browser checks |
 | [`web/`](web/), [`print/`](print/) | Browser game and printable materials |
 | [`tests/`](tests/) | Engine, policy, experiment, and print checks |
