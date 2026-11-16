@@ -12,7 +12,7 @@ import json
 
 from board import Board
 
-SUCCESSION_SCHEMA_VERSION = "v08-succession-proj-1"
+SUCCESSION_SCHEMA_VERSION = "v0102-succession-proj-1"
 
 
 def _enumerate_with_sides(sides):
@@ -51,14 +51,86 @@ def duel_win_probability(attacker_bonus, defender_bonus, tie_attacker_wins,
                                tie_attacker_wins, sides)
 
 
+def duel_odds(attacker, defender, rules, pending_claim):
+    """Exact attacker win chance for one duel, plus the parts that drove it.
+
+    Mirrors the engine's duel resolution: at most one attack modifier
+    applies (the best; the pilum counts only against the pending
+    claimant), at most one defense modifier applies, never a sum, and
+    the pugio wins ties only for a lone holder. The attacker and
+    defender are public player dicts carrying "id" and "equipment".
+    """
+    abilities = rules["treasures"]["abilities"]
+
+    def _ability_total(equipment, ability_type):
+        total = 0
+        for item in equipment:
+            spec = abilities.get(item)
+            if spec and spec["type"] == ability_type and spec["value"] > 0:
+                total += spec["value"]
+        return total
+
+    attack_mods = []
+    for item in attacker["equipment"]:
+        spec = abilities.get(item)
+        if not spec or spec["value"] <= 0:
+            continue
+        if spec["type"] == "attack_bonus":
+            attack_mods.append(spec["value"])
+        elif (spec["type"] == "attack_vs_claimant" and pending_claim
+                and pending_claim["player"] == defender["id"]):
+            attack_mods.append(spec["value"])
+    defense_mods = []
+    for item in defender["equipment"]:
+        spec = abilities.get(item)
+        if spec and spec["type"] == "defense_bonus" and spec["value"] > 0:
+            defense_mods.append(spec["value"])
+    parts = {
+        "attack_bonus": max(attack_mods) if attack_mods else 0,
+        "defense_bonus": max(defense_mods) if defense_mods else 0,
+        "attacker_pugio": _ability_total(attacker["equipment"], "win_ties") > 0,
+        "defender_pugio": _ability_total(defender["equipment"], "win_ties") > 0,
+        "tie_rule": rules["duels"]["tie_winner"],
+    }
+    sides = rules["movement"]["die_sides"]
+    wins = 0
+    for attack_roll in range(1, sides + 1):
+        for defense_roll in range(1, sides + 1):
+            if parts["attack_bonus"] + attack_roll \
+                    != parts["defense_bonus"] + defense_roll:
+                won = (parts["attack_bonus"] + attack_roll
+                       > parts["defense_bonus"] + defense_roll)
+            elif parts["attacker_pugio"] != parts["defender_pugio"]:
+                won = parts["attacker_pugio"]
+            else:
+                won = parts["tie_rule"] == "attacker"
+            wins += won
+    return {"probability": wins / (sides * sides), "parts": parts}
+
+
 # ---------------------------------------------------------------------------
 # Public-rule helpers
 # ---------------------------------------------------------------------------
 
+def claim_rule_text(rules):
+    """Public claim-win wording, generated from the active rules.
+
+    With a claim window the claim must survive that many full rounds
+    uncancelled; with a zero window each distinct rival completes one
+    response turn and the claim wins when the last response ends.
+    """
+    window = rules["succession"]["claim_window_rounds"]
+    if window:
+        return (f"A proclaimed claim wins after it survives {window} full "
+                "round(s) uncancelled; rivals must cancel it inside the "
+                "window.")
+    return ("Each distinct rival completes one response turn; the claim "
+            "wins when the last response ends without cancelling it.")
+
+
 def rule_summary(rules):
     """Public mechanics summary sent to the model (no secrets exist)."""
     cfg = rules["succession"]
-    window = cfg["claim_window_rounds"]
     summary = {
         "prestige_cap": rules["prestige"]["cap"],
         "support_cost": cfg["support_cost"],
@@ -73,12 +145,7 @@ def rule_summary(rules):
         "duel_range": rules["duels"]["range"],
         "grace_full_rounds": rules["palace"]["rounds_after_checkpoint"],
     }
-    if window:
-        summary["claim_response_rule"] = (
-            f"The claim wins after surviving {window} full round(s) uncancelled; "
-            "responses do not crown it - rivals must cancel it inside the window.")
-    else:
-        summary["claim_response_rule"] = "Each distinct rival completes one response turn."
+    summary["claim_response_rule"] = claim_rule_text(rules)
     if rules["prestige"]["duel_loss_penalty"]:
         summary["duel_loser_cost"] = rules["prestige"]["duel_loss_penalty"]
     if cfg["proclaim_cost"]:
@@ -106,7 +173,6 @@ def project_observation(obs, rules):
             "gate": p["gate"], "gate_id": p["gate_id"],
             "equipment": list(p["equipment"]),
             "equipment_count": p["equipment_count"],
-            "equipment_bonus": p["equipment_bonus"],
             "prestige": p["prestige"], "support": list(p["support"]),
         })
     return {
@@ -114,14 +180,13 @@ def project_observation(obs, rules):
         "gameplay_mode": "succession-v1", "game_id": obs["game_id"],
         "objective": (
             "Win the succession: gain support from two different factions, "
-            "reach the Peristyle in the succession phase, proclaim a claim, "
-            "and survive "
-            "one completed response turn from each rival. Collect equipment "
-            "for lasting duel strength. Earn and spend Prestige on support "
-            "or contesting a claim. A rival's successful challenge "
-            "cancels your claim. A pending rival claim must be stopped before "
-            "its final outstanding response ends. Choose to maximize your "
-            "eventual chance of winning, not merely immediate resources."),
+            "reach the Peristyle in the succession phase, and proclaim a "
+            "claim. " + claim_rule_text(rules) + " "
+            "Collect equipment for lasting duel strength. Earn and spend "
+            "Prestige on support or contesting a claim. A rival's "
+            "successful challenge cancels your claim. Choose to maximize "
+            "your eventual chance of winning, not merely immediate "
+            "resources."),
         "turn": {"id": obs["turn_id"], "round": obs["round"],
                  "phase": obs["phase"], "player": obs["viewer"],
                  "movement_die": obs["movement_die"],
@@ -193,6 +258,11 @@ def _succession_goals(obs, rules):
     return goals
 
 
+def _public_player(obs, pid):
+    """The id and equipment a duel needs, from one public observation."""
+    return {"id": pid, "equipment": obs["players"][pid]["equipment"]}
+
+
 def _succession_features(action, obs, rules):
     me = obs["players"][obs["viewer"]]
     dest = action["destination"]
@@ -209,14 +279,12 @@ def _succession_features(action, obs, rules):
             feats["distance_to_" + category + "_after"] = min(dists[tuple(c)] for c in targets)
     if action["kind"] == "duel":
         target = obs["players"][action["target"]]
+        odds = duel_odds(_public_player(obs, obs["viewer"]),
+                         _public_player(obs, action["target"]), rules, pending)
         feats.update({
-            "duel_win_probability_exact": round(duel_win_probability(
-                me["equipment_bonus"], target["equipment_bonus"],
-                rules["duels"]["tie_winner"] == "attacker",
-                rules["movement"]["die_sides"]), 6),
+            "duel_win_probability_exact": round(odds["probability"], 6),
             "prestige_cost": action.get("contest_cost", 0),
             "target_support_count": len(target["support"]),
-            "target_equipment_bonus": target["equipment_bonus"],
             "would_cancel_claim_if_won": feats["counterclaim"],
         })
     elif action["kind"] == "gain_support":
@@ -235,7 +303,7 @@ def _succession_features(action, obs, rules):
     return feats
 
 
-def _describe_succession(action, feats):
+def _describe_succession(action, feats, rules):
     kind, dest = action["kind"], action["destination"]
     if kind == "explore":
         return f"Collect at district {feats['district']}; equipment stays with you in both phases."
@@ -244,7 +312,7 @@ def _describe_succession(action, feats):
     if kind == "gain_support":
         return f"Gain {action['faction']} support for {feats['prestige_cost']} Prestige, without a die test."
     if kind == "proclaim":
-        return "Proclaim your claim at the Peristyle; win if it survives one response from every rival."
+        return f"Proclaim your claim at the Peristyle. {claim_rule_text(rules)}"
     if kind == "maintain_claim":
         return "Remain at the Peristyle and maintain your pending claim."
     if kind == "claim_checkpoint":
@@ -267,7 +335,8 @@ def _succession_candidate(action, obs, rules):
             "path_steps": len(action.get("path", [])) - 1,
             "target": action.get("target"), "faction": action.get("faction"),
             "spend_prestige": bool(action.get("spend_prestige")),
-            "description": _describe_succession(action, feats), "features": feats}
+            "description": _describe_succession(action, feats, rules),
+            "features": feats}
 
 
 def build_candidates(obs, rules, cap=16, max_cap=400):

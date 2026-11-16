@@ -647,7 +647,6 @@ def observe(state, player):
         players[pid] = {"gate": list(pdata["gate"]), "gate_id": pdata["gate_id"],
                         "position": list(pdata["pos"]), "equipment": sorted(pdata["equipment"]),
                         "equipment_count": len(pdata["equipment"]),
-                        "equipment_bonus": 0,
                         "attack_bonus": _ability_total(pdata, rules, "attack_bonus"),
                         "defense_bonus": _ability_total(pdata, rules, "defense_bonus"),
                         "attack_vs_claimant_bonus": _ability_total(pdata, rules, "attack_vs_claimant"),
@@ -1184,8 +1183,7 @@ def choose_policy(policy_name, obs, rng=None):
 
     def duel_key(action):
         other = obs["players"][action["target"]]
-        edge = (me["equipment_bonus"] + me.get("attack_bonus", 0)
-                - other["equipment_bonus"] - other.get("defense_bonus", 0))
+        edge = me.get("attack_bonus", 0) - other.get("defense_bonus", 0)
         if pending and pending["player"] == action["target"]:
             edge += me.get("attack_vs_claimant_bonus", 0)
         wins = sum(1 for a in range(1, 7) for d in range(1, 7) if a + edge >= d)

@@ -27,7 +27,7 @@ arena = "arena.cli:main"
 dev = ["pytest"]
 
 [tool.uv.sources]
-dioclet-engine = { path = ".." }
+dioclet-engine = { path = "..", editable = true }
 
 [tool.setuptools]
 packages = ["arena"]

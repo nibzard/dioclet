@@ -77,6 +77,31 @@ class TestSuccessionProjection(unittest.TestCase):
             self.assertTrue(c["features"]["would_cancel_claim_if_won"])
             self.assertEqual(c["features"]["prestige_cost"], 1 + bool(action["spend_prestige"]))
 
+    def test_duel_feature_matches_duel_odds_on_a_real_observation(self):
+        rules = copy.deepcopy(self.rules)
+        rules["succession"]["contest_fee"] = 1
+        state = engine.new_game(rules, 1, "duel-feature")
+        state["phase"] = 2
+        state["active_player"] = "P1"
+        state["current_roll"] = 12
+        state["players"]["P0"]["pos"] = [9, 6]
+        state["players"]["P1"]["pos"] = [8, 6]
+        state["players"]["P1"]["prestige"] = 5
+        state["pending_claim"] = {"player": "P0", "claim_id": 1, "responded": ["P2", "P3"]}
+        obs = engine.observe(state, "P1")
+        selected, _ = candidates.build_candidates(obs, rules)
+        targets = {a["action_id"]: a.get("target") for a in obs["legal_actions"]}
+        duels = [c for c in selected if c["kind"] == "duel"]
+        self.assertTrue(duels)
+        for duel in duels:
+            target = targets[duel["action_id"]]
+            attacker = {"id": obs["viewer"],
+                        "equipment": obs["players"][obs["viewer"]]["equipment"]}
+            defender = {"id": target, "equipment": obs["players"][target]["equipment"]}
+            odds = candidates.duel_odds(attacker, defender, rules, obs["pending_claim"])
+            self.assertEqual(duel["features"]["duel_win_probability_exact"],
+                             round(odds["probability"], 6))
+
 
 class TestTwinBoardShortlist(unittest.TestCase):
     def test_shortlist_builds_on_both_maps(self):

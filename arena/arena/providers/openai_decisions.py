@@ -8,31 +8,12 @@ import time
 
 from arena.providers import (Decision, InvalidAnswerError, ProviderError,
                              RefusalError, TransportError, TurnView)
+from arena.prompt import INTRO, PROJECTION_INSTRUCTIONS, succession_instructions
 
 DEFAULT_MODEL = "gpt-6-luna"
 PRICING = {"*": 0.10}
 TIMEOUT_S = 20.0
 QUESTION_NAME = "best_action"
-
-INTRO_TEXT = ("Select the best legal board-game move given this public "
-              "state. Exact single-roll odds in the features are exact; "
-              "any longer-horizon judgement is yours.")
-PROJECTION_INSTRUCTIONS = (
-    "You are one player in a four-player competitive board game. "
-    "Pick the option most likely to improve your eventual chance to be "
-    "first to defeat the Emperor. Prefer an immediate legal win over "
-    "unrelated actions; consider progress, opponents, and resource tempo. "
-    "Use only the supplied public information and action descriptions.")
-SUCCESSION_INSTRUCTIONS = (
-    "You are a player in a four-player imperial succession game. "
-    "Choose the legal action that maximizes your eventual chance "
-    "of being acclaimed emperor. Use the supplied objective and "
-    "response-window rules, not an Emperor boss-fight objective. "
-    "Consider collection, support, Prestige spending, routes, and "
-    "stopping a pending rival claim. If you are the final rival "
-    "to respond, unrelated action can hand the claimant victory. "
-    "Only public evidence is supplied. Exact contest odds describe "
-    "one roll, not eventual win probabilities. Return one supplied action id.")
 
 
 class OpenAIDecisions:
@@ -55,7 +36,7 @@ class OpenAIDecisions:
                 {key: c[key] for key in (
                     "action_id", "kind", "destination", "features")}
                 for c in view.candidates]
-            instructions = SUCCESSION_INSTRUCTIONS
+            instructions = succession_instructions(view.rules)
         else:
             evidence = view.projection
             instructions = PROJECTION_INSTRUCTIONS
@@ -64,7 +45,7 @@ class OpenAIDecisions:
             "input": [{
                 "role": "user",
                 "content": [
-                    {"type": "input_text", "text": INTRO_TEXT},
+                    {"type": "input_text", "text": INTRO},
                     {"type": "input_json", "data": evidence},
                 ],
             }],

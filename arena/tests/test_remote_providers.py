@@ -4,6 +4,7 @@
 import json
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import httpx
 import pytest
@@ -13,7 +14,11 @@ from arena.providers import (InvalidAnswerError, ProviderError,
                              RefusalError, TransportError, TurnView)
 from arena.providers import (REMOTE_PROVIDERS, REQUIRED_ENV, clef, gateway,
                              jev, openai_decisions, pplx)
+from arena.providers.openai_decisions import OpenAIDecisions
+from arena.providers.systemone import SystemOneProvider
+from arena.prompt import INTRO
 from arena.rules_loader import load_rules_strict
+from candidate_actions import claim_rule_text
 
 RULES_PATH = Path(__file__).resolve().parents[2] / "rules" / "imperial-rivals-v0.10.2.json"
 
@@ -356,8 +361,7 @@ class TestOpenAI:
         assert client.options["max_retries"] == 0
         assert request["model"] == "gpt-6-luna"
         content = request["input"][0]["content"]
-        assert content[0] == {"type": "input_text", "text":
-                              openai_decisions.INTRO_TEXT}
+        assert content[0] == {"type": "input_text", "text": INTRO}
         evidence = content[1]["data"]
         assert evidence["candidate_features"][0]["action_id"] == ids[0]
         question = request["questions"][0]
@@ -509,3 +513,97 @@ class TestExchangeCapture:
             openai_decisions.build(client=client).decide(view)
         assert info.value.exchange["request"]["model"] == "gpt-6-luna"
         assert info.value.exchange["response"] is None
+
+
+class TestProviderRuleText:
+    """One sweep of every string a provider can see, against the rules."""
+
+    PERISTYLE = [9, 6]
+    NEAR_PERISTYLE = [8, 6]
+
+    @classmethod
+    def _view(cls, rules, proclaimed):
+        engine = engine_adapter.engine
+        state = engine_adapter.new_game(rules, 7, "rule-text")
+        state.update(turn_order=list(engine.IDS), round_start=0,
+                     turn_index=0, active_player="P0")
+        state["phase"] = 2
+        state["players"]["P0"].update(pos=list(cls.PERISTYLE),
+                                      support=["army", "elites"])
+        state["players"]["P1"].update(pos=list(cls.NEAR_PERISTYLE),
+                                      prestige=1)
+        state["current_roll"], state["current_dice"] = 6, [3, 3]
+        if proclaimed:
+            proclaim = next(a["action_id"] for a in engine.legal_actions(state)
+                            if a["kind"] == "proclaim")
+            # The proclaim ends P0's turn; P1's turn start rolls two dice.
+            with patch.object(engine, "_die", side_effect=[3, 3]):
+                engine_adapter.apply(state, proclaim)
+        obs = engine_adapter.observe(state)
+        projection = engine_adapter.projection(obs, rules)
+        candidates, _ = engine_adapter.candidates(obs, rules)
+        wanted = "duel" if proclaimed else "proclaim"
+        assert any(c["kind"] == wanted for c in candidates)
+        return TurnView(observation=obs, projection=projection,
+                        candidates=candidates, rules=rules)
+
+    @classmethod
+    def _walk(cls, value):
+        if isinstance(value, str):
+            return [value]
+        if isinstance(value, dict):
+            found = []
+            for key, item in value.items():
+                found.extend(cls._walk(key))
+                found.extend(cls._walk(item))
+            return found
+        if isinstance(value, (list, tuple)):
+            found = []
+            for item in value:
+                found.extend(cls._walk(item))
+            return found
+        return []
+
+    @classmethod
+    def _provider_texts(cls, rules):
+        views = (cls._view(rules, proclaimed=False),
+                 cls._view(rules, proclaimed=True))
+        providers = (
+            SystemOneProvider("double", "http://double", {}, "double",
+                              {"*": 0.0}, 1.0),
+            OpenAIDecisions(client=object(), model="double"),
+        )
+        texts = []
+        for view in views:
+            for provider in providers:
+                texts.extend(cls._walk(provider.build_request(view)))
+        return texts
+
+    def test_window_rules_reach_every_provider_string(self):
+        rules = load_rules_strict(RULES_PATH)
+        texts = self._provider_texts(rules)
+        joined = " ".join(texts)
+        expected = claim_rule_text(rules)
+        assert expected in joined
+        window = rules["succession"]["claim_window_rounds"]
+        assert "Use the explicit deadline when a claim is pending." in joined
+        # The value in any full-round wording is the rules value, verbatim.
+        for text in texts:
+            if "full round(s) uncancelled" in text:
+                assert f"{window} full round(s) uncancelled" in text
+        zero = claim_rule_text(
+            {**rules, "succession":
+                {**rules["succession"], "claim_window_rounds": 0}})
+        assert zero not in joined
+        assert "response from every rival" not in joined
+        assert "final rival" not in joined
+
+    def test_zero_window_rules_reach_every_provider_string(self):
+        rules = load_rules_strict(RULES_PATH)
+        rules["succession"]["claim_window_rounds"] = 0
+        texts = self._provider_texts(rules)
+        joined = " ".join(texts)
+        assert claim_rule_text(rules) in joined
+        assert "crowns the claimant" in joined
+        assert "full round(s) uncancelled" not in joined
+        assert "final rival" not in joined

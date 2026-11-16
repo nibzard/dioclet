@@ -48,7 +48,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "dioclet-engine", directory = "../" },
+    { name = "dioclet-engine", editable = "../" },
     { name = "httpx" },
     { name = "jsonschema" },
     { name = "openai", marker = "extra == 'decisions'", specifier = ">=3.46,<4" },
@@ -90,7 +90,7 @@ wheels = [
 [[package]]
 name = "dioclet-engine"
 version = "0.1.0"
-source = { directory = "../" }
+source = { editable = "../" }
 
 [[package]]
 name = "h11"

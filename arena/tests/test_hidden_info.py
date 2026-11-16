@@ -29,7 +29,8 @@ class RecordingProvider:
         self.calls += 1
         self.payloads.append(
             json.dumps(view.observation, sort_keys=True, default=str)
-            + json.dumps(view.projection, sort_keys=True, default=str))
+            + json.dumps(view.projection, sort_keys=True, default=str)
+            + json.dumps(view.candidates, sort_keys=True, default=str))
         first = view.observation["legal_actions"][0]["action_id"]
         return Decision(action_id=first)
 
@@ -42,7 +43,10 @@ class SentinelInjector:
 
     def on_turn_start(self, state, view):
         if not self.injected:
+            pid = next(iter(state["players"]))
             state["secret_sentinel"] = SENTINEL
+            # Hidden per-player detail: no projection or feature may carry it.
+            state["players"][pid]["stats"]["secret_sentinel"] = SENTINEL
             self.injected = True
 
 
@@ -71,11 +75,21 @@ def test_hidden_sentinel_never_reaches_provider_or_logs(tmp_path, monkeypatch):
     for payload in recorder.payloads:
         assert SENTINEL not in payload
         assert "secret_sentinel" not in payload
+        assert "stats" not in payload
+        assert "equipment_bonus" not in payload
     with open(os.path.join(run_dir, "match.jsonl"), "r",
               encoding="utf-8") as fh:
-        log_blob = fh.read()
-    assert SENTINEL not in log_blob
-    assert "secret_sentinel" not in log_blob
+        rows = [json.loads(line) for line in fh]
+    for row in rows:
+        if row["type"] == "result":
+            # engine.result publishes final player-stat diagnostics; only
+            # the provider-facing rows must keep hidden state out.
+            continue
+        blob = json.dumps(row, sort_keys=True)
+        assert SENTINEL not in blob
+        assert "secret_sentinel" not in blob
+        assert "stats" not in blob
+        assert "equipment_bonus" not in blob
     with open(os.path.join(run_dir, "engine", "state.json"), "r",
               encoding="utf-8") as fh:
         state_blob = fh.read()

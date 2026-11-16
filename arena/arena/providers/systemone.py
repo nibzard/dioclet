@@ -9,31 +9,10 @@ import httpx
 
 from arena.providers import (Decision, InvalidAnswerError, ProviderError,
                              TransportError, TurnView)
+from arena.prompt import CLASSIC_INSTRUCTIONS, INTRO, succession_instructions
 
 QUESTION_NAME = "best_action"
 TRANSIENT_STATUS = frozenset({408, 429, 529})
-
-INTRO_TEXT = ("Select the best legal board-game move given this public "
-              "state. Exact single-roll odds in the features are exact; "
-              "any longer-horizon judgement is yours.")
-CLASSIC_INSTRUCTIONS = (
-    "You are one player in a four-player competitive board game. "
-    "Pick the option most likely to improve your eventual chance to be "
-    "first to defeat the Emperor. Prefer an immediate legal win over "
-    "unrelated actions; consider progress, opponents, and resource tempo. "
-    "Use only the supplied public information and action descriptions. "
-    "Return one of the supplied option ids.")
-SUCCESSION_INSTRUCTIONS = (
-    "You are a player in a four-player imperial succession game. "
-    "Choose the legal action that maximizes your eventual chance "
-    "of being acclaimed emperor. Use the supplied objective and "
-    "response-window rules, not an Emperor boss-fight objective. "
-    "Consider collection, support, Prestige spending, routes, and "
-    "stopping a pending rival claim. If you are the final rival "
-    "to respond, unrelated action can hand the claimant victory. "
-    "Only public evidence is supplied. Exact contest odds describe "
-    "one roll, not eventual win probabilities. Return one of the "
-    "supplied option ids.")
 
 
 class SystemOneProvider:
@@ -51,7 +30,7 @@ class SystemOneProvider:
 
     def build_request(self, view: TurnView) -> dict:
         if view.projection.get("gameplay_mode") == "succession-v1":
-            instructions = SUCCESSION_INSTRUCTIONS
+            instructions = succession_instructions(view.rules)
         else:
             instructions = CLASSIC_INSTRUCTIONS
         return {
@@ -60,7 +39,7 @@ class SystemOneProvider:
             "questions": {
                 QUESTION_NAME: {
                     "type": "choice",
-                    "instructions": f"{INTRO_TEXT} {instructions}",
+                    "instructions": f"{INTRO} {instructions}",
                     "criteria": {c["action_id"]: c["description"]
                                  for c in view.candidates},
                 }
