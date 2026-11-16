@@ -49,7 +49,7 @@ def main(argv=None):
         metric_row("mean rounds", lambda s: s["durations"]["total_rounds"]["mean"]),
         metric_row("p95 rounds", lambda s: s["durations"]["total_rounds"]["p95"]),
         metric_row("median turns", lambda s: s["durations"]["total_turns"]["median"]),
-        metric_row("rounds L1 (med)", lambda s: s["durations"]["rounds_level1"]["median"]),
+        metric_row("rounds palace (med)", lambda s: s["durations"]["rounds_palace"]["median"]),
         metric_row("duels/game", lambda s: s["duels"]["per_game_mean"], 2),
         metric_row("attacker win %", lambda s: 100 * s["duels"]["attacker_win_rate"], 0),
         metric_row("aggressive win %", lambda s: 100 * s["win_rate_by_policy"]["aggressive"]["rate"], 0),
@@ -61,10 +61,7 @@ def main(argv=None):
         metric_row("1st challenger win %", lambda s: 100 * s["first_challenger"]["challenger_win_rate"], 0),
         metric_row("comeback share %", lambda s: 100 * s["first_challenger"]["comeback_share_of_wins"], 0),
         metric_row("collected/player", lambda s: s["equipment"]["collected_per_player"]["mean"], 2),
-        metric_row("auto-granted/player", lambda s: s["equipment"]["auto_granted_per_player"]["mean"], 2),
-        metric_row("emperor hit %", lambda s: 100 * s["emperor"]["hit_rate"], 0),
-        metric_row("peristyle buys", lambda s: s["seals"]["peristyle_glory_purchases"], 0),
-        metric_row("glory wasted/player", lambda s: s["glory"]["wasted_at_cap_per_player"]["mean"], 2),
+        metric_row("prestige wasted/player", lambda s: s["prestige"]["wasted_at_cap_per_player"]["mean"], 2),
     ]
 
     width = max(len(h) for h in headers + [r[0] for r in rows]) + 2

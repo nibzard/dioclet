@@ -27,7 +27,7 @@ class ValueMembership(unittest.TestCase):
 
 class ApplyChange(unittest.TestCase):
     def setUp(self):
-        self.rules = {"succession": {"contest_cost": 0}, "glory": {"cap": 3}}
+        self.rules = {"succession": {"contest_cost": 0}, "prestige": {"cap": 3}}
 
     def test_nested_path_is_written_on_a_copy(self):
         updated = rp.apply_change(self.rules, "succession.contest_cost", 1)
@@ -38,7 +38,7 @@ class ApplyChange(unittest.TestCase):
         with self.assertRaises(KeyError):
             rp.apply_change(self.rules, "succession.missing", 1)
         with self.assertRaises(KeyError):
-            rp.apply_change(self.rules, "glory.nope", 1)
+            rp.apply_change(self.rules, "prestige.nope", 1)
 
 
 class ProposalValidation(unittest.TestCase):

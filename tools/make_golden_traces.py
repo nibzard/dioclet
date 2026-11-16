@@ -82,7 +82,7 @@ KIND_MAP = {
 END_MAP = {
     "acclamation": "acclamation",
     "survived_window": "survived_window",
-    "phase2_timeout": "timeout",
+    "succession_timeout": "timeout",
 }
 
 RULES_FILE = "rules/imperial-rivals-v0.10.2.json"
@@ -116,11 +116,9 @@ def _player_rows(state):
 
 
 def _score(pdata):
-    """The per-player score. The palace game calls it glory; the
-    succession game calls it prestige. The trace calls it points."""
-    if "prestige" in pdata:
-        return pdata["prestige"]
-    return pdata["glory"]
+    """The per-player score. The engine calls it prestige; the trace
+    calls it points."""
+    return pdata["prestige"]
 
 
 def _points(state):
@@ -215,10 +213,10 @@ def neutral_result(state):
             "winner": (None if res["winner"] is None
                        else _seat_index(res["winner"])),
             "end": END_MAP[res["end_reason"]],
-            "rounds": {"palace": res["rounds_level1"] or 0,
-                       "succession": res["rounds_level2"]},
-            "turns": {"palace": res["turns_level1"],
-                      "succession": res["turns_level2"],
+            "rounds": {"palace": res["rounds_palace"] or 0,
+                       "succession": res["rounds_succession"]},
+            "turns": {"palace": res["turns_palace"],
+                      "succession": res["turns_succession"],
                       "total": res["total_turns"]},
             "points": _points(state),
         },

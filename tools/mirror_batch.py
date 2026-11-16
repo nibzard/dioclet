@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Run mirror batches with one policy in all four seats.
 
-Dispatches to tactical_policy for "tactical" and to the frozen
-registry otherwise (V0.6.2 fix: --policy is now honored).
+Dispatches every policy, "tactical" included, to the frozen
+registry (V0.6.2 fix: --policy is now honored).
 
 Batch runner support (V0.6.1): runs N games with one policy in all
 four seats, fixed seeds, and writes a compact fairness summary:
@@ -18,7 +18,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import engine
 import policies
-import tactical_policy
 
 
 def wilson(w, n):
@@ -59,10 +58,7 @@ def main():
                 break
             ap_player = state["active_player"]
             obs = engine.observe(state, ap_player)
-            if args.policy == "tactical":
-                aid, reason = tactical_policy.choose(obs, rules)
-            else:
-                aid, reason = policies.act(args.policy, obs, prng)
+            aid, reason = policies.act(args.policy, obs, prng)
             engine.apply_action(state, ap_player, obs["turn_id"], aid, reason)
         res = engine.result(state)
         if res["outcome"] == "draw":
@@ -90,11 +86,9 @@ def main():
             "rounds_median": rounds[len(rounds) // 2],
             "rounds_p90": rounds[int(0.9 * (len(rounds) - 1))],
             "rounds_max": rounds[-1] if rounds else None},
-        "policy_version": (tactical_policy.TACTICAL_VERSION
-                            if args.policy == "tactical"
-                            else getattr(policies,
-                                         f"{args.policy.upper()}_VERSION",
-                                         "frozen (D24)")),
+        "policy_version": getattr(policies,
+                                  f"{args.policy.upper()}_VERSION",
+                                  "frozen (D24)"),
     }
     os.makedirs(args.out, exist_ok=True)
     with open(os.path.join(args.out, "summary.json"), "w") as fh:

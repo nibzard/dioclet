@@ -19,7 +19,8 @@ def load_board_rules(name="rules_v073_sixblocks_cardo.json"):
 
     These files predate the rules schema, so the loader translates their
     seat-id gate keys to compass names and renames the districts and
-    glory posts to the keys the board module reads.
+    guard posts to the keys the board module reads (the history files
+    still name the posts with the old word).
     """
     with open(os.path.join(ROOT, "experiments/rules", name),
               encoding="utf-8") as fh:
@@ -113,7 +114,7 @@ class TestBoardFactsV073(unittest.TestCase):
     def test_no_path_crosses_a_building(self):
         b = board.Board(load_board_rules())
         specials = (list(b.gates.values()) + list(b.districts.values())
-                    + [b.checkpoint] + b.glory_posts)
+                    + [b.checkpoint] + b.guard_posts)
         for a in specials:
             for c in specials:
                 path = b.path(a, c)

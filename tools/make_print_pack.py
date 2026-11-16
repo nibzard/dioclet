@@ -69,7 +69,7 @@ def board_svg(rules):
     for name, (x, y) in b.districts.items():
         s.append(chip(x, y, "#3f6f9e", name, 16))
     s.append(chip(*b.checkpoint, "#c9972b", "X", 16))
-    for (x, y) in b.glory_posts:
+    for (x, y) in b.guard_posts:
         s.append(chip(x, y, "#5f7a4a", "*", 18))
     for faction, (x, y) in engine._faction_cells(rules).items():
         label = {"army": "A", "officials": "O", "elites": "C"}[faction]

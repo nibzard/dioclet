@@ -245,7 +245,7 @@ def _validate_succession_map(rules):
     for cell in sites:
         if tuple(cell) not in reach:
             _error("invalid_rules", "succession.map card space must be a reachable street")
-    for cell in b.glory_posts:
+    for cell in b.guard_posts:
         if cell not in reach:
             _error("invalid_rules", "succession.map guard post must be reachable")
     for pid, gate in b.gates.items():
@@ -406,7 +406,7 @@ def _load_rng(state_blob):
 
 def _board(rules, phase=1):
     """The active Board: the palace map, or the succession map in
-    phase 2."""
+    the succession phase."""
     section = "succession" if phase == 2 else "palace"
     key = json.dumps([section, rules[section]["map"]],
                      sort_keys=True, separators=(",", ":"))
@@ -420,7 +420,7 @@ def _board(rules, phase=1):
 
 def _gate_cell(state, player, phase=None):
     """The player's gate on the ACTIVE board (the gates move to the
-    succession map in phase 2)."""
+    succession map in the succession phase)."""
     phase = state["phase"] if phase is None else phase
     section = "succession" if phase == 2 else "palace"
     return list(gate_cells(state["rules"][section]["map"])[player["gate_id"]])
@@ -448,9 +448,9 @@ def _path(b, start, end):
 
 
 def _faction_cells(rules):
-    """Faction name to meeting-place cell, for phase-2 states built
-    without the blind deal (the dealt layout otherwise defines the
-    cells). The first three card spaces hold the factions."""
+    """Faction name to meeting-place cell, for succession-phase states
+    built without the blind deal (the dealt layout otherwise defines
+    the cells). The first three card spaces hold the factions."""
     cards = rules["succession"]["faction_cards"]["factions"]
     spaces = rules["succession"]["map"]["card_spaces"][:len(cards)]
     return dict(zip(sorted(cards), (list(c) for c in spaces)))
@@ -511,7 +511,7 @@ def new_game(rules, seed, game_id, policies=None):
         "pending_claim": None, "first_challenger": None, "trigger_round": None,
         "district_equipment": {}, "revealed": {}, "equipment_at_transition": {},
         "faction_sites": None, "faction_sites_revealed": None,
-        "phase1_timeout": False, "phase2_timeout": False, "rounds_level1": None,
+        "palace_timeout": False, "succession_timeout": False, "rounds_palace": None,
         "status": "in_progress", "winner": None, "end_reason": None,
         "event_seq": 0, "events": [], "policies": dict(policies or {}),
         "policy_version": POLICY_VERSION,
@@ -586,7 +586,8 @@ def legal_actions(state):
                 if state["faction_sites"] is not None:
                     # Blind faction cards: search unrevealed cells (the offer
                     # never depends on the hidden faction - DECISIONS.md D1),
-                    # buy support only at revealed sites that hold a faction.
+                    # buy support only at revealed card spaces that hold
+                    # a faction.
                     key = f"{dest[0]},{dest[1]}"
                     if key in state["faction_sites"] and key not in state["faction_sites_revealed"]:
                         add("search_site", dest)
@@ -606,7 +607,7 @@ def legal_actions(state):
                         and me["prestige"] >= config["proclaim_cost"]):
                     add("proclaim", dest)
         if moved:
-            if dest in b.glory_posts and (cap is None or me["prestige"] < cap):
+            if dest in b.guard_posts and (cap is None or me["prestige"] < cap):
                 add("guard_post", dest)
             for other, target in sorted(state["players"].items()):
                 if other == pid or _distances(b, dest)[tuple(target["pos"])] > rules["duels"]["range"]:
@@ -656,8 +657,8 @@ def observe(state, player):
                 "players_with_full_equipment": [p for p in IDS
                                                 if len(state["players"][p]["equipment"]) >= rules["palace"]["checkpoint_items_required"]],
                 "claim_required_equipment": rules["palace"]["checkpoint_items_required"],
-                "level1_max_rounds": rules["palace"]["max_rounds"],
-                "level2_max_rounds": rules["succession"]["max_rounds"],
+                "palace_max_rounds": rules["palace"]["max_rounds"],
+                "succession_max_rounds": rules["succession"]["max_rounds"],
                 "grace_full_rounds": rules["palace"]["rounds_after_checkpoint"],
                 "support_cost": config["support_cost"],
                 "required_support": config["factions_to_proclaim"],
@@ -678,10 +679,10 @@ def observe(state, player):
                       "blocked": [list(c) for c in sorted(b.blocked)],
                       "gates": {p: list(c) for p, c in b.gates.items()},
                       "districts": {n: list(c) for n, c in b.districts.items()},
-                      "glory_posts": [list(c) for c in b.glory_posts],
+                      "guard_posts": [list(c) for c in b.guard_posts],
                       "checkpoint": list(b.checkpoint),
-                      **({"support_sites": {"candidates": [[int(x) for x in k.split(",")] for k in sorted(state["faction_sites"])],
-                                            "revealed": {k: v for k, v in sorted(state["faction_sites_revealed"].items())}}}
+                      **({"card_spaces": {"candidates": [[int(x) for x in k.split(",")] for k in sorted(state["faction_sites"])],
+                                          "revealed": {k: v for k, v in sorted(state["faction_sites_revealed"].items())}}}
                          if state["faction_sites"] is not None
                          else {"factions": ({} if state["phase"] == 1
                                             else copy.deepcopy(_faction_cells(rules)))})},
@@ -791,7 +792,7 @@ def apply_action(state, player, turn_id, action_id, reason=None):
         faction = state["faction_sites"][key]
         state["faction_sites_revealed"][key] = faction
         me["stats"]["site_searches"] += 1
-        events.append({"type": "support_site_revealed", "player": player,
+        events.append({"type": "card_space_revealed", "player": player,
                        "cell": list(me["pos"]), "faction": faction})
     elif kind == "gain_support":
         _spend(state, player, config["support_cost"], "faction_support", events)
@@ -913,7 +914,7 @@ def apply_action(state, player, turn_id, action_id, reason=None):
               "movement_die": state["current_roll"], "movement_dice": state["current_dice"][:],
               "action_id": action_id, "action": {k: v for k, v in action.items() if k != "action_id"},
               "dice_used": dice_used, "events": events, "position_after": me["pos"][:],
-              "prestige_after": me["prestige"], "glory_after": me["prestige"],
+              "prestige_after": me["prestige"],
               "equipment_count_after": len(me["equipment"])}
     if reason is not None:
         record["reason"] = reason
@@ -952,8 +953,8 @@ def _advance(state):
             if state["first_challenger"] is not None:
                 end = min(end, state["trigger_round"] + rules["palace"]["rounds_after_checkpoint"])
             if state["round"] > end:
-                state["rounds_level1"] = state["round"] - 1
-                state["phase1_timeout"] = state["first_challenger"] is None
+                state["rounds_palace"] = state["round"] - 1
+                state["palace_timeout"] = state["first_challenger"] is None
                 state["equipment_at_transition"] = {p: len(d["equipment"]) for p, d in state["players"].items()}
                 # The succession map takes over and every seat returns to
                 # its gate on that map (the playtest's table rule, now
@@ -974,13 +975,13 @@ def _advance(state):
                     state["faction_sites"][f"{cell[0]},{cell[1]}"] = name
                 state["faction_sites_revealed"] = {}
                 state["events"][-1]["events"].append({"type": "phase_transition", "from_phase": 1,
-                    "to_phase": 2, "auto_granted": {}, "phase1_timeout": state["phase1_timeout"]})
+                    "to_phase": 2, "palace_timeout": state["palace_timeout"]})
         elif state["round"] > rules["succession"]["max_rounds"]:
-            state["status"], state["winner"], state["end_reason"] = "finished", None, "phase2_timeout"
-            state["phase2_timeout"] = True
+            state["status"], state["winner"], state["end_reason"] = "finished", None, "succession_timeout"
+            state["succession_timeout"] = True
             state["round"] = rules["succession"]["max_rounds"]
             state["current_roll"] = None
-            state["events"][-1]["events"].append({"type": "game_draw", "reason": "phase2_timeout"})
+            state["events"][-1]["events"].append({"type": "game_draw", "reason": "succession_timeout"})
             return
     _start_turn(state)
 
@@ -999,15 +1000,7 @@ def result(state):
             "equipment_final": player["equipment"][:], "support": player["support"][:],
             "abilities_used": dict(player["abilities_used"]),
             "equipment_at_transition": state["equipment_at_transition"].get(pid),
-            "districts_explored": len(districts),
-            # Explicit compatibility columns for the original CSV writer.
-            "glory_final": player["prestige"], "glory_earned": stats["prestige_earned"],
-            "glory_spent": stats["prestige_spent"], "glory_wasted_at_cap": stats["prestige_wasted_at_cap"],
-            "auto_granted": 0, "glory_stolen": 0, "glory_lost_theft": 0,
-            "turns_skipped": 0, "chamber_evictions": 0, "seals": [], "seal_attempts": 0,
-            "seal_attempts_by_site": {"cellars": 0, "guard_barracks": 0, "peristyle": 0},
-            "emperor_attempts": 0, "emperor_hits": 0,
-            "glory_spent_peristyle": 0, "glory_spent_emperor": 0}
+            "districts_explored": len(districts)}
     turns1 = sum(r["phase"] == 1 for r in state["events"])
     first = state["first_challenger"]
     return {"gameplay_mode": MODE, "game_id": state["game_id"], "seed": state["seed"],
@@ -1017,11 +1010,11 @@ def result(state):
         "setup_reveals": list(state.get("setup_reveals", [])),
         "first_challenger_won": first == state["winner"] if first else None,
         "comeback_win": first != state["winner"] if first and state["winner"] else None,
-        "phase1_timeout": state["phase1_timeout"], "phase2_timeout": state["phase2_timeout"],
-        "rounds_level1": state["rounds_level1"], "rounds_level2": state["round"] if state["phase"] == 2 else 0,
-        "turns_level1": turns1, "turns_level2": len(state["events"]) - turns1,
+        "palace_timeout": state["palace_timeout"], "succession_timeout": state["succession_timeout"],
+        "rounds_palace": state["rounds_palace"], "rounds_succession": state["round"] if state["phase"] == 2 else 0,
+        "turns_palace": turns1, "turns_succession": len(state["events"]) - turns1,
         "total_turns": len(state["events"]),
-        "total_rounds": (state["rounds_level1"] or 0) + (state["round"] if state["phase"] == 2 else 0),
+        "total_rounds": (state["rounds_palace"] or 0) + (state["round"] if state["phase"] == 2 else 0),
         "policies": dict(state["policies"]), "turn_order": current_order(state),
         "gate_assignments": dict(state["gate_assignments"]), "players": metrics,
         "high_impact_events": [{"turn_id": r["turn_id"], "round": r["round"], "phase": r["phase"], **ev}
@@ -1057,7 +1050,7 @@ def check_invariants(state):
     if state["faction_sites"]:
         names = set(state["rules"]["succession"]["faction_cards"]["factions"])
         held = sorted(f for f in state["faction_sites"].values() if f)
-        assert held == sorted(names), "blind support sites must hold each faction exactly once"
+        assert held == sorted(names), "blind card spaces must hold each faction exactly once"
         assert set(state["faction_sites_revealed"]) <= set(state["faction_sites"]), "revealed site is not a candidate"
         for key, faction in state["faction_sites_revealed"].items():
             assert state["faction_sites"][key] == faction, "revealed site mismatches the hidden deal"
@@ -1210,7 +1203,7 @@ def choose_policy(policy_name, obs, rng=None):
             if available_duels:
                 return select(min(available_duels, key=duel_key), "earn Prestige for a future contest")
             public_dist = _public_distances(obs, me["position"])
-            posts = obs["board"]["glory_posts"]
+            posts = obs["board"]["guard_posts"]
             if posts:
                 guard = min(posts, key=lambda c: (public_dist[tuple(c)], c))
                 return toward(guard, "seek Prestige for a future contest")
@@ -1244,10 +1237,10 @@ def choose_policy(policy_name, obs, rng=None):
         district_targets = [cell for name, cell in obs["board"]["districts"].items()
                             if name not in revealed or revealed[name] not in owned]
         explore_target = min(district_targets, key=lambda c: (public_dist[tuple(c)], c)) if district_targets else None
-    if "support_sites" in obs["board"]:
-        # Blind card spaces: target revealed faction sites, else hunt
+    if "card_spaces" in obs["board"]:
+        # Blind card spaces: target revealed faction spaces, else hunt
         # the nearest unrevealed candidate cell.
-        sites = obs["board"]["support_sites"]
+        sites = obs["board"]["card_spaces"]
         revealed = sites["revealed"]
         useful_sites = [(tuple(int(v) for v in k.split(",")), f)
                         for k, f in revealed.items() if f and f not in me["support"]]
@@ -1261,8 +1254,8 @@ def choose_policy(policy_name, obs, rng=None):
     search_target = min(unknown_sites, key=lambda c: (public_dist[c], c)) if unknown_sites else None
     guards = bykind("guard_post")
     duels = [a for a in bykind("duel") if not a["spend_prestige"]]
-    guard_target = (min(obs["board"]["glory_posts"], key=lambda c: (public_dist[tuple(c)], c))
-                    if obs["board"]["glory_posts"] else None)
+    guard_target = (min(obs["board"]["guard_posts"], key=lambda c: (public_dist[tuple(c)], c))
+                    if obs["board"]["guard_posts"] else None)
     # Distinct probes stress the economy without changing the core rules.
     if policy_name == "early_support":
         gear_needed = False
@@ -1292,7 +1285,7 @@ def choose_policy(policy_name, obs, rng=None):
         if bykind("gain_support"):
             return select(nearest(bykind("gain_support")), "secure a distinct faction's support")
         if bykind("search_site"):
-            return select(nearest(bykind("search_site")), "search a support site")
+            return select(nearest(bykind("search_site")), "search a card space")
         if search_target:
             return toward(search_target, "hunt a hidden meeting place")
         if prestige >= progress["support_cost"] and faction_target:

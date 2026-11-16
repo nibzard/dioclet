@@ -185,8 +185,8 @@ def describe_events(record):
             parts.append("draw")
         elif kind == "turn_skipped":
             parts.append(f"{ev.get('player', '?')} skips (lost turn)")
-        elif kind == "support_site_revealed":
-            parts.append("support site revealed")
+        elif kind == "card_space_revealed":
+            parts.append("card space revealed")
         elif kind == "ability_used":
             parts.append("ability used")
         else:

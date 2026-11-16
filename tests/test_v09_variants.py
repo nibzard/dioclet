@@ -433,7 +433,7 @@ class TestCourt(unittest.TestCase):
         obs = engine.observe(state, state["active_player"])
         blob = json.dumps(obs)
         self.assertNotIn("PRIVATE-FACTION", blob)
-        self.assertIn("support_sites", obs["board"])
+        self.assertIn("card_spaces", obs["board"])
         self.assertNotIn("factions", obs["board"])
         self.assertTrue(all("faction" not in a or a.get("faction") is None
                             or a["kind"] == "gain_support" for a in obs["legal_actions"]))
@@ -558,25 +558,25 @@ class TestTwinBoard(unittest.TestCase):
         self.assertNotIn("treasure_entries", twin)
         self.assertIn("card_spaces", twin)
 
-    def test_transition_moves_every_seat_to_the_level2_gate(self):
+    def test_transition_moves_every_seat_to_the_succession_gate(self):
         rules = self.rules_twin()
         state = engine.new_game(rules, 7101, "twin-transition",
                                 dict.fromkeys(engine.IDS, "balanced"))
         rng = random.Random("t:7101")
         b2 = engine.Board(rules, "succession")
-        seen_phase2 = False
+        seen_succession = False
         for _ in range(4 * (rules["palace"]["max_rounds"] + rules["succession"]["max_rounds"] + 3)):
             if engine.is_finished(state):
                 break
             obs = engine.observe(state, state["active_player"])
             action_id, reason = policies.act("balanced", obs, rng)
             engine.apply_action(state, state["active_player"], obs["turn_id"], action_id, reason)
-            if state["phase"] == 2 and not seen_phase2:
-                seen_phase2 = True
+            if state["phase"] == 2 and not seen_succession:
+                seen_succession = True
                 for pid, player in state["players"].items():
                     self.assertEqual(player["pos"], list(b2.gates[player["gate_id"]]),
-                                     f"{pid} did not return to the level 2 gate")
-        self.assertTrue(seen_phase2, "the game never reached the succession map")
+                                     f"{pid} did not return to the succession gate")
+        self.assertTrue(seen_succession, "the game never reached the succession map")
 
     def test_no_support_offers_on_the_palace_map(self):
         rules = self.rules_twin()
@@ -599,7 +599,7 @@ class TestTwinBoard(unittest.TestCase):
         active(state, "P0")
         self.assertTrue([a for a in engine.legal_actions(state) if a["kind"] == "gain_support"])
 
-    def test_phase2_displacement_lands_on_the_level2_gate(self):
+    def test_succession_displacement_lands_on_the_succession_gate(self):
         rules = self.rules_twin()
         state = game(rules)
         state["phase"] = 2
@@ -621,7 +621,7 @@ class TestTwinBoard(unittest.TestCase):
         result = engine.result(game(self.rules_twin()))
         self.assertIn(result["outcome"], ("win", "draw"))
 
-    def test_level2_gate_cannot_start_on_content(self):
+    def test_succession_gate_cannot_start_on_content(self):
         for gate, cell in (("north", PERISTYLE), ("north", [9, 4]), ("north", [3, 0])):
             candidate = rules_raw()
             candidate["succession"]["map"]["gates"][gate] = cell

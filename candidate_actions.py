@@ -84,7 +84,7 @@ def rule_summary(rules):
     if cfg["proclaim_cost"]:
         summary["proclaim_cost"] = cfg["proclaim_cost"]
     count = len(cfg["map"]["card_spaces"])
-    summary["support_sites"] = (
+    summary["card_spaces"] = (
         f"Succession map: the three faction meeting places are hidden among "
         f"{count} candidate cells; end movement on one and search to reveal it.")
     summary["equipment_abilities"] = {
@@ -114,7 +114,8 @@ def project_observation(obs, rules):
         "gameplay_mode": "succession-v1", "game_id": obs["game_id"],
         "objective": (
             "Win the succession: gain support from two different factions, "
-            "reach the Peristyle in phase 2, proclaim a claim, and survive "
+            "reach the Peristyle in the succession phase, proclaim a claim, "
+            "and survive "
             "one completed response turn from each rival. Collect equipment "
             "for lasting duel strength. Earn and spend Prestige on support "
             "or contesting a claim. A rival's successful challenge "
@@ -129,12 +130,12 @@ def project_observation(obs, rules):
         "opponents": [p for p in public_players if p["id"] != obs["viewer"]],
         "pending_claim": obs.get("pending_claim"),
         "public_locations": {key: obs["board"][key] for key in (
-            "width", "height", "blocked", "gates", "districts", "glory_posts",
+            "width", "height", "blocked", "gates", "districts", "guard_posts",
             "checkpoint") if key in obs["board"]},
         # Blind card spaces replace the printed faction cells; only
-        # candidates and already-revealed sites are public (D17/D25).
-        **({"support_sites": obs["board"]["support_sites"]}
-           if "support_sites" in obs["board"] else
+        # candidates and already-revealed spaces are public (D17/D25).
+        **({"card_spaces": obs["board"]["card_spaces"]}
+           if "card_spaces" in obs["board"] else
            {"factions": obs["board"]["factions"]}),
         "gate_assignments": obs["gate_assignments"],
         "revealed_districts": dict(obs["revealed_districts"]),
@@ -161,23 +162,23 @@ def projection_hash(projection):
 
 def _succession_distances(obs, rules, start):
     # The public rules contain only geometry. No state or secret is read.
-    # Phase 2 is played on the succession map.
-    level = "succession" if obs.get("phase") == 2 else "palace"
-    return Board(rules, level).distances(tuple(start))
+    # The succession phase is played on the succession map.
+    section = "succession" if obs.get("phase") == 2 else "palace"
+    return Board(rules, section).distances(tuple(start))
 
 
 def _succession_goals(obs, rules):
     me = obs["players"][obs["viewer"]]
     board = obs["board"]
     goals = {"claim": [board["checkpoint"]], "collection": [],
-             "support": [], "prestige": board["glory_posts"]}
+             "support": [], "prestige": board["guard_posts"]}
     for name, cell in board["districts"].items():
         revealed = obs["revealed_districts"].get(name)
         if revealed is None or revealed not in me["equipment"]:
             goals["collection"].append(cell)
-    if "support_sites" in board:  # blind faction cards
-        revealed = board["support_sites"]["revealed"]
-        for cell in board["support_sites"]["candidates"]:
+    if "card_spaces" in board:  # blind faction cards
+        revealed = board["card_spaces"]["revealed"]
+        for cell in board["card_spaces"]["candidates"]:
             key = f"{cell[0]},{cell[1]}"
             # Skip searched blanks and factions this player already has.
             if key not in revealed or (revealed[key] and revealed[key] not in me["support"]):

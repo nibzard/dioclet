@@ -108,7 +108,7 @@ class TestSuccessionRules(unittest.TestCase):
         self.assertEqual(state["players"]["P0"]["equipment"], value["treasures"]["items"][:2])
         for pid, player in state["players"].items():
             self.assertEqual(player["pos"], engine._gate_cell(state, player))
-        self.assertTrue(state["phase1_timeout"])
+        self.assertTrue(state["palace_timeout"])
         self.assertFalse(any(ev["type"] == "auto_equipment_granted" for ev in record["events"]))
         engine.check_invariants(state)
 
@@ -256,10 +256,10 @@ class TestSuccessionRules(unittest.TestCase):
         for _ in range(8):
             take(state, "move")
         self.assertTrue(engine.is_finished(state))
-        self.assertTrue(state["phase2_timeout"])
+        self.assertTrue(state["succession_timeout"])
         engine.check_invariants(state)
 
-    def test_full_games_and_legacy_csv_compatibility(self):
+    def test_full_games_and_clean_result_metrics(self):
         value = rules()
         for seed in range(8):
             mapping = dict(zip(engine.IDS, ("balanced", "collector", "early_support", "aggressive")))
@@ -268,7 +268,8 @@ class TestSuccessionRules(unittest.TestCase):
             result = engine.result(state)
             row = report.game_row(result)
             self.assertEqual(row["total_turns"], len(state["events"]))
-            self.assertTrue(all(m["auto_granted"] == 0 and m["seals"] == [] for m in result["players"].values()))
+            self.assertTrue(all("seals" not in m and "auto_granted" not in m
+                                for m in result["players"].values()))
 
     def test_all_strategy_probes_use_only_legal_actions(self):
         state = game()

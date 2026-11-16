@@ -210,23 +210,11 @@ def _action_summary(action, districts):
         text = f"duel {action.get('target', '?')}"
         if action.get("spend_prestige"):
             text += " +prestige"
-        if action.get("spend_glory"):
-            text += " +glory"
         return text
     if kind == "guard_post":
         return f"guard post {at()}".strip()
     if kind == "claim_checkpoint":
         return "claim checkpoint"
-    if kind == "attempt_seal":
-        text = f"seal at {at()}".strip()
-        if action.get("spend_glory"):
-            text += " (spend glory)"
-        return text
-    if kind == "attack_emperor":
-        text = "attack emperor"
-        if action.get("spend_glory"):
-            text += " +glory"
-        return text
     if kind == "proclaim":
         return "proclaim claim"
     if kind == "maintain_claim":

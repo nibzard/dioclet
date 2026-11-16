@@ -37,13 +37,13 @@ def ascii_map(obs):
     grid = [["." for _ in range(w)] for _ in range(h)]
     for x, y in b["blocked"]:
         grid[y][x] = "#"
-    for x, y in b.get("glory_posts", []):
+    for x, y in b.get("guard_posts", []):
         grid[y][x] = "*"
     for name, (x, y) in b.get("districts", {}).items():
         grid[y][x] = name
     for name, (x, y) in b.get("factions", {}).items():
         grid[y][x] = FACTION_MARK.get(name, "f")
-    sites = b.get("support_sites") or {}
+    sites = b.get("card_spaces") or {}
     for x, y in sites.get("candidates", []):
         grid[y][x] = "?"
     for key, name in sites.get("revealed", {}).items():

@@ -22,8 +22,11 @@ def snapshot(g):
  'order':g['turn_order'],'round_start':g['round_start'],'roll':g['current_roll'],
  'dice':g['current_dice'] if g['current_roll'] is not None else [],
  'first':g['first_challenger'],'trigger':g['trigger_round'],
- 'winner':g['winner'],'end':g['end_reason'],'draw':g['phase2_timeout'],'status':g['status'],
- 'phase1_timeout':g['phase1_timeout'],'rounds1':g['rounds_level1'],
+ 'winner':g['winner'],
+ # The web engine still uses the pre-rename end word; compare through it.
+ 'end':{'succession_timeout':'phase2_timeout'}.get(g['end_reason'],g['end_reason']),
+ 'draw':g['succession_timeout'],'status':g['status'],
+ 'phase1_timeout':g['palace_timeout'],'rounds1':g['rounds_palace'],
  'equip_at_transition':g['equipment_at_transition'],
  'pending':None if pending is None else {'player':pending['player'],'id':pending['claim_id'],'round':pending['round'],'responded':sorted(pending['responded'])},
  'players':{pid:{'gate':','.join(map(str,p['gate'])),'gate_id':p['gate_id'],'pos':','.join(map(str,p['pos'])),'prestige':p['prestige'],'support':sorted(p['support']),'equipment':sorted(p['equipment']),'turns':p['turns'],'abilities':dict(sorted(p['abilities_used'].items()))} for pid,p in g['players'].items()},

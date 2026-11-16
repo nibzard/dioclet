@@ -58,7 +58,7 @@ def palace(rules):
         "districts": {k: at(v) for k, v in b.districts.items()},
         "gates": {k: at(v) for k, v in b.gates.items()},
         "gate_names": kit.GATE_NAMES,
-        "glory_posts": [at(c) for c in b.glory_posts],
+        "glory_posts": [at(c) for c in b.guard_posts],
         "checkpoint": at(b.checkpoint),
         "streets": rules["palace"]["map"]["streets"],
         "rows": L["rows"], "cols": L["cols"],
@@ -96,7 +96,7 @@ def succession(rules):
         "gates": {k: at(v) for k, v in b.gates.items()},
         "gate_names": kit.GATE_NAMES,
         "checkpoint": at(b.checkpoint),
-        "glory_posts": [at(c) for c in b.glory_posts],
+        "glory_posts": [at(c) for c in b.guard_posts],
         "card_spaces": [at(c) for c in S["card_spaces"]],
         # Which block each card space opens, and on which edge (y 0 north).
         "card_doors": [{"card": at(c), "block": i, "side": side}

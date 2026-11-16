@@ -162,10 +162,11 @@ if __name__ == "__main__":
 
 class TestTwinBoardShortlist(unittest.TestCase):
     def test_shortlist_builds_on_both_maps(self):
-        # Phase 2 of the twin-board rules is played on board_level2. The
-        # shortlist once measured distances on the palace map, so any
-        # succession-map cell missing from the palace streets raised
-        # KeyError (found in a live four-agent game at turn 98).
+        # The succession phase of the twin-board rules is played on the
+        # succession map. The shortlist once measured distances on the
+        # palace map, so any succession-map cell missing from the palace
+        # streets raised KeyError (found in a live four-agent game at
+        # turn 98).
         import random
         import policies
         rules = engine.load_rules(str(ROOT / "rules/imperial-rivals-v0.10.2.json"))

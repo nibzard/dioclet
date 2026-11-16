@@ -43,7 +43,7 @@ def main():
             "gates": {p: list(c) for p, c in b.gates.items()},
             "districts": {n: list(c) for n, c in b.districts.items()},
             "checkpoint": list(b.checkpoint),
-            "gloryPosts": [list(c) for c in b.glory_posts],
+            "gloryPosts": [list(c) for c in b.guard_posts],
         },
         "boardLevel2": {
             "width": twin.width,
@@ -51,7 +51,7 @@ def main():
             "blocked": sorted(list(c) for c in twin.blocked),
             "gates": {p: list(c) for p, c in twin.gates.items()},
             "checkpoint": list(twin.checkpoint),
-            "gloryPosts": [list(c) for c in twin.glory_posts],
+            "gloryPosts": [list(c) for c in twin.guard_posts],
             "supportSites": [list(c) for c in cfg["map"]["card_spaces"]],
         },
         "equipment": rules["treasures"]["items"],

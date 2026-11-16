@@ -104,12 +104,12 @@ class StrictRejectionTest(unittest.TestCase):
 
     def test_unknown_nested_key_in_prestige_is_an_error(self):
         rules = copy.deepcopy(self.base)
-        rules["prestige"]["duel_glory_theft"] = True
+        rules["prestige"]["duel_prestige_theft"] = True
         path = write_tmp(rules)
         try:
             with self.assertRaisesRegex(
                     rules_loader.RulesError,
-                    r"unknown key 'duel_glory_theft' in prestige"):
+                    r"unknown key 'duel_prestige_theft' in prestige"):
                 rules_loader.load_rules_strict(path)
         finally:
             os.unlink(path)

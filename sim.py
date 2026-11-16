@@ -107,7 +107,7 @@ def cmd_act(args):
         "action_id": record["action_id"],
         "events": record["events"],
         "position_after": record["position_after"],
-        "glory_after": record["glory_after"],
+        "prestige_after": record["prestige_after"],
         "equipment_count_after": record["equipment_count_after"],
         "status": state["status"],
         "next_active_player": state["active_player"]

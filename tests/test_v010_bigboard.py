@@ -103,7 +103,7 @@ class TestSupportSiteValidation(unittest.TestCase):
 
 
 class TestBigBoardDeal(unittest.TestCase):
-    def reach_phase2(self, seed):
+    def reach_succession(self, seed):
         value = rules()
         state = engine.new_game(value, seed, f"v010-{seed}", dict.fromkeys(engine.IDS, "balanced"))
         rng = random.Random(f"t:{seed}")
@@ -115,18 +115,18 @@ class TestBigBoardDeal(unittest.TestCase):
         return value, state
 
     def test_cards_are_dealt_onto_the_twin_map_sites(self):
-        value, state = self.reach_phase2(7301)
+        value, state = self.reach_succession(7301)
         sites = {f"{x},{y}" for x, y in value["succession"]["map"]["card_spaces"]}
         self.assertEqual(set(state["faction_sites"]), sites)
         dealt = sorted(f for f in state["faction_sites"].values() if f)
         self.assertEqual(dealt, sorted(value["succession"]["faction_cards"]["factions"]))
 
     def test_the_deal_stays_hidden_until_searched(self):
-        value, state = self.reach_phase2(7301)
+        value, state = self.reach_succession(7301)
         self.assertEqual(state.get("faction_sites_revealed"), {})
         obs = engine.observe(state, state["active_player"])
-        self.assertEqual(obs["board"]["support_sites"]["revealed"], {})
-        self.assertEqual(sorted(obs["board"]["support_sites"]["candidates"]),
+        self.assertEqual(obs["board"]["card_spaces"]["revealed"], {})
+        self.assertEqual(sorted(obs["board"]["card_spaces"]["candidates"]),
                          sorted(value["succession"]["map"]["card_spaces"]))
         self.assertNotIn("factions", obs["board"])
         # The deal itself (site key -> faction) appears nowhere in the view.
@@ -136,7 +136,7 @@ class TestBigBoardDeal(unittest.TestCase):
                 self.assertNotIn(f'"{key}": "{faction}"', blob)
 
     def test_shortlist_keeps_every_search_and_names_it(self):
-        value, state = self.reach_phase2(7301)
+        value, state = self.reach_succession(7301)
         searches = set()
         for pid in engine.IDS:
             state["active_player"] = pid

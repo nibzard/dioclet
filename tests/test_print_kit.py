@@ -143,7 +143,7 @@ class BoardMatchesRules(unittest.TestCase):
         self.assertEqual(counts["buildings"], 6)
         self.assertEqual(counts["gates"], len(self.board.gates))
         self.assertEqual(counts["districts"], len(self.board.districts))
-        self.assertEqual(counts["glory_posts"], len(self.board.glory_posts))
+        self.assertEqual(counts["glory_posts"], len(self.board.guard_posts))
         self.assertEqual(self.rules["game"]["rules_version"], "0.10.2")
 
     def test_special_positions_match_rules(self):
@@ -390,9 +390,9 @@ class SuccessionMapMatchesRules(unittest.TestCase):
         """(centre, drawn radius) for every symbol, as draw_succession_map draws it."""
         special = ({tuple(g) for g in self.board.gates.values()}
                    | set(self.S["card_spaces"]) | {tuple(self.board.checkpoint)}
-                   | {tuple(p) for p in self.board.glory_posts})
+                   | {tuple(p) for p in self.board.guard_posts})
         out = [(xy, 9.2) for cell, xy in self.S["spaces"] if tuple(cell) not in special]
-        out += [(self.S["pos"](tuple(c)), 9.6) for c in self.board.glory_posts]
+        out += [(self.S["pos"](tuple(c)), 9.6) for c in self.board.guard_posts]
         out += [(self.S["pos"](tuple(c)), 11.4) for c in self.board.gates.values()]
         out += [(self.S["pos"](c), 10.6) for c in self.S["card_spaces"]]
         out += [(self.S["pos"](tuple(self.board.checkpoint)), 11.2)]
@@ -426,7 +426,7 @@ class SuccessionMapMatchesRules(unittest.TestCase):
         self.assertEqual(specials["glory_posts"],
                          [[round(v, 2) for v in self.S["pos"](tuple(c))]
                           for c in self.rules["succession"]["map"]["guard_posts"]])
-        self.assertEqual(self.board.glory_posts, [(0, 2), (18, 10), (2, 0), (16, 12)])
+        self.assertEqual(self.board.guard_posts, [(0, 2), (18, 10), (2, 0), (16, 12)])
 
     def test_every_card_space_opens_one_block_through_a_door(self):
         # The four centre-street cards touch two blocks each; the door

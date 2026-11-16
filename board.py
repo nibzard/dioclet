@@ -48,7 +48,7 @@ class Board:
         self.districts = {name: tuple(c) for name, c in board.get("treasure_entries", {}).items()}
         self.district_at = {tuple(c): name for name, c in self.districts.items()}
         self.checkpoint = tuple(board["checkpoint"])
-        self.glory_posts = [tuple(c) for c in board.get("guard_posts", [])]
+        self.guard_posts = [tuple(c) for c in board.get("guard_posts", [])]
         self.blocked = {tuple(c) for c in board.get("blocked", [])}
 
     def in_bounds(self, cell):

@@ -305,7 +305,7 @@ def draw_board(c, L):
 
     # Streets: open circles. Cells with their own symbol (guard posts,
     # treasure entries, gates, the Peristyle) get no plain circle.
-    special = ({tuple(g) for g in b.glory_posts}
+    special = ({tuple(g) for g in b.guard_posts}
                | {tuple(cell) for cell in b.districts.values()}
                | {tuple(cell) for cell in b.gates.values()}
                | {tuple(b.checkpoint)})
@@ -325,7 +325,7 @@ def draw_board(c, L):
         _centered(c, x, y, name, "Times-Bold", 15, dy=-1.6)
 
     # Guard posts: star plus roll reminder.
-    for cell in b.glory_posts:
+    for cell in b.guard_posts:
         x, y = pos(tuple(cell))
         c.setLineWidth(1.3)
         _star(c, x * mm, (y + 1.4) * mm, 9.6 * mm)
@@ -659,7 +659,7 @@ def draw_succession_map(c, S):
 
     # Streets: open circles; special cells carry their own symbols.
     special = ({tuple(g) for g in b.gates.values()} | set(S["card_spaces"])
-               | {tuple(g) for g in b.glory_posts} | {tuple(b.checkpoint)})
+               | {tuple(g) for g in b.guard_posts} | {tuple(b.checkpoint)})
     for cell, (x, y) in S["spaces"]:
         if tuple(cell) in special:
             continue
@@ -672,7 +672,7 @@ def draw_succession_map(c, S):
         _card_space(c, x, y, 10.6)
 
     # Guard posts: star plus roll reminder, as on the palace map.
-    for cell in b.glory_posts:
+    for cell in b.guard_posts:
         x, y = pos(tuple(cell))
         c.setLineWidth(1.3)
         _star(c, x * mm, (y + 1.4) * mm, 9.6 * mm)
@@ -2388,12 +2388,12 @@ def main():
         "counts": {"street_spaces": len(L["spaces"]), "blocked": len(b.blocked),
                    "buildings": len(rules["palace"]["map"]["buildings"]),
                    "gates": len(b.gates), "districts": len(b.districts),
-                   "glory_posts": len(b.glory_posts)},
+                   "glory_posts": len(b.guard_posts)},
         "counts_level2": {
             "street_spaces": len(S["spaces"]), "blocked": len(S["board"].blocked),
             "gates": len(S["board"].gates), "blocks": len(S["blocks"]),
             "card_spaces": len(S["card_spaces"]),
-            "glory_posts": len(S["board"].glory_posts)},
+            "glory_posts": len(S["board"].guard_posts)},
         "layout": {
             "cell_mm": CELL, "overlap_mm": OVERLAP, "safe_mm": SAFE,
             "page_mm": [PAGE_W, PAGE_H],
@@ -2409,7 +2409,7 @@ def main():
                 "districts": {name: [round(v, 2) for v in L["pos"](tuple(cell))]
                               for name, cell in b.districts.items()},
                 "checkpoint": [round(v, 2) for v in L["pos"](tuple(b.checkpoint))],
-                "glory_posts": [list(map(round, L["pos"](tuple(cell)))) for cell in b.glory_posts],
+                "glory_posts": [list(map(round, L["pos"](tuple(cell)))) for cell in b.guard_posts],
             },
             "succession_map_mm": {
                 "cell_mm": CELL, "grid_mm": [S["grid_w"], S["grid_h"]],
@@ -2422,7 +2422,7 @@ def main():
                     "card_spaces": [[round(v, 2) for v in S["pos"](cell)]
                                     for cell in S["card_spaces"]],
                     "glory_posts": [[round(v, 2) for v in S["pos"](tuple(cell))]
-                                    for cell in S["board"].glory_posts],
+                                    for cell in S["board"].guard_posts],
                 },
                 "blocks": [list(block) for block in S["blocks"]],
             },

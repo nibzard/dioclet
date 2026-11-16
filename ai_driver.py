@@ -23,7 +23,6 @@ import candidate_actions
 import decisions_policy
 import engine
 import policies
-import tactical_policy
 
 SEATS = ("P0", "P1", "P2", "P3")
 DRIVER_VERSION = "ai-driver-0.4"
@@ -200,10 +199,7 @@ def run_ai_game(rules, seed, game_id, players_by_seat, out_dir,
             audit["selected_mode"] = selected_mode
             reason = decision.reason
         elif policy_name == "tactical":
-            if obs.get("gameplay_mode") == "succession-v1":
-                action_id, reason = policies.act("tactical", obs, policy_rng)
-            else:
-                action_id, reason = tactical_policy.choose(obs, rules)
+            action_id, reason = policies.act("tactical", obs, policy_rng)
         else:
             action_id, reason = policies.act(policy_name, obs, policy_rng)
 
