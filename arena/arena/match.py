@@ -17,7 +17,7 @@ from arena.rules_loader import load_rules_strict
 ARENA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SEATS = ("P0", "P1", "P2", "P3")
 # Version of the match.jsonl record shapes. Change it when a shape changes.
-LOG_SCHEMA = "arena-match-v1"
+LOG_SCHEMA = "arena-match-v2"
 
 
 class MatchConfigError(Exception):

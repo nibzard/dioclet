@@ -1,5 +1,5 @@
-# ABOUTME: Tests for the strict Arena rules loader and the shared rules file.
-# ABOUTME: They cover missing keys, unknown keys, wrong types, and engine validation.
+# ABOUTME: Tests for the Arena rules loader and the shared rules file.
+# ABOUTME: They cover the shared schema gates, and the engine validator.
 
 import copy
 import json
@@ -49,6 +49,20 @@ class ShippedFileTest(unittest.TestCase):
         finally:
             os.unlink(path)
 
+    def test_variant_fixture_validates_through_the_same_path(self):
+        # Match tests shrink the round caps; the loader must accept such
+        # a variant through the shared schema, not a weaker local rule.
+        rules = copy.deepcopy(self.rules)
+        rules["palace"]["max_rounds"] = 1
+        rules["succession"]["max_rounds"] = 1
+        rules["treasures"]["start_face_up"] = 6
+        path = write_tmp(rules)
+        try:
+            loaded = rules_loader.load_rules_strict(path)
+            self.assertEqual(loaded["palace"]["max_rounds"], 1)
+        finally:
+            os.unlink(path)
+
 
 class StrictRejectionTest(unittest.TestCase):
     @classmethod
@@ -63,7 +77,7 @@ class StrictRejectionTest(unittest.TestCase):
         try:
             with self.assertRaisesRegex(
                     rules_loader.RulesError,
-                    "missing key 'contest_fee' in succession"):
+                    r"succession: 'contest_fee' is a required property"):
                 rules_loader.load_rules_strict(path)
         finally:
             os.unlink(path)
@@ -74,7 +88,7 @@ class StrictRejectionTest(unittest.TestCase):
         path = write_tmp(rules)
         try:
             with self.assertRaisesRegex(rules_loader.RulesError,
-                                        "missing key 'succession'"):
+                                        "'succession' is a required property"):
                 rules_loader.load_rules_strict(path)
         finally:
             os.unlink(path)
@@ -85,7 +99,7 @@ class StrictRejectionTest(unittest.TestCase):
         path = write_tmp(rules)
         try:
             with self.assertRaisesRegex(rules_loader.RulesError,
-                                        "unknown key 'succesion'"):
+                                        "'succesion' was unexpected"):
                 rules_loader.load_rules_strict(path)
         finally:
             os.unlink(path)
@@ -97,7 +111,8 @@ class StrictRejectionTest(unittest.TestCase):
         try:
             with self.assertRaisesRegex(
                     rules_loader.RulesError,
-                    r"unknown key 'procalm_cost' in succession"):
+                    r"succession: Additional properties are not allowed "
+                    r"\('procalm_cost' was unexpected\)"):
                 rules_loader.load_rules_strict(path)
         finally:
             os.unlink(path)
@@ -109,7 +124,7 @@ class StrictRejectionTest(unittest.TestCase):
         try:
             with self.assertRaisesRegex(
                     rules_loader.RulesError,
-                    r"unknown key 'duel_prestige_theft' in prestige"):
+                    r"prestige: Additional properties are not allowed"):
                 rules_loader.load_rules_strict(path)
         finally:
             os.unlink(path)
@@ -120,7 +135,8 @@ class StrictRejectionTest(unittest.TestCase):
         path = write_tmp(rules)
         try:
             with self.assertRaisesRegex(
-                    rules_loader.RulesError, r"proclaim_cost must be"):
+                    rules_loader.RulesError,
+                    r"succession.proclaim_cost: 'zero' is not of type"):
                 rules_loader.load_rules_strict(path)
         finally:
             os.unlink(path)
@@ -131,7 +147,8 @@ class StrictRejectionTest(unittest.TestCase):
         path = write_tmp(rules)
         try:
             with self.assertRaisesRegex(
-                    rules_loader.RulesError, r"duels.range must be"):
+                    rules_loader.RulesError,
+                    r"duels.range: 9 is greater than the maximum of 8"):
                 rules_loader.load_rules_strict(path)
         finally:
             os.unlink(path)
@@ -141,8 +158,8 @@ class StrictRejectionTest(unittest.TestCase):
         rules["game"]["players"] = 5
         path = write_tmp(rules)
         try:
-            with self.assertRaisesRegex(
-                    rules_loader.RulesError, r"game.players must be"):
+            with self.assertRaisesRegex(rules_loader.RulesError,
+                                        r"game.players: 4 was expected"):
                 rules_loader.load_rules_strict(path)
         finally:
             os.unlink(path)

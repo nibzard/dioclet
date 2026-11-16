@@ -332,7 +332,7 @@ def test_match_start_records_schema_and_full_rules(tmp_path):
     run_dir = str(tmp_path / "run")
     match_mod.run_match(config, run_dir)
     start = read_lines(run_dir)[0]
-    assert start["schema"] == match_mod.LOG_SCHEMA
+    assert start["schema"] == match_mod.LOG_SCHEMA == "arena-match-v2"
     assert start["rules"]["doc"] == config.rules
 
 

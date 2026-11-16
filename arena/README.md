@@ -1,9 +1,10 @@
 # Arena
 
-Arena is a terminal application. Decision models play Dioclet against each
-other and against the built-in bots. Each seat has its own provider and
-model. Arena shows each turn while the game plays, and it records all data
-for each turn in a log that you can use to train models.
+Arena is a terminal application. Decision models play Imperial Rivals:
+305 AD against each other and against the built-in bots. Each seat has
+its own provider and model. Arena shows each turn while the game plays,
+and it records all data for each turn in a log that you can use to train
+models.
 
 ```
 R1 T1  P1 jev/jev-latest   → explore D   p=0.45  321ms  $0.00015
@@ -77,7 +78,7 @@ A match file sets the rules, the seed, the four seats, and the budget:
 
 ```json
 {
-  "rules": "rules/v0102.json",
+  "rules": "../rules/imperial-rivals-v0.10.2.json",
   "seed": 42,
   "seats": [
     {"provider": "openai",  "model": "gpt-6-luna"},
@@ -89,7 +90,9 @@ A match file sets the rules, the seed, the four seats, and the budget:
 }
 ```
 
-- `rules`: a path relative to `arena/`.
+- `rules`: a path relative to `arena/`. The shipped rules live in the
+  repository folder [`rules/`](../rules/); the match files refer to them
+  as `../rules/...`.
 - `seed`: the same seed and the same choices give the same game.
 - `seats`: exactly four seats, `P0` to `P3`. A local bot has no `model`.
 - `budget`: `0` means no limit. Arena checks the budget before each call.
@@ -175,7 +178,7 @@ and response.
 ### `match.jsonl`
 
 The log has these lines, in this sequence. The log schema is
-`arena-match-v1`.
+`arena-match-v2`. Arena writes v2 logs only; it does not read v1 logs.
 
 | `type` | When | Contents |
 |---|---|---|
@@ -220,20 +223,21 @@ jq 'select(.type=="result") | {outcome, winner, end_reason}' $RUN/match.jsonl
 
 ## 7. Rules files
 
-Arena loads the rules from a JSON file in [`rules/`](rules/). The loader is
-strict: the file must contain all the keys in
-[`rules.schema.json`](rules.schema.json), and it must not contain unknown
-keys. An error message gives the parent of a bad key.
+Arena loads the rules from a JSON file in the repository folder
+[`rules/`](../rules/). The shipped design is
+`rules/imperial-rivals-v0.10.2.json` (Imperial Rivals: 305 AD, V0.10.2).
+Arena ships no rules data of its own.
 
-`rules/v0102.json` is the current design (V0.10.2 big board). It has the
-same values as `../rules_v0102_bigboard.json`, and it also gives the five
-values that the engine supplied before: `claim_required_equipment`,
-`set_completion_reward`, `proclaim_cost`, `ability_stacking`, and
-`gate_rotation`.
+The loader is strict, and it uses the same schema as the engine: first
+[`rules/rules.schema.json`](../rules/rules.schema.json) (JSON Schema draft
+2020-12: every key required, no unknown keys), then `engine.validate_rules`
+for the checks a schema cannot state, such as map geometry. An error
+message gives the location of a bad key.
 
-To try a rules change, copy a rules file into `rules/`, change the values,
-and select it in the wizard or in a match file. The engine accepts exactly
-four players.
+To try a rules change, copy the shipped file, change the values, and point
+a match file at the copy. The wizard offers every rules file in the
+repository `rules/` folder, so a copy there is the easiest to select. The
+engine accepts exactly four players.
 
 ## 8. Development
 
@@ -259,7 +263,7 @@ ARENA_LIVE_CONTRACT=1 uv run --extra decisions pytest tests/test_live_contract.p
 | [`arena/ui.py`](arena/ui.py) | Setup wizard, live stream, scoreboard |
 | [`arena/match.py`](arena/match.py) | Match file, budget, game loop, `match.jsonl` |
 | [`arena/engine_adapter.py`](arena/engine_adapter.py) | Thin adapter over the Dioclet engine |
-| [`arena/rules_loader.py`](arena/rules_loader.py) | Strict rules loader |
+| [`arena/rules_loader.py`](arena/rules_loader.py) | Loads rules through the shared schema and the engine validator |
 | [`arena/providers/`](arena/providers/) | The provider contract, local bots, and remote adapters |
 
 All providers use one contract: `decide(view) -> Decision`. The `jev`,
