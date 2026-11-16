@@ -1,6 +1,7 @@
 # ABOUTME: Fixture tests for the remote providers at the HTTP boundary.
 # ABOUTME: Every double lives here; production providers take only real clients.
 
+import dataclasses
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -10,6 +11,7 @@ import httpx
 import pytest
 
 from arena import engine_adapter
+from arena.evidence import EVIDENCE_SCHEMA, build_evidence
 from arena.providers import (InvalidAnswerError, ProviderError,
                              RefusalError, TransportError, TurnView)
 from arena.providers import (REMOTE_PROVIDERS, REQUIRED_ENV, clef, gateway,
@@ -74,7 +76,7 @@ class TestJev:
         assert captured["auth"] == "Bearer test-key"
         body = captured["body"]
         assert body["model"] == "jev-latest"
-        assert body["state"] == view.projection
+        assert body["state"] == build_evidence(view)
         question = body["questions"]["best_action"]
         assert question["type"] == "choice"
         assert set(question["criteria"]) == \
@@ -363,7 +365,7 @@ class TestOpenAI:
         content = request["input"][0]["content"]
         assert content[0] == {"type": "input_text", "text": INTRO}
         evidence = content[1]["data"]
-        assert evidence["candidate_features"][0]["action_id"] == ids[0]
+        assert evidence == build_evidence(view)
         question = request["questions"][0]
         assert question["name"] == "best_action"
         assert [c["value"] for c in question["choices"]] == ids
@@ -513,6 +515,101 @@ class TestExchangeCapture:
             openai_decisions.build(client=client).decide(view)
         assert info.value.exchange["request"]["model"] == "gpt-6-luna"
         assert info.value.exchange["response"] is None
+
+
+def _proclaimed_view(rules):
+    """A turn where a live claim is pending and a cancelling duel is legal."""
+    engine = engine_adapter.engine
+    state = engine_adapter.new_game(rules, 7, "evidence-parity")
+    state.update(turn_order=list(engine.IDS), round_start=0,
+                 turn_index=0, active_player="P0")
+    state["phase"] = 2
+    state["players"]["P0"].update(pos=[9, 6], support=["army", "elites"])
+    state["players"]["P1"].update(pos=[8, 6], prestige=1)
+    state["current_roll"], state["current_dice"] = 6, [3, 3]
+    proclaim = next(a["action_id"] for a in engine.legal_actions(state)
+                    if a["kind"] == "proclaim")
+    # The proclaim ends P0's turn; P1's turn start rolls two dice.
+    with patch.object(engine, "_die", side_effect=[3, 3]):
+        engine_adapter.apply(state, proclaim)
+    obs = engine_adapter.observe(state)
+    view = TurnView(observation=obs,
+                    projection=engine_adapter.projection(obs, rules),
+                    candidates=engine_adapter.candidates(obs, rules)[0],
+                    rules=rules)
+    assert view.projection["pending_claim"]
+    assert any(c["kind"] == "duel" for c in view.candidates)
+    return view
+
+
+class TestEvidenceParity:
+    """Every adapter embeds exactly build_evidence(view) in its request.
+
+    A failure here means an adapter added, removed, or reworded game
+    data inside its envelope.
+    """
+
+    @pytest.fixture(autouse=True)
+    def env(self, monkeypatch):
+        monkeypatch.setenv("TYPESAFE_API_KEY", "ts-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "oa-key")
+        monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "cf-token")
+        monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "acct-123")
+        monkeypatch.setenv("PERPLEXITY_API_KEY", "pplx-key")
+        monkeypatch.setenv("AI_GATEWAY_API_KEY", "gw-key")
+
+    def _adapters(self):
+        """One provider object per family: jev, clef, pplx, openai, gateway."""
+        return [
+            ("clef", clef.build()),
+            ("gateway", gateway.build("nace-ai/drex-v2.0", client=object())),
+            ("jev", jev.build()),
+            ("openai", openai_decisions.build(client=object())),
+            ("pplx", pplx.build()),
+        ]
+
+    @staticmethod
+    def _extract(provider, view):
+        request = provider.build_request(view)
+        if isinstance(provider, SystemOneProvider):
+            return request["state"]
+        return request["input"][0]["content"][1]["data"]
+
+    def _assert_identical(self, name, provider, view):
+        expected = build_evidence(view)
+        got = self._extract(provider, view)
+        assert got == expected, name
+        assert json.dumps(got, sort_keys=True) \
+            == json.dumps(expected, sort_keys=True), name
+
+    def test_succession_turn_matches_every_adapter(self, view):
+        for name, provider in self._adapters():
+            self._assert_identical(name, provider, view)
+
+    def test_pending_claim_turn_matches_every_adapter(self):
+        rules = load_rules_strict(RULES_PATH)
+        view = _proclaimed_view(rules)
+        for name, provider in self._adapters():
+            self._assert_identical(name, provider, view)
+
+    def test_legacy_classic_branch_matches_every_adapter(self, view):
+        projection = {key: value for key, value in view.projection.items()
+                      if key != "gameplay_mode"}
+        classic = dataclasses.replace(view, projection=projection)
+        for name, provider in self._adapters():
+            self._assert_identical(name, provider, classic)
+
+    def test_evidence_holds_the_projection_and_four_public_keys(self, view):
+        evidence = build_evidence(view)
+        assert set(evidence) == {"schema", "projection", "candidates"}
+        assert evidence["schema"] == EVIDENCE_SCHEMA
+        assert evidence["projection"] == view.projection
+        assert "rule_summary" in evidence["projection"]
+        assert "rule_summary" not in evidence
+        for shown, full in zip(evidence["candidates"], view.candidates):
+            assert set(shown) == {"action_id", "kind", "description",
+                                  "features"}
+            assert shown["action_id"] == full["action_id"]
 
 
 class TestProviderRuleText:

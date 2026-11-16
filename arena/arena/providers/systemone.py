@@ -9,6 +9,7 @@ import httpx
 
 from arena.providers import (Decision, InvalidAnswerError, ProviderError,
                              TransportError, TurnView)
+from arena.evidence import build_evidence
 from arena.prompt import CLASSIC_INSTRUCTIONS, INTRO, succession_instructions
 
 QUESTION_NAME = "best_action"
@@ -35,7 +36,7 @@ class SystemOneProvider:
             instructions = CLASSIC_INSTRUCTIONS
         return {
             "model": self.model,
-            "state": view.projection,
+            "state": build_evidence(view),
             "questions": {
                 QUESTION_NAME: {
                     "type": "choice",

@@ -139,10 +139,22 @@ credits are necessary for them.
 
 ### What a model receives
 
-A model sees only public information: the projection of the public
-observation of its seat, and a shortlist of up to 16 legal actions with
-descriptions. The model selects one action ID. Arena makes sure that the
-action is legal. The engine controls the dice, the rules, and the result.
+A model sees only public information. Every remote provider gets one
+evidence object per turn, built from its seat's projection and the
+candidate shortlist by [`arena/arena/evidence.py`](arena/arena/evidence.py):
+
+| Key | Contents |
+|---|---|
+| `schema` | `arena-evidence-1` |
+| `projection` | The public projection of the seat's game state, with the rule summary |
+| `candidates` | Up to 16 legal actions; each has `action_id`, `kind`, `description`, and `features` (costs, distances, and exact contest odds) |
+
+All providers get exactly this object; the adapters change only the
+envelope around it. The OpenAI and gateway adapters send it as the
+`input_json` data; the System One adapters (`jev`, `clef`, `pplx`) send
+it as `state`. The model selects one action ID from the candidates.
+Arena makes sure that the action is legal. The engine controls the
+dice, the rules, and the result.
 
 ## 5. Budgets and failures
 
@@ -179,7 +191,8 @@ and response.
 ### `match.jsonl`
 
 The log has these lines, in this sequence. The log schema is
-`arena-match-v2`. Arena writes v2 logs only; it does not read v1 logs.
+`arena-match-v3`. Arena writes v3 logs only; it does not read older
+logs.
 
 | `type` | When | Contents |
 |---|---|---|
@@ -201,6 +214,13 @@ A `decision` line is a complete training example. It contains:
 | `probabilities`, `p_chosen`, `confidence` | The full distribution from the model, and its confidence |
 | `latency_ms`, `usage`, `cost_usd`, `attempt`, `reason` | Timing, tokens, and cost |
 | `play` | The engine record of the action: dice, path, events, and positions after the action |
+
+The `observation`, `projection`, and `candidates` fields are the same
+for every seat. The evidence object that each remote provider received
+is inside its `attempts`, in the `exchange.request` payload: the
+`input_json` data on OpenAI and gateway, and the `state` object on the
+System One family. Every provider gets exactly the same evidence; a
+test pins this equality.
 
 The bots write the same lines. Their `attempts` and `probabilities` are
 empty, because the bots do not call a model.

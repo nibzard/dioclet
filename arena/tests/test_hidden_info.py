@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from arena import match as match_mod
+from arena.evidence import build_evidence
 from arena.providers import Decision
 
 ARENA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,7 +31,8 @@ class RecordingProvider:
         self.payloads.append(
             json.dumps(view.observation, sort_keys=True, default=str)
             + json.dumps(view.projection, sort_keys=True, default=str)
-            + json.dumps(view.candidates, sort_keys=True, default=str))
+            + json.dumps(view.candidates, sort_keys=True, default=str)
+            + json.dumps(build_evidence(view), sort_keys=True, default=str))
         first = view.observation["legal_actions"][0]["action_id"]
         return Decision(action_id=first)
 

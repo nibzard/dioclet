@@ -8,6 +8,7 @@ import time
 
 from arena.providers import (Decision, InvalidAnswerError, ProviderError,
                              RefusalError, TransportError, TurnView)
+from arena.evidence import build_evidence
 from arena.prompt import INTRO, PROJECTION_INSTRUCTIONS, succession_instructions
 
 DEFAULT_MODEL = "gpt-6-luna"
@@ -31,14 +32,8 @@ class OpenAIDecisions:
 
     def build_request(self, view: TurnView) -> dict:
         if view.projection.get("gameplay_mode") == "succession-v1":
-            evidence = dict(view.projection)
-            evidence["candidate_features"] = [
-                {key: c[key] for key in (
-                    "action_id", "kind", "destination", "features")}
-                for c in view.candidates]
             instructions = succession_instructions(view.rules)
         else:
-            evidence = view.projection
             instructions = PROJECTION_INSTRUCTIONS
         return {
             "model": self.model,
@@ -46,7 +41,7 @@ class OpenAIDecisions:
                 "role": "user",
                 "content": [
                     {"type": "input_text", "text": INTRO},
-                    {"type": "input_json", "data": evidence},
+                    {"type": "input_json", "data": build_evidence(view)},
                 ],
             }],
             "questions": [{
