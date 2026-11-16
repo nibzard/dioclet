@@ -114,7 +114,7 @@ def claim_lines(obs, rules):
                 f"{config['factions_to_proclaim']} supports to proclaim"]
     window = config["claim_window_rounds"]
     fee = config["contest_fee"]
-    last = pending["round"] + window - 1
+    last = pending["round"] + window
     return [f"standing claim: {pending['player']} (proclaimed in round {pending['round']}). "
             f"It wins at the end of round {last} unless a rival wins a contest duel "
             f"first (fee {fee} Prestige, within {rules['duels']['range']} "

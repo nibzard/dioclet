@@ -54,6 +54,76 @@ def pending_game():
     return state
 
 
+def standing_claim_game():
+    """A standing claim under the printed two-round window, with P1
+    funded for a contest duel."""
+    state = game()
+    state["phase"] = 2
+    state["players"]["P0"].update(pos=PERISTYLE[:], support=["army", "elites"])
+    state["players"]["P1"].update(prestige=1)
+    take(state, "proclaim")
+    return state
+
+
+def outlast(state, proclaimed):
+    """Play the rounds between the proclaim and round R+2: rivals move,
+    the claimant maintains."""
+    guard = 0
+    while (state["status"] == "in_progress" and state["round"] < proclaimed + 2
+           and guard < 40):
+        pid = state["active_player"]
+        take(state, "maintain_claim" if pid == "P0" else "move")
+        guard += 1
+
+
+class TestClaimWindow(unittest.TestCase):
+    def test_claim_wins_after_two_full_rounds(self):
+        # A claim proclaimed in round R wins when the last turn of
+        # round R + window ends: the state round counter reads R + 3,
+        # because it advances at each round wrap.
+        state = standing_claim_game()
+        proclaimed = state["pending_claim"]["round"]
+        outlast(state, proclaimed)
+        guard = 0
+        while state["status"] == "in_progress" and guard < 40:
+            pid = state["active_player"]
+            take(state, "maintain_claim" if pid == "P0" else "move")
+            guard += 1
+        self.assertEqual(state["end_reason"], "survived_window")
+        self.assertEqual(state["winner"], "P0")
+        self.assertEqual(state["round"], proclaimed + 3)
+        engine.check_invariants(state)
+
+    def test_claim_can_still_die_in_the_last_window_round(self):
+        # The window counts full rounds after the proclaim round, so a
+        # standing claim still lives through round R + window and a
+        # rival can cancel it there. The old engine crowned an
+        # unchallenged claim one round earlier, so this round never
+        # existed for a claim.
+        state = standing_claim_game()
+        proclaimed = state["pending_claim"]["round"]
+        outlast(state, proclaimed)
+        guard = 0
+        while (state["status"] == "in_progress"
+               and not (state["round"] == proclaimed + 2
+                        and state["active_player"] == "P1") and guard < 40):
+            pid = state["active_player"]
+            take(state, "maintain_claim" if pid == "P0" else "move")
+            guard += 1
+        self.assertEqual((state["round"], state["active_player"]),
+                         (proclaimed + 2, "P1"))
+        state["players"]["P1"]["pos"] = NEAR_PERISTYLE[:]
+        with patch.object(engine, "_die", side_effect=[6, 1, 3, 3]):
+            record = take(state, "duel", target="P0", spend_prestige=False)
+        # The cancel rides a round R + window turn; the round counter
+        # wraps to R + 3 after it, and no win fires at that wrap.
+        self.assertEqual(record["round"], proclaimed + 2)
+        self.assertIsNone(state["pending_claim"])
+        self.assertIsNone(state["winner"])
+        self.assertEqual(state["status"], "in_progress")
+        engine.check_invariants(state)
+
+
 class TestSuccessionRules(unittest.TestCase):
     def test_invalid_succession_values_rejected(self):
         for field, value in (("support_cost", 0), ("contest_fee", -1),

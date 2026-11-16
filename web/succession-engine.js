@@ -183,7 +183,7 @@
       g.turnIndex = g.turnRoundStart;
       const window = C.claimWindowRounds;
       const pending = g.pendingClaim;
-      if (window && g.phase === 2 && pending && g.round - pending.round >= window) {
+      if (window && g.phase === 2 && pending && g.round - pending.round > window) {
         g.winner = pending.player; g.status = "finished"; g.endReason = "survived_window";
         event(rec, "game_won", { player: pending.player, cause: "survived_window" });
         g.log.push(player(g, pending.player).name + " holds the claim through the window and is emperor.");

@@ -33,20 +33,21 @@ class ClaimLines(unittest.TestCase):
         self.assertNotIn("P2", text)
         self.assertNotIn("first challenger", text)
 
-    def test_window_end_matches_the_recorded_win(self):
-        # In the 0.10.2 table game, claim 86 was proclaimed in round 9
-        # and won at the end of round 10.
+    def test_window_end_matches_the_d56_formula(self):
+        # The 0.10.2 table game recorded claim 86, proclaimed in round 9.
+        # That run predates D56 and crowned it at the end of round 10;
+        # the display applies the D56 formula, which sets the deadline at
+        # the end of round R + claim_window_rounds.
         with open(os.path.join(GAME, "state.json")) as fh:
             state = json.load(fh)
         pending = state["pending_claim"]
         self.assertEqual((pending["claim_id"], pending["round"]), (86, 9))
-        self.assertEqual((state["end_reason"], state["round"]), ("survived_window", 11))
         obs = {"phase": 2, "pending_claim": pending, "progress": {}}
         # The recorded state embeds the pre-cleanup rules shape, so the
         # adopted rules file supplies the window and fee numbers.
         (line,) = table_seat.claim_lines(obs, RULES)
         self.assertIn("standing claim: P0 (proclaimed in round 9)", line)
-        self.assertIn("wins at the end of round 10", line)
+        self.assertIn("wins at the end of round 11", line)
         self.assertIn("fee 1 Prestige", line)
 
 

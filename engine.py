@@ -937,10 +937,11 @@ def _advance(state):
         window = rules["succession"]["claim_window_rounds"]
         pending = state["pending_claim"]
         if (window and state["phase"] == 2 and pending
-                and state["round"] - pending["round"] >= window):
-            # A claim that survived the window unchallenged wins the game
-            # outright (end_reason survived_window). The event rides the
-            # last turn record, like phase_transition and game_draw.
+                and state["round"] - pending["round"] > window):
+            # A claim proclaimed in round R wins when the last turn of
+            # round R + window ends, so it survives window full rounds
+            # (end_reason survived_window). The event rides the last
+            # turn record, like phase_transition and game_draw.
             claimant = pending["player"]
             state["winner"], state["status"], state["end_reason"] = claimant, "finished", "survived_window"
             state["players"][claimant]["stats"]["claims_survived"] += 1
@@ -1044,7 +1045,7 @@ def check_invariants(state):
         if state["end_reason"] == "survived_window":
             assert pending, "window win without a pending claim"
             window = state["rules"]["succession"]["claim_window_rounds"]
-            assert window and state["round"] - pending["round"] >= window, "claim window not actually survived"
+            assert window and state["round"] - pending["round"] > window, "claim window not actually survived"
         else:
             assert state["end_reason"] == "acclamation" and pending and len(pending["responded"]) == 3, "incomplete acclamation"
     if state["faction_sites"]:

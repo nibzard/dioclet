@@ -1,6 +1,8 @@
 # Plan: correct and fair context for model players
 
-Status: proposal, 2026-11-16. Nothing in this plan is done yet.
+Status: in implementation since 2026-11-16. The three open decisions
+are made (see the decision section); each phase lands as one commit
+with all checks passing.
 
 ## Goal
 
@@ -43,31 +45,38 @@ The game mechanics do not change. The golden traces
    and fixed seats. Seat order and dice have a large effect, so one game
    is not evidence.
 
-## Decision needed from Niko before Phase 1: the length of the claim window
+## Decisions made by Niko, 2026-11-16
 
-The print (rulebook page 6), `SPEC.md:33`, and decision D44 say: a claim
-wins when it stands **two full rounds**.
+1. **Claim window: option A.** The engine follows the print. A claim
+   proclaimed in round R now wins at the end of round
+   R + `claim_window_rounds` (two full rounds after the proclaim when
+   the window is 2). The engine predicate changes from
+   `round - pending.round >= window` to `> window`; the web engine
+   changes identically; the golden traces are re-recorded; SPEC.md and
+   DECISIONS.md record it (D56). Balance results measured before D56
+   used the shorter window.
+2. **Baseline series:** 5 seeds x 4 seats = 20 games (about $0.40 at
+   the 2026-11-16 rates), recorded in `docs/findings/FINDINGS_ARENA.md`.
+3. **Phase 8:** only if Phases 5-7 show a gain.
 
-The engine counts round boundaries. A claim proclaimed in round R wins at
-the end of round R+1 (`engine.py:937-945`: `round - pending.round >=
-window`). The rivals get the rest of round R and one full round.
+## Root rule (Niko, 2026-11-16): the rules JSON is the source of truth
 
-The live game `arena/runs/20261116T165636Z-arena-42-4c19ad02` shows this:
-P3 proclaimed on turn 122 (round 7) and won after turn 128 (end of round
-8). P0 had one turn to respond.
+The rules JSON and its schema are the root of everything. Every rule
+text - model projections, provider instructions, and the printed
+documents - is generated from the active rules file. No sentence in
+any generated document may state a rule value that the generator does
+not read from the rules file. The print kit generators
+(`tools/make_a4_print_kit.py`, `tools/succession_content.py`) derive
+their numbers from the rules JSON so new PDFs follow rule edits.
 
-Options:
-
-- **A. Change the engine to match the print.** The claim wins after two
-  full rounds that start after the proclaim. This changes the mechanics:
-  the golden traces change, and they must be recorded again in a separate,
-  reviewed commit. Balance results from V0.10 do not apply directly.
-- **B. Change the print, SPEC.md, and D44 to match the engine.** For
-  example: "the claim wins at the end of the next round".
-
-This plan does not choose. Phase 6 (the deadline) must use the rule that
-the engine applies at that time, and it gets its value from the engine
-logic, not from a copy.
+Background to decision 1: before D56 the engine crowned a surviving
+claim at the end of round R+1 (`round - pending.round >= window`), one
+round earlier than the print's "two full rounds" (the live game
+`arena/runs/20261116T165636Z-arena-42-4c19ad02` shows the old timing:
+P3 proclaimed on turn 122, round 7, and won after turn 128, the end of
+round 8). The player mat even shipped the old timing as text. Option A
+makes the rulebook wording true and fixes the mat. Phase 6 computes
+the deadline from the engine logic, never from a copied value.
 
 ## Principles
 
@@ -265,7 +274,6 @@ Paid live tests and series run only when Niko approves a budget.
 
 ## Questions for Niko
 
-1. The claim window: option A (engine follows the print) or option B (the
-   print follows the engine)?
-2. The size and budget of the baseline series, and the players in it.
-3. Phase 8: do it only if Phases 5–7 show a gain, or always?
+All three questions are answered in "Decisions made by Niko,
+2026-11-16" above: option A, a 20-game baseline, and Phase 8 only on
+measured gains.

@@ -193,7 +193,43 @@ duelCase({attacker:['gladius','pugio'], defender:['scutum'], dice:[3,3], checks:
   }
   assert.equal(g.winner, claimant.id);
   assert.equal(g.endReason, 'survived_window');
-  assert.ok(g.round - proclaimedRound >= 2);
+  // The win fires when the round counter reads R+3, so the last
+  // completed round is R+2: two full rounds after the proclaim.
+  assert.equal(g.round - proclaimedRound, 3);
+}
+{
+  // The claim still lives through round R+window, so a rival can
+  // cancel it there. The old one-round-early timing crowned the
+  // claim before this round ever started.
+  const g = runToPhase2(mk());
+  g.currentRoll = {dice:[2,2], total:4};
+  const claimant = E.active(g);
+  claimant.pos = '9,6'; claimant.support = ['army','elites'];
+  E.applyAction(g, find(g, 'proclaim'));
+  const proclaimedRound = g.pendingClaim.round;
+  let guard = 0;
+  while (!g.winner && guard++ < 60) {
+    if (g.round === proclaimedRound + 2 && E.active(g) !== claimant) break;
+    g.currentRoll = {dice:[2,2], total:4};
+    if (E.active(g) === claimant) {
+      E.applyAction(g, E.legalActions(g).find(x => x.kind === 'maintain_claim'));
+    } else {
+      E.applyAction(g, E.legalActions(g).find(x => !(x.kind === 'duel' && x.target === claimant.id)));
+    }
+  }
+  assert.equal(g.round, proclaimedRound + 2, 'the claim survives into round R+window');
+  assert.equal(E.active(g) === claimant, false);
+  const rival = g.players.find(p => p.id !== claimant.id);
+  rival.pos = '8,6'; rival.prestige = 1;
+  rival.equipment = []; claimant.equipment = [];
+  g.currentRoll = {dice:[6,6], total:12};
+  g.diceOverrides = {combat:[6,1]};
+  const contest = E.legalActions(g).find(x => x.kind === 'duel' && x.target === claimant.id);
+  assert.ok(contest, 'a rival may contest in the last window round');
+  E.applyAction(g, contest);
+  assert.ok(!g.pendingClaim, 'the claim dies in round R+window');
+  assert.ok(!g.winner && !g.draw, 'no crown: the extra round exists');
+  assert.equal(g.round, proclaimedRound + 2);
 }
 {
   const g = runToPhase2(mk());

@@ -31,7 +31,10 @@ The game has two phases and two boards:
 **Win conditions, in the printed words:**
 
 - A claim that stands two full rounds unchallenged makes the claimant
-  **emperor** (engine `end_reason` `survived_window`).
+  **emperor** (engine `end_reason` `survived_window`). A claim
+  proclaimed in round R wins when the last turn of round
+  R + `claim_window_rounds` ends. V0.10.2 sets the window to 2, so
+  the claim survives rounds R + 1 and R + 2 in full.
 - A rival cancels a standing claim only by winning a challenge duel,
   after paying the mandatory **contest fee** of 1 Prestige.
 - If no claim stands by succession round 24, the game ends in a
@@ -99,7 +102,7 @@ Key groups:
 | `palace.rounds_after_checkpoint` | One more full round after the first claim, then the succession begins. |
 | `succession.contest_fee` | The mandatory fee to contest a proclaimed claim. |
 | `succession.factions_to_proclaim` | Two different factions must support you before you proclaim. |
-| `succession.claim_window_rounds` | A claim that stands two full rounds wins. |
+| `succession.claim_window_rounds` | A claim proclaimed in round R wins at the end of round R + `claim_window_rounds`. |
 | `succession.faction_cards` | Three factions and three blanks, dealt blind onto the card spaces. |
 
 ### Maps

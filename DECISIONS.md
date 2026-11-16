@@ -681,3 +681,20 @@ practical. No baseline rule values were changed.
   test still matches Python move for move. The old vocabulary survives
   only where history stays as written: `notes/`, `docs/findings/`,
   D1–D54, and git history.
+
+- **D56 Claim window counts full rounds after the proclaim (V0.10.2,
+  2026-11-16).** The engine crowned a surviving claim one round too
+  early: the window check read `round - proclaimed >= window`, so a
+  claim proclaimed in round R won at the end of round R + window - 1,
+  one round short of the printed rule. Niko chose option A on
+  2026-11-16 over keeping the engine's old remainder-plus-one-round
+  timing. A claim now wins when the last turn of round
+  R + `claim_window_rounds` ends; with the printed window of 2 it
+  survives rounds R + 1 and R + 2 in full, and a rival can still
+  cancel it in round R + 2. `engine.py`, `web/succession-engine.js`,
+  and the window invariant all use the strict comparison now.
+  Simulations run before D56 measured the old, shorter window. The 200
+  golden-trace fixtures are re-recorded: 199 games changed, 24 wins
+  became timeout draws, 26 games crowned a different seat, and every
+  surviving claim now ends at succession round R + 3 on the state
+  counter.
