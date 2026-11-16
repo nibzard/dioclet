@@ -1,0 +1,11 @@
+{
+  "rules": "rules/v0102.json",
+  "seed": 42,
+  "seats": [
+    {"provider": "gateway", "model": "nace-ai/drex-v2.0"},
+    {"provider": "gateway", "model": "baseten/elephant-1"},
+    {"provider": "gateway", "model": "liquid/d1-ultra"},
+    {"provider": "gateway", "model": "perplexity/pplx-decider-flash-v1.3"}
+  ],
+  "budget": {"max_calls": 300, "max_usd": 0.25}
+}

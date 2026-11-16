@@ -1,0 +1,32 @@
+# ABOUTME: Arena project definition: a terminal app where decision models
+# ABOUTME: play Dioclet. Manages deps, the uv path dependency, and the CLI entry.
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arena"
+version = "0.1.0"
+description = "Decision models play Dioclet in the terminal"
+requires-python = ">=3.12"
+dependencies = [
+    "dioclet-engine",
+    "rich",
+    "httpx",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+decisions = ["openai>=3.46,<4"]
+
+[project.scripts]
+arena = "arena.cli:main"
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.uv.sources]
+dioclet-engine = { path = ".." }
+
+[tool.setuptools]
+packages = ["arena"]

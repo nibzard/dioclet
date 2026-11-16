@@ -1,0 +1,21 @@
+# ABOUTME: Installable rules logic for the Dioclet game: engine, board,
+# ABOUTME: succession, candidates, and the built-in bot policies.
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dioclet-engine"
+version = "0.1.0"
+description = "Dioclet rules engine and bot policies as importable modules"
+requires-python = ">=3.12"
+
+[tool.setuptools]
+py-modules = [
+    "engine",
+    "succession",
+    "board",
+    "candidate_actions",
+    "policies",
+    "tactical_policy",
+]

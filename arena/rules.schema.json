@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dioclet.local/arena/rules.schema.json",
+  "title": "Dioclet succession rules (strict)",
+  "description": "Complete contract for an Arena rules file. Every key the engine reads must be present; unknown keys are invalid. The strict loader in arena/rules_loader.py enforces this contract and the engine validators check semantics. The game is fixed at exactly 4 players.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "rules_version", "game_name", "gameplay_mode", "players",
+    "start_reveals", "equipment", "board", "board_level2", "movement",
+    "glory", "combat", "level1", "level2", "succession", "turns", "logging"
+  ],
+  "properties": {
+    "rules_version": {"type": "string"},
+    "game_name": {"type": "string"},
+    "gameplay_mode": {"const": "succession-v1"},
+    "players": {"const": 4, "description": "The engine supports exactly 4 seats (P0..P3)."},
+    "start_reveals": {"type": "integer", "minimum": 0, "maximum": 6},
+    "equipment": {
+      "type": "array", "minItems": 6, "maxItems": 6, "uniqueItems": true,
+      "items": {"type": "string"}
+    },
+    "board": {"$ref": "#/$defs/board"},
+    "board_level2": {"$ref": "#/$defs/boardLevel2"},
+    "movement": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "die_sides", "dice_count", "duel_range", "die_is_max_steps",
+        "allow_early_stop", "pass_through_players",
+        "allow_stationary_special_actions"
+      ],
+      "properties": {
+        "die_sides": {"type": "integer", "minimum": 2},
+        "dice_count": {"type": "integer", "minimum": 1},
+        "duel_range": {"type": "integer", "minimum": 0},
+        "die_is_max_steps": {"type": "boolean"},
+        "allow_early_stop": {"type": "boolean"},
+        "pass_through_players": {"type": "boolean"},
+        "allow_stationary_special_actions": {"type": "boolean"}
+      }
+    },
+    "glory": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "cap", "duel_win_reward", "guard_post_reward",
+        "first_challenger_reward", "guard_post_success_min_roll",
+        "set_completion_reward"
+      ],
+      "properties": {
+        "cap": {"type": "integer", "minimum": 0},
+        "duel_win_reward": {"type": "integer", "minimum": 0},
+        "guard_post_reward": {"type": "integer", "minimum": 0},
+        "first_challenger_reward": {"type": "integer", "minimum": 0},
+        "guard_post_success_min_roll": {"type": "integer"},
+        "set_completion_reward": {"type": "integer", "minimum": 0}
+      }
+    },
+    "combat": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "equipment_bonus_tiers", "tie_goes_to_defender",
+        "imperial_guard_bonus", "emperor_bonus", "glory_attack_bonus",
+        "emperor_hits_to_win", "abilities", "ability_stacking"
+      ],
+      "properties": {
+        "equipment_bonus_tiers": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["min_count", "max_count", "bonus"],
+            "properties": {
+              "min_count": {"type": "integer"},
+              "max_count": {"type": "integer"},
+              "bonus": {"type": "integer", "minimum": 0}
+            }
+          }
+        },
+        "tie_goes_to_defender": {"type": "boolean"},
+        "imperial_guard_bonus": {"type": "integer", "minimum": 0},
+        "emperor_bonus": {"type": "integer", "minimum": 0},
+        "glory_attack_bonus": {"type": "integer", "minimum": 0},
+        "emperor_hits_to_win": {"type": "integer", "minimum": 1},
+        "abilities": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object", "additionalProperties": false,
+            "required": ["type", "value"],
+            "properties": {
+              "type": {"type": "string"},
+              "value": {"type": "integer", "minimum": 0, "maximum": 3}
+            }
+          }
+        },
+        "ability_stacking": {"enum": ["best", "sum"]}
+      }
+    },
+    "level1": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "max_rounds", "grace_full_rounds", "auto_equip_at_transition",
+        "claim_required_equipment"
+      ],
+      "properties": {
+        "max_rounds": {"type": "integer", "minimum": 1},
+        "grace_full_rounds": {"type": "integer", "minimum": 0},
+        "auto_equip_at_transition": {"const": false},
+        "claim_required_equipment": {"type": "integer", "minimum": 1, "maximum": 6}
+      }
+    },
+    "level2": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "max_rounds", "required_distinct_seals", "cellars_success_min_roll",
+        "peristyle_success_min_roll", "peristyle_glory_cost"
+      ],
+      "properties": {
+        "max_rounds": {"type": "integer", "minimum": 1},
+        "required_distinct_seals": {"type": "integer", "minimum": 1, "maximum": 3},
+        "cellars_success_min_roll": {"type": "integer"},
+        "peristyle_success_min_roll": {"type": "integer"},
+        "peristyle_glory_cost": {"type": "integer", "minimum": 0}
+      }
+    },
+    "succession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "support_cost", "required_support", "support_in_city",
+        "challenge_cost", "challenge_bonus", "contest_cost",
+        "reset_positions", "gate_assignment", "gate_rotation", "factions",
+        "claim_window_rounds", "challenge_radius", "duel_loser_cost",
+        "proclaim_cost", "blind_support"
+      ],
+      "properties": {
+        "support_cost": {"type": "integer", "minimum": 1},
+        "required_support": {"type": "integer", "minimum": 1},
+        "support_in_city": {"type": "boolean"},
+        "challenge_cost": {"type": "integer", "minimum": 1},
+        "challenge_bonus": {"type": "integer", "minimum": 0},
+        "contest_cost": {"type": "integer", "minimum": 0},
+        "reset_positions": {"type": "boolean"},
+        "gate_assignment": {"enum": ["random", "manual", "rotation"]},
+        "gate_order": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {"type": "string"}
+        },
+        "gate_rotation": {"type": "integer", "minimum": 0, "maximum": 3},
+        "factions": {
+          "type": "object", "minProperties": 3, "maxProperties": 3,
+          "additionalProperties": {"$ref": "#/$defs/cell"}
+        },
+        "claim_window_rounds": {"type": "integer", "minimum": 0, "maximum": 6},
+        "challenge_radius": {"type": "integer", "minimum": 0, "maximum": 8},
+        "duel_loser_cost": {"type": "integer", "minimum": 0, "maximum": 3},
+        "proclaim_cost": {"type": "integer", "minimum": 0, "maximum": 3},
+        "blind_support": {"type": "boolean"}
+      }
+    },
+    "turns": {
+      "type": "object", "additionalProperties": false,
+      "required": ["rotate_first_player_each_round"],
+      "properties": {
+        "rotate_first_player_each_round": {"type": "boolean"}
+      }
+    },
+    "logging": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "save_full_batch_logs", "sample_games_per_batch",
+        "save_anomalous_game_logs"
+      ],
+      "properties": {
+        "save_full_batch_logs": {"type": "boolean"},
+        "sample_games_per_batch": {"type": "integer", "minimum": 0},
+        "save_anomalous_game_logs": {"type": "boolean"}
+      }
+    }
+  },
+  "$defs": {
+    "cell": {
+      "type": "array", "minItems": 2, "maxItems": 2,
+      "items": {"type": "integer"}
+    },
+    "board": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "width", "height", "gates", "districts", "checkpoint", "glory_posts",
+        "level2_sites", "blocked", "buildings", "streets"
+      ],
+      "properties": {
+        "width": {"type": "integer", "minimum": 5},
+        "height": {"type": "integer", "minimum": 5},
+        "gates": {
+          "type": "object", "minProperties": 4, "maxProperties": 4,
+          "additionalProperties": {"$ref": "#/$defs/cell"}
+        },
+        "districts": {
+          "type": "object", "minProperties": 6, "maxProperties": 6,
+          "additionalProperties": {"$ref": "#/$defs/cell"}
+        },
+        "checkpoint": {"$ref": "#/$defs/cell"},
+        "glory_posts": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {"$ref": "#/$defs/cell"}
+        },
+        "level2_sites": {
+          "type": "object", "additionalProperties": false,
+          "required": ["cellars", "guard_barracks", "peristyle", "emperor", "retreat"],
+          "properties": {
+            "cellars": {"$ref": "#/$defs/cell"},
+            "guard_barracks": {"$ref": "#/$defs/cell"},
+            "peristyle": {"$ref": "#/$defs/cell"},
+            "emperor": {"$ref": "#/$defs/cell"},
+            "retreat": {"$ref": "#/$defs/cell"}
+          }
+        },
+        "blocked": {
+          "type": "array", "items": {"$ref": "#/$defs/cell"}
+        },
+        "buildings": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["name", "district", "x0", "x1", "y0", "y1"],
+            "properties": {
+              "name": {"type": "string"},
+              "district": {"type": "string"},
+              "x0": {"type": "integer"}, "x1": {"type": "integer"},
+              "y0": {"type": "integer"}, "y1": {"type": "integer"}
+            }
+          }
+        },
+        "streets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object", "additionalProperties": false,
+            "required": ["axis", "coordinate"],
+            "properties": {
+              "axis": {"type": "string"},
+              "coordinate": {"type": "integer"}
+            }
+          }
+        }
+      }
+    },
+    "boardLevel2": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "width", "height", "gates", "checkpoint", "glory_posts",
+        "support_sites", "blocked"
+      ],
+      "properties": {
+        "width": {"type": "integer", "minimum": 5},
+        "height": {"type": "integer", "minimum": 5},
+        "gates": {
+          "type": "object", "minProperties": 4, "maxProperties": 4,
+          "additionalProperties": {"$ref": "#/$defs/cell"}
+        },
+        "checkpoint": {"$ref": "#/$defs/cell"},
+        "glory_posts": {
+          "type": "array", "items": {"$ref": "#/$defs/cell"}
+        },
+        "support_sites": {
+          "type": "array", "minItems": 3,
+          "items": {"$ref": "#/$defs/cell"}
+        },
+        "blocked": {
+          "type": "array", "items": {"$ref": "#/$defs/cell"}
+        }
+      }
+    }
+  }
+}
