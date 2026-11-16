@@ -68,15 +68,15 @@ Use only the supported keys and existing enumerated values from the incumbent ru
 
 | JSON key | Incumbent | Candidate values | Hypothesis to test |
 | --- | ---: | --- | --- |
-| `succession.contest_cost` | `1` | `0, 1, 2` | Can rivals realistically oppose a claim without denial loops? |
-| `glory.cap` (Prestige cap) | `3` | `null, 2, 3, 4` | Does banking capacity create meaningful save/spend decisions? |
-| `succession.support_in_city` | `true` | `true, false` | Does early support enrich preparation or create a scripted opening? |
+| `succession.contest_fee` | `1` | `0, 1, 2` | Can rivals realistically oppose a claim without denial loops? |
+| `prestige.cap` | `3` | `null, 2, 3, 4` | Does banking capacity create meaningful save/spend decisions? |
+| `succession.claim_window_rounds` | `2` | `1, 2, 3` | Does a longer window crown claims too often, a shorter one feed cancellation loops? |
 | `succession.support_cost` | `1` | `1, 2` | Is support an interesting expense or a frustrating tax? |
-| `succession.challenge_bonus` | `2` | `0, 1, 2` | Is an optional boosted challenge actually a choice? |
-| `succession.reset_positions` | `false` | `true, false` | Does continuity reward planning or create positional runaway? |
-| `level1.grace_full_rounds` | `1` | `0, 1, 2` | Does transition timing preserve decisions without adding empty rounds? |
+| `prestige.guard_post_min_roll` | `4` | `3, 4, 5` | Is guard duty a real income choice or a free stop? |
+| `prestige.duel_loss_penalty` | `1` | `0, 1, 2` | Does the shame payment deter empty duels without punishing the loser twice? |
+| `palace.rounds_after_checkpoint` | `1` | `0, 1, 2` | Does transition timing preserve decisions without adding empty rounds? |
 
-`glory.cap = null` denotes an uncapped variant; it needs special scrutiny for runaway Prestige farming. Legacy Emperor-hit/seal keys still present in the rules JSON are **inactive in succession mode** and are not valid experiments.
+`prestige.cap = null` denotes an uncapped variant; it needs special scrutiny for runaway Prestige farming, and the validator still demands a non-null cap cover at least one support purchase.
 
 **Evidence-based prior:** contest fee **1** is the default to beat, **0** has a documented denial-loop failure, and **2** has a documented live counterplay failure. Treat 0 and 2 as negative controls, not a fresh discovery. Do not promote either based solely on bot results. Reopening these options requires new evidence proving that legal contests exist against competent opposition.
 

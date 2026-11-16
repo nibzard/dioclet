@@ -58,13 +58,18 @@ watercolour glazes. See [`art/`](art/).
 
 ## Current versions
 
-The simulator, print kit, and browser game share one rules file:
+There is one game, Imperial Rivals: 305 AD. Every component reads the
+same rules file:
 
 | Component | Rules | Status |
 | --- | --- | --- |
 | Python simulator | [V0.10.2 rules file](rules/imperial-rivals-v0.10.2.json) | Current design candidate |
-| [Print kit](print/) | V0.10.2 big board | Generated PDFs; needs human playtesting |
-| [Browser game](web/) | V0.10.2 big board | Playable with humans and bots; Python parity |
+| [Print kit](print/) | V0.10.2 | Generated PDFs; needs human playtesting |
+| [Browser game](web/) | V0.10.2 | Playable with humans and bots; Python parity |
+| [Arena](arena/) | V0.10.2 | Decision models play the same game |
+
+Earlier rules versions (V0.1 through V0.10.1) are history; see the
+table at the end of this file and git history for their rules files.
 
 **V0.10 uses two boards of the same size.** Players collect equipment on
 the palace board, then turn the board over and return to their gates on the
@@ -181,7 +186,7 @@ tools/make_readme_images.sh
 ```
 
 The generator updates the PDFs and [`print/kit-manifest.json`](print/kit-manifest.json).
-Use the [current playtest protocol](playtest/protocol-v09.md) to record a human session.
+Use the [current playtest protocol](playtest/protocol.md) to record a human session.
 
 ## Run the simulator
 
@@ -262,8 +267,13 @@ Vercel AI Gateway), streams each turn in the terminal, and keeps a full log
 for model training. See [`arena/README.md`](arena/README.md):
 
 ```bash
+cd arena && uv sync --extra decisions && uv run pytest -q
 cd arena && uv run arena --match matches/bots.json
 ```
+
+The first line installs Arena with its model-provider extra and runs
+its tests. The second plays a bots match to the end. Arena reads the
+shared rules file at `rules/imperial-rivals-v0.10.2.json`.
 
 ## Check changes
 
@@ -277,30 +287,34 @@ python3 -m unittest discover -s tests
 For browser changes, run the Node.js checks:
 
 ```bash
-node tools/test_web_engine.mjs
-node tools/test_succession_engine.mjs
 node tools/test_succession_parity.mjs
+node tools/test_web_engine.mjs
 node tools/test_web_ui.mjs
+node tools/test_succession_engine.mjs
 ```
 
 The user interface check requires `jsdom`; it prints `SKIP` when that package
 is unavailable. The parity check replays seeded games against the Python
-engine on the twin-board rules.
+engine.
 
 ## Project map
 
 | Path | Purpose |
 | --- | --- |
+| [`engine.py`](engine.py) | The game engine: rules validation, state, actions, events, bots |
 | [`sim.py`](sim.py) | Command-line interface for games, batches, and replays |
-| [`engine.py`](engine.py) | The game engine |
 | [`board.py`](board.py) | Board graph, paths, and site lookups |
-| [`policies.py`](policies.py), [`tactical_policy.py`](tactical_policy.py) | Built-in bots and deterministic benchmark |
+| [`policies.py`](policies.py) | Registry of the built-in bots |
 | [`candidate_actions.py`](candidate_actions.py) | Public observations and the action shortlist for model players |
 | [`report.py`](report.py), [`compare.py`](compare.py) | Batch statistics and comparisons |
+| [`rules/`](rules/) | The shared rules file and its JSON schema |
+| [`tools/make_golden_traces.py`](tools/make_golden_traces.py) | Regenerates the golden-trace fixtures |
+| [`tools/table_seat.py`](tools/table_seat.py), [`tools/obs.py`](tools/obs.py) | Play one seat of a run; condensed observations |
 | [`arena/`](arena/) | Terminal app: decision models from different providers play each other |
-| [`tools/`](tools/) | Generators, evaluators, experiment runners, and browser checks |
-| [`web/`](web/), [`print/`](print/) | Browser game and printable materials |
-| [`tests/`](tests/) | Engine, policy, experiment, and print checks |
+| [`tools/`](tools/) | Generators and the browser checks |
+| [`web/`](web/), [`print/`](print/), [`art/`](art/) | Browser game, printable materials, drawn assets |
+| [`playtest/`](playtest/) | Human playtest protocol and recorded sessions |
+| [`tests/`](tests/) | Engine, policy, golden-trace, and print checks |
 | [`results/`](results/), [`runs/`](runs/) | Retained V0.10 experiment evidence and games |
 | [`notes/`](notes/), [`docs/`](docs/) | Research, design plans, findings, and implementation notes |
 
@@ -311,7 +325,7 @@ can be superseded by later experiments.
 
 | Stage | Evidence |
 | --- | --- |
-| V0.1: original rules | [Specification](SPEC.md), [baseline findings](docs/findings/FINDINGS.md) |
+| V0.1: original rules | [Baseline findings](docs/findings/FINDINGS.md) (the V0.1 specification and `rules_baseline.json` live in git history) |
 | V0.2–V0.3: combat and duel consequences | [Combat and fairness](docs/findings/FINDINGS_V02.md), [duel experiments](docs/findings/FINDINGS_V03.md) |
 | V0.4–V0.5: model play and rule trials | [Model players](docs/findings/FINDINGS_V04.md), [V0.4.1 measurements](docs/findings/FINDINGS_V041.md), [rule trials](docs/findings/FINDINGS_V05.md) |
 | V0.6–V0.7: physical board geometry | [Board validation](docs/findings/BOARD_VALIDATION_V061.md), [playability scorecard](docs/findings/PLAYABILITY_SCORECARD_V061.md), [findings](docs/findings/FINDINGS_V061.md), [board comparison](notes/board-comparison.md) |

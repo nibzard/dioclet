@@ -1,6 +1,6 @@
 # Plan: one game, one rules file, the printed names
 
-Status: proposal, 2026-11-16. Nothing in this plan is done yet.
+Status: implemented 2026-11-16, commits 6d0f202..HEAD. All eight phases are done.
 
 ## Goal
 

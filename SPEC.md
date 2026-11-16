@@ -1,409 +1,439 @@
-# Diocletian's Palace — Game Mechanics Simulator Specification
-
-**Status:** Implementation-ready V0.1 proposal  
-**Audience:** Claude Code / coding agents  
-**Language:** Python 3.11+, standard library only  
-**Primary goal:** Use repeatable simulation to find out whether the two-level, four-player game is fun, fair, interactive, and likely to finish in a reasonable time.  
-**This is a *prototype rule set*, not a claim that these are final game rules.**
-
-## 1. What to build
-
-Build a small, headless, turn-based game engine with:
-
-1. **An editable JSON rule set** (see `rules_baseline.json`) controlling the important mechanics without code changes.
-2. **A deterministic state machine** with a seeded random number generator.
-3. **A CLI for one agent-controlled turn at a time**, exposing only information that a real player would know.
-4. **Built-in non-LLM bots** for running 1,000–10,000 games quickly and cheaply.
-5. **Append-only JSONL event logs**, one terminal `result.json` per game, and aggregate reports for batches.
-6. **Replay and invariant tests** to detect engine bugs separately from game-design problems.
-
-Claude Code may orchestrate **four role-playing subagents for a handful of selected games**. For large batches, do not invoke four LLMs on every turn: use built-in policies and reserve LLM agents for qualitative playtests.
-
-### Non-goals for V0.1
-
-No graphical user interface, network multiplayer, animated board, complex deck, special equipment powers, equipment theft, narrative story engine, database, or historically exact palace plan. The V0.1 board is a small graph abstraction of the six zones, four gates, and central junction in the provided images. All of these can be considered later.
-
-## 2. Core game overview
-
-- **Players:** exactly four, identifiers `P0`, `P1`, `P2`, `P3`.
-- **Levels:** Level 1 (explore six districts to obtain six equipment types); Level 2 (earn two Imperial Seals and defeat the Emperor).
-- **Turn structure:** each active player gets one movement die result, chooses **one** legal action, and resolves it immediately. A full *round* means that all four players have had one turn.
-- **Movement:** orthogonal movement on a grid graph; a die result is a **maximum**, not an exact number of steps. Players can deliberately stop early. This is intentional to prioritize route planning over exact-roll luck.
-- **Player encounters:** optional duels at short range. Winner receives Glory; loser keeps equipment and progress.
-- **First complete objective:** the first fully equipped player to reach the central checkpoint starts a brief final countdown. At the end of that countdown, all players enter Level 2, with missing equipment granted automatically.
-- **Victory:** first player to land two successful attacks on the Emperor in Level 2 wins. The game can also end in a timeout draw.
-
-Record all decisions and outcomes; do not silently add rules or narrative effects.
-
-## 3. Board abstraction
-
-Use one **5 × 5 orthogonal graph** per level, coordinates `[x, y]` with `x,y ∈ {0,1,2,3,4}`. Every cell is a walkable waypoint, not a physical room interior. All horizontal and vertical neighbors are connected by undirected edges of length one. No diagonals or walls in V0.1.
-
-### Level 1 sites
-
-```
-       x=0     1      2      3     4
- y=0    ·      ·     N/P0    ·     ·
- y=1   GP      A      B      C     GP
- y=2   W/P3    ·      X      ·    E/P1
- y=3   GP      D      E      F     GP
- y=4    ·      ·     S/P2    ·     ·
-
-A–F: six equipment districts (physical board's six blocks)
-X: central checkpoint
-GP: Glory guard posts
-N/E/S/W: entry gates / initial pawns
-```
-
-Six equipment names are shuffled bijectively among districts A–F **at game creation**. All district identities are initially hidden from players. Once any player uses `explore` at a district, its equipment identity is publicly revealed for everyone, for the remainder of Level 1. Every player may independently acquire that equipment type from the revealed district; cards are *not* depleted. A player never needs more than one copy of a type.
-
-### Level 2 sites
-
-Same grid and same gates, but the location functions change:
-
-- Cellars: `[1,1]`
-- Guard barracks: `[3,1]`
-- Peristyle: `[2,2]`
-- Emperor's chamber: `[2,4]` (southern side of the Palace)
-- Failed-attack retreat: `[2,3]`
-
-The remainder are transit nodes. Phase 2 challenges and movement are independent of the hidden equipment assignment.
-
-**Trade-off to test:** the 5×5 graph is deliberately smaller than the number of white circles on the real board. It is for first-pass mechanics only. A later version should use an extracted adjacency graph of the actual printed paths once the game loop proves worthwhile.
-
-## 4. State and visibility
-
-Engine state (private) must include:
-
-- Rules version and SHA-256 hash of an immutable config snapshot.
-- Game id, seed, per-stream RNG state/counters, global turn number, full round number, active player, phase, current movement roll, phase countdown, termination status.
-- Each player: gate, current coordinate, equipment set, Glory count, Imperial Seal set, Emperor hit count, number of turns, and counters relevant to telemetry.
-- True equipment-to-district mapping and currently revealed districts.
-- First Level 1 finisher, transition trigger round, phase start round.
-
-**Player observation** must include only: phase, active player, dice result for the active turn, positions of all pawns, all players' publicly visible equipment counts/sets and Glory, seals and hits, revealed district identities, active progress conditions, and the full list of legal actions. Do not reveal unopened equipment locations, future rolls, private bot state, or RNG internals.
-
-For this prototype, equipment sets, Glory, seals, and Emperor hits are all **public information**. The only hidden information is the unrevealed equipment mapping, future dice, and policy internals.
-
-Observing is side-effect free: calling `observe` any number of times must never change RNG state or game state.
-
-## 5. Deterministic turn protocol
-
-1. At the **start** of a player's turn, the engine rolls a movement die (`1..6` by default), stores the result, and returns it with `observe`.
-2. Engine calculates `legal_actions`; each action has a stable `action_id` for that turn, an endpoint, an action kind, an optional target and/or Glory-spend flag, and a deterministic shortest path.
-3. Player submits **exactly one legal `action_id`**. The engine checks `player_id` and `turn_id` to reject stale or out-of-order actions.
-4. Engine resolves movement, action outcome, any challenge dice, Glory, phase transitions, and victory checks. It appends a complete event record.
-5. Engine advances the active player in the configured order, rolling the next movement die only when the next turn starts. Once a game ends, no further actions are legal.
-
-### Movement and ending a turn
-
-- Choose a destination whose **shortest-path distance** from current location is `≤ movement_roll`. Travel along the lexicographically deterministic shortest path, using neighbor tie-break order **north, east, south, west**. This makes movement reproducible and prevents agents from exploiting arbitrary loops.
-- Ordinarily a move must travel at least **one edge**. A **zero-step action** is permitted only for `explore`, `claim_checkpoint`, `attempt_seal`, or `attack_emperor` when standing on the relevant site. These consume a full turn.
-- Players may occupy the same node and may pass through each other. Passing through another pawn does **not** trigger combat. Only an explicitly selected `duel` action does.
-- Exactly **one primary interaction** is allowed each turn: `move`, `explore`, `duel`, `guard_post`, `claim_checkpoint`, `attempt_seal`, or `attack_emperor`. For example, you cannot explore a district and fight a player in the same turn.
-- Moving onto a special site without choosing its corresponding action has no effect.
-- `move` (no interaction) is legal only for a nonzero move; zero-step no-ops are not legal.
-- The command `legal_actions` must enumerate fully valid endpoint/action combinations. Do not require the player agent to calculate paths or infer whether an action is possible.
-
-### Legal action conditions
-
-- `explore`: Level 1; destination is one of A–F and player does not own the equipment at that district. If district is unrevealed, it remains a legal exploration target.
-- `guard_post`: Level 1; destination is one of four GP sites; move distance ≥1; player has fewer than max Glory tokens.
-- `claim_checkpoint`: Level 1; destination is X; player has all six equipment types; no prior player has triggered the transition. This action is legal as either a move or stationary action.
-- `duel`: either level; move distance ≥1; select one other player whose **final position** is within `duel_range` orthogonal shortest-path edges of the mover's destination. No combat for merely passing a pawn.
-- `attempt_seal`: Level 2; destination equals a challenge site; player does not yet own that challenge's seal; may be stationary if already there. For Peristyle, offer separate `roll` and `spend_glory` action IDs if player has sufficient Glory.
-- `attack_emperor`: Level 2; destination is the Emperor chamber; player has at least the required number of **distinct** seals; may be stationary if already at chamber; offer both `spend_glory=false` and `true` when feasible.
-- `move`: either level; any valid nonzero destination within range.
-
-Action IDs can be sequential strings like `a0001`, but must be generated in a stable sorted order for a given observation. The engine must reject unknown IDs without advancing time.
-
-## 6. Level 1 resolution
-
-### Exploration
-
-Upon a successful `explore` action, reveal that district's equipment identity to everybody and grant the type to the player. One district has exactly one type, each type occurs at exactly one district, and one player can collect at most one new type per turn. Visiting a district with equipment already owned offers no `explore` action. Equipment is never lost in V0.1.
-
-### Guard posts and Glory
-
-On a `guard_post` action, roll a new d6. If the value is **4, 5, or 6**, gain one Glory, subject to the cap; otherwise gain none. There is no additional failure penalty. A guard post cannot be used without first moving onto it on that turn (no stationary farming).
-
-### Player duel
-
-Each duelist rolls an independent d6. Add the current equipment bonus:
-
-| Owned items | Bonus |
-|---|---:|
-| 0–2 | 0 |
-| 3–5 | +1 |
-| 6 | +2 |
-
-A duel is initiated and resolved on the attacker's turn with **no defender decision** in V0.1. Higher total wins; on a tie, the **defender wins**. The winner gains one Glory (up to cap). No one loses equipment, seals, turns, Glory, or position. Log both dice, modifiers, final scores, winner, and whether Glory was actually awarded due to the cap.
-
-### Level 1 transition
-
-- A player with six pieces who successfully chooses `claim_checkpoint` at X is the **First Challenger**. Grant them +1 Glory subject to cap and record the trigger round `R`.
-- Finish the remainder of round `R` and then **`grace_full_rounds` complete additional rounds**; default 2. For example, if a trigger occurs in round 5 (1-indexed), play through rounds 5, 6, and 7; transition before round 8.
-- If nobody triggers the checkpoint by the end of `level1.max_rounds`, transition anyway and flag `phase1_timeout=true`.
-- At transition, grant *all* missing equipment to *all* players, recording each auto-granted type. Preserve Glory, reset all pawns to their original gates, and start Level 2 at the beginning of a new full round, maintaining the same player order but resetting the per-phase round counter to 1. Only one movement die is rolled for each new turn; old Level 1 rolls do not carry over. This is a **catch-up rule to test**, not a settled design. Measure its effect on incentives and fairness.
-- Once First Challenger has triggered, `claim_checkpoint` disappears from legal actions; other players may continue exploring, dueling, or earning Glory until transition.
-- If the grace deadline and max round deadline both apply, transition at whichever occurs first.
-
-## 7. Level 2 resolution
-
-Each player starts Level 2 with all six equipment types. They retain Glory from Level 1. The three Imperial Seals are personal; challenge locations are shared and never depleted.
-
-### Three challenges (claim two distinct seals)
-
-| Site | Action | Success | Failure |
-|---|---|---|---|
-| Cellars | Roll d6 | 3–6 | Keep position, try again on a later turn |
-| Guard barracks | Player rolls d6+equipment bonus; guard rolls d6+1 | Player score strictly higher | Keep position, try later |
-| Peristyle | Roll d6 | 5–6 | Keep position, try later |
-| Peristyle | Spend 1 Glory *instead of rolling* | Guaranteed success | Not applicable |
-
-On success, add the seal identifier to that player's seal set. A player cannot repeat an already completed seal. A player needs **any two of the three different seals** before challenging the Emperor.
-
-### Emperor encounter
-
-- Chamber is at `[2,4]`. Each player requires **two successful hits** against the Emperor. Hits are tracked separately per player and persist after a failed attempt.
-- Each attempt compares player **d6+equipment bonus** to Emperor **d6+2**. Ties go to Emperor.
-- A challenger may **pre-commit** to spending 1 Glory; if spent, add **+2** to this attack, whether it succeeds or fails. Unlike the visual demonstration discussed earlier, Glory is spent **before** rolling here so the engine resolves each turn atomically with one chosen action.
-- On success, award one hit, keep player in the chamber, and allow a stationary re-attack on their next turn. On failure, move them to retreat node `[2,3]`; no hits, seals, or other equipment are lost.
-- The **first** player to reach `emperor_hits_to_win` wins immediately. If nobody succeeds by `level2.max_rounds` completed rounds, end in a draw and flag `phase2_timeout=true`.
-- Other players may continue normal duels in Level 2. Glory earned from a duel can be used in a later Emperor attempt.
-
-## 8. Rule configuration
-
-Load all tunable values from the JSON at the start of a game and store an immutable copy with that run. At minimum, the baseline file exposes:
-
-- Movement die size, duel distance.
-- Coordinates of gates, six districts, guard posts, checkpoint, challenge sites, Emperor, retreat node.
-- Equipment names and bonus tiers.
-- Glory cap, guard-post threshold, Glory rewards, Glory attack bonus.
-- Level 1 maximum rounds, grace rounds, auto-equipping toggle.
-- Level 2 maximum rounds, seals needed, challenge difficulty, Emperor bonus, hits needed.
-
-**Validation:** unknown keys may be rejected (preferred), and invalid combinations must be rejected with clear errors. Validate coordinates, site uniqueness where necessary, reachable graph sites, all four gates, six distinct equipment types/districts, threshold bounds, nonnegative bonuses, and `required_seals ≤ 3`. If `auto_equip_at_transition=false`, phase 2 must still be playable: either reject that configuration for V0.1 or define a separate mechanic explicitly; **prefer rejection** in V0.1.
-
-Do not embed a second, diverging source of truth for defaults in the Python engine. `rules_baseline.json` is the canonical baseline and tests should load it.
-
-## 9. Required command-line interface
-
-Use `python sim.py <command> ...`. JSON output on stdout for machine-facing commands; errors on stderr and nonzero exit codes. All paths must be explicit (no implicit global state).
-
-```bash
-# Validate the rules (should exit 0 and print a short JSON report)
-python sim.py validate --rules rules_baseline.json
-
-# Create one persistent game; outputs game metadata and first active player
-python sim.py new --rules rules_baseline.json --seed 42 --out runs/demo
-
-# Observe: side-effect-free, includes current roll and numbered legal actions
-python sim.py observe --run runs/demo --player <active_player_from_new>
-
-# Submit an action_id and turn_id returned by observe; these are placeholders
-python sim.py act --run runs/demo --player <active_player> --turn-id <turn_id> \
-  --action-id <legal_action_id> --note 'Collect the nearest unknown district'
-
-# Finish a partially played game with built-in policies
-python sim.py auto --run runs/demo --policies balanced,greedy,aggressive,random
-
-# Thousands of fast, headless games, with seeds seed-base ... seed-base+games-1
-python sim.py batch --rules rules_baseline.json --games 1000 --seed-base 1000 \
-  --policies balanced,greedy,aggressive,random --out results/v01
-
-# Summarize an existing batch and verify one game's reproducibility
-python sim.py report --input results/v01
-python sim.py replay --run runs/demo --verify
-```
-
-Command arguments in the examples above are required interfaces except the arbitrary `--note` text, which is optional. If the chosen action ID is invalid, print `legal_action_error` and do not mutate game state. For `observe`, reject requesting an observation for someone other than the current player rather than leaking the next player's handoff.
-
-`new` determines a **deterministically seeded turn order**. Keep player ids mapped to fixed gates (`P0` north, `P1` east, `P2` south, `P3` west), then shuffle the order per seed, and report it. Batch policy identifiers are seat assignments in the order `P0,P1,P2,P3`.
-
-### Single writer / multi-agent orchestration
-
-The game engine owns state. Claude Code is the **single orchestrator** and invokes at most one `act` per turn. Each of the four Claude subagents gets the current player's `observe` JSON and responds with `{ "action_id": "...", "reason": "..." }`. The orchestrator validates and applies that choice, then sends the next observation to the appropriate agent. **Do not give all four agents write access to `state.json` concurrently.** The game is sequential even if the four roles are maintained in parallel.
-
-## 10. Built-in bot policies
-
-Create at least these four bots. They must pick only from the action list exposed by the player observation; no inspection of the private mapping or future RNG draws.
-
-1. **`random`** — sample an *action category* first (to avoid the many ordinary `move` endpoints swamping interesting actions), then sample a legal action from that category. Keep category weights configurable or documented.
-2. **`greedy`** — Level 1: prioritize collecting missing equipment, exploring unknown districts, then the checkpoint; Level 2: choose the closest two achievable seal sites and attack the Emperor as soon as eligible. Use shortest distance, then a stable coordinate tie-break.
-3. **`aggressive`** — prefer duels when Glory is not capped, but still pursue gear and seals; use Glory aggressively for Peristyle and Emperor attacks.
-4. **`balanced`** — pursue objectives but divert for nearby duels/guard posts if Glory is useful, and use Glory strategically for seals or Emperor. Avoid unnecessary fights while Glory is capped.
-
-For `greedy`/`balanced`, when no priority action is reachable in this turn, choose a reachable `move` action that reduces distance to the best target. Unknown district values must be treated as unknown, not read from engine state. Each bot's heuristic should be separately unit-tested and documented.
-
-At first, run **balanced vs balanced vs balanced vs balanced**, then rotate the policy assignments and gate order for policy comparisons. Do not mistake a fixed gate advantage for a strategic advantage.
-
-## 11. Logs and output files
-
-### Per-game directory
-
-```
-runs/<game_id>/
-  rules.snapshot.json       # immutable config used for the game
-  metadata.json             # seed, turn order, policy assignments, engine version
-  state.json                # latest resumable state (private; agents must not read)
-  events.jsonl              # append-only, one record per resolved turn
-  result.json               # written when game finishes
-```
-
-Each JSONL record should minimally contain:
+# Imperial Rivals: 305 AD — Engine Specification
+
+**Status:** Implemented. The engine, the rules file, the browser game,
+the print kit, and Arena all describe **Imperial Rivals: 305 AD,
+rules V0.10.2**. This document states what the code does.
+**Rules text source of truth:** the printed kit under `print/bw/`
+(rulebook and quick reference). **Behavior source of truth:** this
+repository's code. History documents (`notes/`, `docs/findings/`,
+`DECISIONS.md` D1–D54) record older versions and keep their own words.
+
+## 1. The game
+
+Imperial Rivals: 305 AD is a board game for exactly four players
+(`P0`, `P1`, `P2`, `P3`). Diocletian has retired. Four rivals prepare
+a claim to the throne.
+
+The game has two phases and two boards:
+
+1. **Palace phase.** Players collect equipment from the six treasure
+   entries (A–F) and earn Prestige at guard posts and in duels. The
+   first player who owns all six items may stand at the Peristyle and
+   claim the checkpoint. The palace phase ends one full round after
+   that claim, or at round 24 if nobody claims.
+2. **Succession phase.** Every pawn returns to its gate on the
+   succession map and keeps everything it owns. Six face-down faction
+   cards sit on the card spaces: the Army, the Imperial officials, the
+   City elites, and three empty streets. Players search the cards,
+   pay 1 Prestige for a faction's support, and proclaim a claim at the
+   Peristyle with support from two different factions.
+
+**Win conditions, in the printed words:**
+
+- A claim that stands two full rounds unchallenged makes the claimant
+  **emperor** (engine `end_reason` `survived_window`).
+- A rival cancels a standing claim only by winning a challenge duel,
+  after paying the mandatory **contest fee** of 1 Prestige.
+- If no claim stands by succession round 24, the game ends in a
+  **draw** (`succession_timeout`).
+
+The engine also implements a second win route for rules files that set
+`succession.claim_window_rounds` to 0: a claim is crowned by
+acclamation once every rival has completed one response turn
+(`end_reason` `acclamation`). V0.10.2 sets the window to 2, so this
+route does not fire in the printed game.
+
+## 2. The rules file
+
+One file feeds the engine, the web build, the print kit, and Arena:
+`rules/imperial-rivals-v0.10.2.json`. One schema describes it:
+`rules/rules.schema.json`. The engine validator and the schema accept
+the same keys.
+
+The validator (`engine.validate_rules`) requires every key below and
+rejects every unknown key. No value is supplied by code.
 
 ```json
 {
-  "event_seq": 16,
-  "turn_id": 15,
-  "round": 4,
-  "phase": 1,
-  "player": "P2",
-  "movement_die": 5,
-  "action_id": "a0008",
-  "action": {"kind": "explore", "destination": [2, 1], "path": [[2, 3], [2, 2], [2, 1]]},
-  "dice_used": [],
-  "events": [{"type": "equipment_collected", "item": "scutum", "district": "B"}],
-  "position_after": [2, 1],
-  "glory_after": 1,
-  "equipment_count_after": 4,
-  "reason": "Collect the district north of the junction"
+  "game":        {"name": "Imperial Rivals: 305 AD",
+                  "rules_version": "0.10.2", "players": 4},
+  "turns":       {"rotate_first_player_each_round": true},
+  "movement":    {"dice": 2, "die_sides": 6, "allow_early_stop": true,
+                  "pass_through_pawns": true,
+                  "allow_stationary_special_actions": true},
+  "treasures":   {"items": ["pugio", "pilum", "galea", "scutum",
+                            "gladius", "lorica_segmentata"],
+                  "start_face_up": 2,
+                  "abilities": {"gladius": {"type": "attack_bonus", "value": 1}, "...": "..."},
+                  "bonus_per_side": "best"},
+  "prestige":    {"cap": 3, "guard_post_min_roll": 4,
+                  "guard_post_reward": 1, "duel_win_reward": 1,
+                  "duel_loss_penalty": 1},
+  "duels":       {"range": 2, "tie_winner": "attacker"},
+  "palace":      {"max_rounds": 24, "checkpoint_items_required": 6,
+                  "rounds_after_checkpoint": 1, "map": {"...": "..."}},
+  "succession":  {"max_rounds": 24, "support_cost": 1,
+                  "factions_to_proclaim": 2, "contest_fee": 1,
+                  "claim_window_rounds": 2, "proclaim_cost": 0,
+                  "faction_cards": {"factions": ["army", "elites", "officials"],
+                                    "empty": 3},
+                  "gate_assignment": "random", "map": {"...": "..."}}
 }
 ```
 
-This event is **illustrative**; real coordinates, counts, and roll values must come from engine state. Include a `phase_transition` event when one occurs (either as a separate system event or within the triggering turn). `reason` comes from a bot/agent, is optional, and must not affect simulation.
+Key groups:
 
-`result.json` should include winner or draw, total turns and rounds, turns per level, phase timeouts, player-by-player metrics, and a short ordered list of high-impact events. Include rule hash and seed.
+| Key | Meaning |
+| --- | --- |
+| `movement.dice`, `die_sides` | Two six-sided dice per turn; the total is the maximum number of steps. |
+| `movement.allow_early_stop`, `pass_through_pawns` | You may stop before the whole roll; pawns never block a street. |
+| `movement.allow_stationary_special_actions` | Explore, search, support, claim, proclaim, and the galea work without moving. |
+| `treasures.start_face_up` | Two of the six cards start face up. |
+| `treasures.bonus_per_side` | `"best"`: each duel side adds at most one item bonus, never a sum. |
+| `prestige.cap` | Hold at most 3 Prestige; rewards above the cap are lost. |
+| `prestige.guard_post_min_roll` | A guard-post die of 4+ earns 1 Prestige. |
+| `prestige.duel_loss_penalty` | The duel loser pays 1 Prestige to the bank, as much as they hold. |
+| `duels.range` | Duel a rival within two street circles of your destination. |
+| `duels.tie_winner` | On an ordinary tie the attacker wins. |
+| `palace.checkpoint_items_required` | Own all six items to claim the checkpoint. |
+| `palace.rounds_after_checkpoint` | One more full round after the first claim, then the succession begins. |
+| `succession.contest_fee` | The mandatory fee to contest a proclaimed claim. |
+| `succession.factions_to_proclaim` | Two different factions must support you before you proclaim. |
+| `succession.claim_window_rounds` | A claim that stands two full rounds wins. |
+| `succession.faction_cards` | Three factions and three blanks, dealt blind onto the card spaces. |
 
-### Batch outputs
+### Maps
+
+Both maps are 19 x 13 grids. `blocked` cells are building interiors;
+streets are everything else. Each map carries `width`, `height`,
+`blocked`, `gates` (compass names `north`, `east`, `south`, `west`),
+`checkpoint`, and `guard_posts`.
+
+- The palace map adds `streets` (cardo, decumanus, secondary),
+  `buildings` (six blocks, one per district), and `treasure_entries`
+  A–F. The Peristyle (checkpoint) sits at the cardo–decumanus crossing
+  `[6, 6]`.
+- The succession map adds `card_spaces` (six cells, one in front of
+  each block door). Its Peristyle is at `[9, 6]`, three steps east of
+  the palace crossing, so every gate is nine steps from it.
+
+Geometry checks inside `validate_rules` (via `board.py`): the palace
+map must contain six intact blocks, each block entered by its own
+district, with gates ending the main streets; all four gates, guard
+posts, and card spaces must sit on reachable street cells; card
+spaces may not sit on a gate or the checkpoint.
+
+### Treasure abilities
+
+| Item | Type | Effect |
+| --- | --- | --- |
+| gladius | `attack_bonus` | +1 to your attack in any duel you start. |
+| scutum | `defense_bonus` | +1 to your defense in any duel. |
+| pilum | `attack_vs_claimant` | +1 to your attack against the standing claimant. |
+| pugio | `win_ties` | The lone holder wins tied duels. Both or neither: the attacker wins. |
+| galea | `reveal_district` | Once per game, as your action: reveal any one face-down treasure card. |
+| lorica segmentata | `prevent_displacement` | Once per game: when your claim is beaten, keep your square instead of returning to your gate. |
+
+The pugio is a passive tie-break, not a number bonus. It works next
+to the one number bonus. The number bonuses never stack.
+
+## 3. Engine public API
+
+`engine.py` is a pure state machine. `apply_action` mutates the state
+in place and returns the turn record. All randomness flows through
+named streams serialized inside the state, so a (rules, seed, action
+sequence) triple reproduces a game exactly.
+
+| Function | Signature | Returns |
+| --- | --- | --- |
+| `new_game` | `(rules, seed, game_id, policies=None)` | New state. Validates the rules first. `policies` maps seat ids to bot names. |
+| `observe` | `(state, player)` | Public observation for the active player. Errors `not_your_turn`, `game_over`. Never changes state. |
+| `legal_actions` | `(state)` | List of legal actions for this turn, each with a stable `action_id` (`a0001`, `a0002`, ...). |
+| `apply_action` | `(state, player, turn_id, action_id, reason=None)` | The turn record. Errors `stale_turn_id`, `legal_action_error`, `not_your_turn`, `game_over`. |
+| `result` | `(state)` | Final result blob with per-player metrics (section 8). |
+| `is_finished` | `(state)` | True when `status` is not `in_progress`. |
+| `check_invariants` | `(state)` | True, or raises `AssertionError` on a broken state. |
+| `write_run` | `(run_dir, state)` | Writes `rules.snapshot.json`, `metadata.json`, `state.json`, appends `events.jsonl`; writes `result.json` when finished. |
+| `load_run` | `(run_dir)` | The saved state. |
+| `reset_events_file` | `(run_dir, state)` | Truncates `events.jsonl` to match the state. |
+| `rules_hash` | `(rules)` | SHA-256 of the canonical JSON. |
+| `load_rules` | `(path)` | Parsed and validated rules dict. |
+| `validate_rules` | `(rules)` | True, or `EngineError` code `invalid_rules`. |
+| `choose_policy` | `(policy_name, obs, rng=None)` | `(action_id, reason)` chosen from `obs["legal_actions"]` only. |
+
+Errors are `engine.EngineError(code, message)`; the machine-readable
+code rides on `.code`.
+
+## 4. State vocabulary
+
+Top-level state keys: `gameplay_mode` (`"succession-v1"`),
+`engine_version`, `rules`, `rules_hash`, `game_id`, `seed`, `rng`,
+`players`, `turn_order`, `round_start`, `turn_index`, `rotate_first`,
+`turn_id`, `round`, `phase`, `current_roll`, `current_dice`,
+`active_player`, `gate_assignments`, `pending_claim`,
+`first_challenger`, `trigger_round`, `district_equipment`, `revealed`,
+`setup_reveals`, `equipment_at_transition`, `faction_sites`,
+`faction_sites_revealed`, `palace_timeout`, `succession_timeout`,
+`rounds_palace`, `status`, `winner`, `end_reason`, `event_seq`,
+`events`, `policies`, `policy_version`, `created`.
+
+**Phase encoding:** `phase` is an integer. `1` is the palace phase,
+`2` is the succession phase. Events and results carry the same
+encoding.
+
+Each player (`state["players"][pid]`) holds: `gate_id` (a seat id
+`P0`..`P3`), `gate` (cell), `pos` (cell), `equipment` (sorted item
+names), `prestige` (integer), `support` (faction names), `turns`,
+`stats` (telemetry counters), `abilities_used` (ability type to item).
+
+Hidden state: the item under each unrevealed treasure entry
+(`district_equipment` minus `revealed`), the faction under each
+unsearched card space (`faction_sites` minus `faction_sites_revealed`),
+and future dice. Everything else is public.
+
+## 5. Observation vocabulary
+
+`observe(state, player)` returns, for the active player only:
+
+- `gameplay_mode`, `game_id`, `seed`, `engine_version`, `status`,
+  `phase`, `round`, `turn_id`, `active_player`, `viewer`,
+  `movement_die` (the summed roll), `movement_dice` (each die),
+  `turn_order`, `gate_assignments`.
+- `board`: `width`, `height`, `blocked`, `gates` (by seat id),
+  `districts` (letter to entry cell), `guard_posts`, `checkpoint`,
+  and in the succession phase either `card_spaces`
+  (`candidates` plus everything already `revealed`) or `factions`
+  (fixed meeting-place cells, used when no blind deal exists).
+- `revealed_districts`: district letter to revealed item.
+- `prestige_cap`, `equipment_names`.
+- `players[pid]`: `gate`, `gate_id`, `position`, `equipment`,
+  `equipment_count`, `attack_bonus`, `defense_bonus`,
+  `attack_vs_claimant_bonus`, `prestige`, `support`, `turns`.
+- `pending_claim` (or `null`).
+- `progress`: `first_challenger`, `players_with_full_equipment`,
+  `claim_required_equipment`, `palace_max_rounds`,
+  `succession_max_rounds`, `grace_full_rounds`, `support_cost`,
+  `required_support`, `contest_cost`, `claim_window_rounds`,
+  `proclaim_cost`, `duel_loser_cost`, and `transition_after_round`
+  once the checkpoint is claimed.
+- `legal_actions`: the same list `legal_actions(state)` returns.
+
+## 6. Actions
+
+Each action carries `kind`, `destination`, `path` (a deterministic
+shortest path, tie-break north, east, south, west), `action_id`, and
+where relevant `target`, `faction`, `district`, `contest_cost`, or
+`spend_prestige`. One action per turn.
+
+| Kind | Phase | Conditions |
+| --- | --- | --- |
+| `move` | both | Destination within this roll; at least one step. |
+| `explore` | palace | Destination is a treasure entry whose item you do not own, or that is unrevealed. Grants the item; reveals the district to everyone. |
+| `inspect` | palace | Galea unused: reveal any one unrevealed district, without moving. |
+| `guard_post` | both | You moved onto a guard post and your Prestige is below the cap. Roll one die; 4+ earns 1 Prestige. |
+| `duel` | both | You moved; the target's position is within `duels.range` of your destination. Against the standing claimant, pay the contest fee first. |
+| `search_site` | succession | Destination is an unrevealed card space. Turns its card face up for everyone. |
+| `gain_support` | succession | Destination holds a revealed faction you do not already have; pay `support_cost`. |
+| `claim_checkpoint` | palace | You stand at the Peristyle, own all six items, and nobody has claimed yet. |
+| `proclaim` | succession | You stand at the Peristyle, hold `factions_to_proclaim` support, no claim stands, and you can pay `proclaim_cost`. |
+| `maintain_claim` | succession | Your own claim stands and you are still at the Peristyle. |
+
+Duel resolution order: both sides roll one die; each side adds its one
+best number bonus; the higher total wins; only on equal totals does
+the lone pugio holder win, otherwise the attacker wins. The winner
+earns 1 Prestige; the loser pays 1 Prestige to the bank, as much as
+they hold. A won challenge against a claimant cancels the claim and
+sends the claimant back to their gate unless an unused lorica
+segmentata saves the square (the claim still dies).
+
+Leaving the Peristyle by your own move cancels your own standing
+claim. Equipment and support are never lost.
+
+## 7. Events and the turn record
+
+Each applied turn appends one record to `state["events"]`:
+
+```json
+{
+  "event_seq": 16, "turn_id": 15, "round": 4, "phase": 1,
+  "player": "P2", "movement_die": 5, "movement_dice": [2, 3],
+  "action_id": "a0008",
+  "action": {"kind": "explore", "destination": [12, 3], "path": ["...": "..."]},
+  "dice_used": [],
+  "events": [{"type": "district_revealed", "district": "B", "item": "scutum"}],
+  "position_after": [12, 3], "prestige_after": 1,
+  "equipment_count_after": 4, "reason": "open the nearest district"
+}
+```
+
+`prestige_after` is the acting player's Prestige after the turn.
+`dice_used` lists the dice the action itself rolled, in roll order.
+`reason` is optional caller text and never affects play.
+
+Event types: `prestige_earned`, `prestige_spent`,
+`district_revealed`, `equipment_collected`, `explore_no_gain`,
+`guard_post`, `duel`, `ability_used`, `card_space_revealed`,
+`support_gained`, `first_challenger`, `claim_proclaimed`,
+`claim_maintained`, `claim_response`, `claim_cancelled`,
+`phase_transition`, `game_won`, `game_draw`. The
+`phase_transition`, `game_won`, and `game_draw` events ride inside the
+turn record that triggered them.
+
+## 8. Result and end of game
+
+`result(state)` reports: `outcome` (`win`/`draw`), `winner`,
+`end_reason` (`survived_window`, `acclamation`, or
+`succession_timeout`), `first_challenger`,
+`palace_timeout`, `succession_timeout`, `rounds_palace`,
+`rounds_succession`, `turns_palace`, `turns_succession`,
+`total_turns`, `total_rounds`, `policies`, `turn_order`,
+`gate_assignments`, per-player `players` metrics (final Prestige and
+equipment, support, abilities used, telemetry counters,
+`equipment_at_transition`, districts explored), and
+`high_impact_events`.
+
+`palace_timeout` is true when the palace phase ended at round 24 with
+no checkpoint claim. `succession_timeout` is true when the succession
+phase ended at round 24 with no standing claim (a draw).
+
+## 9. Randomness and determinism
+
+Five named xorshift32 streams live in `state["rng"]`: `gates` (gate
+assignment), `order` (turn order, then the blind faction deal),
+`equipment` (treasure shuffle and start-of-game reveals), `movement`
+(the dice of each turn), `combat` (guard-post and duel dice). Each
+stream starts from the seed mixed with a fixed salt, so the same seed
+and action sequence always replay the same game. Observing never
+advances a stream.
+
+## 10. Built-in bots
+
+Bots read only the public observation and choose only from
+`legal_actions`. The registry is `engine.POLICY_NAMES`; `policies.py`
+wraps it and `engine.choose_policy` does the choice. The nine bots in
+the golden-trace pool (`tests/fixtures/golden/meta.json` `bot_pool`):
+
+| Bot | Behavior |
+| --- | --- |
+| `balanced` | Follows the base ladder: claim and proclaim when able, gear up, secure support, fund Prestige. |
+| `balanced_se` | The same ladder with the opposite shortest-path tie-break. |
+| `greedy` | Collector profile: rushes the six-item checkpoint requirement. |
+| `aggressive` | Funds Prestige through duels when income is wanted. |
+| `random` | Samples a weighted action category first, then an action in it. |
+| `collector` | Collector with fixed item preferences (lorica, scutum). |
+| `early_support` | Skips gear and heads for the factions early. |
+| `prestige_farmer` | Keeps a deep Prestige buffer; farms guard posts and duels. |
+| `counterleader` | Duels the leading rival once that rival nears the proclamation requirement. |
+
+`POLICY_NAMES` also contains `tactical`, a legacy name that behaves
+like `balanced`. The golden pool does not use it.
+
+## 11. Run directories
+
+`write_run` keeps one game per directory:
 
 ```
-results/<experiment>/
-  rules.snapshot.json
-  experiment.json      # seeds, policies, engine version, timestamp
-  games.csv            # 1 row per game, flattened statistics
-  summary.json         # aggregate statistics and rates
-  sample_games/         # full logs for e.g. first 5 seeds + edge cases
+runs/<game_id>/
+  rules.snapshot.json   # the exact rules used
+  metadata.json         # game id, seed, rules hash, turn order, policies, engine version
+  state.json            # the full resumable state (private; agents must not read it)
+  events.jsonl          # one line per turn record, append-only
+  result.json           # written when the game finishes
 ```
 
-Full JSONL logs for 1,000+ games are optional (config flag) to limit disk usage. **Always** save the config/seed and per-game result; save full logs for a small reproducible sample and all anomalous games (timeout, invalid state, extreme game length).
+Writes are atomic (temp file plus rename). `sim.py replay --verify`
+rebuilds a finished game from `rules.snapshot.json` and `events.jsonl`
+and compares events and result.
 
-## 12. Statistics to compute
+## 12. Command line (`sim.py`)
 
-At minimum, calculate the following over all games, by player/gate/seat/policy where relevant:
+All commands print JSON on stdout; errors go to stderr with a nonzero
+exit code. Run from the repository root.
 
-- Win rate; draws/timeouts; Level 1 checkpoint trigger rate; first-challenger rate; first-challenger eventual win rate.
-- Duration in rounds and individual turns for each level and the complete game: mean, median, p90, p95, max.
-- Collected equipment per player *before* auto-equip; count of auto-granted items; whether players deliberately avoid exploration because of auto-equip.
-- Duels initiated, accepted/resolved, attacker win rate, defender win rate, number of turns without player interaction, Glory earned/spent/wasted at cap.
-- Attempts and successes at each seal, seal acquisition order, Glory spent buying a Peristyle seal.
-- Emperor attempts, attack success rate, hits per player, Glory spent on Emperor, player victories after comeback.
-- Action-category frequencies, visited nodes/districts, percentage of players who actively explored at least three districts.
-- Relative win rates by gate and by player turn-order position, with policies rotated.
-
-Report both raw counts and denominators, and 95% confidence intervals for win-rate proportions if convenient (e.g. Wilson intervals). Avoid claiming precision from tiny sample sizes.
-
-### Initial design questions / hypotheses
-
-1. **Does Level 1 end too quickly?** If 90% of games auto-grant 3+ equipment per player, players may never feel the six-item collection challenge.
-2. **Does aggression pay?** Does an `aggressive` bot win significantly more than `greedy`/`balanced`, or are duels pointless / overly rewarding?
-3. **Does the game become a pure sprint?** If First Challenger wins most games, adjust their advantage or phase transition.
-4. **Are dice too dominant?** Does a strong policy outperform `random`? If not, add meaningful decisions rather than adding more randomness.
-5. **Do all gates have comparable odds?** Measure win rate by gate with policies permuted.
-6. **Does the endgame drag?** Measure repeated seal failures, Emperor attack attempts, and phase 2 timeouts.
-7. **Can a younger player recover?** Measure comeback wins and how often players who trail after Level 1 can still win.
-
-## 13. Experiments and tuning protocol
-
-### Minimum first experiment
-
-Run **1,000 seeded games** per ruleset, distributed among:
-
-- 250 games: `balanced,balanced,balanced,balanced`.
-- 250 games: one `aggressive` and three `balanced`; rotate aggressive through all seats across seeds.
-- 250 games: one `greedy` and three `balanced`; rotate greedy through all seats.
-- 250 games: `random,greedy,aggressive,balanced`; rotate all policies through all gates/seat slots.
-
-Keep exact seeds, fixed bot versions, and assignment schedules documented. Also replay three finished games and verify identical outputs. Then run five narrative games with Claude subagents to gather qualitative observations that counters cannot capture.
-
-### Controlled rule changes
-
-Change **one conceptual knob at a time** (even if that knob consists of linked JSON fields); reuse the same seed list and policy assignment schedule. Suggested first variants:
-
-- `grace_full_rounds`: 0 vs 2 vs 4.
-- `auto_equip_at_transition`: keep `true` for V0.1; a later experiment can introduce a fully specified non-auto-equip mode.
-- `duel_range`: 1 vs 2 vs 3.
-- `glory.cap`: 1 vs 2 vs 3.
-- `emperor_hits_to_win`: 1 vs 2 vs 3.
-- `emperor_bonus`: 1 vs 2 vs 3.
-- `level1.max_rounds`: 16 vs 24 vs 32.
-- Guard/Cellar/Peristyle success thresholds.
-
-Never run a silent automated rule optimizer that edits `rules_baseline.json` mid-batch. Every variant gets a separate file (`rules_v02.json`, etc.) and independent results directory; compare with a table and recommend the next experiment. Human review chooses new rules after seeing the data.
-
-### Suggested provisional success targets
-
-These are **diagnostic targets**, not objective definitions of fun:
-
-- >95% of balanced-bot games produce a winner rather than timing out.
-- Median full game length about **20–35 full rounds** (80–140 individual player turns), subject to real-world playtesting.
-- At least 2 duels per game on average (otherwise encounters may need stronger incentives).
-- At least 3 equipment items actively collected per player on average before auto-equip (otherwise the six-item quest is mostly cosmetic).
-- Balanced and greedy policies consistently beat random after gate/order balancing (otherwise player choices may be too weak).
-- No single starting gate has a large, unexplained advantage after seat/policy rotation.
-
-A game may meet these targets and still be boring. Use selected human/LLM playthroughs and eventually physical playtesting to assess subjective fun.
-
-## 14. Tests and reproducibility
-
-Provide unit/property-like tests using Python's `unittest` or `pytest` only if installed; no external dependencies required.
-
-**Essential invariants:**
-
-- A player never moves farther than the turn's movement die, except an explicitly declared Emperor failure retreat.
-- Manhattan movement, no diagonal edges, correct deterministic shortest-path selection.
-- `observe` is idempotent; invalid/stale actions do not mutate RNG, state, or logs.
-- No player has duplicate gear or a Glory count outside `0..cap`.
-- Exactly six equipment types are assigned uniquely to six districts; unrevealed mappings never appear in player observations.
-- All players have full equipment after the Level 1 → Level 2 transition.
-- Phase 2 seals are distinct and at most three per player; Emperor cannot be attacked with too few seals.
-- Failed boss attacks cause the correct retreat; successful hits persist; first player hitting the threshold ends the game.
-- Tie rules, edge cases when Glory is capped, and Peristyle spending are correct.
-- Transition fires after the correct number of **full** grace rounds, independent of which seat triggered it.
-- Replaying the same seed, immutable config and action sequence produces byte-equivalent normalized events and result (excluding timestamps).
-- Games have a finite turn limit and cannot hang.
-- Action IDs are legal only for their own turn, including after a phase transition.
-
-For the selected tiny board, add a **bounded exhaustive test** over all action choices for depth 1–3 (and mocked fixed dice) to detect illegal transitions. Enumerating literally every complete game is computationally infeasible due to combinatorial randomness and action branches; use bounded enumeration, property tests, and Monte Carlo simulation instead.
-
-## 15. Implementation organization
-
-Recommended modules (flexible):
-
-```
-sim.py                 # CLI entry point
-engine.py              # pure transition logic, legal action generation
-board.py               # graph, shortest path and site lookups
-policies.py            # observation-only bots
-report.py              # aggregations, histograms, CSV/JSON
-rules_baseline.json    # configurable rules
-SPEC.md                # this specification
-tests/                 # seeded regression + engine invariants
+```bash
+python3 sim.py validate --rules rules/imperial-rivals-v0.10.2.json
+python3 sim.py new --rules rules/imperial-rivals-v0.10.2.json --seed 42 \
+  --out runs/demo --policies balanced,greedy,aggressive,random
+python3 sim.py observe --run runs/demo --player P0
+python3 sim.py act --run runs/demo --player P0 --turn-id 1 \
+  --action-id a0001 --note 'open the nearest district'
+python3 sim.py auto --run runs/demo
+python3 sim.py batch --rules rules/imperial-rivals-v0.10.2.json --games 1000 \
+  --seed-base 1000 --out results/baseline-demo
+python3 sim.py report --input results/baseline-demo
+python3 sim.py replay --run runs/demo --verify
 ```
 
-Prefer plain Python data classes and dictionaries, JSON serialization and `argparse`. `engine.apply_action` should be a deterministic function of `(state, valid_action, RNG)` and return `(new_state, events)`. Keep bot strategy outside the engine. When persisting a CLI turn, write `state.json` atomically (temp file + rename) and make replay robust to interrupted writes; only one orchestrator process should write to a run directory.
+`--policies` takes one name for all seats or four comma-separated
+names in seat order `P0,P1,P2,P3`. `batch` writes `games.csv`,
+`summary.json`, `experiment.json`, and sample game logs;
+`--schedule experiment` rotates policies and gates across seeds
+(`report.schedule_for`), the default `fixed` uses `--policies`.
+`report` summarizes a batch directory; `compare.py` prints a markdown
+table across batch summaries.
 
-A simple implementation can use Python's `random.Random` with its state serialized reversibly in JSON (not `pickle`) or a counter-based hash RNG. The important contract is **determinism, replayability, and independence from observation calls**. Keep independent RNG streams for equipment placement, movement, and battle/challenges if practical; bot randomness must not alter game dice.
+Supporting tools: `tools/table_seat.py` lets one human or agent play
+one seat of a persistent run; `tools/obs.py` prints a condensed
+observation for narrative playtests.
 
-## 16. Delivery / acceptance criteria
+## 13. Model players
 
-Deliver the runnable engine, canonical JSON file, tests, README with exact commands, a 10-game smoke test log bundle, a 1,000-game summary, and a short `FINDINGS.md` that answers:
+`candidate_actions.py` builds, from one public observation plus the
+public rules file only: `project_observation` (a compact public
+projection with an objective statement and `rule_summary`) and
+`build_candidates` (a deterministic shortlist of at most 16 actions
+with exact one-step probabilities and an exclusion audit). Arena
+(`arena/`) feeds these projections to decision models; see
+`arena/README.md`.
 
-1. How often does a game reach a winner, and after how many turns?
-2. How often are all six gear items collected *versus auto-granted*?
-3. How often do players fight, and are those fights strategically useful?
-4. Which strategies dominate, and do initial gates matter?
-5. What are the top three suggested **single-knob** rule experiments next?
+## 14. Golden traces
 
-The coding agent should first implement the baseline **exactly**, then test it, and **only afterwards** propose changes; no silent deviations from the specification. If a rule is ambiguous, document the chosen interpretation in `DECISIONS.md` and add a test.
+`tools/make_golden_traces.py` plays 200 seeded games (seeds
+1000–1199) with the nine pool bots and records a **name-neutral**
+trace per game: player, action verb, destination, target, dice, the
+score of each seat, positions, items, support, claim state, and the
+result. The fixtures live in `tests/fixtures/golden/`
+(`traces.jsonl`, `meta.json`, `web-parity-baseline.txt`).
+`tests/test_golden_traces.py` replays the same seeds and demands the
+exact traces back, so renames cannot change behavior. Set
+`GOLDEN_FAST=1` to check every fourth game only.
+
+## 15. Web engine and parity
+
+`web/` holds a browser port of the same game
+(`succession-engine.js`, `succession-bots.js`, `engine.js`, `app.js`).
+Its board data and rulebook text are generated from the rules file by
+`tools/make_web_board.py`. Serve it locally with
+`python3 -m http.server 8000 --directory web`.
+
+## 16. Checks
+
+```bash
+python3 -m pytest -q                                   # Python suite
+node tools/test_succession_engine.mjs                  # web engine mechanics
+node tools/test_web_engine.mjs                         # web board-data contract
+node tools/test_web_ui.mjs                             # UI (needs jsdom; else SKIP)
+node tools/test_succession_parity.mjs                  # web vs Python, seeded games
+cd arena && uv sync --extra decisions && uv run pytest -q
+cd arena && uv run arena --match matches/bots.json     # a bots match, end to end
+```
+
+The Python suite needs `reportlab` and `pypdf` for the print checks.
+The parity check replays seeded games against `engine.py` and matches
+every legal action, die, and state.
+
+## 17. Module map
+
+| Path | Purpose |
+| --- | --- |
+| `engine.py` | Rules validation, state, legal actions, resolution, events, bots, run files. |
+| `board.py` | Board graph, shortest paths, site lookups, six-block layout check. |
+| `policies.py` | Bot name registry; dispatch into `engine.choose_policy`. |
+| `candidate_actions.py` | Public projections and candidate shortlists for model players. |
+| `report.py`, `compare.py` | Batch running, aggregation, and comparison. |
+| `sim.py` | Command-line interface. |
+| `rules/` | The shared rules file and its JSON schema. |
+| `tools/` | Trace generator, print and web generators, seat and observation tools, Node checks. |
+| `web/`, `print/`, `art/` | Browser game, printable kits, drawn assets. |
+| `arena/` | Terminal app where decision models play the game. |
+| `playtest/`, `tests/` | Human playtest protocol and the test suite. |

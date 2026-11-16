@@ -1,14 +1,18 @@
-# Human playtest protocol (V0.6.1)
+# Human playtest protocol — Imperial Rivals: 305 AD (V0.10.2)
 
-Status: prepared, not yet run. No human session has been recorded.
-Update this file with actual sessions only; keep predictions in a
-separate notes column, never in the recorded fields.
+Status: prepared. Human session 001 is recorded in this folder
+(`human-session-001.md`). Update this file with actual sessions only;
+keep predictions in a separate notes column, never in the recorded
+fields.
 
 ## Materials
 
-One printed `playtest/playtest-pack.html` (board, cards, tokens),
-two six-sided movement dice, one six-sided challenge die, the
-feedback form from the same pack, a timer, and a pencil.
+One printed kit (`print/bw/`): the palace board and the succession
+map (four taped pages each), the six treasure cards, the six faction
+cards, the tokens, and one player sheet per person. Two six-sided
+movement dice and one six-sided duel die. The playtest form
+(`print/bw/imperial-rivals-305ad-playtest-form-A4-BW.pdf`), a timer,
+and a pencil. The quick reference stays beside the board.
 
 ## Recommended groups
 
@@ -23,8 +27,8 @@ total.
 
 ## Facilitator script
 
-1. Use the five-minute teaching script in the pack. Do not open the
-   rulebook during teaching.
+1. Use the teaching guide from the kit. Do not open the rulebook
+   during teaching.
 2. Time the explanation from the first sentence to the start of play.
 3. During play: answer rules questions, note each one, do not coach
    strategy. Note the game time and, twice per game, the wall-clock
@@ -38,13 +42,19 @@ total.
 - Total play duration in minutes.
 - One measured round duration, mid-game and late-game.
 - Count and content of rules clarifications.
-- Board confusions: which spaces or moves caused them.
+- Board confusions: which spaces or moves caused them (treasure
+  entries, guard posts, card spaces, the two maps).
 - Whether waiting between turns visibly bored anyone, and when.
-- Glory: did players earn and spend it without help.
-- Collection: did treasure collecting feel rewarding (ask, and note
-  whether players detoured for cards unprompted).
+- Prestige: did players earn and spend it without help. Did anyone
+  hold 1 Prestige in reserve for the contest fee.
+- Collection: did collecting equipment at the treasure entries feel
+  rewarding (ask, and note whether players detoured for cards
+  unprompted).
+- The card spaces: did players search them, and did the face-down
+  factions stay exciting after a blank turned up.
 - Trailing players: did they stay involved (watch, then ask).
-- The Emperor fight: reactions at first hit and at the win.
+- The endgame: reactions at the first proclamation, at a cancelled
+  claim, and at the win.
 - Would they play again (ask each player separately).
 
 ## Safety and fairness notes
@@ -57,9 +67,12 @@ total.
 ## Known questions this round should answer
 
 1. Is two-dice movement understood within one round of play?
-2. Is the entry-space rule (stop on blue to take the card) clear?
-3. Does the city phase drag in the last rounds before the gate?
-4. Does the palace phase feel like a race with a dramatic finish?
+2. Is the treasure entry rule (end your move on the entry to take the
+   card) clear?
+3. Does the palace phase drag in the rounds after someone owns all
+   six items?
+4. Does the succession phase feel like a race with a dramatic finish?
 5. Do younger players ever choose a duel on purpose? What makes them
-  do it?
-6. What one rule caused the most questions in every group?
+   do it?
+6. Is the two-round claim window understood without help?
+7. What one rule caused the most questions in every group?
