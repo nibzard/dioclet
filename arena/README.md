@@ -107,6 +107,7 @@ Examples are in [`matches/`](matches/):
 | `bots.json` | Four local bots. No keys. |
 | `example.json` | `openai`, `jev`, `clef`, `pplx` |
 | `gateway.json` | Four gateway models that work on the free tier |
+| `series-four-way.json` | Series: four models, five seeds, one shared budget |
 
 ## 4. Players and models
 
@@ -221,7 +222,116 @@ jq -c 'select(.type=="decision" and .model!="local")
 jq 'select(.type=="result") | {outcome, winner, end_reason}' $RUN/match.jsonl
 ```
 
-## 7. Rules files
+## 7. Series
+
+A series plays one configuration over many games: every seed plays
+four games with rotated seats, and all games share one budget.
+
+```bash
+uv run --extra decisions arena --series matches/series-four-way.json
+```
+
+Arena prints the estimate (games, calls, cost) and asks for
+confirmation on a terminal. For a non-interactive run, pass `--yes`:
+
+```bash
+uv run --extra decisions arena --yes --series matches/series-four-way.json
+```
+
+### The series file
+
+```json
+{
+  "rules": "../rules/imperial-rivals-v0.10.2.json",
+  "players": [
+    {"provider": "clef",    "model": "clef-flash"},
+    {"provider": "pplx",    "model": "pplx-decider-v1.3"},
+    {"provider": "gateway", "model": "nace-ai/drex-v2.0"},
+    {"provider": "gateway", "model": "baseten/elephant-1"}
+  ],
+  "seeds": [42, 43, 44, 45, 46],
+  "budget": {"max_calls": 2200, "max_usd": 1.0},
+  "rotate_seats": true,
+  "shuffle_candidates": true
+}
+```
+
+| Key | Contents |
+|---|---|
+| `rules`, `players`, `seeds` | Required. Exactly four players, and at least one integer seed |
+| `budget` | One budget for the whole series. `0` means no limit |
+| `rotate_seats` | Default true. Game `g` seats player `i` at `P((i + g) mod 4)` |
+| `shuffle_candidates` | Default true. Each remote seat sees its shortlist in a shuffled order |
+
+Arena validates a series file with the same rules as a match file:
+unknown keys, unknown providers, missing keys, and a player count that
+is not four are errors.
+
+- Seat rotation: every player visits every seat exactly once per seed.
+  Seat effects cancel out of the win-rate comparison.
+- Candidate shuffle: the order depends on seed, game, turn, and seat,
+  so a rerun reproduces the same orders. The legal actions keep engine
+  order. The shown order is in each `decision` line's `attempts` and
+  in the sidecar.
+- Budget: a cap reached mid-game marks that game incomplete, and the
+  runner marks the remaining games skipped. The command exits 1 when
+  games are skipped or incomplete.
+
+### Series output
+
+Each series writes one directory:
+
+```
+arena/runs/<UTC time>-<rules hash>-series/
+├── summary.json              the series scoreboard and all metrics
+└── seed-<seed>-game-<n>/
+    ├── match.jsonl           the same log as one match
+    ├── series-game.json      the shown candidate order and the pick, one row per remote turn
+    └── engine/               the engine record
+```
+
+`summary.json` has one entry per player:
+
+| Metric | Contents |
+|---|---|
+| `wins`, `games`, `win_rate_wilson_95` | Wins, and the win rate with the 95% Wilson interval |
+| `wins_by_seat` | Wins at each seat `P0` to `P3` |
+| `missed_interventions` | Turns where the seat let a rival claim win although a cancelling duel was legal. The definition is in [`docs/findings/FINDINGS_ARENA.md`](../docs/findings/FINDINGS_ARENA.md) |
+| `calls`, `input_tokens`, `cost_usd` | Usage and cost over the series |
+| `latency_ms` | Median and p95 over the decisions of the player |
+| `position1` | How often the player chose the candidate shown first in the shuffled shortlist |
+
+The top level holds the games played, skipped, and incomplete, the
+total cost, and the duration.
+
+## 8. Tactical fixtures
+
+A fixture is a frozen position with a known correct action. The command
+asks each provider once per fixture and prints the score:
+
+```bash
+uv run --extra decisions arena --fixtures          # each provider with keys
+uv run arena --fixtures --fixtures-bots            # offline: add the bots
+```
+
+| Fixture | Situation | Correct action |
+|---|---|---|
+| `cancel-winning-claim` | A rival claim wins at the end of this round | Duel the claimant |
+| `proclaim-legal` | A proclaim is legal and no claim is pending | Proclaim |
+| `gain-support-affordable` | A gain-support action is affordable | Gain the support |
+
+The fixtures hold public data only, and no keys are necessary for the
+bots. When a rules change moves the candidate shortlist, Arena prints
+a drift note. To freeze the fixtures again after an engine change:
+
+```bash
+uv run python arena/tests/fixtures/tactical/make_fixtures.py
+```
+
+The command plays bot games and freezes the first position that meets
+each situation. It needs no keys and no network.
+
+## 9. Rules files
 
 Arena loads the rules from a JSON file in the repository folder
 [`rules/`](../rules/). The shipped design is
@@ -239,7 +349,7 @@ a match file at the copy. The wizard offers every rules file in the
 repository `rules/` folder, so a copy there is the easiest to select. The
 engine accepts exactly four players.
 
-## 8. Development
+## 10. Development
 
 ```bash
 cd arena
@@ -262,6 +372,8 @@ ARENA_LIVE_CONTRACT=1 uv run --extra decisions pytest tests/test_live_contract.p
 | [`arena/cli.py`](arena/cli.py) | Entry point `arena` |
 | [`arena/ui.py`](arena/ui.py) | Setup wizard, live stream, scoreboard |
 | [`arena/match.py`](arena/match.py) | Match file, budget, game loop, `match.jsonl` |
+| [`arena/series.py`](arena/series.py) | Series runner, candidate shuffle, tactical fixture check |
+| [`arena/report.py`](arena/report.py) | Series metrics and `summary.json` |
 | [`arena/engine_adapter.py`](arena/engine_adapter.py) | Thin adapter over the Dioclet engine |
 | [`arena/rules_loader.py`](arena/rules_loader.py) | Loads rules through the shared schema and the engine validator |
 | [`arena/providers/`](arena/providers/) | The provider contract, local bots, and remote adapters |

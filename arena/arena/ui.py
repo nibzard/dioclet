@@ -219,3 +219,97 @@ def scoreboard(console, summary):
     console.print(table)
     if summary.get("run_dir"):
         console.print(f"[dim]run directory: {summary['run_dir']}[/dim]")
+
+
+def series_estimate(console, estimate):
+    """Print the pre-run estimate for a paid series."""
+    assumptions = estimate.get("assumptions", {})
+    console.print("[bold]Series estimate[/bold]")
+    console.print(f"games   {estimate['games']}")
+    console.print(f"calls   ~{estimate['calls']} "
+                  f"(~{assumptions.get('turns_per_game', '?')} turns per "
+                  f"game, ~{assumptions.get('input_tokens_per_call', '?')} "
+                  f"input tokens per call)")
+    console.print(f"cost    ~${estimate['cost_usd']:.2f}")
+    for label, entry in estimate.get("per_player", {}).items():
+        console.print(f"        {label}  ~{entry['calls']} calls, "
+                      f"~${entry['cost_usd']:.4f}")
+
+
+def series_scoreboard(console, summary):
+    """Print the series outcome, the per-player table, and the run path."""
+    games = summary.get("games", {})
+    console.print(f"[bold]Series[/bold] "
+                  f"{games.get('played', 0)} games played, "
+                  f"{games.get('incomplete', 0)} incomplete, "
+                  f"{games.get('skipped', 0)} skipped; "
+                  f"total cost ${summary.get('total_cost_usd', 0.0):.4f} "
+                  f"in {summary.get('duration_s', 0.0):.0f}s")
+    table = Table(title="Series scoreboard")
+    for column in ("Player", "Games", "Wins", "Win rate (95%)", "By seat",
+                   "Incomp.", "Missed", "Calls", "Cost", "p95 ms", "Pos-1"):
+        table.add_column(column)
+    for label in summary.get("players", {}):
+        stat = summary["players"][label]
+        ci = stat.get("win_rate_wilson_95")
+        ci_text = (f"{stat['win_rate']:.2f} "
+                   f"[{ci[0]:.2f}, {ci[1]:.2f}]"
+                   if ci else "-")
+        seat_wins = ",".join(f"{seat}:{count}" for seat, count
+                             in sorted(stat["wins_by_seat"].items())
+                             if count)
+        latency = stat.get("latency_ms", {})
+        p95 = (f"{latency['p95']:.0f}"
+               if latency.get("p95") is not None else "-")
+        position1 = stat.get("position1", {})
+        pos1 = (f"{position1['selected']}/{position1['turns']}"
+                if position1.get("turns") else "-")
+        table.add_row(label, str(stat["games"]), str(stat["wins"]), ci_text,
+                      seat_wins or "-", str(stat["incomplete_games"]),
+                      str(stat["missed_interventions"]), str(stat["calls"]),
+                      f"${stat['cost_usd']:.4f}", p95, pos1)
+    console.print(table)
+    skipped = [entry for entry in summary.get("game_list", [])
+               if entry.get("status") == "skipped"]
+    for entry in skipped:
+        console.print(f"[yellow]skipped[/yellow] seed {entry['seed']} game "
+                      f"{entry['game']}: {entry.get('reason', '')}")
+
+
+def fixtures_table(console, rows):
+    """Print the tactical fixture results, one row per provider."""
+    names = []
+    for row in rows:
+        for item in row.get("fixtures", []):
+            if item["name"] not in names:
+                names.append(item["name"])
+    table = Table(title="Tactical fixtures")
+    table.add_column("Provider")
+    for name in names:
+        table.add_column(name)
+    table.add_column("Score")
+    for row in rows:
+        cells = []
+        for name in names:
+            item = next((f for f in row["fixtures"]
+                         if f["name"] == name), None)
+            if item is None:
+                cells.append("-")
+            elif item.get("error"):
+                cells.append("[red]error[/red]")
+            else:
+                cells.append("[green]ok[/green]" if item["correct"]
+                             else "[red]miss[/red]")
+        table.add_row(_provider_label(row["provider"], row["model"]),
+                      *cells, f"{row['score']}/{row['total']}")
+    console.print(table)
+    for row in rows:
+        for item in row["fixtures"]:
+            if item.get("candidates_drift"):
+                console.print(
+                    f"[yellow]note[/yellow] {row['provider']}: the frozen "
+                    f"shortlist of '{item['name']}' no longer matches the "
+                    f"rebuilt shortlist; the fixture may need a re-freeze")
+            if item.get("error"):
+                console.print(f"[red]error[/red] {row['provider']} "
+                              f"'{item['name']}': {item['error']}")
