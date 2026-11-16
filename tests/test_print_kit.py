@@ -1,10 +1,10 @@
-"""Checks for the V0.10 black-and-white A4 print-and-play kit.
+"""Checks for the black-and-white A4 print-and-play kit.
 
 The kit is generated art, so these tests pin the contract a family
 relies on when they print it: page sizes and counts, board geometry
 against the rules JSON, every symbol inside a printable area of at
 least one tile, tracker counts, and the printed prose matching the
-released V0.9 numbers.
+rules JSON.
 """
 
 import itertools
@@ -35,6 +35,23 @@ def whole_text(name):
     # Wrapping changes with type size; assertions concern the printed words.
     return " ".join(" ".join(p.extract_text() for p in
                              PdfReader(PRINT_BW / name).pages).split())
+
+
+def rulebook_prose(rules):
+    # Rulebook page blocks hold strings and small lists; flatten to one
+    # whitespace-normalized line for substring checks.
+    out = []
+
+    def walk(node):
+        if isinstance(node, str):
+            out.append(node)
+        elif isinstance(node, (list, tuple)):
+            for item in node:
+                walk(item)
+
+    for _, blocks in kit.rulebook_pages(rules):
+        walk(blocks)
+    return " ".join(" ".join(out).split())
 
 
 class BoardPages(unittest.TestCase):
@@ -212,51 +229,72 @@ class PrintedRulesMatchRelease(unittest.TestCase):
     def setUpClass(cls):
         cls.rules = engine.load_rules(str(REPO / kit.RULES_FILE))
 
-    def test_guarded_values_still_match_the_rules(self):
-        for (section, key), value in kit.PRINTED_RULES_VALUES.items():
-            self.assertEqual(self.rules[section][key], value,
-                             f"{section}.{key} drifted from the printed prose")
-        for (section, key), value in kit.PRINTED_TOP_LEVEL.items():
-            self.assertEqual(self.rules[section][key], value)
-        abilities = self.rules["treasures"]["abilities"]
-        self.assertEqual(abilities,
-                         {name: {"type": kind, "value": value}
-                          for name, (kind, value) in kit.PRINTED_ABILITIES.items()})
+    def test_printed_prose_reads_the_rules(self):
+        # Every rule number in the rulebook flows from the rules JSON
+        # through kit.rulebook_pages(); these fragments pin that flow.
+        v = kit.printed_values(self.rules)
+        text = rulebook_prose(self.rules)
+        self.assertIn(f"mandatory fee of {v['contest_fee']} Prestige", text)
+        self.assertIn(f"hold at most {v['cap']} Prestige", text)
+        self.assertIn(f"A {v['guard_roll']}, {v['guard_roll'] + 1} or "
+                      f"{v['guard_roll'] + 2} earns {v['guard_reward']} Prestige", text)
+        self.assertIn(f"on a tie the {v['tie_winner']} wins", text)
+        self.assertIn(kit.full_rounds(v["window"]), text)
+        self.assertIn(f"support for {v['support_cost']} Prestige, no roll", text)
 
-    def test_refuse_to_build_guard_rejects_a_changed_fee(self):
-        # Any drift from the printed numbers must stop the build before a
-        # family prints prose that no longer matches the rules.
+    def test_prose_follows_a_mutated_fee(self):
+        # A fee change flows into the rulebook text; only a number the
+        # prose cannot phrase stops the build.
+        rules = json.loads((REPO / kit.RULES_FILE).read_text())
+        rules["succession"]["contest_fee"] = 2
+        text = rulebook_prose(rules)
+        self.assertIn("mandatory fee of 2 Prestige", text)
+        self.assertIn("Without at least 2 Prestige", text)
+
+    def test_refuse_to_build_when_prose_cannot_phrase_the_window(self):
+        # The structure guard must stop the build before any page is
+        # drawn, so a drifted rules file cannot clobber the printed kit.
         import subprocess
         import sys as _sys
         import tempfile
+        rulebook = PRINT_BW / "imperial-rivals-305ad-rulebook-A4-BW.pdf"
         with tempfile.TemporaryDirectory() as tmp:
             mutated = Path(tmp) / "rules.json"
             rules = json.loads((REPO / kit.RULES_FILE).read_text())
-            rules["succession"]["contest_fee"] = 2
+            rules["succession"]["claim_window_rounds"] = 0
             mutated.write_text(json.dumps(rules))
+            before = rulebook.read_bytes()
             result = subprocess.run(
                 [_sys.executable, "tools/make_a4_print_kit.py",
                  "--rules", str(mutated)],
                 capture_output=True, text=True, cwd=str(REPO))
         self.assertNotEqual(result.returncode, 0)
+        self.assertIn("cannot phrase a claim window", result.stderr)
         self.assertIn("update the kit prose", result.stderr)
+        self.assertEqual(rulebook.read_bytes(), before)
 
     def test_rulebook_pins_the_economy_numbers(self):
+        v = kit.printed_values(self.rules)
         text = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
-        self.assertIn("mandatory fee of 1 Prestige", text)          # contest fee
-        self.assertIn("hold at most 3 Prestige", text)              # prestige cap
-        self.assertIn("A 4, 5 or 6 earns 1 Prestige", text)         # guard post
-        self.assertIn("round 24", text)                             # round limits
-        self.assertIn("Two ordinary six-sided dice for movement", text)
-        self.assertIn("on a tie the attacker wins", text)
+        self.assertIn(f"mandatory fee of {v['contest_fee']} Prestige", text)  # fee
+        self.assertIn(f"hold at most {v['cap']} Prestige", text)              # cap
+        self.assertIn(f"A {v['guard_roll']}, {v['guard_roll'] + 1} or "
+                      f"{v['guard_roll'] + 2} earns {v['guard_reward']} Prestige",
+                      text)                                                   # guard
+        self.assertIn(f"round {self.rules['palace']['max_rounds']}", text)
+        self.assertIn(f"{kit.count_word(v['dice']).capitalize()} ordinary "
+                      f"{kit.count_word(self.rules['movement']['die_sides'])}-sided "
+                      "dice for movement", text)
+        self.assertIn(f"on a tie the {v['tie_winner']} wins", text)
         self.assertIn("Marcus wins; the claim dies", text)          # example
         self.assertIn("leaving him with 2", text)                   # example math
 
-    def test_rulebook_pins_the_v092_mechanics(self):
+    def test_rulebook_pins_the_core_mechanics(self):
+        v = kit.printed_values(self.rules)
         text = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
         self.assertIn("at most one item bonus", text)               # ability cap
         self.assertIn("never a sum", text)
-        self.assertIn("two full rounds", text)                      # claim window
+        self.assertIn(kit.full_rounds(v["window"]), text)           # claim window
         self.assertIn("shame", text)                                # loser pays
         self.assertIn("pugio", text)                                # tie winner
         self.assertIn("face up at random", text)                    # start reveals
@@ -268,6 +306,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         # tie-break as a defense-only extra that cannot combine with the
         # gladius. The mechanic is unchanged (D42, D54); the wording pins
         # it down in every printed place a player looks.
+        tie = kit.printed_values(self.rules)["tie_winner"]
         rulebook = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
         self.assertIn("passive tie-break", rulebook)
         self.assertIn("gladius and pugio together are legal", rulebook)
@@ -275,25 +314,30 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("If both or neither hold one", rulebook)   # the tie case
         self.assertIn("Both players own all six items", rulebook)  # example
         cards = whole_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf")
-        self.assertIn("Both or neither: the attacker wins", cards)
+        self.assertIn(f"Both or neither: the {tie} wins", cards)
         self.assertIn("Always active", cards)
         sheets = whole_text("imperial-rivals-305ad-player-sheets-A4-BW.pdf")
         self.assertIn("TIE-BREAK - ALWAYS ON", sheets)           # own group
         quick = " ".join(whole_text("imperial-rivals-305ad-quick-reference-A4-BW.pdf").split())
-        self.assertIn("tie: the lone pugio holder wins, else the attacker", quick)
+        self.assertIn(f"tie: the lone pugio holder wins, else the {tie}", quick)
 
     def test_rulebook_pins_the_twin_board_flow(self):
+        v = kit.printed_values(self.rules)
+        east, gate_steps = kit.twin_geometry(self.rules)
+        n_cards = len(v["factions"]) + v["empty_streets"]
+        n_posts = len(self.rules["succession"]["map"]["guard_posts"])
         text = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
         self.assertIn("succession map", text)                       # the second board
         self.assertIn("Every pawn returns", text)                   # gate reset
         self.assertIn("to its gate on the succession map", text)
-        self.assertIn("six faction cards", text)                    # blind support
+        self.assertIn(f"{kit.count_word(n_cards)} faction cards", text)  # blind
         self.assertIn("the circles marked ? on the succession map", text)
         self.assertIn("That is a search", text)
         self.assertIn("An empty street gives nothing", text)
-        self.assertIn("nine steps from the Peristyle", text)        # pinwheel gates
-        self.assertIn("four guard posts", text)                     # succession posts
-        self.assertIn("three steps east of the palace crossing", text)  # Peristyle moves
+        self.assertIn(f"{kit.count_word(gate_steps)} steps from the Peristyle", text)
+        self.assertIn(f"{kit.count_word(n_posts)} guard posts", text)
+        self.assertIn(f"{kit.count_word(east)} steps east of the palace crossing",
+                      text)                                         # Peristyle moves
         self.assertIn("Guard post (star, on both maps)", text)
         self.assertNotIn("the only Prestige income there", text)
         self.assertIn("Faction cards exist only in the succession phase", text)
@@ -328,15 +372,18 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         # the Peristyle sitting at (6,6) on the palace map and (9,6) on
         # the succession map, which share one street grid.
         quick = " ".join(whole_text("imperial-rivals-305ad-quick-reference-A4-BW.pdf").split())
-        self.assertIn("Its Peristyle is 3 steps EAST of the palace one", quick)
+        east, _ = kit.twin_geometry(self.rules)
+        self.assertIn(f"Its Peristyle is {east} steps EAST of the palace one", quick)
 
     def test_quick_reference_states_the_six_item_checkpoint_claim(self):
         # In a four-agent playtest every seat looked for "claim the
         # checkpoint" on the palace map without knowing it needs all six
         # items; the quick reference listed the action but not the rule.
         text = " ".join(whole_text("imperial-rivals-305ad-quick-reference-A4-BW.pdf").split())
-        self.assertIn("own ALL SIX items and stand at the Peristyle", text)
-        self.assertIn("palace round 24", text)
+        items_req = self.rules["palace"]["checkpoint_items_required"]
+        self.assertIn(f"own ALL {kit.count_word(items_req).upper()} items "
+                      "and stand at the Peristyle", text)
+        self.assertIn(f"palace round {self.rules['palace']['max_rounds']}", text)
 
     def test_player_sheets_list_all_trackers(self):
         text = whole_text("imperial-rivals-305ad-player-sheets-A4-BW.pdf")
@@ -344,7 +391,10 @@ class PrintedRulesMatchRelease(unittest.TestCase):
             self.assertIn(item.upper().replace("_", " "), text.upper())
         self.assertIn("PRESTIGE - one counter on the track", text)
         self.assertIn("keep in", text)                              # the reserve
-        self.assertIn("A claim wins at the END of the round", text)  # claim window
+        window = kit.printed_values(self.rules)["window"]
+        self.assertIn(f"A claim wins at the END of the "
+                      f"{kit.ordinal_word(window)} full round AFTER its proclaim round",
+                      text)                                         # claim window
         self.assertNotIn("Setup: two treasure districts", text)
         for faction in ("Army", "Imperial officials", "City elites"):
             self.assertIn(faction, text)
@@ -360,8 +410,10 @@ class PrintedRulesMatchRelease(unittest.TestCase):
 
     def test_tokens_page_matches_game_limits(self):
         tokens = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 2)
-        self.assertEqual(tokens.count("City phase (max 24 rounds):"), 1)
-        self.assertEqual(tokens.count("Succession phase (max 24 rounds):"), 1)
+        self.assertEqual(tokens.count(
+            f"City phase (max {self.rules['palace']['max_rounds']} rounds):"), 1)
+        self.assertEqual(tokens.count(
+            f"Succession phase (max {self.rules['succession']['max_rounds']} rounds):"), 1)
         self.assertIn("PAWN", tokens.upper())  # fold-up pawns I-IV
 
 
@@ -499,12 +551,15 @@ class SuccessionMapMatchesRules(unittest.TestCase):
 
     def test_faction_cards_print_three_factions_and_three_blanks(self):
         fronts = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 3)
-        for word in ("FACTION CARDS", "ARMY", "OFFICIALS", "ELITES"):
-            self.assertIn(word, fronts)
-        self.assertEqual(fronts.count("EMPTY STREET"), 3)
+        deck = self.rules["succession"]["faction_cards"]
+        self.assertIn("FACTION CARDS", fronts)
+        for name, _badge, _line1, _line2 in kit.faction_card_rows(self.rules):
+            self.assertIn(name, fronts)
+        self.assertEqual(fronts.count("EMPTY STREET"), deck["empty"])
         backs = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 4)
         self.assertIn("FACTION CARD BACKS", backs)
-        self.assertEqual(backs.count("FACTION CARD"), 1 + 6)     # header + six backs
+        self.assertEqual(backs.count("FACTION CARD"),
+                         1 + len(deck["factions"]) + deck["empty"])  # header + backs
 
 
 if __name__ == "__main__":

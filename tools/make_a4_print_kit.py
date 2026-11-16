@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# ABOUTME: Generate the A4 print-and-play kit PDFs and the kit manifest
+# ABOUTME: from the adopted rules file, reading rule values from it.
 """Generate the A4 print-and-play kit for Imperial Rivals: 305 AD.
 
 Everything prints on ordinary A4 paper with black ink only. The game
@@ -53,7 +55,7 @@ RULES_FILE = "rules/imperial-rivals-v0.10.2.json"
 OUT_DIR = "print"                         # ART edition and the manifest
 BW_DIR = os.path.join(OUT_DIR, "bw")      # black-and-white edition
 COLOR_DIR = os.path.join(OUT_DIR, "color")  # full-colour edition
-KIT_VERSION = "prototype print kit V0.10.2"
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Brand names (Brand & Naming Specification v1.0, 15 November 2026).
 # "Diocletian's Palace" stays in story copy only, never as the title.
@@ -62,6 +64,150 @@ EDITION = "305 AD"
 PRODUCT = f"{BRAND}: {EDITION}"
 DESCRIPTOR = "The Roman Succession"
 TAGLINE = "Claim the throne. Survive the challenge."
+
+
+# ---------------------------------------------------------------------------
+# Rules values in prose. Every rule number in the printed text is read
+# from the rules JSON through these helpers; only presentation (icons,
+# colours, gate names) and rules the JSON cannot express stay static.
+
+_NUMBER_WORDS = {0: "zero", 1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+                 6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
+                 11: "eleven", 12: "twelve"}
+_ORDINAL_WORDS = {1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth",
+                  6: "sixth", 7: "seventh", 8: "eighth", 9: "ninth", 10: "tenth",
+                  11: "eleventh", 12: "twelfth"}
+
+
+def count_word(n):
+    """The printed word for a small rule count, else the numeral."""
+    return _NUMBER_WORDS.get(n, str(n))
+
+
+def ordinal_word(n):
+    """'first'..'twelfth' for a round count in prose, else None."""
+    return _ORDINAL_WORDS.get(n)
+
+
+def full_rounds(n):
+    """'one full round' / 'two full rounds' for a round count in prose."""
+    return f"{count_word(n)} full round{'' if n == 1 else 's'}"
+
+
+def printed_values(rules):
+    """Every rule number the kit prose states, read from the rules JSON."""
+    s, p = rules["succession"], rules["prestige"]
+    window = s["claim_window_rounds"]
+    if ordinal_word(window) is None:
+        raise SystemExit(f"printed text cannot phrase a claim window of "
+                         f"{window} rounds; update the kit prose")
+    cap = p["cap"]
+    if cap < 2:
+        raise SystemExit("printed text draws a Prestige track with a "
+                         "reserve box and a cap box above the cap")
+    return {
+        "players": rules["game"]["players"],
+        "dice": rules["movement"]["dice"],
+        "die_sides": rules["movement"]["die_sides"],
+        "cap": cap,
+        "guard_roll": p["guard_post_min_roll"],
+        "guard_reward": p["guard_post_reward"],
+        "duel_win": p["duel_win_reward"],
+        "duel_loss": p["duel_loss_penalty"],
+        "duel_range": rules["duels"]["range"],
+        "tie_winner": rules["duels"]["tie_winner"],
+        "support_cost": s["support_cost"],
+        "contest_fee": s["contest_fee"],
+        "factions_to_proclaim": s["factions_to_proclaim"],
+        "window": window,
+        "city_rounds": rules["palace"]["max_rounds"],
+        "succession_rounds": s["max_rounds"],
+        "grace": rules["palace"]["rounds_after_checkpoint"],
+        "items_required": rules["palace"]["checkpoint_items_required"],
+        "items": rules["treasures"]["items"],
+        "start_face_up": rules["treasures"]["start_face_up"],
+        "factions": s["faction_cards"]["factions"],
+        "empty_streets": s["faction_cards"]["empty"],
+    }
+
+
+def twin_geometry(rules):
+    """(east offset, equal gate distance) of the succession Peristyle.
+
+    The prose states both numbers: 'N steps east of the palace
+    crossing' and 'every gate is N steps from the Peristyle'.
+    """
+    palace_cp = rules["palace"]["map"]["checkpoint"]
+    twin_cp = rules["succession"]["map"]["checkpoint"]
+    east = twin_cp[0] - palace_cp[0]
+    if east <= 0 or twin_cp[1] != palace_cp[1]:
+        raise SystemExit("printed text places the succession Peristyle on "
+                         "the palace crossing's street row, east of it")
+    gates = rules["succession"]["map"]["gates"]
+    steps = {abs(g[0] - twin_cp[0]) + abs(g[1] - twin_cp[1]) for g in gates.values()}
+    if len(steps) != 1:
+        raise SystemExit("printed text says every gate sits the same number "
+                         "of steps from the succession Peristyle")
+    return east, steps.pop()
+
+
+FACTION_DISPLAY = {"army": "Army", "officials": "Imperial officials",
+                   "elites": "City elites"}
+_FACTION_CARDS = {"army": ("ARMY", "shield"), "officials": ("OFFICIALS", "column"),
+                  "elites": ("ELITES", "laurel")}
+_TREASURE_CARDS = {"pugio": ("Pugio", "dagger"), "pilum": ("Pilum", "pilum"),
+                   "galea": ("Galea", "helmet"), "scutum": ("Scutum", "scutum"),
+                   "gladius": ("Gladius", "gladius"),
+                   "lorica_segmentata": ("Lorica Segmentata", "armor")}
+
+# Card flavour per rules ability type; {v} is the ability value and
+# {tie} the duels.tie_winner side from the rules JSON.
+_CARD_ABILITY_TEXT = {
+    "attack_bonus": "+{v} to your attack.",
+    "defense_bonus": "+{v} to your defense.",
+    "attack_vs_claimant": "+{v} attack vs the claimant.",
+    "win_ties": "You win tied duels if only you hold it. Both or neither: "
+                "the {tie} wins. Always active.",
+    "reveal_district": "Once a game: reveal any district.",
+    "prevent_displacement": "Once: a beaten claimant stays put.",
+}
+
+
+def treasure_card_rows(rules):
+    """Treasure card rows (name, icon, flavour), read from the rules JSON."""
+    tie = rules["duels"]["tie_winner"]
+    rows = []
+    for item in rules["treasures"]["items"]:
+        if item not in _TREASURE_CARDS:
+            raise SystemExit(f"no printed card design for the treasure item {item}")
+        name, icon = _TREASURE_CARDS[item]
+        ability = rules["treasures"]["abilities"][item]
+        template = _CARD_ABILITY_TEXT.get(ability["type"])
+        if template is None:
+            raise SystemExit(f"no printed card text for the ability type "
+                             f"{ability['type']}")
+        rows.append((name, icon, template.format(v=ability["value"], tie=tie)))
+    return rows
+
+
+def faction_card_rows(rules):
+    """Faction card rows (name, badge, lines), read from the rules JSON."""
+    cfg = rules["succession"]["faction_cards"]
+    rows = []
+    for faction in cfg["factions"]:
+        if faction not in _FACTION_CARDS:
+            raise SystemExit(f"no printed card design for the faction {faction}")
+        name, badge = _FACTION_CARDS[faction]
+        rows.append((name, badge,
+                     f"Support costs {rules['succession']['support_cost']} Prestige.",
+                     "No roll."))
+    rows.extend(("EMPTY STREET", None, "Nobody meets here.", "Search another card.")
+                for _ in range(cfg["empty"]))
+    return rows
+
+
+_DEFAULT_RULES = engine.load_rules(os.path.join(REPO_ROOT, RULES_FILE))
+KIT_VERSION = f"prototype print kit V{_DEFAULT_RULES['game']['rules_version']}"
 
 # ---------------------------------------------------------------------------
 # Board layout, in millimetres. Y grows upward; north is at the top.
@@ -248,6 +394,9 @@ def _centered(c, x, y, text, font, size, dy=0.0):
 
 def draw_board(c, L):
     b, rules = L["board"], L["rules"]
+    prestige = rules["prestige"]
+    guard_roll = prestige["guard_post_min_roll"]
+    guard_reward = prestige["guard_post_reward"]
     pos = L["pos"]
     ml, mb, gw, gh = L["grid"]
     art = L["art"]
@@ -329,7 +478,7 @@ def draw_board(c, L):
         x, y = pos(tuple(cell))
         c.setLineWidth(1.3)
         _star(c, x * mm, (y + 1.4) * mm, 9.6 * mm)
-        _centered(c, x, y - 6.6, "4+", "Helvetica-Bold", 6.5)
+        _centered(c, x, y - 6.6, f"{guard_roll}+", "Helvetica-Bold", 6.5)
 
     # Gates: doorway arch in a bold ring, name above. The band above
     # each gate ring is free of circles, blocks, and both cut lines.
@@ -365,7 +514,8 @@ def draw_board(c, L):
                       ("double", "treasure entry (take equipment)"),
                       ("arch", "gate / start"),
                       ("octagon", "Peristyle - claim here to open the succession"),
-                      ("star", "guard post: roll 4+ for 1 Prestige")]),
+                      ("star", f"guard post: roll {guard_roll}+ for "
+                               f"{guard_reward} Prestige")]),
         (by0 + 7.2, [("hatch", "building - no entry"),
                      ("blank", "faction meeting places live on the succession map")]),
     ]
@@ -600,7 +750,12 @@ def _knockout_label(c, x, y, text, font="Helvetica-Bold", size=6.8):
 
 
 def draw_succession_map(c, S):
-    b, pos = S["board"], S["pos"]
+    b, rules = S["board"], S["rules"]
+    prestige = rules["prestige"]
+    guard_roll = prestige["guard_post_min_roll"]
+    guard_reward = prestige["guard_post_reward"]
+    support_cost = rules["succession"]["support_cost"]
+    pos = S["pos"]
     ml, mb = S["grid"][0], S["grid"][1]
     art = S["art"]
 
@@ -676,7 +831,7 @@ def draw_succession_map(c, S):
         x, y = pos(tuple(cell))
         c.setLineWidth(1.3)
         _star(c, x * mm, (y + 1.4) * mm, 9.6 * mm)
-        _centered(c, x, y - 6.6, "4+", "Helvetica-Bold", 6.5)
+        _centered(c, x, y - 6.6, f"{guard_roll}+", "Helvetica-Bold", 6.5)
 
     # Gates: arch in a bold ring, name above on a plate (the south gate
     # sits under a block, so its name crosses the block frame).
@@ -701,12 +856,14 @@ def draw_succession_map(c, S):
     # Legend band below the grid, two rows; entries flow left to right.
     row_defs = [
         (by0 + 15.4, [("circle", "street space"),
-                      ("card", "faction card space: search, then 1 Prestige for support"),
+                      ("card", f"faction card space: search, then "
+                               f"{support_cost} Prestige for support"),
                       ("arch", "gate / return here"),
                       ("octagon", "Peristyle - proclaim here")]),
         (by0 + 7.2, [("hatch", "building - no entry"),
                      ("door", "door: the block a card space opens"),
-                     ("star", "guard post: roll 4+ for 1 Prestige")]),
+                     ("star", f"guard post: roll {guard_roll}+ for "
+                              f"{guard_reward} Prestige")]),
     ]
     for sy, entries in row_defs:
         x = 40.0
@@ -892,13 +1049,40 @@ def _fit(c, text, font, size, width):
     return size
 
 
-def player_mat(c, x, y, w, h, numeral):
+def player_mat(c, x, y, w, h, numeral, rules):
     """One player's mat: identity, equipment, Prestige, and the succession.
 
     Built around what players asked about in play: which item bonus
     counts, why to keep 1 Prestige, which supports they hold, and when
     a standing claim wins.
     """
+    v = printed_values(rules)
+    # The mat files each item under the ability kind its column assumes.
+    abilities = rules["treasures"]["abilities"]
+    for item, kind in (("gladius", "attack_bonus"),
+                       ("pilum", "attack_vs_claimant"),
+                       ("scutum", "defense_bonus"),
+                       ("pugio", "win_ties"),
+                       ("galea", "reveal_district"),
+                       ("lorica_segmentata", "prevent_displacement")):
+        if abilities[item]["type"] != kind:
+            raise SystemExit(f"the printed mat files the {item} under its "
+                             f"{kind} ability; update the kit prose")
+    gladius_v = abilities["gladius"]["value"]
+    pilum_v = abilities["pilum"]["value"]
+    scutum_v = abilities["scutum"]["value"]
+    cap = v["cap"]
+    guard_roll = v["guard_roll"]
+    guard_reward = v["guard_reward"]
+    duel_win = v["duel_win"]
+    duel_loss = v["duel_loss"]
+    support_cost = v["support_cost"]
+    contest_fee = v["contest_fee"]
+    duel_range = v["duel_range"]
+    req = v["factions_to_proclaim"]
+    win = v["window"]
+    dice = v["dice"]
+
     c.setLineWidth(1.4)
     c.rect(x * mm, y * mm, w * mm, h * mm)
     c.setLineWidth(0.5)
@@ -937,9 +1121,9 @@ def player_mat(c, x, y, w, h, numeral):
     cx, ty = cols[0], y0
     _mat_head(c, cx, ty, colw, "EQUIPMENT - tick what you collect")
     ty -= 6.6
-    groups = [("IN ATTACK", [("Gladius", "+1 when you attack", False),
-                             ("Pilum", "+1 attacking the claimant", False)]),
-              ("IN DEFENSE", [("Scutum", "+1 when you defend", False)]),
+    groups = [("IN ATTACK", [("Gladius", f"+{gladius_v} when you attack", False),
+                             ("Pilum", f"+{pilum_v} attacking the claimant", False)]),
+              ("IN DEFENSE", [("Scutum", f"+{scutum_v} when you defend", False)]),
               ("TIE-BREAK - ALWAYS ON", [("Pugio", "you win tied duels", False)]),
               ("ONCE PER GAME - tick used", [("Galea", "action: reveal a card", True),
                                              ("Lorica", "segmentata: stay if beaten", True)])]
@@ -969,9 +1153,10 @@ def player_mat(c, x, y, w, h, numeral):
     cx, ty = cols[1], y0
     _mat_head(c, cx, ty, colw, "PRESTIGE - one counter on the track")
     ty -= 15.5
-    box = (colw - 3) / 4.0
-    notes = {0: ("cannot", "contest"), 1: ("keep in", "reserve"), 3: ("cap - more", "is lost")}
-    for i in range(4):
+    box = (colw - 3) / (cap + 1)
+    notes = {0: ("cannot", "contest"), 1: ("keep in", "reserve"),
+             cap: ("cap - more", "is lost")}
+    for i in range(cap + 1):
         bx = cx + i * (box + 1)
         c.setLineWidth(1.6 if i == 1 else 0.9)
         c.rect(bx * mm, ty * mm, box * mm, 10 * mm)
@@ -979,9 +1164,11 @@ def player_mat(c, x, y, w, h, numeral):
         for k, line in enumerate(notes.get(i, ())):
             _centered(c, bx + box / 2, ty - 3.4 - k * 3.0, line, "Helvetica", 6.3)
     ty -= 13.5
-    rows = [("EARN", ["+1  win any duel", "+1  guard post: roll 4+"]),
-            ("SPEND", ["-1  a faction's support", "-1  fee to contest a claim"]),
-            ("LOSE", ["-1  to the bank when you lose a duel"])]
+    rows = [("EARN", [f"+{duel_win}  win any duel",
+                      f"+{guard_reward}  guard post: roll {guard_roll}+"]),
+            ("SPEND", [f"-{support_cost}  a faction's support",
+                       f"-{contest_fee}  fee to contest a claim"]),
+            ("LOSE", [f"-{duel_loss}  to the bank when you lose a duel"])]
     for label, lines in rows:
         c.setFont("Helvetica-Bold", 6.8)
         c.drawString(cx * mm, ty * mm, label)
@@ -994,9 +1181,11 @@ def player_mat(c, x, y, w, h, numeral):
 
     # Column 3: supports, the claim window, and the turn.
     cx, ty = cols[2], y0
-    _mat_head(c, cx, ty, colw, "SUPPORT - two different to proclaim")
+    _mat_head(c, cx, ty, colw,
+              f"SUPPORT - {count_word(req)} different to proclaim")
     ty -= 7.6
-    for name, sym in (("Army", "shield"), ("Imperial officials", "column"), ("City elites", "laurel")):
+    for faction in v["factions"]:
+        name, sym = FACTION_DISPLAY[faction], _FACTION_CARDS[faction][1]
         checkbox(c, cx, ty - 0.6, 4.0)
         c.setFont("Times-Bold", 9.2)
         c.drawString((cx + 5.6) * mm, ty * mm, name)
@@ -1010,9 +1199,11 @@ def player_mat(c, x, y, w, h, numeral):
             _laurel(c, sx * mm, (ty + 1.6) * mm, 2.6 * mm)
         ty -= 6.2
     ty -= 2.6
+    # A claim proclaimed in round R wins at the end of round R + window.
     _mat_head(c, cx, ty, colw, "CLAIM WINDOW")
     ty -= 6.2
-    for line in ("A claim wins at the END of the round", "AFTER the round it is proclaimed."):
+    for line in ("A claim wins at the END of the",
+                 f"{ordinal_word(win)} full round AFTER its proclaim round."):
         c.setFont("Times-Roman", _fit(c, line, "Times-Roman", 8.4, colw))
         c.drawString(cx * mm, ty * mm, line)
         ty -= 4.2
@@ -1020,20 +1211,21 @@ def player_mat(c, x, y, w, h, numeral):
     c.setFont("Times-Roman", 8.4)
     c.drawString(cx * mm, ty * mm, "Proclaimed round ____  wins ____")
     ty -= 5.6
-    c.drawString(cx * mm, ty * mm, "Contest: fee 1, within 2 circles.")
+    c.drawString(cx * mm, ty * mm, f"Contest: fee {contest_fee}, within "
+                                   f"{duel_range} circles.")
     ty -= 5.6
     c.setFont("Times-Bold", 8.4)
-    c.drawString(cx * mm, ty * mm, "Your turn: roll 2 dice, move, one action.")
+    c.drawString(cx * mm, ty * mm, f"Your turn: roll {dice} dice, move, one action.")
 
     # The road to the throne: the whole game in five steps.
     c.setLineWidth(0.8)
     c.line((x + 4) * mm, (y + 21.5) * mm, (x + w - 4) * mm, (y + 21.5) * mm)
     c.setFont("Helvetica-Bold", 7.8)
     c.drawString((x + 4) * mm, (y + 16.5) * mm, "THE ROAD TO THE THRONE")
-    steps = [("PALACE MAP", "Collect all six items"),
+    steps = [("PALACE MAP", f"Collect all {count_word(v['items_required'])} items"),
              ("PALACE MAP", "Claim at the Peristyle"),
              ("SUCCESSION MAP", "Search the ? cards"),
-             ("SUCCESSION MAP", "Buy two different supports"),
+             ("SUCCESSION MAP", f"Buy {count_word(req)} different supports"),
              ("SUCCESSION MAP", "Proclaim, then hold the claim")]
     sx0 = x + 4
     sw = (w - 8 - 4 * 3.0) / 5.0
@@ -1054,14 +1246,14 @@ def player_mat(c, x, y, w, h, numeral):
             c.drawPath(p, stroke=0, fill=1)
 
 
-def player_sheets_pdf(path):
+def player_sheets_pdf(path, rules):
     c = new_doc(path, f"{PRODUCT} - player sheets")
     for page in range(2):
         doc_header(c, "PLAYER SHEETS", "one mat per player - pencil ticks, one counter on the Prestige track")
         w, h = PW - 32.0, 114.0
         y0 = PH - 40 - h
         for i, numeral in enumerate(("I", "II") if page == 0 else ("III", "IV")):
-            player_mat(c, 16.0, y0 - i * (h + 8), w, h, numeral)
+            player_mat(c, 16.0, y0 - i * (h + 8), w, h, numeral, rules)
         doc_footer(c, page + 1, 2)
         c.showPage()
     c.save()
@@ -1071,16 +1263,9 @@ def player_sheets_pdf(path):
 # Cards and tokens.
 
 CARD_W, CARD_H = 55.0, 75.0
-CARDS = [
-    ("Pugio", "dagger",
-     "You win tied duels if only you hold it. Both or neither: "
-     "the attacker wins. Always active."),
-    ("Pilum", "pilum", "+1 attack vs the claimant."),
-    ("Galea", "helmet", "Once a game: reveal any district."),
-    ("Scutum", "scutum", "+1 to your defense."),
-    ("Gladius", "gladius", "+1 to your attack."),
-    ("Lorica Segmentata", "armor", "Once: a beaten claimant stays put."),
-]
+# Card rows for the committed art edition; the drawn editions rebuild
+# these from the rules JSON passed into the PDF functions.
+CARDS = treasure_card_rows(_DEFAULT_RULES)
 
 
 def draw_equipment_icon(c, kind, x, y, s):
@@ -1152,13 +1337,21 @@ def draw_equipment_icon(c, kind, x, y, s):
                    (x + s * (0.24 - abs(dy) * 0.06)) * mm, (y + s * dy) * mm)
 
 
-def cards_tokens_pdf(path):
+def cards_tokens_pdf(path, rules):
     c = new_doc(path, f"{PRODUCT} - cards and tokens")
+    v = printed_values(rules)
+    cards = treasure_card_rows(rules)
+    letters = sorted(rules["palace"]["map"]["treasure_entries"])
+    first, last = letters[0], letters[-1]
+    up = v["start_face_up"]
+    if rules["treasures"]["abilities"]["pugio"]["type"] != "win_ties":
+        raise SystemExit("printed card notes call the pugio a tie-break; "
+                         "update the kit prose")
 
-    # Page 1: the six treasure location cards.
+    # Page 1: the treasure location cards.
     doc_header(c, "TREASURE LOCATION CARDS", "cut on the outer border - identical backs on the next page")
     x0, y0 = 16.0, PH - 32.5 - CARD_H
-    for i, (name, icon, flavor) in enumerate(CARDS):
+    for i, (name, icon, flavor) in enumerate(cards):
         cx = x0 + (i % 3) * (CARD_W + 5.5)
         cy = y0 - (i // 3) * (CARD_H + 5.0)
         c.setLineWidth(1.6)
@@ -1198,17 +1391,20 @@ def cards_tokens_pdf(path):
         _centered(c, cx + CARD_W / 2.0, cy + 5.5, "PALACE TREASURE - LOCATION CARD",
                   "Helvetica", 5.2)
     y = y0 - (CARD_H + 5.0) - 9.0
-    para(c, "Shuffle face down and deal one card to each treasure entry A-F. Then turn "
-            "two of the six face up at random - everyone sees those two treasures from "
-            "the start. Each card states its ability; in a duel count one best number "
-            "bonus per side, never a sum - the pugio is a tie-break, not a number "
-            "bonus, and it works next to the one you counted.", 16, y, PW - 32, size=8.4)
+    para(c, f"Shuffle face down and deal one card to each treasure entry "
+            f"{first}-{last}. Then turn {count_word(up)} of the "
+            f"{count_word(len(cards))} face up at random - everyone sees "
+            f"those {count_word(up)} treasures from the start. Each card "
+            f"states its ability; in a duel count one best number bonus "
+            f"per side, never a sum - the pugio is a tie-break, not a "
+            f"number bonus, and it works next to the one you counted.",
+         16, y, PW - 32, size=8.4)
     doc_footer(c, 1)
     c.showPage()
 
-    # Page 2: six identical card backs (print single-sided, then fold or glue).
-    doc_header(c, "CARD BACKS", "six identical tiles - glue or fold behind each card")
-    for i in range(6):
+    # Page 2: identical card backs (print single-sided, then fold or glue).
+    doc_header(c, "CARD BACKS", f"{count_word(len(cards))} identical tiles - glue or fold behind each card")
+    for i in range(len(cards)):
         cx = x0 + (i % 3) * (CARD_W + 5.5)
         cy = y0 - (i // 3) * (CARD_H + 5.0)
         c.setLineWidth(1.2)
@@ -1259,7 +1455,7 @@ def cards_tokens_pdf(path):
     c.setFont("Helvetica-Bold", 8.5)
     c.drawString(16 * mm, y * mm, "FACTION SUPPORT MARKERS (2 of each)")
     y -= 6
-    kinds = (("ARMY", "shield"), ("OFFICIALS", "column"), ("ELITES", "laurel"))
+    kinds = tuple(_FACTION_CARDS[f] for f in v["factions"])
     for i, (label, sym) in enumerate(kinds):
         px = 24.0 + i * 58.0
         for j in range(2):
@@ -1296,38 +1492,36 @@ def cards_tokens_pdf(path):
     c.drawString(16 * mm, y * mm, "ROUND AND PHASE TRACK")
     y -= 5
     c.setFont("Times-Roman", 8)
-    c.drawString(16 * mm, y * mm, "City phase (max 24 rounds):")
-    for i in range(24):
+    c.drawString(16 * mm, y * mm, f"City phase (max {v['city_rounds']} rounds):")
+    for i in range(v["city_rounds"]):
         box(c, 58.0 + i * 5.6, y - 1.6, 4.6, 5.2, lw=0.7)
         if (i + 1) % 6 == 0:
             c.setFont("Helvetica", 4.6)
             c.drawCentredString((60.3 + i * 5.6) * mm, (y - 5.4) * mm, str(i + 1))
     y -= 10
     c.setFont("Times-Roman", 8)
-    c.drawString(16 * mm, y * mm, "Succession phase (max 24 rounds):")
-    for i in range(24):
+    c.drawString(16 * mm, y * mm,
+                 f"Succession phase (max {v['succession_rounds']} rounds):")
+    for i in range(v["succession_rounds"]):
         box(c, 58.0 + i * 5.6, y - 1.6, 4.6, 5.2, lw=0.7)
     y -= 8
+    grace = v["grace"]
     c.setFont("Times-Italic", 7.4)
     c.drawString(16 * mm, y * mm,
-                 "The city phase ends 1 full round after the first checkpoint claim (or at round 24). "
-                 "Track rounds only if you use the 24-round limits.")
+                 f"The city phase ends {grace} full round{'' if grace == 1 else 's'} "
+                 f"after the first checkpoint claim (or at round {v['city_rounds']}). "
+                 f"Track rounds only if you use the {v['city_rounds']}-round limits.")
     doc_footer(c, 3)
     c.showPage()
 
-    # Pages 4 and 5: the six faction cards and their backs.
-    faction_cards_pages(c, first_page=4)
+    # The next pages: the faction cards and their backs.
+    faction_cards_pages(c, first_page=4, rules=rules)
     c.save()
 
 
-FACTION_CARDS = [
-    ("ARMY", "shield", "Support costs 1 Prestige.", "No roll."),
-    ("OFFICIALS", "column", "Support costs 1 Prestige.", "No roll."),
-    ("ELITES", "laurel", "Support costs 1 Prestige.", "No roll."),
-    ("EMPTY STREET", None, "Nobody meets here.", "Search another card."),
-    ("EMPTY STREET", None, "Nobody meets here.", "Search another card."),
-    ("EMPTY STREET", None, "Nobody meets here.", "Search another card."),
-]
+# Faction card rows for the committed art edition; the drawn editions
+# rebuild these from the rules JSON passed into the PDF functions.
+FACTION_CARDS = faction_card_rows(_DEFAULT_RULES)
 
 
 def _faction_badge(c, kind, x, y, r):
@@ -1340,11 +1534,13 @@ def _faction_badge(c, kind, x, y, r):
         _laurel(c, x * mm, y * mm, r * mm)
 
 
-def faction_cards_pages(c, first_page):
-    """Six faction cards (three factions, three blanks) and their backs."""
+def faction_cards_pages(c, first_page, rules):
+    """The faction deck from the rules JSON, and its identical backs."""
+    cards = faction_card_rows(rules)
+    support_cost = rules["succession"]["support_cost"]
     x0, y0 = 16.0, PH - 32.5 - CARD_H
     doc_header(c, "FACTION CARDS", "for the succession map - identical backs on the next page")
-    for i, (name, badge, line1, line2) in enumerate(FACTION_CARDS):
+    for i, (name, badge, line1, line2) in enumerate(cards):
         cx = x0 + (i % 3) * (CARD_W + 5.5)
         cy = y0 - (i // 3) * (CARD_H + 5.0)
         mid = cx + CARD_W / 2.0
@@ -1368,16 +1564,19 @@ def faction_cards_pages(c, first_page):
         _centered(c, mid, cy + 9.0, line2, "Times-Italic", 7.6)
         _centered(c, mid, cy + 4.5, "SUCCESSION - FACTION CARD", "Helvetica", 5.2)
     y = y0 - (CARD_H + 5.0) - 9.0
-    para(c, "Keep these six cards aside during the palace phase. At the change, shuffle "
-            "them face down and put one on each card space - the circles marked ? on the "
-            "succession map. End your move on a card space and turn its card face up: "
-            "that is a search. A face-up faction card stays on the map; stop there and "
-            "pay 1 Prestige for that faction's support.", 16, y, PW - 32, size=8.4)
+    para(c, f"Keep these {count_word(len(cards))} cards aside during the palace "
+            f"phase. At the change, shuffle them face down and put one on each "
+            f"card space - the circles marked ? on the succession map. End your "
+            f"move on a card space and turn its card face up: that is a search. "
+            f"A face-up faction card stays on the map; stop there and pay "
+            f"{support_cost} Prestige for that faction's support.",
+         16, y, PW - 32, size=8.4)
     doc_footer(c, first_page)
     c.showPage()
 
-    doc_header(c, "FACTION CARD BACKS", "six identical tiles - glue or fold behind each card")
-    for i in range(6):
+    doc_header(c, "FACTION CARD BACKS",
+               f"{count_word(len(cards))} identical tiles - glue or fold behind each card")
+    for i in range(len(cards)):
         cx = x0 + (i % 3) * (CARD_W + 5.5)
         cy = y0 - (i // 3) * (CARD_H + 5.0)
         mid = cx + CARD_W / 2.0
@@ -1533,32 +1732,67 @@ def art_cards_tokens_pdf(path, asset_dir=ART_DIR, label="drawn art"):
 # ---------------------------------------------------------------------------
 # Rulebook.
 
-RULEBOOK_PAGES = [
+def rulebook_pages(rules):
+    """The rulebook page list, with every rule number from the rules JSON."""
+    v = printed_values(rules)
+    east, gate_steps = twin_geometry(rules)
+    a = rules["treasures"]["abilities"]
+    dice, sides = v["dice"], v["die_sides"]
+    cap = v["cap"]
+    gr, gw = v["guard_roll"], v["guard_reward"]
+    dw, dl = v["duel_win"], v["duel_loss"]
+    rng, tie = v["duel_range"], v["tie_winner"]
+    sc, cf = v["support_cost"], v["contest_fee"]
+    req, win = v["factions_to_proclaim"], v["window"]
+    city_rounds, succ_rounds = v["city_rounds"], v["succession_rounds"]
+    grace, items_req = v["grace"], v["items_required"]
+    items, up = v["items"], v["start_face_up"]
+    n_items = len(items)
+    factions = v["factions"]
+    n_factions = len(factions)
+    empty = v["empty_streets"]
+    n_cards = n_factions + empty
+    players = v["players"]
+    letters = sorted(rules["palace"]["map"]["treasure_entries"])
+    item_list = ", ".join(n.replace("_", " ") for n in items[:-1]) \
+        + ", or " + items[-1].replace("_", " ")
+    disp = [FACTION_DISPLAY[f] for f in factions]
+    faction_list = ", the ".join(disp[:-1]) + " and the " + disp[-1]
+    n_guard_posts = len(rules["succession"]["map"]["guard_posts"])
+    return [
     ("The goal", [
         ("h", "What you are trying to do"),
-        ("p", "305 AD. Diocletian has retired to his palace at Split, and four "
-              "rivals prepare a claim to the throne. "
+        ("p", "305 AD. Diocletian has retired to his palace at Split, and "
+              f"{count_word(players)} rivals prepare a claim to the throne. "
               "Collect equipment to become strong, earn Prestige to pay for help, and "
-              "win the support of two of the three factions in the city. Then stand at "
+              f"win the support of {count_word(req)} of the {count_word(n_factions)} "
+              f"factions in the city. Then stand at "
               "the Peristyle, the great crossing of the palace, and proclaim your claim. "
-              "If none of your three rivals can stop it, the throne is yours."),
+              f"If none of your {count_word(players - 1)} rivals can stop it, the throne is yours."),
         ("h", "What you need"),
         ("b", "This printed kit: the palace board and the succession map (four "
-              "taped pages each, the same size), six treasure cards, six faction "
-              "cards, the tokens, and one player sheet per person."),
-        ("b", "Two ordinary six-sided dice for movement, and one six-sided die for "
-              "fights (any die works for both - you just need three dice in total)."),
+              "taped pages each, the same size), "
+              f"{count_word(n_items)} treasure cards, {count_word(n_cards)} "
+              "faction cards, the tokens, and one player sheet per person."),
+        ("b", f"{count_word(dice).capitalize()} ordinary {count_word(sides)}-sided dice "
+              f"for movement, and one {count_word(sides)}-sided die for "
+              "fights (any die works for both - you just need "
+              f"{count_word(dice + 1)} dice in total)."),
         ("b", "A small pawn per player. Coins or buttons work. The paper pawns in "
               "this kit also work."),
-        ("b", "About 45 to 75 minutes for four players learning the game."),
+        ("b", f"About 45 to 75 minutes for {count_word(players)} players learning the game."),
         ("h", "How to set up"),
         ("n", "Assemble both boards (see the assembly sheet). Lay the palace map "
-              "face up; the succession map and the six faction cards wait until "
+              f"face up; the succession map and the {count_word(n_cards)} faction cards "
+              "wait until "
               "the succession begins. Each player picks a pawn and a player "
               "sheet, and writes their name on it."),
-        ("n", "Shuffle the six treasure cards face down. Place one on each treasure "
-              "entry, the double circles marked A to F. Then turn two of the six "
-              "face up at random - everyone sees those two treasures from the start."),
+        ("n", f"Shuffle the {count_word(n_items)} treasure cards face down. Place one "
+              f"on each treasure "
+              f"entry, the double circles marked {letters[0]} to {letters[-1]}. Then turn "
+              f"{count_word(up)} of the {count_word(n_items)} "
+              f"face up at random - everyone sees those {count_word(up)} treasures "
+              "from the start."),
         ("n", "Give each player a random gate: Golden (north), Silver (east), Bronze "
               "(south), or Iron (west). Put your pawn on your gate."),
         ("n", "Choose a starting player at random. The start moves one seat clockwise "
@@ -1566,7 +1800,7 @@ RULEBOOK_PAGES = [
     ]),
     ("Your turn", [
         ("h", "One turn, three steps"),
-        ("n", "Roll two dice. The total is the maximum number of steps you may take."),
+        ("n", f"Roll {count_word(dice)} dice. The total is the maximum number of steps you may take."),
         ("n", "Move your pawn along the street circles, one circle per step, north, "
               "south, east or west. You may stop before using the whole roll and you "
               "may pass through circles occupied by other pawns."),
@@ -1589,10 +1823,11 @@ RULEBOOK_PAGES = [
               "start moves one seat clockwise, so nobody always plays first."),
     ]),
     ("Treasure and equipment", [
-        ("h", "The six treasures"),
-        ("p", "Each treasure entry (double circle, A to F) holds one face-down card: "
-              "pugio, pilum, galea, scutum, gladius, or lorica segmentata. Two of "
-              "the six start face up. End your move on an entry to take that "
+        ("h", f"The {count_word(n_items)} treasures"),
+        ("p", f"Each treasure entry (double circle, {letters[0]} to {letters[-1]}) "
+              f"holds one face-down card: "
+              f"{item_list}. {count_word(up).capitalize()} of "
+              f"the {count_word(n_items)} start face up. End your move on an entry to take that "
               "card's action: reveal the card to everyone and mark the item on "
               "your player sheet."),
         ("p", "Every player can collect every item once. The cards stay on the board "
@@ -1602,9 +1837,9 @@ RULEBOOK_PAGES = [
         ("h", "What each item does"),
         ("p", "Every item carries one ability that lasts the whole game:"),
         ("t", [["Item", "Mark", "Ability"],
-               ["Gladius", "sword", "+1 to your attack in any duel you start"],
-               ["Scutum", "shield", "+1 to your defense in any duel"],
-               ["Pilum", "javelin", "+1 to your attack against the standing claimant"],
+               ["Gladius", "sword", f"+{a['gladius']['value']} to your attack in any duel you start"],
+               ["Scutum", "shield", f"+{a['scutum']['value']} to your defense in any duel"],
+               ["Pilum", "javelin", f"+{a['pilum']['value']} to your attack against the standing claimant"],
                ["Pugio", "dagger", "you win tied duels"],
                ["Galea", "helmet", "once per game, as your action: reveal any one "
                 "face-down treasure card, wherever it is"],
@@ -1613,11 +1848,11 @@ RULEBOOK_PAGES = [
         ("p", "In a duel each side adds at most one item bonus - the best one that "
               "applies, never a sum. The gladius, the pilum and the scutum are "
               "number bonuses: they never stack. If you hold both the gladius and "
-              "the pilum and attack the claimant, you still add only +1."),
+              f"the pilum and attack the claimant, you still add only +{a['gladius']['value']}."),
         ("p", "The pugio is not a number bonus. It is a passive tie-break that "
               "works by itself, next to your chosen number bonus, whenever the two "
               "final duel totals are equal - gladius and pugio together are legal, "
-              "gladius and pilum together still add only +1. Cross an item out on "
+              f"gladius and pilum together still add only +{a['gladius']['value']}. Cross an item out on "
               "your sheet when its once-per-game ability is used."),
         ("p", "Collecting happens only while the palace phase lasts. When the "
               "succession begins the palace map leaves the table and your items "
@@ -1627,12 +1862,13 @@ RULEBOOK_PAGES = [
     ("Prestige", [
         ("h", "Earning Prestige"),
         ("b", "Guard post (star, on both maps): end a move there and roll one "
-              "die. A 4, 5 or 6 earns 1 Prestige."),
-        ("b", "Win a duel: the winner of any duel earns 1 Prestige."),
-        ("p", "You can hold at most 3 Prestige. Any reward above three is lost - "
+              f"die. A {gr}, {gr + 1} or {gr + 2} earns {gw} Prestige."),
+        ("b", f"Win a duel: the winner of any duel earns {dw} Prestige."),
+        ("p", f"You can hold at most {cap} Prestige. Any reward above "
+              f"{count_word(cap)} is lost - "
               "spend it or waste it."),
         ("h", "Duels"),
-        ("p", "End your move within two street circles of a rival and you may duel "
+        ("p", f"End your move within {count_word(rng)} street circles of a rival and you may duel "
               "them as your action. Resolve the duel in this order:"),
         ("n", "Both players roll one die."),
         ("n", "Each side adds its one best item bonus for that side - never a sum. "
@@ -1640,36 +1876,38 @@ RULEBOOK_PAGES = [
         ("n", "Compare the final totals. The higher total wins the duel."),
         ("n", "Only if the totals are equal, apply the tie-break: if exactly one "
               "side holds the pugio, that side wins. If both or neither hold one, "
-              "the tie is ordinary - on a tie the attacker wins."),
-        ("n", "The winner earns 1 Prestige. The loser pays 1 Prestige to the bank "
+              f"the tie is ordinary - on a tie the {tie} wins."),
+        ("n", f"The winner earns {dw} Prestige. The loser pays {dl} Prestige to the bank "
               "as shame, as much as they hold. Nobody loses equipment or support."),
         ("h", "Spending Prestige"),
-        ("b", "1 Prestige: one faction's support (next page). Searching a "
+        ("b", f"{sc} Prestige: one faction's support (next page). Searching a "
               "faction card is free."),
-        ("b", "1 Prestige: the mandatory fee to contest a proclaimed claim (next page)."),
+        ("b", f"{cf} Prestige: the mandatory fee to contest a proclaimed claim (next page)."),
         ("p", "Keep 1 Prestige in reserve. A rival can proclaim at any time, and "
               "with 0 Prestige you cannot contest the claim - you can only watch "
-              "the two rounds run out."),
+              f"the {count_word(win)} round{'s' if win != 1 else ''} run out."),
     ]),
     ("Factions and the claim", [
-        ("h", "The three factions"),
-        ("p", "Three groups in the city can back your claim: the Army, the Imperial "
-              "officials and the City elites. Nobody knows where they meet until "
-              "the succession begins. Their meeting places are hidden among six "
+        ("h", f"The {count_word(n_factions)} factions"),
+        ("p", f"{count_word(n_factions).capitalize()} groups in the city can back "
+              f"your claim: the {faction_list}. Nobody knows where they meet until "
+              f"the succession begins. Their meeting places are hidden among "
+              f"{count_word(n_cards)} "
               "faction cards on the succession map:"),
-        ("t", [["Card", "Badge", "What it does"],
-               ["Army", "shield", "support for 1 Prestige, no roll"],
-               ["Imperial officials", "column", "support for 1 Prestige, no roll"],
-               ["City elites", "laurel", "support for 1 Prestige, no roll"],
-               ["Empty street (3 cards)", "none", "nothing - search another card"]]),
+        ("t", [["Card", "Badge", "What it does"]]
+              + [[disp[i], _FACTION_CARDS[faction][1],
+                  f"support for {sc} Prestige, no roll"]
+                 for i, faction in enumerate(factions)]
+              + [["Empty street " f"({empty} cards)", "none",
+                  "nothing - search another card"]]),
         ("h", "Searching the faction cards"),
-        ("n", "At the change, shuffle the six faction cards face down and put one "
+        ("n", f"At the change, shuffle the {count_word(n_cards)} faction cards face down and put one "
               "on each card space - the circles marked ? on the succession map. "
               "Each block has one card space, in front of its door."),
         ("n", "End your move on a card space and turn its card face up as your "
               "action. That is a search. Everyone sees the card, and it stays "
               "face up for the rest of the game."),
-        ("n", "Stand on a face-up faction card and spend 1 Prestige as your action "
+        ("n", f"Stand on a face-up faction card and spend {sc} Prestige as your action "
               "to gain that faction's support. An empty street gives nothing."),
         ("p", "Every faction can support every player, but each faction supports "
               "each player only once. Support lasts the whole game. Faction cards "
@@ -1678,47 +1916,50 @@ RULEBOOK_PAGES = [
         ("h", "From the city to the succession"),
         ("p", "The game has two phases and two boards. In the palace phase everyone "
               "collects equipment and Prestige on the large board. The first player "
-              "who owns all six items may stand at the Peristyle and claim the "
-              "checkpoint as their action. Finish that round, then one more full "
-              "round, and the succession phase begins. If nobody claims by the end "
-              "of round 24, the succession begins anyway."),
+              f"who owns all {count_word(items_req)} items may stand at the Peristyle and claim the "
+              "checkpoint as their action. Finish that round, then "
+              f"{count_word(grace)} more full "
+              f"round{'s' if grace != 1 else ''}, and the succession phase begins. If nobody claims by the end "
+              f"of round {city_rounds}, the succession begins anyway."),
         ("p", "At the change, the palace map leaves the table: turn the board "
               "over, or set it aside. Deal the faction cards. Every pawn returns "
               "to its gate on the succession map - the same compass gate it started "
               "from - and keeps everything it owns: items, Prestige, and any "
               "support already gained. From now on all movement, support, duels "
-              "and claims happen on the succession map. Every gate there is nine "
+              f"and claims happen on the succession map. Every gate there is "
+              f"{count_word(gate_steps)} "
               "steps from the Peristyle. The succession map has the same streets "
               "and blocks as the palace map, but its Peristyle is in a different "
-              "place: the octagon in the middle of the centre street, three steps "
-              "east of the palace crossing. It also has four guard posts of its "
+              f"place: the octagon in the middle of the centre street, "
+              f"{count_word(east)} steps "
+              f"east of the palace crossing. It also has {count_word(n_guard_posts)} guard posts of its "
               "own, and duels still pay, so a broke player can earn the "
               "contest fee again."),
         ("h", "Proclaiming a claim"),
         ("n", "During the succession phase, stand at the Peristyle with support from "
-              "two different factions."),
+              f"{count_word(req)} different factions."),
         ("n", "Use your action to proclaim your claim. Place the CLAIM marker on the "
               "Peristyle. Only one claim can stand at a time."),
-        ("n", "Your claim now stands inside a two-round window. Rivals may cancel it "
+        ("n", f"Your claim now stands inside a {count_word(win)}-round window. Rivals may cancel it "
               "only by winning a challenge duel (next page). Turns that pass "
               "without a challenge no longer crown anyone by themselves."),
         ("n", "If your turn comes while your claim stands and you are still at the "
               "Peristyle, you may maintain the claim as your action and stay put. "
               "Leaving the Peristyle by your own move cancels your claim."),
-        ("n", "If no rival cancels your claim before two full rounds have passed, "
+        ("n", f"If no rival cancels your claim before {full_rounds(win)} have passed, "
               "you are emperor and the game ends."),
     ]),
     ("Contesting a claim", [
         ("h", "How to contest"),
         ("p", "A rival can stop a claim by winning a challenge duel against the "
-              "claimant. To do it, end your move within two street "
+              f"claimant. To do it, end your move within {count_word(rng)} street "
               "circles of the claimant and duel them. Challenging a standing claim "
-              "costs a mandatory fee of 1 Prestige, paid before you roll - even if "
-              "you lose. Without at least 1 Prestige you cannot contest at all."),
+              f"costs a mandatory fee of {cf} Prestige, paid before you roll - even if "
+              f"you lose. Without at least {cf} Prestige you cannot contest at all."),
         ("p", "The challenge itself is a normal duel, resolved in the five steps "
               "under Duels: one die each, your one best item bonus, then the "
               "tie-break if the totals match. A full challenge costs only the "
-              "1 Prestige fee."),
+              f"{cf} Prestige fee."),
         ("h", "What happens on each result"),
         ("b", "You win: the claim is canceled. The claimant's pawn returns to their "
               "gate on the succession map - unless they have not used the lorica "
@@ -1726,32 +1967,32 @@ RULEBOOK_PAGES = [
               "square (the claim still dies). They keep all equipment, Prestige and "
               "support either way. The next claim may be proclaimed at any time."),
         ("b", "You lose: the claim stands. Your Prestige is spent either way, and "
-              "as in any duel the loser pays 1 Prestige shame to the bank."),
+              f"as in any duel the loser pays {dl} Prestige shame to the bank."),
         ("h", "An example challenge"),
         ("p", "Livia has proclaimed at the Peristyle with the Army and the elites "
               "behind her. Marcus, holding 2 Prestige, the gladius and the pilum, "
-              "moves next to the Peristyle. He pays the 1 Prestige fee and duels. "
-              "His best item bonus is +1 - the pilum also applies against a "
+              f"moves next to the Peristyle. He pays the {cf} Prestige fee and duels. "
+              f"His best item bonus is +{a['pilum']['value']} - the pilum also applies against a "
               "claimant, but one bonus only counts. He rolls 5 + 1 = 6. Livia "
               "holds the scutum and rolls 4 + 1 = 5. Marcus wins; the claim dies "
-              "and Livia pays 1 Prestige shame. She has kept the lorica segmentata "
+              f"and Livia pays {dl} Prestige shame. She has kept the lorica segmentata "
               "unused, so she stays at the Peristyle instead of walking back to her "
-              "gate on the succession map. Marcus earns 1 Prestige for the duel "
+              f"gate on the succession map. Marcus earns {dw} Prestige for the duel "
               "win, leaving him with 2."),
-        ("h", "An example with all six items"),
-        ("p", "Marcus challenges Livia's claim. Both players own all six items. "
-              "Marcus attacks with the gladius (+1); Livia defends with the scutum "
-              "(+1). Both roll a 2, so both finish on 3. Each holds a pugio, so "
+        ("h", f"An example with all {count_word(items_req)} items"),
+        ("p", f"Marcus challenges Livia's claim. Both players own all {count_word(items_req)} items. "
+              f"Marcus attacks with the gladius (+{a['gladius']['value']}); Livia defends with the scutum "
+              f"(+{a['scutum']['value']}). Both roll a 2, so both finish on 3. Each holds a pugio, so "
               "neither has the tie-break alone - the normal tie rule applies and "
-              "Marcus, the attacker, wins. The claim is canceled, Livia pays 1 "
+              f"Marcus, the {tie}, wins. The claim is canceled, Livia pays {dl} "
               "Prestige shame, and she may still use the lorica segmentata to stay "
-              "at the Peristyle. Marcus earns 1 Prestige."),
+              f"at the Peristyle. Marcus earns {dw} Prestige."),
         ("h", "If nobody wins"),
-        ("p", "If no claim survives by the end of round 24 of the succession phase, "
+        ("p", f"If no claim survives by the end of round {succ_rounds} of the succession phase, "
               "the game ends in a draw - the throne stays empty. This is rare."),
         ("h", "Remember"),
         ("b", "An ordinary duel is free. Challenging a claim always costs the "
-              "1 Prestige fee."),
+              f"{cf} Prestige fee."),
         ("b", "Everything is public: positions, items, Prestige, support, and who "
               "has claimed what. Only the face-down treasure and faction cards and "
               "the next dice roll are hidden."),
@@ -1765,21 +2006,22 @@ RULEBOOK_PAGES = [
         ("q", "Can I challenge the same claim twice? Yes - a failed challenge does "
               "not lock you out. Each attempt inside the window pays the fee again."),
         ("q", "What if both duelists hold the pugio? The normal tie rule applies: "
-              "the attacker wins."),
+              f"the {tie} wins."),
         ("q", "Does the galea let me name an item? No. You name a district, not an "
               "item - the reveal turns up whatever card sits there."),
-        ("q", "What if I have 3 Prestige and win a guard roll? Nothing happens - the cap is "
-              "3. Spend some first."),
+        ("q", f"What if I have {cap} Prestige and win a guard roll? Nothing happens - the cap is "
+              f"{cap}. Spend some first."),
         ("q", "Can a faction support two different players? Yes - every faction can "
               "back every player once."),
         ("q", "What if I search an empty street? Nothing more happens. The card "
               "stays face up, so nobody searches there again."),
         ("q", "Can I proclaim twice? Yes, if your first claim is canceled, walk "
               "back and proclaim again. Support is never lost."),
-        ("q", "Can a claim be canceled after the window closes? No. Two full rounds "
-              "unchallenged and the game is over."),
-        ("q", "Do treasures run out? No. Every player can mark each of the six items."),
-        ("q", "What if two players reach six items on the same round? The first to "
+        ("q", f"Can a claim be canceled after the window closes? No. "
+              f"{full_rounds(win).capitalize()} unchallenged and the game is over."),
+        ("q", f"Do treasures run out? No. Every player can mark each of the "
+              f"{count_word(n_items)} items."),
+        ("q", f"What if two players reach {count_word(items_req)} items on the same round? The first to "
               "claim at the Peristyle in turn order is the first challenger."),
         ("q", "Can we go back to the palace map once the succession begins? No. "
               "The change is one-way: from then on only the succession map is "
@@ -1788,13 +2030,15 @@ RULEBOOK_PAGES = [
               "you started from - Golden north, Silver east, Bronze south, Iron "
               "west."),
     ]),
-]
+    ]
 
 
-def rulebook_pdf(path):
+def rulebook_pdf(path, rules):
     c = new_doc(path, f"{PRODUCT} - rulebook")
     page = 1
-    doc_header(c, PRODUCT.upper(), f"{DESCRIPTOR} - rules for four players")
+    doc_header(c, PRODUCT.upper(),
+               f"{DESCRIPTOR} - rules for "
+               f"{count_word(rules['game']['players'])} players")
 
     y = PH - 36
     c.setFont("Times-Bold", 11)
@@ -1813,7 +2057,7 @@ def rulebook_pdf(path):
         doc_header(c, f"{BRAND.upper()} - RULES", f"{EDITION} - {DESCRIPTOR}")
         y = PH - 36
 
-    for section_index, (section_title, blocks) in enumerate(RULEBOOK_PAGES):
+    for section_index, (section_title, blocks) in enumerate(rulebook_pages(rules)):
         # Movement and equipment share a page; both are used each turn.
         if section_index and section_index != 2:
             new_page()
@@ -1886,51 +2130,70 @@ def rulebook_pdf(path):
 # ---------------------------------------------------------------------------
 # Quick reference, teaching guide, playtest form, print instructions.
 
-def quick_reference_pdf(path):
+def quick_reference_pdf(path, rules):
     c = new_doc(path, f"{PRODUCT} - quick reference")
     doc_header(c, "QUICK REFERENCE", "keep this beside the board")
+    v = printed_values(rules)
+    east, gate_steps = twin_geometry(rules)
+    a = rules["treasures"]["abilities"]
+    av, dv, pv = (a["gladius"]["value"], a["scutum"]["value"],
+                  a["pilum"]["value"])
+    dice, cap = v["dice"], v["cap"]
+    gr, gw = v["guard_roll"], v["guard_reward"]
+    dl = v["duel_loss"]
+    sc, cf = v["support_cost"], v["contest_fee"]
+    rng, tie = v["duel_range"], v["tie_winner"]
+    req, win = v["factions_to_proclaim"], v["window"]
+    city_rounds, succ_rounds = v["city_rounds"], v["succession_rounds"]
+    grace, items_req = v["grace"], v["items_required"]
+    factions = v["factions"]
+    empty = v["empty_streets"]
+    n_cards = len(factions) + empty
     y = PH - 36
     blocks = [
-        ("YOUR TURN", ["1. Roll two dice.", "2. Move up to the total; stop early if you like.",
+        ("YOUR TURN", [f"1. Roll {count_word(dice)} dice.", "2. Move up to the total; stop early if you like.",
                        "3. Do ONE action (or none): take treasure · guard duty · duel · "
                        "search a card · gain support · claim the checkpoint · proclaim · "
                        "maintain your claim."]),
         ("TWO MAPS", ["Palace map (large): treasures, the checkpoint claim.",
-                      "Claim the checkpoint: own ALL SIX items and stand at the Peristyle. "
-                      "The palace map ends one full round after the first claim, or after "
-                      "palace round 24 if nobody owns all six.",
+                      f"Claim the checkpoint: own ALL {count_word(items_req).upper()} items and "
+                      f"stand at the Peristyle. "
+                      f"The palace map ends {full_rounds(grace)} after the first claim, or after "
+                      f"palace round {city_rounds} if nobody owns all {count_word(items_req)}.",
                       "Succession map (the back of the board): support, proclaiming, "
                       "the whole endgame. At the change everyone returns to their gate "
-                      "there. Its Peristyle is 3 steps EAST of the palace one; every "
-                      "gate is 9 steps from it."]),
-        ("ROLLS", ["Movement: two dice summed.", "Guard post: one die - 4+ earns 1 Prestige "
-                   "(either map).",
+                      f"there. Its Peristyle is {east} steps EAST of the palace one; every "
+                      f"gate is {gate_steps} steps from it."]),
+        ("ROLLS", [f"Movement: {count_word(dice)} dice summed.",
+                   f"Guard post: one die - {gr}+ earns {gw} Prestige (either map).",
                    "Duel: one die each + your one best item bonus; tie: the lone "
-                   "pugio holder wins, else the attacker."]),
+                   f"pugio holder wins, else the {tie}."]),
         ("EQUIPMENT (one best number bonus per side)", [
-            "Gladius +1 attack · Scutum +1 defense · Pilum +1 vs the claimant.",
+            f"Gladius +{av} attack · Scutum +{dv} defense · Pilum +{pv} vs the claimant.",
             "Pugio: lone holder wins ties (not a number bonus) · Galea once: "
             "reveal a district · Lorica once: stay when beaten."]),
-        ("PRESTIGE (cap 3)", ["Earn: guard post 4+ (either map) · any duel win.",
-                              "Spend: 1 = faction support · 1 = fee to contest a claim. "
+        (f"PRESTIGE (cap {cap})", [f"Earn: guard post {gr}+ (either map) · any duel win.",
+                              f"Spend: {sc} = faction support · {cf} = fee to contest a claim. "
                               "Searching is free.",
                               "Keep 1 in reserve: with 0 Prestige you cannot contest a claim.",
-                              "Lose: 1 to the bank whenever you lose a duel."]),
+                              f"Lose: {dl} to the bank whenever you lose a duel."]),
         ("FACTION CARDS (succession map only)", [
-            "Six cards face down on the ? spaces: army, officials, elites, and "
-            "three empty streets.",
+            f"{count_word(n_cards).capitalize()} cards face down on the ? spaces: "
+            f"{', '.join(factions)}, and "
+            f"{count_word(empty)} empty streets.",
             "Search: end your move on a ? and turn the card face up (your action).",
-            "Support: on a face-up faction, 1 Prestige, no roll. Two different "
+            f"Support: on a face-up faction, {sc} Prestige, no roll. "
+            f"{count_word(req).capitalize()} different "
             "factions needed to proclaim."]),
-        ("PROCLAIM", ["Succession phase, stand at the Peristyle, 2 supporters, "
+        ("PROCLAIM", [f"Succession phase, stand at the Peristyle, {req} supporters, "
                       "no other claim standing."]),
-        ("CONTEST A CLAIM", ["Move within 2 circles of the claimant and duel them, "
-                             "any turn inside the window.", "Mandatory fee: 1 Prestige "
+        ("CONTEST A CLAIM", [f"Move within {rng} circles of the claimant and duel them, "
+                             "any turn inside the window.", f"Mandatory fee: {cf} Prestige "
                              "before you roll.", "Win: claim "
                              "canceled, claimant returns to their gate on the succession "
                              "map (lorica: stay put once), keeps everything."]),
-        ("WINNING", ["A claim that stands two full rounds = emperor.",
-                     "No claim standing by succession round 24 = draw."]),
+        ("WINNING", [f"A claim that stands {full_rounds(win)} = emperor.",
+                     f"No claim standing by succession round {succ_rounds} = draw."]),
     ]
     # The blocks must end above the footer rule (13 mm). Use the most
     # generous line pitch that fits; fail loudly if none does.
@@ -1966,43 +2229,63 @@ def quick_reference_pdf(path):
     c.save()
 
 
-def teaching_guide_pdf(path):
+def teaching_guide_pdf(path, rules):
     c = new_doc(path, f"{PRODUCT} - five-minute teaching guide")
     page = 1
     doc_header(c, "TEACH IN FIVE MINUTES",
                "read aloud - seven steps, then two short demonstrations")
+    v = printed_values(rules)
+    a = rules["treasures"]["abilities"]
+    av, dv, pv = (a["gladius"]["value"], a["scutum"]["value"],
+                  a["pilum"]["value"])
+    dice, cap = v["dice"], v["cap"]
+    gr, gw = v["guard_roll"], v["guard_reward"]
+    dw, dl = v["duel_win"], v["duel_loss"]
+    sc, cf = v["support_cost"], v["contest_fee"]
+    req, win = v["factions_to_proclaim"], v["window"]
+    grace, items_req = v["grace"], v["items_required"]
+    up, players = v["start_face_up"], v["players"]
+    factions = v["factions"]
+    n_factions, empty = len(factions), v["empty_streets"]
+    n_cards = n_factions + empty
+    letters = sorted(rules["palace"]["map"]["treasure_entries"])
+    tie = v["tie_winner"]
     y = PH - 36
     steps = [
         ("The goal (30 seconds)", "Diocletian has retired and the throne is empty. "
          "You will collect gear, win friends, and try to crown yourself. The claim "
-         "your three rivals fail to stop inside two rounds wins the game."),
-        ("Moving (30 seconds)", "On your turn, roll two dice and move up to the "
+         f"your {count_word(players - 1)} rivals fail to stop inside "
+         f"{count_word(win)} rounds wins the game."),
+        ("Moving (30 seconds)", f"On your turn, roll {count_word(dice)} dice and move up to the "
          "total along the white circles. Streets only - the hatched blocks are "
          "buildings. Stop anywhere. Then do one thing. That is a whole turn."),
-        ("Equipment (45 seconds)", "The double circles A to F each hold one piece "
-         "of gear - two start face up. Stop on one and mark it on your sheet. Each "
-         "piece does one thing forever: the sword adds +1 to attacks, the shield "
-         "+1 to defense, the javelin +1 against a claimant, the dagger breaks "
+        ("Equipment (45 seconds)", f"The double circles {letters[0]} to {letters[-1]} each hold one piece "
+         f"of gear - {count_word(up)} start face up. Stop on one and mark it on your sheet. Each "
+         f"piece does one thing forever: the sword adds +{av} to attacks, the shield "
+         f"+{dv} to defense, the javelin +{pv} against a claimant, the dagger breaks "
          "ties for its lone holder, the helmet reveals a district once, the "
          "armor saves you once. In a duel "
          "you count your one best bonus - never a sum."),
         ("Prestige (60 seconds)", "This coin symbol is Prestige - political clout. "
-         "Earn it at a star space: stop there, roll one die, 4 or higher pays 1. "
-         "Win a duel: also 1. Lose a duel: pay 1 back to the bank. You can hold "
-         "three. You will spend it on friends and on challenges."),
-        ("Factions (45 seconds)", "Three groups can back you - the Army, the "
+         f"Earn it at a star space: stop there, roll one die, {gr} or higher pays {gw}. "
+         f"Win a duel: also {dw}. Lose a duel: pay {dl} back to the bank. You can hold "
+         f"{count_word(cap)}. You will spend it on friends and on challenges."),
+        ("Factions (45 seconds)", f"{count_word(n_factions).capitalize()} groups can back you - the Army, the "
          "officials, the city elites. Nobody knows where they meet. When the "
-         "succession begins, six faction cards go face down on the ? spaces of "
-         "the succession map - three factions, three empty streets. Stop on a "
-         "card and turn it up. Find a faction and pay 1 Prestige - it supports "
-         "you for the rest of the game. Get two different factions behind you."),
-        ("The endgame (60 seconds)", "When someone holds all six items they claim "
-         "at the crossing - the Peristyle - and the succession begins: one more "
-         "round, then we turn the board over, and everyone starts again at their "
+         f"succession begins, {count_word(n_cards)} faction cards go face down on the ? spaces of "
+         f"the succession map - {count_word(n_factions)} factions, "
+         f"{count_word(empty)} empty streets. Stop on a "
+         f"card and turn it up. Find a faction and pay {sc} Prestige - it supports "
+         f"you for the rest of the game. Get {count_word(req)} different factions behind you."),
+        ("The endgame (60 seconds)", f"When someone holds all {count_word(items_req)} items they claim "
+         "at the crossing - the Peristyle - and the succession begins: "
+         f"{count_word(grace)} more "
+         f"round{'s' if grace != 1 else ''}, then we turn the board over, and everyone starts again at their "
          "own gate. "
          "The whole race for the throne happens there: buy support, stand at the "
-         "Peristyle with two backers and proclaim. Your rivals now have two full "
-         "rounds to stop you: move next to you, pay 1 Prestige, and duel. Win the "
+         f"Peristyle with {count_word(req)} backers and proclaim. Your rivals now have "
+         f"{full_rounds(win)} "
+         f"to stop you: move next to you, pay {cf} Prestige, and duel. Win the "
          "duel and the claim dies. Nobody does it in time and you are emperor."),
         ("Start (15 seconds)", "Random gates, random start, start moves clockwise "
          "each round. Youngest player rolls first if you like. Let's play."),
@@ -2019,9 +2302,9 @@ def teaching_guide_pdf(path):
     y = para(c, "Ordinary turn: roll 8, walk eight circles to a star, roll one die - "
                 "a 5 - and take a Prestige. Done.", 19, y, PW - 38, size=9.4) - 1.4
     y = para(c, "Claim response: a rival proclaims at the Peristyle. On your turn, "
-                "move next to them, put 1 Prestige aside (the fee), then each roll "
+                f"move next to them, put {cf} Prestige aside (the fee), then each roll "
                 "one die and add your one best item bonus. Higher total wins; on a "
-                "tie the lone pugio holder wins, else the attacker.",
+                f"tie the lone pugio holder wins, else the {tie}.",
              19, y, PW - 38, size=9.4) - 1.4
     y = para(c, "Answer everything else when it comes up. Rare cases live in the "
                 "rulebook, not in the introduction.", 19, y, PW - 38, size=9.4,
@@ -2031,13 +2314,18 @@ def teaching_guide_pdf(path):
     c.save()
 
 
-def playtest_form_pdf(path):
+def playtest_form_pdf(path, rules):
     c = new_doc(path, f"{PRODUCT} - playtest form")
+    win = printed_values(rules)["window"]
+    version = rules["game"]["rules_version"]
     for page in (1, 2):
         doc_header(c, "PLAYTEST RECORD", "observations only - no invented results")
         y = PH - 36
-        lines = [("", 8), ("Date ______________    Game version V0.10    "
-                           "Played before? yes / no", 9)]
+        date_line = (f"Date ______________    Game version V{version}    "
+                     "Played before? yes / no")
+        c.setFont("Times-Roman", 9)
+        c.drawString(18 * mm, y * mm, date_line)
+        y -= 6
         if page == 1:
             blocks = [
                 ("GROUP", ["Players: ____    Ages: ______ ______ ______ ______",
@@ -2069,7 +2357,7 @@ def playtest_form_pdf(path):
                                 "Did a far card go unused? yes / no"]),
                 ("THE CLAIM", ["Claims proclaimed: ____  Challenged: ____  "
                                "Canceled: ____  Crowned: ____",
-                               "Did the two-round claim window feel tense or empty? "
+                               f"Did the {count_word(win)}-round claim window feel tense or empty? "
                                "______________________",
                                "First completed set - prize or burden? ________ "
                                "Best treasure: ____  Worst: ____"]),
@@ -2227,35 +2515,10 @@ def combine(paths, out):
         w.write(fh)
 
 
-# The rulebook, sheets, and reference hard-code these numbers in prose.
-# If the released rules ever move, stop and rewrite the text rather than
-# print a kit that teaches the wrong game. Tests re-check every pair
-# against the rules file so drift fails loudly.
-PRINTED_RULES_VALUES = {
-    ("succession", "contest_fee"): 1,
-    ("succession", "claim_window_rounds"): 2,
-    ("succession", "proclaim_cost"): 0,
-    ("succession", "factions_to_proclaim"): 2,
-    ("succession", "support_cost"): 1,
-    ("prestige", "cap"): 3,
-    ("prestige", "guard_post_min_roll"): 4,
-    ("prestige", "guard_post_reward"): 1,
-    ("prestige", "duel_win_reward"): 1,
-    ("prestige", "duel_loss_penalty"): 1,
-    ("movement", "dice"): 2,
-    ("movement", "die_sides"): 6,
-    ("duels", "range"): 2,
-    ("duels", "tie_winner"): "attacker",
-    ("palace", "max_rounds"): 24,
-    ("palace", "rounds_after_checkpoint"): 1,
-    ("succession", "max_rounds"): 24,
-}
-
-# Prose facts that do not fit the (section, key) shape above.
-PRINTED_TOP_LEVEL = {
-    ("treasures", "start_face_up"): 2,
-    ("palace", "checkpoint_items_required"): 6,
-}
+# Rule numbers in the printed prose flow from the rules JSON through
+# printed_values() and twin_geometry(); main() validates both before it
+# draws any page. This table stays fixed because the prose describes one
+# specific ability line per item.
 PRINTED_ABILITIES = {
     "pugio": ("win_ties", 1),
     "pilum": ("attack_vs_claimant", 1),
@@ -2288,17 +2551,25 @@ def main():
     validate_six_block_layout(rules)
     if rules["game"]["name"] != "Imperial Rivals: 305 AD":
         raise SystemExit("this kit needs the Imperial Rivals ruleset")
-    for (section, key), value in PRINTED_RULES_VALUES.items():
-        actual = rules[section][key]
-        if actual != value:
-            raise SystemExit(
-                f"printed text assumes {section}.{key} == {value}, "
-                f"rules say {actual}; update the kit prose")
-    for (section, key), value in PRINTED_TOP_LEVEL.items():
-        if rules[section][key] != value:
-            raise SystemExit(
-                f"printed text assumes {section}.{key} == {value}, "
-                f"rules say {rules[section][key]}; update the kit prose")
+    for key in ("allow_early_stop", "pass_through_pawns"):
+        if not rules["movement"][key]:
+            raise SystemExit(f"printed text assumes movement.{key}; "
+                             "update the kit prose")
+    if not rules["turns"]["rotate_first_player_each_round"]:
+        raise SystemExit("printed text assumes "
+                         "turns.rotate_first_player_each_round; "
+                         "update the kit prose")
+    if rules["treasures"]["bonus_per_side"] != "best":
+        raise SystemExit('printed text assumes '
+                         'treasures.bonus_per_side == "best"; '
+                         "update the kit prose")
+    if rules["game"]["players"] != 4:
+        raise SystemExit("printed text builds four mats, four pawns and a "
+                         "four-seat faction sentence; update the kit prose")
+    # Phrase every printed rule number once up front, so a rules change
+    # the prose cannot express stops the build before any PDF is drawn.
+    printed_values(rules)
+    twin_geometry(rules)
     abilities = rules["treasures"]["abilities"]
     if abilities != {name: {"type": kind, "value": value}
                      for name, (kind, value) in PRINTED_ABILITIES.items()}:
@@ -2334,12 +2605,12 @@ def main():
     }
     board_pdf(files["board"], L)
     succession_map_pdf(files["succession"], rules)
-    player_sheets_pdf(files["sheets"])
-    cards_tokens_pdf(files["cards"])
-    rulebook_pdf(files["rulebook"])
-    quick_reference_pdf(files["quick"])
-    teaching_guide_pdf(files["teaching"])
-    playtest_form_pdf(files["form"])
+    player_sheets_pdf(files["sheets"], rules)
+    cards_tokens_pdf(files["cards"], rules)
+    rulebook_pdf(files["rulebook"], rules)
+    quick_reference_pdf(files["quick"], rules)
+    teaching_guide_pdf(files["teaching"], rules)
+    playtest_form_pdf(files["form"], rules)
     print_instructions_pdf(files["instructions"])
     # The rules first; then the print instructions, right before the
     # pages they explain: the boards, then the cards and tokens. The
