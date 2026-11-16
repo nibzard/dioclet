@@ -62,10 +62,9 @@ The simulator, print kit, and browser game share one rules file:
 
 | Component | Rules | Status |
 | --- | --- | --- |
-| Python simulator | [V0.10.2 big board](rules_v0102_bigboard.json) | Current design candidate |
+| Python simulator | [V0.10.2 rules file](rules/imperial-rivals-v0.10.2.json) | Current design candidate |
 | [Print kit](print/) | V0.10.2 big board | Generated PDFs; needs human playtesting |
 | [Browser game](web/) | V0.10.2 big board | Playable with humans and bots; Python parity |
-| Original simulator | [V0.1 baseline](rules_baseline.json) | Kept for historical experiments and replays |
 
 **V0.10 uses two boards of the same size.** Players collect equipment on
 the palace board, then turn the board over and return to their gates on the
@@ -78,7 +77,7 @@ two rounds. Six equipment abilities affect play; at most one equipment
 modifier applies per duel side.
 
 The browser engine is a port of the Python engine. The parity check
-replays seeded games against `succession.py` and matches every legal
+replays seeded games against `engine.py` and matches every legal
 action, die, and state. See the
 [V0.10 findings](docs/findings/FINDINGS_V10.md) and the
 [V0.10 notes](notes/v10-level2-2026-11-14.md) for the evidence and open
@@ -96,7 +95,8 @@ python3 -m http.server 8000 --directory web
 Open <http://localhost:8000>. Choose human or bot players and use
 **How to play** for the full rulebook.
 
-The board data and rulebook are generated from `rules_v0102_bigboard.json`:
+The board data and rulebook are generated from
+`rules/imperial-rivals-v0.10.2.json`:
 
 ```bash
 python3 tools/make_web_board.py
@@ -150,7 +150,7 @@ instructions and check the 100 mm calibration ruler.
 All kits print the same geometry: the art consumes a layout exported
 from the generator itself (`art/build/layout.json`), never a copy.
 
-To regenerate the kit from `rules_v0102_bigboard.json`, install ReportLab:
+To regenerate the kit from `rules/imperial-rivals-v0.10.2.json`, install ReportLab:
 
 ```bash
 python3 -m pip install reportlab
@@ -193,8 +193,8 @@ Run commands from the repository root.
 Use a new output directory for each game:
 
 ```bash
-python3 sim.py validate --rules rules_v0102_bigboard.json
-python3 sim.py new --rules rules_v0102_bigboard.json --seed 42 \
+python3 sim.py validate --rules rules/imperial-rivals-v0.10.2.json
+python3 sim.py new --rules rules/imperial-rivals-v0.10.2.json --seed 42 \
   --out runs/demo --policies balanced,greedy,aggressive,random
 python3 sim.py auto --run runs/demo
 python3 sim.py replay --run runs/demo --verify
@@ -226,24 +226,10 @@ Replace the example values with those from your observation.
 
 ## Run rule experiments
 
-For succession rules, use the evaluator with four strategy profiles:
-`collector`, `early_support`, `prestige_farmer`, and `counterleader`.
-A 96-game batch covers a full rotation of profiles and gate assignments.
+Run a batch of games with the built-in policy schedule:
 
 ```bash
-python3 tools/succession_experiments.py \
-  --rules rules_v0102_bigboard.json --games 96 --seed-base 10000 \
-  --out results/bigboard-demo
-```
-
-Use a new, empty output directory. Read its `report.md` and `summary.json`
-for strategy, gate, pacing, and claim measurements. The evaluator also
-supports alternative-play audits and bounded live model games.
-
-For the original rules and built-in policy schedule:
-
-```bash
-python3 sim.py batch --rules rules_baseline.json --games 1000 \
+python3 sim.py batch --rules rules/imperial-rivals-v0.10.2.json --games 1000 \
   --seed-base 1000 --schedule experiment --out results/baseline-demo
 python3 sim.py report --input results/baseline-demo
 ```
@@ -264,9 +250,9 @@ To test a change:
 5. Record the evidence and limitations before you recommend the change.
 
 Keep each rules file and result directory separate. Read
-[`programme.md`](programme.md) before using the bounded experiment runner
-in [`tools/run_programme.py`](tools/run_programme.py). Simulation results
-inform human playtests; they do not establish player enjoyment.
+[`programme.md`](programme.md) before you run rule experiments.
+Simulation results inform human playtests; they do not
+establish player enjoyment.
 
 ## Optional model players
 
@@ -278,44 +264,6 @@ for model training. See [`arena/README.md`](arena/README.md):
 ```bash
 cd arena && uv run arena --match matches/bots.json
 ```
-
-The older `sim.py` model player is below.
-
-The OpenAI Decisions provider adds model players. Mock and playback providers
-work offline. Live calls require the optional dependency, `OPENAI_API_KEY`,
-explicit opt-in, and budget limits.
-
-```bash
-python3 -m pip install -r requirements-decisions.txt
-```
-
-Try an offline mock game:
-
-```bash
-python3 sim.py ai-auto --rules rules_v0102_bigboard.json --seed 4400 \
-  --players decisions,decisions,decisions,decisions \
-  --provider mock --out runs/mock-demo
-```
-
-Provider decisions, latency, token counts, and estimated costs are recorded
-in `decisions.jsonl`. Budget exhaustion records an `incomplete.json` file.
-Replay verification works offline.
-
-For tournament setup and analysis, write a tournament config (see
-[`tournament.py`](tournament.py) and [`analyze_v041.py`](analyze_v041.py)):
-
-```bash
-python3 sim.py tournament --config my-tournament.json \
-  --out results/tournament-demo --dry-run
-python3 analyze_v041.py report results/tournament-demo
-```
-
-The dry run estimates calls and cost. See
-[model player findings](docs/findings/FINDINGS_V04.md) and
-[tournament findings](docs/findings/FINDINGS_V041.md) for the V0.4.1
-measurements; the full logs of that study live in git history and the
-release artifacts. Follow the budget and authorization rules in
-`programme.md` before paid runs.
 
 ## Check changes
 
@@ -343,19 +291,17 @@ engine on the twin-board rules.
 
 | Path | Purpose |
 | --- | --- |
-| [`sim.py`](sim.py) | Command-line interface for games, batches, tournaments, and replays |
-| [`engine.py`](engine.py), [`succession.py`](succession.py) | Original and succession game engines |
+| [`sim.py`](sim.py) | Command-line interface for games, batches, and replays |
+| [`engine.py`](engine.py) | The game engine |
 | [`board.py`](board.py) | Board graph, paths, and site lookups |
 | [`policies.py`](policies.py), [`tactical_policy.py`](tactical_policy.py) | Built-in bots and deterministic benchmark |
-| [`candidate_actions.py`](candidate_actions.py), [`decisions_policy.py`](decisions_policy.py), [`ai_driver.py`](ai_driver.py) | Model observations, providers, and budgeted game driver |
+| [`candidate_actions.py`](candidate_actions.py) | Public observations and the action shortlist for model players |
 | [`report.py`](report.py), [`compare.py`](compare.py) | Batch statistics and comparisons |
-| [`tournament.py`](tournament.py), [`analyze_v041.py`](analyze_v041.py) | Model tournaments and offline analysis |
 | [`arena/`](arena/) | Terminal app: decision models from different providers play each other |
 | [`tools/`](tools/) | Generators, evaluators, experiment runners, and browser checks |
 | [`web/`](web/), [`print/`](print/) | Browser game and printable materials |
 | [`tests/`](tests/) | Engine, policy, experiment, and print checks |
 | [`results/`](results/), [`runs/`](runs/) | Retained V0.10 experiment evidence and games |
-| [`experiments/rules/`](experiments/rules/) | Superseded V0.2–V0.10 rules variants (archive) |
 | [`notes/`](notes/), [`docs/`](docs/) | Research, design plans, findings, and implementation notes |
 
 ## Design history and evidence
@@ -367,7 +313,7 @@ can be superseded by later experiments.
 | --- | --- |
 | V0.1: original rules | [Specification](SPEC.md), [baseline findings](docs/findings/FINDINGS.md) |
 | V0.2–V0.3: combat and duel consequences | [Combat and fairness](docs/findings/FINDINGS_V02.md), [duel experiments](docs/findings/FINDINGS_V03.md) |
-| V0.4–V0.5: model play and rule trials | [Model players](docs/findings/FINDINGS_V04.md), [tournaments](docs/findings/FINDINGS_V041.md), [rule trials](docs/findings/FINDINGS_V05.md) |
+| V0.4–V0.5: model play and rule trials | [Model players](docs/findings/FINDINGS_V04.md), [V0.4.1 measurements](docs/findings/FINDINGS_V041.md), [rule trials](docs/findings/FINDINGS_V05.md) |
 | V0.6–V0.7: physical board geometry | [Board validation](docs/findings/BOARD_VALIDATION_V061.md), [playability scorecard](docs/findings/PLAYABILITY_SCORECARD_V061.md), [findings](docs/findings/FINDINGS_V061.md), [board comparison](notes/board-comparison.md) |
 | V0.8: imperial succession | [Redesign plan](docs/intervention-plan.md), [succession findings](docs/findings/FINDINGS_V08.md) |
 | V0.9–V0.9.3: equipment, claim windows, and movement | [Trial findings](docs/findings/FINDINGS_V09.md), [simplification study](notes/v09-simplification-study.md), [geometry sweep](notes/v09-geometry-sweep-2026-11-13.md) |
@@ -375,9 +321,8 @@ can be superseded by later experiments.
 | V0.10: big succession map and faction cards | [Findings](docs/findings/FINDINGS_V10.md), [notes](notes/v10-level2-2026-11-14.md), [Haiku table game](runs/haiku-table-v0102/REPORT.md) |
 
 [`DECISIONS.md`](DECISIONS.md) records rule interpretations and design decisions.
-The superseded rules variants of every stage remain available in
-[`experiments/rules/`](experiments/rules/) for comparisons and historical
-replays; earlier documents cite them by their original root paths.
+The superseded rules variants of every stage remain available in git
+history; earlier documents cite them by their original root paths.
 See [`runs/README.md`](runs/README.md) for the retained runs.
 
 ## License

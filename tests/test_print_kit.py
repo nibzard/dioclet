@@ -301,18 +301,6 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("the palace map leaves the table", text)
         self.assertNotIn("You may gain support in either phase", text)
 
-    def test_pre_cleanup_rules_files_no_longer_load(self):
-        # The retired experiment rules carry switches the engine no
-        # longer reads; the loader must refuse them outright.
-        import subprocess
-        import sys as _sys
-        result = subprocess.run(
-            [_sys.executable, "tools/make_a4_print_kit.py",
-             "--rules", "experiments/rules/rules_v08_succession.json"],
-            capture_output=True, text=True, cwd=str(REPO))
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("missing top-level keys", result.stderr)
-
     def test_no_boost_prose_survives_anywhere(self):
         # 0.9.3 removed the optional +2 duel boost; if it ever comes
         # back, the prose (and this check) must be rewritten on purpose.
