@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# ABOUTME: V0.9 hill-climb tool: greedy coordinate screens over the
+# ABOUTME: human redesign knobs, with frozen promotion gates.
 """V0.9 hill-climb: greedy coordinate screens over the human redesign knobs.
 
 Incumbent starts at E0 (rules_v09e_court.json). Each step changes exactly
@@ -24,9 +26,8 @@ sys.path.insert(0, ROOT)
 
 import engine  # noqa: E402
 import policies  # noqa: E402
-import succession  # noqa: E402
 
-IDS = succession.IDS
+IDS = engine.IDS
 PROFILES = ("collector", "early_support", "prestige_farmer", "counterleader")
 OUT_ROOT = os.path.join(ROOT, "results", "v09-climb")
 GAMES_PER_SCREEN = 96

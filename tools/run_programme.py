@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# ABOUTME: Bounded sequential proposal-agent runner for the V0.8
+# ABOUTME: programme: one proposal per cycle, then a gated evaluation.
 """Bounded sequential proposal-agent runner for the V0.8 programme.
 
 Reads ``experiments/v08-programme.json`` and runs up to N sequential
@@ -78,7 +80,7 @@ PROGRAMME_MD = REPO / "programme.md"
 # the policies the bots use, the checks that gate them, and the two
 # rules files that define the comparison space.
 FROZEN_SOURCES = (
-    "succession.py", "engine.py", "board.py", "policies.py",
+    "engine.py", "board.py", "policies.py",
     "candidate_actions.py", "decisions_policy.py", "ai_driver.py",
     "tools/succession_experiments.py",
     "tests/test_succession.py", "tests/test_succession_decisions.py",

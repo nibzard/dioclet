@@ -1,3 +1,5 @@
+# ABOUTME: V0.9 design experiment tests: start reveals and distinct
+# ABOUTME: equipment abilities.
 """V0.9 design experiment: start reveals and distinct equipment abilities."""
 import copy
 import json
@@ -8,7 +10,6 @@ from unittest.mock import patch
 
 import engine
 import policies
-import succession
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROBES = ("collector", "early_support", "prestige_farmer", "counterleader")
@@ -36,8 +37,8 @@ def rules_v09c(start_reveals=0):
 
 
 def game(value=None):
-    state = engine.new_game(value or rules_v09c(), 2026, "v09-test", dict.fromkeys(succession.IDS, "balanced"))
-    state.update(turn_order=list(succession.IDS), round_start=0, turn_index=0, active_player="P1")
+    state = engine.new_game(value or rules_v09c(), 2026, "v09-test", dict.fromkeys(engine.IDS, "balanced"))
+    state.update(turn_order=list(engine.IDS), round_start=0, turn_index=0, active_player="P1")
     state["current_roll"], state["current_dice"] = 6, [3, 3]
     return state
 
@@ -116,7 +117,7 @@ class TestV09RulesValidation(unittest.TestCase):
             {"min_count": 6, "max_count": 6, "bonus": 2}]
         state["players"]["P1"]["equipment"] = ["gladius", "scutum", "pilum", "pugio", "galea", "lorica_segmentata"]
         duel_staged(state, "P1", "P2")
-        with patch.object(succession, "_die", side_effect=[3, 4, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[3, 4, 3, 3]):
             record = take(state, "duel", target="P2", spend_prestige=False)
         duel = next(e for e in record["events"] if e["type"] == "duel")
         self.assertEqual(duel["attacker_bonus"], 2)  # six-item tier, and no ability table present
@@ -172,7 +173,7 @@ class TestV09Abilities(unittest.TestCase):
         state = game()
         state["players"]["P1"]["equipment"] = ["gladius"]
         duel_staged(state, "P1", "P2")
-        with patch.object(succession, "_die", side_effect=[4, 5, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[4, 5, 3, 3]):
             record = take(state, "duel", target="P2", spend_prestige=False)
         duel = next(e for e in record["events"] if e["type"] == "duel")
         self.assertEqual(duel["attacker_bonus"], 1)
@@ -183,7 +184,7 @@ class TestV09Abilities(unittest.TestCase):
         state = game()
         state["players"]["P2"]["equipment"] = ["scutum"]
         duel_staged(state, "P1", "P2")
-        with patch.object(succession, "_die", side_effect=[5, 5, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[5, 5, 3, 3]):
             record = take(state, "duel", target="P2", spend_prestige=False)
         duel = next(e for e in record["events"] if e["type"] == "duel")
         self.assertEqual(duel["defender_bonus"], 1)
@@ -195,7 +196,7 @@ class TestV09Abilities(unittest.TestCase):
         state["phase"] = 2
         state["players"]["P1"]["equipment"] = ["pilum"]
         duel_staged(state, "P1", "P2")
-        with patch.object(succession, "_die", side_effect=[4, 5, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[4, 5, 3, 3]):
             record = take(state, "duel", target="P2", spend_prestige=False)
         self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["attacker_bonus"], 0)
         # Now P2 proclaims and becomes the claimant.
@@ -203,7 +204,7 @@ class TestV09Abilities(unittest.TestCase):
         active(state, "P2")
         take(state, "proclaim")
         duel_staged(state, "P1", "P2", attacker_pos=(6, 4), defender_pos=(6, 6))
-        with patch.object(succession, "_die", side_effect=[4, 5, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[4, 5, 3, 3]):
             record = take(state, "duel", target="P2", spend_prestige=False)
         self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["attacker_bonus"], 1)
         self.assertEqual(state["players"]["P1"]["stats"]["pilum_uses"], 1)
@@ -212,13 +213,13 @@ class TestV09Abilities(unittest.TestCase):
         # The base rule gives ties to the attacker; a defending pugio flips it.
         state = game()
         duel_staged(state, "P1", "P2")
-        with patch.object(succession, "_die", side_effect=[4, 4, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[4, 4, 3, 3]):
             record = take(state, "duel", target="P2", spend_prestige=False)
         self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["winner"], "P1")
         state = game()
         state["players"]["P2"]["equipment"] = ["pugio"]
         duel_staged(state, "P1", "P2")
-        with patch.object(succession, "_die", side_effect=[4, 4, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[4, 4, 3, 3]):
             record = take(state, "duel", target="P2", spend_prestige=False)
         self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["winner"], "P2")
         self.assertEqual(state["players"]["P2"]["stats"]["pugio_tiebreaks"], 1)
@@ -230,7 +231,7 @@ class TestV09Abilities(unittest.TestCase):
         state["players"]["P1"]["equipment"] = ["pugio"]
         state["players"]["P2"]["equipment"] = ["pugio"]
         duel_staged(state, "P1", "P2")
-        with patch.object(succession, "_die", side_effect=[4, 4, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[4, 4, 3, 3]):
             record = take(state, "duel", target="P2", spend_prestige=False)
         self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["winner"], "P1")
         self.assertEqual(state["players"]["P1"]["stats"]["pugio_tiebreaks"], 0)
@@ -243,7 +244,7 @@ class TestV09Abilities(unittest.TestCase):
         take(state, "proclaim")
         state["players"]["P1"]["equipment"] = ["gladius", "pilum"]
         duel_staged(state, "P1", "P2", attacker_pos=(6, 4), defender_pos=(6, 6))
-        with patch.object(succession, "_die", side_effect=[3, 1, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[3, 1, 3, 3]):
             record = take(state, "duel", target="P2", spend_prestige=False)
         duel = next(e for e in record["events"] if e["type"] == "duel")
         self.assertEqual(duel["attacker_bonus"], 1)  # best of gladius/pilum, not the sum
@@ -277,7 +278,7 @@ class TestV09Abilities(unittest.TestCase):
         def challenge_and_win():
             state["players"]["P1"]["pos"] = [6, 8]
             active(state, "P1")
-            with patch.object(succession, "_die", side_effect=[6, 1, 3, 3]):
+            with patch.object(engine, "_die", side_effect=[6, 1, 3, 3]):
                 take(state, "duel", target="P0", spend_prestige=False)
 
         challenge_and_win()
@@ -296,7 +297,7 @@ class TestV09Abilities(unittest.TestCase):
         state["rules"]["combat"]["abilities"]["gladius"]["value"] = 0
         state["players"]["P1"]["equipment"] = ["gladius"]
         duel_staged(state, "P1", "P2")
-        with patch.object(succession, "_die", side_effect=[4, 5, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[4, 5, 3, 3]):
             record = take(state, "duel", target="P2", spend_prestige=False)
         self.assertEqual(next(e for e in record["events"] if e["type"] == "duel")["attacker_bonus"], 0)
         self.assertEqual(state["players"]["P1"]["stats"]["attack_bonus_uses"], 0)
@@ -356,7 +357,7 @@ class TestV09Checkpoint(unittest.TestCase):
 
 class TestV09Games(unittest.TestCase):
     def play(self, rules, seed):
-        state = engine.new_game(rules, seed, f"c-game-{seed}", dict(zip(succession.IDS, PROBES)))
+        state = engine.new_game(rules, seed, f"c-game-{seed}", dict(zip(engine.IDS, PROBES)))
         rng = random.Random(f"probe:{seed}")
         cap = 4 * (rules["level1"]["max_rounds"] + rules["level2"]["max_rounds"] + 3)
         for _ in range(cap):
@@ -388,7 +389,7 @@ class TestV09Games(unittest.TestCase):
         state["players"]["P0"].update(equipment=["galea"], pos=[6, 6])
         active(state, "P0")
         obs = engine.observe(state, "P0")
-        action_id, reason = succession.choose_policy("collector", obs, random.Random(1))
+        action_id, reason = engine.choose_policy("collector", obs, random.Random(1))
         action = next(a for a in obs["legal_actions"] if a["action_id"] == action_id)
         self.assertEqual(action["kind"], "inspect")
         self.assertIn("galea", reason)
@@ -452,7 +453,7 @@ class TestV09Court(unittest.TestCase):
         state["players"]["P1"]["prestige"] = 2
         state["players"]["P2"]["prestige"] = 1
         duel_staged(state, "P1", "P2")
-        with patch.object(succession, "_die", side_effect=[6, 1, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[6, 1, 3, 3]):
             take(state, "duel", target="P2", spend_prestige=False)
         # P2 lost: paid 1 shame; P1 won: earned the duel reward, no shame.
         self.assertEqual(state["players"]["P2"]["prestige"], 0)
@@ -613,7 +614,7 @@ class TestV094TwinBoard(unittest.TestCase):
         import policies
         rules = self.rules_twin()
         state = engine.new_game(rules, 7101, "twin-transition",
-                                dict.fromkeys(succession.IDS, "balanced"))
+                                dict.fromkeys(engine.IDS, "balanced"))
         rng = random.Random("t:7101")
         b2 = engine.Board(rules, "board_level2")
         seen_phase2 = False

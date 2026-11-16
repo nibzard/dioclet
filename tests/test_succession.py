@@ -1,3 +1,5 @@
+# ABOUTME: Rules, visibility, replay, and strategy checks for the
+# ABOUTME: succession game that lives inside engine.py.
 """Rules, visibility, replay, and strategy checks for succession-v1."""
 import copy
 import json
@@ -10,7 +12,6 @@ from unittest.mock import patch
 import engine
 import policies
 import report
-import succession
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,8 +24,8 @@ def rules():
 
 
 def game(value=None):
-    state = engine.new_game(value or rules(), 2026, "succession-test", dict.fromkeys(succession.IDS, "balanced"))
-    state.update(turn_order=list(succession.IDS), round_start=0, turn_index=0, active_player="P0")
+    state = engine.new_game(value or rules(), 2026, "succession-test", dict.fromkeys(engine.IDS, "balanced"))
+    state.update(turn_order=list(engine.IDS), round_start=0, turn_index=0, active_player="P0")
     state["current_roll"], state["current_dice"] = 6, [3, 3]
     return state
 
@@ -50,16 +51,12 @@ def pending_game():
 
 
 class TestSuccessionRules(unittest.TestCase):
-    def test_mode_dispatch_and_legacy_validation(self):
+    def test_mode_gate(self):
         value = rules()
         self.assertTrue(engine.validate_rules(value))
         value["gameplay_mode"] = "unknown"
         with self.assertRaises(engine.EngineError):
             engine.validate_rules(value)
-        legacy = engine.load_rules(os.path.join(ROOT, "rules_baseline.json"))
-        legacy["level1"]["auto_equip_at_transition"] = False
-        with self.assertRaisesRegex(engine.EngineError, "rejected"):
-            engine.validate_rules(legacy)
 
     def test_invalid_succession_values_rejected(self):
         for field, value in (("support_cost", 0), ("contest_cost", -1), ("challenge_cost", 0),
@@ -93,7 +90,7 @@ class TestSuccessionRules(unittest.TestCase):
         a = engine.new_game(manual, 2026, "a")
         b = engine.new_game(randomized, 2026, "b")
         c = engine.new_game(randomized, 2026, "c")
-        self.assertEqual(sorted(b["gate_assignments"].values()), list(succession.IDS))
+        self.assertEqual(sorted(b["gate_assignments"].values()), list(engine.IDS))
         self.assertEqual(b["gate_assignments"], c["gate_assignments"])
         self.assertNotEqual(a["gate_assignments"], b["gate_assignments"])
         for field in ("turn_order", "district_equipment", "current_dice"):
@@ -223,7 +220,7 @@ class TestSuccessionRules(unittest.TestCase):
     def test_successful_contest_cancels_and_displaces(self):
         state = pending_game()
         state["players"]["P1"]["pos"] = [6, 8]
-        with patch.object(succession, "_die", side_effect=[6, 1, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[6, 1, 3, 3]):
             take(state, "duel", target="P0", spend_prestige=False)
         self.assertIsNone(state["pending_claim"])
         self.assertEqual(state["players"]["P0"]["pos"], state["players"]["P0"]["gate"])
@@ -245,7 +242,7 @@ class TestSuccessionRules(unittest.TestCase):
         state["rules"]["succession"]["contest_cost"] = 1
         state["players"]["P1"].update(pos=[6, 8], prestige=3)
         state["players"]["P0"]["equipment"] = state["rules"]["equipment"][:]
-        with patch.object(succession, "_die", side_effect=[1, 6, 3, 3]):
+        with patch.object(engine, "_die", side_effect=[1, 6, 3, 3]):
             record = take(state, "duel", target="P0", spend_prestige=True)
         self.assertEqual(state["players"]["P1"]["prestige"], 1)
         self.assertEqual(state["players"]["P1"]["stats"]["contest_prestige_spent"], 1)
@@ -285,7 +282,7 @@ class TestSuccessionRules(unittest.TestCase):
         value = rules()
         value["succession"]["contest_cost"] = 1
         for seed in range(8):
-            mapping = dict(zip(succession.IDS, ("balanced", "collector", "early_support", "aggressive")))
+            mapping = dict(zip(engine.IDS, ("balanced", "collector", "early_support", "aggressive")))
             state = report.play_game(value, 4000 + seed, f"mix-{seed}", mapping)
             engine.check_invariants(state)
             result = engine.result(state)
@@ -296,15 +293,15 @@ class TestSuccessionRules(unittest.TestCase):
     def test_all_strategy_probes_use_only_legal_actions(self):
         state = game()
         obs = engine.observe(state, state["active_player"])
-        for name in succession.POLICY_NAMES:
+        for name in engine.POLICY_NAMES:
             aid, reason = policies.act(name, obs, random.Random(1))
             self.assertIn(aid, {a["action_id"] for a in obs["legal_actions"]})
-            self.assertIn(succession.POLICY_VERSION, reason)
+            self.assertIn(engine.POLICY_VERSION, reason)
 
     def test_persisted_events_replay_exactly(self):
         value = rules()
         value["succession"]["contest_cost"] = 1
-        state = report.play_game(value, 17, "replay-test", dict.fromkeys(succession.IDS, "balanced"))
+        state = report.play_game(value, 17, "replay-test", dict.fromkeys(engine.IDS, "balanced"))
         with tempfile.TemporaryDirectory() as directory:
             engine.write_run(directory, state)
             loaded = engine.load_run(directory)

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# ABOUTME: V0.9 design experiment tool: matched-seed arm comparisons
+# ABOUTME: on the shared engine and built-in probe profiles.
 """V0.9 design experiment: matched-seed A/B/C comparison.
 
 Arms (notes/v09-experiment-plan.md):
@@ -26,9 +28,8 @@ sys.path.insert(0, ROOT)
 
 import engine  # noqa: E402
 import policies  # noqa: E402
-import succession  # noqa: E402
 
-IDS = succession.IDS
+IDS = engine.IDS
 PROFILES = ("collector", "early_support", "prestige_farmer", "counterleader")
 GAMES_PER_ARM = 480
 SEED_BASE = 300000
@@ -206,7 +207,7 @@ def summarize(rows):
             "losers": round(b["losses"] / seat_losses, 4) if seat_losses else None}
             for item, b in item_hold.items()},
         "seat_wins": seat_wins, "seat_losses": seat_losses,
-        "engine_version": succession.VERSION, "policy_version": succession.POLICY_VERSION,
+        "engine_version": engine.VERSION, "policy_version": engine.POLICY_VERSION,
     }
 
 

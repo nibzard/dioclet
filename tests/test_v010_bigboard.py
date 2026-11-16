@@ -1,3 +1,5 @@
+# ABOUTME: V0.10 big board tests: a palace-size succession map with
+# ABOUTME: faction cards dealt face down on street sites (D51).
 """V0.10 big board: a palace-size succession map with faction cards (D51).
 
 The succession map has the palace board's 19x13 footprint, so the real
@@ -14,7 +16,6 @@ import unittest
 import candidate_actions
 import engine
 import policies
-import succession
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULES_FILE = os.path.join(ROOT, "experiments/rules/rules_v010_bigboard.json")
@@ -26,7 +27,7 @@ def rules():
 
 def play(value, seed):
     """Play one bot game to the end; return the state."""
-    state = engine.new_game(value, seed, f"v010-{seed}", dict.fromkeys(succession.IDS, "balanced"))
+    state = engine.new_game(value, seed, f"v010-{seed}", dict.fromkeys(engine.IDS, "balanced"))
     rng = random.Random(f"t:{seed}")
     for _ in range(4 * (value["level1"]["max_rounds"] + value["level2"]["max_rounds"] + 3)):
         if engine.is_finished(state):
@@ -102,7 +103,7 @@ class TestSupportSiteValidation(unittest.TestCase):
 class TestBigBoardDeal(unittest.TestCase):
     def reach_phase2(self, seed):
         value = rules()
-        state = engine.new_game(value, seed, f"v010-{seed}", dict.fromkeys(succession.IDS, "balanced"))
+        state = engine.new_game(value, seed, f"v010-{seed}", dict.fromkeys(engine.IDS, "balanced"))
         rng = random.Random(f"t:{seed}")
         while state["phase"] == 1 and not engine.is_finished(state):
             obs = engine.observe(state, state["active_player"])
@@ -135,7 +136,7 @@ class TestBigBoardDeal(unittest.TestCase):
     def test_shortlist_keeps_every_search_and_names_it(self):
         value, state = self.reach_phase2(7301)
         searches = set()
-        for pid in succession.IDS:
+        for pid in engine.IDS:
             state["active_player"] = pid
             obs = engine.observe(state, pid)
             legal = {a["action_id"] for a in obs["legal_actions"] if a["kind"] == "search_site"}

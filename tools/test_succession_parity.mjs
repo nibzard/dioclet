@@ -12,7 +12,7 @@ const root = new URL('../', import.meta.url);
 const rules = JSON.parse(readFileSync(new URL('rules_v0102_bigboard.json', root), 'utf8'));
 const python = String.raw`
 import copy,json,sys,random
-import engine,succession
+import engine
 payload=json.load(sys.stdin)
 def norm_action(a):
  return {'kind':a['kind'],'dest':','.join(map(str,a['destination'])),'target':a.get('target'),'faction':a.get('faction'),'district':a.get('district'),'spend_prestige':a.get('spend_prestige'),'contest_cost':a.get('contest_cost')}
