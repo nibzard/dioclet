@@ -16,6 +16,8 @@ from arena.rules_loader import load_rules_strict
 
 ARENA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SEATS = ("P0", "P1", "P2", "P3")
+# Version of the match.jsonl record shapes. Change it when a shape changes.
+LOG_SCHEMA = "arena-match-v1"
 
 
 class MatchConfigError(Exception):
@@ -181,7 +183,8 @@ def _hook(hooks, name, *args):
 class _StopMatch(Exception):
     """Internal: the match stops early; carries the failure record."""
 
-    def __init__(self, seat, provider, error_class, error, turn_id, round_no):
+    def __init__(self, seat, provider, error_class, error, turn_id, round_no,
+                 attempts=()):
         super().__init__(f"{seat}: {error_class}: {error}")
         self.seat = seat
         self.provider = provider
@@ -189,6 +192,7 @@ class _StopMatch(Exception):
         self.error = error
         self.turn_id = turn_id
         self.round_no = round_no
+        self.attempts = list(attempts)
 
 
 def _action_summary(action, districts):
@@ -264,8 +268,10 @@ def run_match(config, run_dir, hooks=None, provider_factory=None):
         with open(match_path, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(payload, sort_keys=True) + "\n")
 
-    emit({"type": "match_start", "game_id": gid,
-          "rules": {"path": config.rules_path, "rules_hash": config.rules_hash},
+    emit({"type": "match_start", "schema": LOG_SCHEMA, "game_id": gid,
+          "rules": {"path": config.rules_path, "rules_hash": config.rules_hash,
+                    "doc": config.rules},
+          "engine_version": state["engine_version"],
           "seed": config.seed,
           "seats": [{"seat": sc.seat, "provider": sc.provider,
                      "model": sc.model} for sc in config.seats],
@@ -278,6 +284,8 @@ def run_match(config, run_dir, hooks=None, provider_factory=None):
                     if sc.provider in REMOTE_PROVIDERS}
     seq = 0
     failure = None
+    interrupted = False
+    view = None
     try:
         while not adapter.finished(state):
             obs = adapter.observe(state)
@@ -290,6 +298,7 @@ def run_match(config, run_dir, hooks=None, provider_factory=None):
             seat = obs["active_player"]
             provider = providers[seat]
             legal = obs["legal_actions"]
+            attempts = []
             if len(legal) == 1:
                 decision = Decision(action_id=legal[0]["action_id"],
                                     reason="single_legal_action")
@@ -305,23 +314,33 @@ def run_match(config, run_dir, hooks=None, provider_factory=None):
                         except BudgetExceeded as exc:
                             raise _StopMatch(seat, provider, "BudgetExceeded",
                                              str(exc), obs["turn_id"],
-                                             obs["round"]) from None
+                                             obs["round"], attempts) from None
                     try:
                         decision = provider.decide(view)
                     except ProviderError as exc:
                         error_class, error_text = type(exc).__name__, str(exc)
+                        attempts.append({"attempt": try_index, "ok": False,
+                                         "error_class": error_class,
+                                         "error": error_text,
+                                         "exchange": exc.exchange})
                         continue
                     if decision.action_id not in view.legal_ids:
                         error_class = "InvalidAnswerError"
                         error_text = (f"illegal action_id "
                                       f"{decision.action_id!r}")
+                        attempts.append({"attempt": try_index, "ok": False,
+                                         "error_class": error_class,
+                                         "error": error_text,
+                                         "exchange": decision.exchange})
                         continue
+                    attempts.append({"attempt": try_index, "ok": True,
+                                     "exchange": decision.exchange})
                     attempt = try_index
                     break
                 if attempt is None:
                     raise _StopMatch(seat, provider, error_class,
                                      error_text or "provider failure",
-                                     obs["turn_id"], obs["round"])
+                                     obs["turn_id"], obs["round"], attempts)
                 if is_remote:
                     config.budget.calls += 1
                     config.budget.spent_usd += decision.cost_usd
@@ -350,7 +369,13 @@ def run_match(config, run_dir, hooks=None, provider_factory=None):
                   "cost_usd": decision.cost_usd, "usage": decision.usage,
                   "attempt": attempt, "reason": decision.reason,
                   "legal_count": len(legal),
-                  "candidate_count": len(view.candidates)})
+                  "candidate_count": len(view.candidates),
+                  "probabilities": decision.probabilities,
+                  "confidence": decision.confidence,
+                  "attempts": attempts,
+                  "observation": obs, "projection": view.projection,
+                  "candidates": view.candidates,
+                  "play": record})
             _hook(hooks, "on_decision", seat, provider, decision, record,
                   attempt)
             engine.write_run(engine_dir, state)
@@ -363,12 +388,26 @@ def run_match(config, run_dir, hooks=None, provider_factory=None):
               "round": stop.round_no, "phase": state["phase"],
               "seat": stop.seat, "provider": stop.provider.name,
               "model": stop.provider.model,
-              "error_class": stop.error_class, "error": stop.error})
+              "error_class": stop.error_class, "error": stop.error,
+              "attempts": stop.attempts,
+              "observation": view.observation if view else None,
+              "projection": view.projection if view else None,
+              "candidates": view.candidates if view else None})
         engine.write_run(engine_dir, state)
+    except KeyboardInterrupt:
+        interrupted = True
 
-    if failure is None:
+    engine_result = None
+    if interrupted:
+        outcome, winner = "interrupted", None
+        end_reason = "interrupted"
+        total_turns = len(state["events"])
+        total_rounds = state["round"]
+        incomplete_reason = "interrupted by the user"
+    elif failure is None:
         adapter.check_invariants(state)
         res = adapter.result(state)
+        engine_result = res
         outcome, winner = res["outcome"], res["winner"]
         end_reason = res["end_reason"]
         total_turns = res["total_turns"]
@@ -383,13 +422,19 @@ def run_match(config, run_dir, hooks=None, provider_factory=None):
                              f"{failure.provider.name}/{failure.provider.model}: "
                              f"{failure.error_class}: {failure.error}")
     summary = {"type": "result", "outcome": outcome, "winner": winner,
-               "end_reason": end_reason, "incomplete": failure is not None,
+               "end_reason": end_reason,
+               "incomplete": failure is not None or interrupted,
                "incomplete_reason": incomplete_reason,
                "total_turns": total_turns, "total_rounds": total_rounds,
                "seats": {seat: {**stats[seat], "cost_usd": round(
                    stats[seat]["cost_usd"], 6)} for seat in SEATS},
                "run_dir": str(run_dir)}
-    emit({k: v for k, v in summary.items() if k != "run_dir"})
+    emit({**{k: v for k, v in summary.items() if k != "run_dir"},
+          "engine_result": engine_result})
     engine.write_run(engine_dir, state)
+    # An interrupt can stop an atomic write before its rename.
+    for name in os.listdir(engine_dir):
+        if name.endswith(".tmp"):
+            os.remove(os.path.join(engine_dir, name))
     _hook(hooks, "on_result", summary)
     return summary

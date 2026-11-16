@@ -1,6 +1,7 @@
 # ABOUTME: OpenAI Decisions seat provider on the official SDK client.decisions.
 # ABOUTME: Same request shape and parsing discipline as decisions_policy.LiveProvider.
 
+import dataclasses
 import math
 import os
 import time
@@ -90,14 +91,22 @@ class OpenAIDecisions:
         if hasattr(client, "with_options"):
             client = client.with_options(timeout=self.timeout_s,
                                          max_retries=0)
+        exchange = {"request": request, "response": None}
         started = time.monotonic()
         try:
             response = client.decisions.create(**request)
         except Exception as exc:
             raise TransportError(
-                f"{self.name} decisions call failed: {exc}") from None
+                f"{self.name} decisions call failed: {exc}",
+                exchange=exchange) from None
         latency_ms = round((time.monotonic() - started) * 1000, 1)
-        return self._parse(response, view.legal_ids, latency_ms)
+        exchange["response"] = {"status_code": None, "body": _dump(response)}
+        try:
+            decision = self._parse(response, view.legal_ids, latency_ms)
+        except ProviderError as exc:
+            exc.exchange = exchange
+            raise
+        return dataclasses.replace(decision, exchange=exchange)
 
     def _parse(self, response, legal_ids, latency_ms) -> Decision:
         answers = getattr(response, "answers", None) or []
@@ -127,14 +136,37 @@ class OpenAIDecisions:
         if isinstance(input_tokens, (int, float)) and input_tokens > 0:
             cost = input_tokens / 1_000_000 * self.rate()
         cost = round(cost + self.request_fee(), 8)
+        confidence = getattr(answer, "confidence", None)
+        if isinstance(confidence, bool) \
+                or not isinstance(confidence, (int, float)) \
+                or not math.isfinite(confidence) \
+                or not 0.0 <= confidence <= 1.0:
+            confidence = None
         return Decision(
             action_id=choice,
+            confidence=confidence,
             probabilities=_parse_probabilities(
                 getattr(answer, "probabilities", None), legal_ids),
             latency_ms=latency_ms,
             usage=usage or None,
             cost_usd=cost,
             reason=f"{self.name}_decisions_choice")
+
+
+def _dump(value):
+    """Turn an SDK response into plain JSON data for the match log."""
+    if hasattr(value, "model_dump"):
+        return value.model_dump(mode="json")
+    if isinstance(value, dict):
+        return {str(k): _dump(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_dump(v) for v in value]
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if hasattr(value, "__dict__"):
+        return {k: _dump(v) for k, v in vars(value).items()
+                if not k.startswith("_")}
+    return str(value)
 
 
 def _parse_probabilities(raw, legal_ids):

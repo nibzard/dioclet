@@ -282,3 +282,129 @@ def test_single_legal_action_skips_provider(tmp_path, monkeypatch):
         assert line["attempt"] == 0
         assert line["reason"] == "single_legal_action"
         assert line["legal_count"] == 1
+
+
+# ---------------------------------------------------------------------------
+# Training-grade log
+# ---------------------------------------------------------------------------
+
+class Exchanging:
+    """Fails once with a recorded exchange, then answers with one."""
+
+    name = "scripted"
+    model = "double"
+    timeout_s = 0.0
+
+    def __init__(self):
+        self.calls = 0
+
+    def decide(self, view):
+        self.calls += 1
+        if self.calls == 1:
+            raise TransportError("boom", exchange={
+                "request": {"n": 1}, "response": None})
+        first = view.observation["legal_actions"][0]["action_id"]
+        return Decision(action_id=first, probabilities={first: 0.62},
+                        confidence=0.4,
+                        exchange={"request": {"n": self.calls},
+                                  "response": {"body": {"ok": True}}})
+
+
+class InterruptAfter:
+    name = "scripted"
+    model = "double"
+    timeout_s = 0.0
+
+    def __init__(self, calls):
+        self.left = calls
+
+    def decide(self, view):
+        if self.left == 0:
+            raise KeyboardInterrupt
+        self.left -= 1
+        return Decision(action_id=view.observation["legal_actions"][0]
+                        ["action_id"])
+
+
+def test_match_start_records_schema_and_full_rules(tmp_path):
+    config = make_config(tiny_rules(tmp_path, reveal_all=True), seed=7)
+    run_dir = str(tmp_path / "run")
+    match_mod.run_match(config, run_dir)
+    start = read_lines(run_dir)[0]
+    assert start["schema"] == match_mod.LOG_SCHEMA
+    assert start["rules"]["doc"] == config.rules
+
+
+def test_every_decision_is_a_complete_training_example(tmp_path):
+    config = make_config(tiny_rules(tmp_path, reveal_all=True), seed=7)
+    run_dir = str(tmp_path / "run")
+    match_mod.run_match(config, run_dir)
+    decisions = [line for line in read_lines(run_dir)
+                 if line["type"] == "decision"]
+    assert decisions
+    for line in decisions:
+        legal = {a["action_id"] for a in line["observation"]["legal_actions"]}
+        assert line["action_id"] in legal
+        assert line["observation"]["active_player"] == line["seat"]
+        assert line["projection"]
+        assert all("description" in c for c in line["candidates"])
+        assert {"probabilities", "confidence", "attempts"} <= set(line)
+        assert line["play"]["action_id"] == line["action_id"]
+        assert line["play"]["player"] == line["seat"]
+
+
+def test_remote_attempts_keep_request_response_and_error(tmp_path,
+                                                         monkeypatch):
+    config = make_config(tiny_rules(tmp_path), provider="jev",
+                         monkeypatch=monkeypatch)
+    run_dir = str(tmp_path / "run")
+    match_mod.run_match(config, run_dir,
+                        provider_factory=lambda seat: Exchanging())
+    first = next(line for line in read_lines(run_dir)
+                 if line["type"] == "decision" and line["attempt"] == 2)
+    failed, ok = first["attempts"]
+    assert failed == {"attempt": 1, "ok": False,
+                      "error_class": "TransportError", "error": "boom",
+                      "exchange": {"request": {"n": 1}, "response": None}}
+    assert ok["ok"] is True
+    assert ok["exchange"]["response"] == {"body": {"ok": True}}
+    assert first["confidence"] == 0.4
+    assert first["probabilities"] == {first["action_id"]: 0.62}
+
+
+def test_failure_line_keeps_what_the_seat_saw(tmp_path, monkeypatch):
+    config = make_config(tiny_rules(tmp_path), provider="jev",
+                         monkeypatch=monkeypatch)
+    double = Scripted([TransportError("one"), TransportError("two")])
+    run_dir = str(tmp_path / "run")
+    match_mod.run_match(config, run_dir,
+                        provider_factory=lambda seat: double)
+    failure = next(line for line in read_lines(run_dir)
+                   if line["type"] == "failure")
+    assert failure["observation"]["active_player"] == failure["seat"]
+    assert failure["candidates"]
+    assert [a["error"] for a in failure["attempts"]] == ["one", "two"]
+
+
+def test_result_line_keeps_the_engine_result(tmp_path):
+    config = make_config(tiny_rules(tmp_path, reveal_all=True), seed=7)
+    run_dir = str(tmp_path / "run")
+    summary = match_mod.run_match(config, run_dir)
+    result = read_lines(run_dir)[-1]
+    assert result["engine_result"]["outcome"] == summary["outcome"]
+
+
+def test_interrupt_writes_an_interrupted_result(tmp_path, monkeypatch):
+    config = make_config(tiny_rules(tmp_path), provider="jev",
+                         monkeypatch=monkeypatch)
+    run_dir = str(tmp_path / "run")
+    double = InterruptAfter(2)
+    summary = match_mod.run_match(config, run_dir,
+                                  provider_factory=lambda seat: double)
+    assert summary["outcome"] == "interrupted"
+    lines = read_lines(run_dir)
+    assert lines[-1]["type"] == "result"
+    assert lines[-1]["incomplete"] is True
+    assert lines[-1]["incomplete_reason"] == "interrupted by the user"
+    assert not [name for name in os.listdir(os.path.join(run_dir, "engine"))
+                if name.endswith(".tmp")]
