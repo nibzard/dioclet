@@ -1,10 +1,17 @@
+# ABOUTME: Board graph, shortest paths, and site lookups for both maps.
+# ABOUTME: Reads rules["palace"]["map"] or rules["succession"]["map"].
 """Board graph, shortest paths, and site lookups.
 
 The board is an orthogonal grid. Coordinates are [x, y]; y=0 is the
 north row. Neighbor tie-break order is north, east, south, west so
-paths and searches are deterministic. An optional `board.blocked`
-list removes cells from the graph (building interiors on the V0.6
-real-board map); movement, duels, and paths use street cells only.
+paths and searches are deterministic. An optional `blocked`
+list removes cells from the graph (building interiors on the palace
+map); movement, duels, and paths use street cells only.
+
+Rules files name gates by compass (north, east, south, west). Engine
+state and observations name them by seat id (P0..P3); P0 is the north
+gate, P1 east, P2 south, P3 west. `Board.gates` and `gate_cells` key
+cells by seat id.
 """
 
 from collections import deque
@@ -14,33 +21,34 @@ ENGINE_VERSION = "0.1.1"
 # Direction order for tie-breaks: north, east, south, west.
 DIRECTIONS = ((0, -1), (1, 0), (0, 1), (-1, 0))
 DIRECTION_NAMES = ("north", "east", "south", "west")
+# Seat ids for the four compass gates, in the same positional order.
+GATE_IDS = ("P0", "P1", "P2", "P3")
+GATE_NAMES = DIRECTION_NAMES
 
 
 def cell_key(cell):
     return (cell[0], cell[1])
 
 
-class Board:
-    """Graph view over the grid defined by a validated rules dict."""
+def gate_cells(board_map):
+    """Seat-id to gate-cell map for a rules map keyed by compass name."""
+    return {pid: tuple(board_map["gates"][name])
+            for pid, name in zip(GATE_IDS, GATE_NAMES)}
 
-    def __init__(self, rules, section="board"):
-        board = rules[section]
+
+class Board:
+    """Graph view over the grid defined by a validated rules map."""
+
+    def __init__(self, rules, section="palace"):
+        board = rules[section]["map"]
         self.section = section
         self.width = board["width"]
         self.height = board["height"]
-        self.gates = {p: tuple(c) for p, c in board["gates"].items()}
-        self.districts = {name: tuple(c) for name, c in board.get("districts", {}).items()}
+        self.gates = gate_cells(board)
+        self.districts = {name: tuple(c) for name, c in board.get("treasure_entries", {}).items()}
         self.district_at = {tuple(c): name for name, c in self.districts.items()}
         self.checkpoint = tuple(board["checkpoint"])
-        self.glory_posts = [tuple(c) for c in board.get("glory_posts", [])]
-        sites = board.get("level2_sites", {})
-        self.level2_sites = {name: tuple(c) for name, c in sites.items()}
-        self.seal_sites = {name: self.level2_sites[name]
-                           for name in ("cellars", "guard_barracks", "peristyle")
-                           if name in self.level2_sites}
-        self.seal_site_at = {cell: name for name, cell in self.seal_sites.items()}
-        self.emperor = self.level2_sites.get("emperor")
-        self.retreat = self.level2_sites.get("retreat")
+        self.guard_posts = [tuple(c) for c in board.get("guard_posts", [])]
         self.blocked = {tuple(c) for c in board.get("blocked", [])}
 
     def in_bounds(self, cell):
@@ -100,6 +108,7 @@ def validate_six_block_layout(rules):
     Generators use this check for the adopted six-block layout. Old
     rules remain available for replay without applying this contract.
     """
+    board_map = rules["palace"]["map"]
     b = Board(rules)
     remaining = set(b.blocked)
     components = []
@@ -118,7 +127,7 @@ def validate_six_block_layout(rules):
     if len(components) != 6:
         raise ValueError(f"expected six intact blocks, found {len(components)}")
 
-    buildings = rules["board"].get("buildings", [])
+    buildings = board_map.get("buildings", [])
     if len(buildings) != 6:
         raise ValueError("expected six declared block footprints")
     footprints = []
@@ -142,7 +151,7 @@ def validate_six_block_layout(rules):
     if len(set(assigned)) != 6 or set(assigned) != set(b.districts):
         raise ValueError("each block needs exactly one distinct district")
 
-    streets = rules["board"]["streets"]
+    streets = board_map["streets"]
     cardo, decumanus = streets["cardo"], streets["decumanus"]
     if cardo["axis"] != "north-south" or decumanus["axis"] != "east-west":
         raise ValueError("cardo must run north-south; decumanus must run east-west")

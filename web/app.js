@@ -1,12 +1,11 @@
 /* Imperial Rivals: 305 AD - table UI over engine.js, succession-engine.js,
- * and succession-bots.js. One street grid, two boards: the city map with
- * its six treasure districts, and the succession map with blind faction
- * cards and the Peristyle claim. */
+ * and succession-bots.js. One street grid, two boards: the palace map
+ * with its six treasure entries, and the succession map with blind
+ * faction cards and the Peristyle claim. */
 (function () {
   "use strict";
 
   const B = window.DIOCLET_BOARD;
-  if (B.mode !== "succession-v1") throw Error("This UI requires the succession board data");
   const FACTIONS = { army: "Army", officials: "Imperial officials", elites: "City elites" };
   const LETTER = { army: "A", officials: "O", elites: "C" };
   const FACTIONCOLOR = { army: "#7a5a2e", officials: "#3f6f9e", elites: "#5f7a4a" };
@@ -34,7 +33,6 @@
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
   const reducedMotion = () => window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const activeMap = () => g && g.phase === 2 ? B.boardLevel2 : B.map1;
 
   const previousFocus = new Map();
   function syncDialogs() {
@@ -70,7 +68,7 @@
   /* ---------------- board rendering ---------------- */
 
   function buildBoard() {
-    const w = PAD * 2 + B.map1.width * CELL, h = PAD * 2 + B.map1.height * CELL;
+    const w = PAD * 2 + B.palaceMap.width * CELL, h = PAD * 2 + B.palaceMap.height * CELL;
     svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
     el("rect", { width: w, height: h, fill: "#efecdf", rx: 0 });
     el("rect", { x: 8, y: 8, width: w - 16, height: h - 16, rx: 0,
@@ -79,14 +77,14 @@
                  fill: "none", stroke: "#cfd0b9", "stroke-width": .8 });
     // Each declared footprint is one intact, non-walkable block.
     // District ownership is explicit; proximity must not assign cards.
-    B.map1.buildings.forEach(bld => {
+    B.palaceMap.buildings.forEach(bld => {
       const left = PAD + bld.x0 * CELL + 3;
       const top = PAD + bld.y0 * CELL + 3;
       const width = (bld.x1 - bld.x0 + 1) * CELL - 6;
       const height = (bld.y1 - bld.y0 + 1) * CELL - 6;
-      const district = [bld.district, B.map1.districts[bld.district]];
+      const district = [bld.district, B.palaceMap.treasureEntries[bld.district]];
       const group = el("g", { "pointer-events": "none", "aria-hidden": "true",
-        class: "city-block", "data-district": bld.district });
+        class: "palace-block", "data-district": bld.district });
       el("rect", { x: left, y: top, width, height, rx: 0, fill: "#d9d5c2", stroke: "#b7b89d", "stroke-width": 1.3 }, group);
       // Inset masonry gives the blocks an architectural plan treatment.
       for (let x = left + 12; x < left + width - 8; x += CELL) {
@@ -118,12 +116,12 @@
     const streetLabel = (x, y, text) => el("text", { x, y,
       "text-anchor": "middle", fill: "#747d64", "font-family": "Verdana, sans-serif",
       "font-size": 8, "letter-spacing": 1, "pointer-events": "none" }, svg, text);
-    streetLabel(cx(B.map1.streets.cardo.coordinate), 26, "CARDO · N–S");
-    streetLabel(cx(10), cy(B.map1.streets.decumanus.coordinate) - 15, "DECUMANUS · E–W");
+    streetLabel(cx(B.palaceMap.streets.cardo.coordinate), 26, "CARDO · N–S");
+    streetLabel(cx(10), cy(B.palaceMap.streets.decumanus.coordinate) - 15, "DECUMANUS · E–W");
     streetLabel(w - 34, 26, "N ↑");
-    for (let y = 0; y < B.map1.height; y++) {
-      for (let x = 0; x < B.map1.width; x++) {
-        if (B.map1.blocked.some(c => c[0] === x && c[1] === y)) continue;
+    for (let y = 0; y < B.palaceMap.height; y++) {
+      for (let x = 0; x < B.palaceMap.width; x++) {
+        if (B.palaceMap.blocked.some(c => c[0] === x && c[1] === y)) continue;
         const k = K(x, y);
         el("circle", { cx: cx(x), cy: cy(y), r: 13, fill: "#fbf9ee",
                        stroke: "#c0c4ab", "stroke-width": 1.5, "data-k": k,
@@ -135,7 +133,7 @@
       entry: "Treasure entry: stop here to take the card",
       checkpoint: "Checkpoint: first with all six items opens the succession",
       peristyle: "Peristyle: proclaim your claim with two factions behind you",
-      post: "Guard post: roll " + B.glory.guardMinRoll + " or more for " + B.glory.guardReward + " Prestige",
+      post: "Guard post: roll " + B.prestige.guardMinRoll + " or more for " + B.prestige.guardReward + " Prestige",
       card: "Faction card: stop here and search to turn it over",
     };
     // Decorations never block clicks or hover: the street circle under
@@ -157,38 +155,38 @@
     const tip = (k, text, phase = 1) => {
       const c = svg.querySelector(`[data-k="${k}"]`);
       if (!c) return;
-      c.dataset[phase === 2 ? "palaceTitle" : "cityTitle"] = text;
+      c.dataset[phase === 2 ? "successionTitle" : "palaceTitle"] = text;
     };
-    const cityLayer = el("g", { id: "city-markers" });
-    for (const [p, c] of Object.entries(B.map1.gates)) {
-      chip(K(...c), "#5a3d6b", { P0: "N", P1: "E", P2: "S", P3: "W" }[p], cityLayer, "m1-site");
+    const palaceLayer = el("g", { id: "palace-markers" });
+    for (const [p, c] of Object.entries(B.palaceMap.gates)) {
+      chip(K(...c), "#5a3d6b", { P0: "N", P1: "E", P2: "S", P3: "W" }[p], palaceLayer, "palace-site");
       tip(K(...c), TITLES.gate + " (" + p + ")");
     }
-    for (const [n, c] of Object.entries(B.map1.districts)) {
-      chip(K(...c), "#3f6f9e", n, cityLayer, "m1-site");
+    for (const [n, c] of Object.entries(B.palaceMap.treasureEntries)) {
+      chip(K(...c), "#3f6f9e", n, palaceLayer, "palace-site");
       tip(K(...c), TITLES.entry + " (" + n + ")");
     }
-    chip(K(...B.map1.checkpoint), "#c9972b", "X", cityLayer, "m1-site");
-    tip(K(...B.map1.checkpoint), TITLES.checkpoint);
-    for (const c of B.map1.gloryPosts) {
-      chip(K(...c), "#5f7a4a", "*", cityLayer, "m1-site");
+    chip(K(...B.palaceMap.checkpoint), "#c9972b", "X", palaceLayer, "palace-site");
+    tip(K(...B.palaceMap.checkpoint), TITLES.checkpoint);
+    for (const c of B.palaceMap.guardPosts) {
+      chip(K(...c), "#5f7a4a", "*", palaceLayer, "palace-site");
       tip(K(...c), TITLES.post);
     }
     // The succession map: gates move (the south gate trades places),
     // the Peristyle replaces the checkpoint, posts relocate, and six
     // face-down faction cards wait on the card spaces.
     const successionLayer = el("g", { id: "succession-markers", display: "none" });
-    for (const [p, c] of Object.entries(B.boardLevel2.gates)) {
-      chip(K(...c), "#5a3d6b", { P0: "N", P1: "E", P2: "S", P3: "W" }[p], successionLayer, "m2-site");
+    for (const [p, c] of Object.entries(B.successionMap.gates)) {
+      chip(K(...c), "#5a3d6b", { P0: "N", P1: "E", P2: "S", P3: "W" }[p], successionLayer, "succession-site");
       tip(K(...c), TITLES.gate + " on the succession map (" + p + ")", 2);
     }
-    chip(K(...B.boardLevel2.checkpoint), "#c9972b", "♛", successionLayer, "m2-site");
-    tip(K(...B.boardLevel2.checkpoint), TITLES.peristyle, 2);
-    for (const c of B.boardLevel2.gloryPosts) {
-      chip(K(...c), "#5f7a4a", "*", successionLayer, "m2-site");
+    chip(K(...B.successionMap.checkpoint), "#c9972b", "♛", successionLayer, "succession-site");
+    tip(K(...B.successionMap.checkpoint), TITLES.peristyle, 2);
+    for (const c of B.successionMap.guardPosts) {
+      chip(K(...c), "#5f7a4a", "*", successionLayer, "succession-site");
       tip(K(...c), TITLES.post, 2);
     }
-    for (const c of B.boardLevel2.supportSites) {
+    for (const c of B.successionMap.cardSpaces) {
       const k = K(...c);
       const card = el("g", { id: "site-" + k, "pointer-events": "none" }, successionLayer);
       el("rect", { x: cx(c[0]) - 10.5, y: cy(c[1]) - 10.5, width: 21, height: 21,
@@ -196,10 +194,10 @@
       el("text", { id: "sitetext-" + k, x: cx(c[0]), y: cy(c[1]) + 6, "text-anchor": "middle",
         fill: "#fffdf6", "font-family": "Georgia, serif", "font-size": 15,
         "font-weight": "bold" }, card, "?");
-      svg.querySelector(`[data-k="${k}"]`).classList.add("site-cell", "m2-site");
+      svg.querySelector(`[data-k="${k}"]`).classList.add("site-cell", "succession-site");
       tip(k, TITLES.card, 2);
     }
-    const [px, py] = B.boardLevel2.checkpoint;
+    const [px, py] = B.successionMap.checkpoint;
     const claim = el("g", { id: "claim-marker", display: "none", "pointer-events": "none", "aria-hidden": "true" });
     el("rect", { x: cx(px) - 24, y: cy(py) - 24, width: 48, height: 48,
       fill: "none", stroke: "#a4772d", "stroke-width": 3 }, claim);
@@ -218,15 +216,15 @@
     if (boardPhase === phase) return;
     boardPhase = phase;
     const succession = phase === 2;
-    document.getElementById("city-markers").setAttribute("display", succession ? "none" : "inline");
+    document.getElementById("palace-markers").setAttribute("display", succession ? "none" : "inline");
     document.getElementById("succession-markers").setAttribute("display", succession ? "inline" : "none");
     for (const plate of svg.querySelectorAll(".district-plate"))
       plate.setAttribute("display", succession ? "none" : "inline");
     document.getElementById("checkpoint-key").textContent = succession ? "Peristyle · claim" : "Checkpoint";
     for (const c of svg.querySelectorAll(".cell")) {
-      const big = c.classList.contains(succession ? "m2-site" : "m1-site");
+      const big = c.classList.contains(succession ? "succession-site" : "palace-site");
       c.setAttribute("r", big ? "20" : "13");
-      const text = (succession && c.dataset.palaceTitle) || c.dataset.cityTitle;
+      const text = (succession && c.dataset.successionTitle) || c.dataset.palaceTitle;
       c.querySelector("title")?.remove();
       if (text) {
         el("title", {}, c, text);
@@ -270,7 +268,7 @@
 
   function showRevealed() {
     for (const [name, item] of Object.entries(g.revealed)) {
-      const k = K(...B.map1.districts[name]);
+      const k = K(...B.palaceMap.treasureEntries[name]);
       const marker = document.getElementById("treasure-" + k);
       const label = document.getElementById("district-" + k);
       if (!marker || marker.dataset.item === item) continue;
@@ -285,7 +283,7 @@
   // searched space shows its faction letter or an empty street mark.
   function showSites() {
     const revealed = g.factionSitesRevealed;
-    for (const c of B.boardLevel2.supportSites) {
+    for (const c of B.successionMap.cardSpaces) {
       const k = K(...c);
       const card = document.getElementById("site-" + k);
       const box = card.querySelector("rect");
@@ -294,23 +292,23 @@
       if (!revealed || !(k in revealed)) {
         box.setAttribute("fill", "#203d35");
         text.textContent = "?";
-        cell.dataset.palaceTitle = "Faction card: stop here and search to turn it over";
+        cell.dataset.successionTitle = "Faction card: stop here and search to turn it over";
       } else {
         const faction = revealed[k];
         if (faction) {
           box.setAttribute("fill", FACTIONCOLOR[faction]);
           text.textContent = LETTER[faction];
-          cell.dataset.palaceTitle = FACTIONS[faction] + " support: spend " +
+          cell.dataset.successionTitle = FACTIONS[faction] + " support: spend " +
             C.supportCost + " Prestige here for their backing";
         } else {
           box.setAttribute("fill", "#8a8d7f");
           text.textContent = "–";
-          cell.dataset.palaceTitle = "Searched: no faction deals from this space";
+          cell.dataset.successionTitle = "Searched: no faction deals from this space";
         }
       }
     }
     if (boardPhase === 2) for (const c of svg.querySelectorAll(".cell")) {
-      const text = c.dataset.palaceTitle;
+      const text = c.dataset.successionTitle;
       if (text) {
         c.querySelector("title")?.remove();
         el("title", {}, c, text);
@@ -337,7 +335,7 @@
       const gear = p.equipment.map(i => ITEMS[i] || i).join(", ");
       d.innerHTML = `<div class="pname"><span class="pawnchip" style="background:${COLORS[p.id]}"></span>${escapeHTML(p.name)}</div>
         <span class="player-kind">${kind}<br>${GATES[p.gateId]}</span>
-        <div class="pstats"><span>Prestige <strong>${p.prestige}${B.glory.cap == null ? "" : "/" + B.glory.cap}</strong></span><span>Gear <strong>${p.equipment.length}/6</strong></span></div>
+        <div class="pstats"><span>Prestige <strong>${p.prestige}${B.prestige.cap == null ? "" : "/" + B.prestige.cap}</strong></span><span>Gear <strong>${p.equipment.length}/6</strong></span></div>
         <div class="gear-list"><strong>${p.equipment.length}/6 gear</strong>${gear ? " · " + escapeHTML(gear) : ""}</div>
         <div class="support-list"><strong>${p.support.length}/${C.requiredSupport} support</strong> ${badges || "· none yet"}</div>`;
       box.appendChild(d);
@@ -375,7 +373,7 @@
       const d = document.createElement("div");
       d.textContent = line;
       if (/duel|defeats|loses/.test(line)) d.className = "evt";
-      if (/Prestige/.test(line)) d.className = "glory";
+      if (/Prestige/.test(line)) d.className = "prestige";
       box.appendChild(d);
     }
     box.scrollTop = box.scrollHeight;
@@ -384,9 +382,9 @@
   function renderTurnline() {
     renderBoardPhase();
     const line = document.getElementById("turnline");
-    document.getElementById("phase-label").textContent = g.phase === 1 ? "City · Phase I" : "Succession · Phase II";
-    document.getElementById("city-step").classList.toggle("current", g.phase === 1);
-    document.getElementById("palace-step").classList.toggle("current", g.phase === 2 && !g.winner && !g.pendingClaim);
+    document.getElementById("phase-label").textContent = g.phase === 1 ? "Palace · Phase I" : "Succession · Phase II";
+    document.getElementById("palace-step").classList.toggle("current", g.phase === 1);
+    document.getElementById("succession-step").classList.toggle("current", g.phase === 2 && !g.winner && !g.pendingClaim);
     document.getElementById("emperor-step").classList.toggle("current", Boolean(g.winner || g.pendingClaim));
     if (g.winner) {
       const p = E.player(g, g.winner);
@@ -396,7 +394,7 @@
     renderClaim();
     if (g.draw) { line.textContent = "No claim prevailed before the deadline. A draw."; return; }
     const p = E.active(g);
-    const phase = g.phase === 1 ? "the city" : "the succession";
+    const phase = g.phase === 1 ? "the palace" : "the succession";
     line.textContent = `Round ${g.round} in ${phase}: ${p.name}` +
       (p.kind === "human" ? " (your turn)" : " is thinking…");
   }
@@ -507,7 +505,7 @@
       }
       case "inspect": return "<b>Consult the galea</b> · reveal district " + a.district;
       case "search_site": return "<b>Search the card space</b> · turn the faction card";
-      case "guard_post": return "<b>Stand guard</b>: roll " + B.glory.guardMinRoll + " or more for " + B.glory.guardReward + " Prestige";
+      case "guard_post": return "<b>Stand guard</b>: roll " + B.prestige.guardMinRoll + " or more for " + B.prestige.guardReward + " Prestige";
       case "gain_support": return "<b>Secure " + FACTIONS[a.faction] + " support</b> · " + C.supportCost + " Prestige";
       case "proclaim": return "<b>Proclaim your claim</b> · holds for " + C.claimWindowRounds + " full rounds";
       case "maintain_claim": return "<b>Hold the Peristyle</b> · keep your claim";
@@ -563,7 +561,7 @@
   function showGameOver() {
     document.getElementById("overline").textContent = g.winner
       ? E.player(g, g.winner).name + " is acclaimed emperor!"
-      : "A draw in the palace.";
+      : "A draw in the succession.";
     document.getElementById("oversub").textContent =
       `Seed ${g.seed} · ${g.round} rounds · ` +
       g.players.map(p => `${p.name}: ${p.equipment.length} gear` +
@@ -644,7 +642,7 @@
     clearTimeout(botTimer);
     hideOverlay("setup");
     for (const rv of [...svg.querySelectorAll(".revealchip")]) rv.remove();
-    for (const [name, c] of Object.entries(B.map1.districts)) {
+    for (const [name, c] of Object.entries(B.palaceMap.treasureEntries)) {
       const k = K(...c);
       const marker = document.getElementById("treasure-" + k);
       const label = document.getElementById("district-" + k);
@@ -668,7 +666,7 @@
     const options = reuseSeats ? { ...g.setupOptions } : setupOptions();
     g = E.newGame(seed, seats, options);
     g.setupOptions = options;
-    g.log.push("The city gates open. Six treasures wait in the blocks.");
+    g.log.push("The palace gates open. Six treasures wait in the blocks.");
     placePawns();
     renderPlayers(); renderDice(); renderLog(); renderTurnline();
     showSites();

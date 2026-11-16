@@ -10,7 +10,7 @@ Coordinates in the output are millimetres with the origin at the
 top-left corner of each artwork and y growing downward (canvas
 convention). The kit's PDF layout uses a bottom-left origin.
 
-Usage: python3 art/export_layout.py [--rules rules_v0101_bigboard.json]
+Usage: python3 art/export_layout.py [--rules rules/imperial-rivals-v0.10.2.json]
 """
 import json
 import os
@@ -37,7 +37,7 @@ def palace(rules):
 
     cell = kit.CELL
     buildings = []
-    for bld in rules["board"]["buildings"]:
+    for bld in rules["palace"]["map"]["buildings"]:
         x0 = kit.ML + bld["x0"] * cell
         top = kit.MB + (L["rows"] - bld["y0"]) * cell
         w = (bld["x1"] - bld["x0"] + 1) * cell
@@ -58,9 +58,9 @@ def palace(rules):
         "districts": {k: at(v) for k, v in b.districts.items()},
         "gates": {k: at(v) for k, v in b.gates.items()},
         "gate_names": kit.GATE_NAMES,
-        "glory_posts": [at(c) for c in b.glory_posts],
+        "guard_posts": [at(c) for c in b.guard_posts],
         "checkpoint": at(b.checkpoint),
-        "streets": rules["board"]["streets"],
+        "streets": rules["palace"]["map"]["streets"],
         "rows": L["rows"], "cols": L["cols"],
     }
 
@@ -96,7 +96,7 @@ def succession(rules):
         "gates": {k: at(v) for k, v in b.gates.items()},
         "gate_names": kit.GATE_NAMES,
         "checkpoint": at(b.checkpoint),
-        "glory_posts": [at(c) for c in b.glory_posts],
+        "guard_posts": [at(c) for c in b.guard_posts],
         "card_spaces": [at(c) for c in S["card_spaces"]],
         # Which block each card space opens, and on which edge (y 0 north).
         "card_doors": [{"card": at(c), "block": i, "side": side}
@@ -109,10 +109,10 @@ def main():
     rules_file = (sys.argv[sys.argv.index("--rules") + 1]
                   if "--rules" in sys.argv else kit.RULES_FILE)
     rules = engine.load_rules(os.path.join(ROOT, rules_file))
-    abilities = rules["combat"]["abilities"]
+    abilities = rules["treasures"]["abilities"]
     layout = {
         "rules_file": rules_file,
-        "rules_version": rules["rules_version"],
+        "rules_version": rules["game"]["rules_version"],
         "rules_hash": engine.rules_hash(rules),
         "palace": palace(rules),
         "succession": succession(rules),
@@ -130,7 +130,7 @@ def main():
     path = os.path.join(out_dir, "layout.json")
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(layout, fh, indent=1, sort_keys=True)
-    print(f"wrote {os.path.relpath(path, ROOT)} for {rules['rules_version']}")
+    print(f"wrote {os.path.relpath(path, ROOT)} for {rules['game']['rules_version']}")
 
 
 if __name__ == "__main__":

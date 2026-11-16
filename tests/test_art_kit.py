@@ -89,7 +89,7 @@ class LayoutExport(unittest.TestCase):
         S = kit.build_succession_layout(self.rules)
         export = self.export["succession"]
         ax0, ay0, ax1, ay1 = S["art"]
-        sites = self.rules["board_level2"]["support_sites"]
+        sites = self.rules["succession"]["map"]["card_spaces"]
         self.assertEqual(len(export["card_spaces"]), len(sites))
         for cell, (ex, ey) in zip(sites, export["card_spaces"]):
             x, y = S["pos"](tuple(cell))

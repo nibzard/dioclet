@@ -240,7 +240,7 @@ duelCase({attacker:['gladius','pugio'], defender:['scutum'], dice:[3,3], checks:
   g.currentRoll = {dice:[2,2], total:4};
   const a = E.active(g);
   a.equipment = ['galea'];
-  const hidden = Object.keys(BOARD.map1.districts).filter(n => !(n in g.revealed));
+  const hidden = Object.keys(BOARD.palaceMap.treasureEntries).filter(n => !(n in g.revealed));
   assert.ok(hidden.length);
   const act = find(g, 'inspect', x => x.district === hidden[0]);
   assert.ok(act, 'the galea may reveal any hidden district');

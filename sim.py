@@ -38,8 +38,8 @@ def cmd_validate(args):
     _print_json({
         "ok": True,
         "rules_file": os.path.abspath(args.rules),
-        "rules_version": rules["rules_version"],
-        "game_name": rules["game_name"],
+        "rules_version": rules["game"]["rules_version"],
+        "game_name": rules["game"]["name"],
         "rules_hash": engine.rules_hash(rules),
         "engine_version": engine.ENGINE_VERSION,
     })
@@ -107,7 +107,7 @@ def cmd_act(args):
         "action_id": record["action_id"],
         "events": record["events"],
         "position_after": record["position_after"],
-        "glory_after": record["glory_after"],
+        "prestige_after": record["prestige_after"],
         "equipment_count_after": record["equipment_count_after"],
         "status": state["status"],
         "next_active_player": state["active_player"]
@@ -194,71 +194,6 @@ def _read_csv_rows(input_dir):
                     row[key] = value
             rows.append(row)
     return rows
-
-
-def cmd_ai_auto(args):
-    import ai_driver
-    rules = engine.load_rules(args.rules)
-    names = args.players.split(",")
-    if len(names) != 4:
-        _fail("invalid_players",
-              "--players needs four comma-separated names for P0..P3")
-    valid = set(policies.POLICIES) | {"tactical", "decisions"}
-    for name in names:
-        if name not in valid:
-            _fail("invalid_players",
-                  f"unknown player policy {name!r}; expected one of "
-                  f"{sorted(valid)}")
-    if args.provider == "live" and not args.live_decisions:
-        _fail("live_not_enabled",
-              "live Decisions requires the explicit --live-decisions flag")
-    if args.provider == "live" and not (args.max_decisions_calls
-                                        or args.max_cost_usd):
-        _fail("missing_budget",
-              "live Decisions requires --max-decisions-calls and/or "
-              "--max-cost-usd")
-    try:
-        config = ai_driver.load_decisions_config(args.decisions_config)
-    except (OSError, ValueError) as exc:
-        _fail("invalid_config", str(exc))
-    if args.model:
-        config["model"] = args.model
-    if args.selection_mode:
-        config["selection_mode"] = args.selection_mode
-    players = {pid: name for pid, name in zip(report.SEATS, names)}
-    game_id = os.path.basename(os.path.normpath(args.out))
-    live_client = None
-    if args.provider == "live":
-        if not os.environ.get("OPENAI_API_KEY"):
-            _fail("missing_key",
-                  "OPENAI_API_KEY is not set; live Decisions unavailable")
-        live_client = None  # LiveProvider constructs OpenAI() itself
-    try:
-        summary = ai_driver.run_ai_game(
-            rules, args.seed, game_id, players, args.out,
-            provider=args.provider, config=config,
-            live_client=live_client,
-            max_decisions_calls=args.max_decisions_calls,
-            max_cost_usd=args.max_cost_usd,
-            max_input_tokens=args.max_input_tokens_estimate,
-            wall_clock_seconds=args.timeout_minutes * 60,
-            resume=args.resume)
-    except FileExistsError as exc:
-        _fail("run_dir_exists", str(exc))
-    _print_json({k: v for k, v in summary.items() if k != "result"})
-
-
-def cmd_tournament(args):
-    import tournament
-    try:
-        result = tournament.run_tournament(
-            args.config, args.out, live=args.live_decisions,
-            resume=args.resume, dry=args.dry_run)
-    except (ValueError, OSError) as exc:
-        _fail("invalid_tournament", str(exc))
-    except SystemExit as exc:
-        _fail("live_not_enabled", str(exc))
-    _print_json(result)
 
 
 def cmd_replay(args):
@@ -362,37 +297,6 @@ def main(argv=None):
     p = sub.add_parser("report", help="summarize a batch directory")
     p.add_argument("--input", required=True)
     p.set_defaults(func=cmd_report)
-
-    p = sub.add_parser("ai-auto", help="play a game with AI policies "
-                                        "(decisions/tactical/bots)")
-    p.add_argument("--rules", required=True)
-    p.add_argument("--seed", type=int, required=True)
-    p.add_argument("--out", required=True)
-    p.add_argument("--players", default="decisions,decisions,decisions,"
-                                        "decisions")
-    p.add_argument("--provider", default="mock",
-                   choices=["mock", "playback", "live"])
-    p.add_argument("--live-decisions", action="store_true",
-                   help="explicit opt-in required for provider=live")
-    p.add_argument("--model", default=None)
-    p.add_argument("--decisions-config", default="decisions_config.json")
-    p.add_argument("--selection-mode", default=None,
-                   choices=["top", "sample"])
-    p.add_argument("--max-decisions-calls", type=int, default=0)
-    p.add_argument("--max-cost-usd", type=float, default=0.0)
-    p.add_argument("--max-input-tokens-estimate", type=int, default=0)
-    p.add_argument("--timeout-minutes", type=float, default=0.0)
-    p.add_argument("--resume", action="store_true")
-    p.set_defaults(func=cmd_ai_auto)
-
-    p = sub.add_parser("tournament", help="run a tournament from a JSON "
-                                          "config (V0.4.1)")
-    p.add_argument("--config", required=True)
-    p.add_argument("--out", required=True, help="e.g. results/v041")
-    p.add_argument("--live-decisions", action="store_true")
-    p.add_argument("--resume", action="store_true")
-    p.add_argument("--dry-run", action="store_true")
-    p.set_defaults(func=cmd_tournament)
 
     p = sub.add_parser("replay", help="replay a run and optionally verify")
     p.add_argument("--run", required=True)

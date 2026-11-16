@@ -49,7 +49,7 @@ from reportlab.pdfgen import canvas as pdfcanvas
 import engine  # noqa: E402
 from board import Board, validate_six_block_layout  # noqa: E402
 
-RULES_FILE = "rules_v0102_bigboard.json"
+RULES_FILE = "rules/imperial-rivals-v0.10.2.json"
 OUT_DIR = "print"                         # ART edition and the manifest
 BW_DIR = os.path.join(OUT_DIR, "bw")      # black-and-white edition
 COLOR_DIR = os.path.join(OUT_DIR, "color")  # full-colour edition
@@ -78,7 +78,7 @@ GATE_NAMES = {"P0": "GOLDEN GATE - NORTH", "P1": "SILVER GATE - EAST",
               "P2": "BRONZE GATE - SOUTH", "P3": "IRON GATE - WEST"}
 
 
-def build_layout(rules, section="board"):
+def build_layout(rules, section="palace"):
     """All geometric facts, computed once and shared by every page.
 
     The palace board and the succession map share one footprint and
@@ -133,7 +133,7 @@ def build_layout(rules, section="board"):
         "tiles": tiles, "spaces": spaces,
         "cell": CELL, "safe": SAFE, "version": KIT_VERSION,
         "sheet_note": ("SUCCESSION MAP - PAGE {} OF 4 - PRINT AT 100%"
-                       if section == "board_level2" else "PAGE {} OF 4 - PRINT AT 100%"),
+                       if section == "succession" else "PAGE {} OF 4 - PRINT AT 100%"),
     }
 
 
@@ -282,7 +282,7 @@ def draw_board(c, L):
     _centered(c, nx, ny - 12.5, "N", "Times-Bold", 11)
 
     # Buildings: light outline, sparse hatch, district letter, block note.
-    for bld in rules["board"]["buildings"]:
+    for bld in rules["palace"]["map"]["buildings"]:
         x0 = ml + bld["x0"] * CELL + 2.4
         y0 = mb + (L["rows"] - 1 - bld["y1"]) * CELL + 2.4
         w = (bld["x1"] - bld["x0"] + 1) * CELL - 4.8
@@ -305,7 +305,7 @@ def draw_board(c, L):
 
     # Streets: open circles. Cells with their own symbol (guard posts,
     # treasure entries, gates, the Peristyle) get no plain circle.
-    special = ({tuple(g) for g in b.glory_posts}
+    special = ({tuple(g) for g in b.guard_posts}
                | {tuple(cell) for cell in b.districts.values()}
                | {tuple(cell) for cell in b.gates.values()}
                | {tuple(b.checkpoint)})
@@ -325,7 +325,7 @@ def draw_board(c, L):
         _centered(c, x, y, name, "Times-Bold", 15, dy=-1.6)
 
     # Guard posts: star plus roll reminder.
-    for cell in b.glory_posts:
+    for cell in b.guard_posts:
         x, y = pos(tuple(cell))
         c.setLineWidth(1.3)
         _star(c, x * mm, (y + 1.4) * mm, 9.6 * mm)
@@ -493,7 +493,7 @@ def board_pdf(path, L):
 
 def build_succession_layout(rules):
     """Geometric facts for the succession map, sharing the palace tiling."""
-    S = build_layout(rules, "board_level2")
+    S = build_layout(rules, "succession")
     b = S["board"]
     palace = Board(rules)
     if (b.width, b.height) != (palace.width, palace.height) or b.blocked != palace.blocked:
@@ -520,7 +520,7 @@ def build_succession_layout(rules):
         ys = [c[1] for c in group]
         blocks.append((min(xs), min(ys), max(xs), max(ys)))
     blocks.sort(key=lambda r: (r[1], r[0]))    # north-west first (y 0 is north)
-    cards = [tuple(c) for c in rules["board_level2"]["support_sites"]]
+    cards = [tuple(c) for c in rules["succession"]["map"]["card_spaces"]]
     S.update(blocks=blocks, card_spaces=cards,
              card_doors=_card_doors(cards, blocks, tuple(b.checkpoint)),
              grid_w=S["cols"] * CELL, grid_h=S["rows"] * CELL)
@@ -659,7 +659,7 @@ def draw_succession_map(c, S):
 
     # Streets: open circles; special cells carry their own symbols.
     special = ({tuple(g) for g in b.gates.values()} | set(S["card_spaces"])
-               | {tuple(g) for g in b.glory_posts} | {tuple(b.checkpoint)})
+               | {tuple(g) for g in b.guard_posts} | {tuple(b.checkpoint)})
     for cell, (x, y) in S["spaces"]:
         if tuple(cell) in special:
             continue
@@ -672,7 +672,7 @@ def draw_succession_map(c, S):
         _card_space(c, x, y, 10.6)
 
     # Guard posts: star plus roll reminder, as on the palace map.
-    for cell in b.glory_posts:
+    for cell in b.guard_posts:
         x, y = pos(tuple(cell))
         c.setLineWidth(1.3)
         _star(c, x * mm, (y + 1.4) * mm, 9.6 * mm)
@@ -2232,31 +2232,29 @@ def combine(paths, out):
 # print a kit that teaches the wrong game. Tests re-check every pair
 # against the rules file so drift fails loudly.
 PRINTED_RULES_VALUES = {
-    ("succession", "contest_cost"): 1,
-    ("succession", "challenge_cost"): 1,
-    ("succession", "challenge_bonus"): 0,
+    ("succession", "contest_fee"): 1,
     ("succession", "claim_window_rounds"): 2,
-    ("succession", "duel_loser_cost"): 1,
     ("succession", "proclaim_cost"): 0,
-    ("succession", "required_support"): 2,
+    ("succession", "factions_to_proclaim"): 2,
     ("succession", "support_cost"): 1,
-    ("glory", "cap"): 3,
-    ("glory", "guard_post_success_min_roll"): 4,
-    ("glory", "guard_post_reward"): 1,
-    ("glory", "duel_win_reward"): 1,
-    ("glory", "first_challenger_reward"): 0,
-    ("movement", "dice_count"): 2,
+    ("prestige", "cap"): 3,
+    ("prestige", "guard_post_min_roll"): 4,
+    ("prestige", "guard_post_reward"): 1,
+    ("prestige", "duel_win_reward"): 1,
+    ("prestige", "duel_loss_penalty"): 1,
+    ("movement", "dice"): 2,
     ("movement", "die_sides"): 6,
-    ("movement", "duel_range"): 2,
-    ("level1", "max_rounds"): 24,
-    ("level1", "grace_full_rounds"): 1,
-    ("level2", "max_rounds"): 24,
-    ("combat", "tie_goes_to_defender"): False,
+    ("duels", "range"): 2,
+    ("duels", "tie_winner"): "attacker",
+    ("palace", "max_rounds"): 24,
+    ("palace", "rounds_after_checkpoint"): 1,
+    ("succession", "max_rounds"): 24,
 }
 
 # Prose facts that do not fit the (section, key) shape above.
 PRINTED_TOP_LEVEL = {
-    "start_reveals": 2,
+    ("treasures", "start_face_up"): 2,
+    ("palace", "checkpoint_items_required"): 6,
 }
 PRINTED_ABILITIES = {
     "pugio": ("win_ties", 1),
@@ -2276,10 +2274,10 @@ PRINTED_PALACE_CHECKPOINT = [6, 6]
 PRINTED_TWIN = {
     "width": 19,
     "height": 13,
-    "gates": {"P0": [6, 0], "P1": [18, 6], "P2": [12, 12], "P3": [0, 6]},
+    "gates": {"north": [6, 0], "east": [18, 6], "south": [12, 12], "west": [0, 6]},
     "checkpoint": [9, 6],
-    "glory_posts": [[0, 2], [18, 10], [2, 0], [16, 12]],
-    "support_sites": [[3, 0], [15, 12], [3, 6], [15, 6], [7, 6], [11, 6]],
+    "guard_posts": [[0, 2], [18, 10], [2, 0], [16, 12]],
+    "card_spaces": [[3, 0], [15, 12], [3, 6], [15, 6], [7, 6], [11, 6]],
 }
 
 
@@ -2288,39 +2286,26 @@ def main():
                   if "--rules" in sys.argv else RULES_FILE)
     rules = engine.load_rules(rules_file)
     validate_six_block_layout(rules)
-    if rules.get("gameplay_mode") != "succession-v1":
-        raise SystemExit("this kit needs the succession-v1 ruleset")
+    if rules["game"]["name"] != "Imperial Rivals: 305 AD":
+        raise SystemExit("this kit needs the Imperial Rivals ruleset")
     for (section, key), value in PRINTED_RULES_VALUES.items():
-        actual = rules[section].get(key)
-        if actual is None and value == 0:
-            actual = 0   # the engine reads absent cost keys as free
+        actual = rules[section][key]
         if actual != value:
             raise SystemExit(
                 f"printed text assumes {section}.{key} == {value}, "
-                f"rules say {rules[section].get(key)}; update the kit prose")
-    # The quick reference prints "own all six items" for the checkpoint
-    # claim. The engine reads an absent key as 6.
-    if rules["level1"].get("claim_required_equipment", 6) != 6:
-        raise SystemExit("printed text assumes level1.claim_required_equipment == 6; "
-                         "update the kit prose")
-    for key, value in PRINTED_TOP_LEVEL.items():
-        if rules.get(key) != value:
+                f"rules say {actual}; update the kit prose")
+    for (section, key), value in PRINTED_TOP_LEVEL.items():
+        if rules[section][key] != value:
             raise SystemExit(
-                f"printed text assumes {key} == {value}, "
-                f"rules say {rules.get(key)}; update the kit prose")
-    abilities = rules["combat"].get("abilities")
+                f"printed text assumes {section}.{key} == {value}, "
+                f"rules say {rules[section][key]}; update the kit prose")
+    abilities = rules["treasures"]["abilities"]
     if abilities != {name: {"type": kind, "value": value}
                      for name, (kind, value) in PRINTED_ABILITIES.items()}:
         raise SystemExit("printed text assumes the six one-line item "
                          "abilities in PRINTED_ABILITIES; update the kit prose")
-    twin = rules.get("board_level2")
-    if not isinstance(twin, dict):
-        raise SystemExit("printed text assumes a board_level2 succession map; "
-                         "update the kit prose")
-    if not rules["succession"].get("blind_support"):
-        raise SystemExit("printed text assumes succession.blind_support (faction "
-                         "cards); update the kit prose")
-    if rules["board"]["checkpoint"] != PRINTED_PALACE_CHECKPOINT:
+    twin = rules["succession"]["map"]
+    if rules["palace"]["map"]["checkpoint"] != PRINTED_PALACE_CHECKPOINT:
         raise SystemExit("printed text assumes the palace Peristyle at "
                          f"{PRINTED_PALACE_CHECKPOINT} (three steps west of the "
                          "succession Peristyle); update the kit prose")
@@ -2328,7 +2313,7 @@ def main():
         actual = twin.get(key)
         if actual != value:
             raise SystemExit(
-                f"printed text assumes board_level2 {key} == {value}, "
+                f"printed text assumes succession.map {key} == {value}, "
                 f"rules say {actual}; update the kit prose")
     build_art = "--art" in sys.argv
     build_color = "--color" in sys.argv
@@ -2401,14 +2386,14 @@ def main():
         "rules_file": rules_file,
         "rules_hash": engine.rules_hash(rules),
         "counts": {"street_spaces": len(L["spaces"]), "blocked": len(b.blocked),
-                   "buildings": len(rules["board"]["buildings"]),
+                   "buildings": len(rules["palace"]["map"]["buildings"]),
                    "gates": len(b.gates), "districts": len(b.districts),
-                   "glory_posts": len(b.glory_posts)},
-        "counts_level2": {
+                   "guard_posts": len(b.guard_posts)},
+        "counts_succession": {
             "street_spaces": len(S["spaces"]), "blocked": len(S["board"].blocked),
             "gates": len(S["board"].gates), "blocks": len(S["blocks"]),
             "card_spaces": len(S["card_spaces"]),
-            "glory_posts": len(S["board"].glory_posts)},
+            "guard_posts": len(S["board"].guard_posts)},
         "layout": {
             "cell_mm": CELL, "overlap_mm": OVERLAP, "safe_mm": SAFE,
             "page_mm": [PAGE_W, PAGE_H],
@@ -2424,7 +2409,7 @@ def main():
                 "districts": {name: [round(v, 2) for v in L["pos"](tuple(cell))]
                               for name, cell in b.districts.items()},
                 "checkpoint": [round(v, 2) for v in L["pos"](tuple(b.checkpoint))],
-                "glory_posts": [list(map(round, L["pos"](tuple(cell)))) for cell in b.glory_posts],
+                "guard_posts": [list(map(round, L["pos"](tuple(cell)))) for cell in b.guard_posts],
             },
             "succession_map_mm": {
                 "cell_mm": CELL, "grid_mm": [S["grid_w"], S["grid_h"]],
@@ -2436,8 +2421,8 @@ def main():
                     "checkpoint": [round(v, 2) for v in S["pos"](tuple(S["board"].checkpoint))],
                     "card_spaces": [[round(v, 2) for v in S["pos"](cell)]
                                     for cell in S["card_spaces"]],
-                    "glory_posts": [[round(v, 2) for v in S["pos"](tuple(cell))]
-                                    for cell in S["board"].glory_posts],
+                    "guard_posts": [[round(v, 2) for v in S["pos"](tuple(cell))]
+                                    for cell in S["board"].guard_posts],
                 },
                 "blocks": [list(block) for block in S["blocks"]],
             },

@@ -11,11 +11,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def load_rules():
-    arena_copy = os.path.join(HERE, "..", "rules", "v0102.json")
-    if os.path.exists(arena_copy):
-        path = arena_copy
-    else:
-        path = os.path.join(HERE, "..", "..", "rules_v0102_bigboard.json")
+    path = os.path.join(HERE, "..", "..", "rules",
+                        "imperial-rivals-v0.10.2.json")
     with open(path, "r", encoding="utf-8") as fh:
         return json.load(fh)
 

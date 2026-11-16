@@ -10,13 +10,15 @@ import time
 
 import engine
 import policies
-import tactical_policy
+
+# Batch-log retention, previously the rules file's logging section.
+SAMPLE_GAMES_PER_BATCH = 5
+SAVE_ANOMALOUS_GAME_LOGS = True
+SAVE_FULL_BATCH_LOGS = False
 
 
 def _act(name, obs, rules, rng):
-    """Dispatch a policy action, including the V0.4 tactical bot."""
-    if name == "tactical":
-        return tactical_policy.choose(obs, rules)
+    """Dispatch a policy action through the engine's built-in bots."""
     return policies.act(name, obs, rng)
 
 
@@ -31,9 +33,9 @@ def play_game(rules, seed, game_id, policies_map, check=True):
     guard = 0
     while not engine.is_finished(state):
         guard += 1
-        if guard > 4 * (rules["level1"]["max_rounds"]
-                        + rules["level1"]["grace_full_rounds"]
-                        + rules["level2"]["max_rounds"]) + 8:
+        if guard > 4 * (rules["palace"]["max_rounds"]
+                        + rules["palace"]["rounds_after_checkpoint"]
+                        + rules["succession"]["max_rounds"]) + 8:
             raise RuntimeError(f"game {game_id} exceeded its turn limit")
         obs = engine.observe(state, state["active_player"])
         action_id, reason = _act(
@@ -112,11 +114,11 @@ def game_row(res):
                       if res["first_challenger"] else ""),
         "fc_won": int(bool(res["first_challenger_won"])),
         "comeback_win": int(bool(res["comeback_win"])),
-        "phase1_timeout": int(res["phase1_timeout"]),
-        "phase2_timeout": int(res["phase2_timeout"]),
-        "rounds_l1": res["rounds_level1"], "rounds_l2": res["rounds_level2"],
+        "palace_timeout": int(res["palace_timeout"]),
+        "succession_timeout": int(res["succession_timeout"]),
+        "rounds_palace": res["rounds_palace"], "rounds_succession": res["rounds_succession"],
         "total_rounds": res["total_rounds"],
-        "turns_l1": res["turns_level1"], "turns_l2": res["turns_level2"],
+        "turns_palace": res["turns_palace"], "turns_succession": res["turns_succession"],
         "total_turns": res["total_turns"],
     }
     for pid in SEATS:
@@ -124,12 +126,11 @@ def game_row(res):
         prefix = f"{pid}_"
         row[prefix + "policy"] = res["policies"].get(pid, "")
         row[prefix + "turns"] = m["turns"]
-        row[prefix + "glory_final"] = m["glory_final"]
-        row[prefix + "glory_earned"] = m["glory_earned"]
-        row[prefix + "glory_spent"] = m["glory_spent"]
-        row[prefix + "glory_wasted"] = m["glory_wasted_at_cap"]
+        row[prefix + "prestige_final"] = m["prestige_final"]
+        row[prefix + "prestige_earned"] = m["prestige_earned"]
+        row[prefix + "prestige_spent"] = m["prestige_spent"]
+        row[prefix + "prestige_wasted"] = m["prestige_wasted_at_cap"]
         row[prefix + "eq_collected"] = m["equipment_collected"]
-        row[prefix + "eq_auto"] = m["auto_granted"]
         row[prefix + "explores"] = m["explores"]
         row[prefix + "explored_3plus"] = int(m["districts_explored"] >= 3)
         row[prefix + "guard_tries"] = m["guard_post_attempts"]
@@ -138,20 +139,7 @@ def game_row(res):
         row[prefix + "duels_won_att"] = m["duels_won_attacker"]
         row[prefix + "duels_won_def"] = m["duels_won_defender"]
         row[prefix + "duels_defended"] = m["duels_defended"]
-        row[prefix + "glory_stolen"] = m["glory_stolen"]
-        row[prefix + "glory_lost_theft"] = m["glory_lost_theft"]
         row[prefix + "displaced"] = m["times_displaced"]
-        row[prefix + "turns_skipped"] = m["turns_skipped"]
-        row[prefix + "chamber_evictions"] = m["chamber_evictions"]
-        row[prefix + "seals"] = "|".join(m["seals"])
-        row[prefix + "seal_tries"] = m["seal_attempts"]
-        for site in ("cellars", "guard_barracks", "peristyle"):
-            row[prefix + f"seal_tries_{site}"] = m["seal_attempts_by_site"][site]
-            row[prefix + f"seal_ok_{site}"] = int(site in m["seals"])
-        row[prefix + "emperor_tries"] = m["emperor_attempts"]
-        row[prefix + "emperor_hits"] = m["emperor_hits"]
-        row[prefix + "glory_peristyle"] = m["glory_spent_peristyle"]
-        row[prefix + "glory_emperor"] = m["glory_spent_emperor"]
         row[prefix + "won"] = int(res["winner"] == pid)
     return row
 
@@ -220,8 +208,8 @@ def summarize(rows, state_action_counts=None):
     n = len(rows)
     wins = sum(r["outcome"] == "win" for r in rows)
     draws = n - wins
-    p2_timeouts = sum(r["phase2_timeout"] for r in rows)
-    p1_timeouts = sum(r["phase1_timeout"] for r in rows)
+    succession_timeouts = sum(r["succession_timeout"] for r in rows)
+    palace_timeouts = sum(r["palace_timeout"] for r in rows)
 
     by_policy, by_gate = {}, {}
     # One player sits at each turn position in every game.
@@ -253,28 +241,14 @@ def summarize(rows, state_action_counts=None):
     duels_def_won = sum(player_cols("duels_won_def"))
     total_turns = sum(col("total_turns"))
 
-    seal_sites = {}
-    for site in ("cellars", "guard_barracks", "peristyle"):
-        tries = sum(r[f"{pid}_seal_tries_{site}"] for r in rows for pid in SEATS)
-        ok = sum(r[f"{pid}_seal_ok_{site}"] for r in rows for pid in SEATS)
-        seal_sites[site] = {
-            "attempts": tries, "acquired": ok,
-            "acquire_rate": round(ok / tries, 4) if tries else None,
-        }
-    emperor_tries = sum(player_cols("emperor_tries"))
-    emperor_hits = sum(player_cols("emperor_hits"))
-    stolen = sum(player_cols("glory_stolen"))
-    lost_theft = sum(player_cols("glory_lost_theft"))
     displaced = sum(player_cols("displaced"))
-    skipped = sum(player_cols("turns_skipped"))
-    evictions = sum(player_cols("chamber_evictions"))
 
     summary = {
         "games": n,
         "wins": wins,
         "draws": draws,
-        "phase1_timeouts": p1_timeouts,
-        "phase2_timeouts": p2_timeouts,
+        "palace_timeouts": palace_timeouts,
+        "succession_timeouts": succession_timeouts,
         "win_rate": {"rate": round(wins / n, 4) if n else 0.0,
                      "ci95": wilson(wins, n)},
         "win_rate_by_policy": _rate_block(by_policy),
@@ -292,14 +266,13 @@ def summarize(rows, state_action_counts=None):
         "durations": {
             "total_rounds": duration_stats(col("total_rounds")),
             "total_turns": duration_stats(col("total_turns")),
-            "rounds_level1": duration_stats(col("rounds_l1")),
-            "turns_level1": duration_stats(col("turns_l1")),
-            "rounds_level2": duration_stats(col("rounds_l2")),
-            "turns_level2": duration_stats(col("turns_l2")),
+            "rounds_palace": duration_stats(col("rounds_palace")),
+            "turns_palace": duration_stats(col("turns_palace")),
+            "rounds_succession": duration_stats(col("rounds_succession")),
+            "turns_succession": duration_stats(col("turns_succession")),
         },
         "equipment": {
             "collected_per_player": duration_stats(player_cols("eq_collected")),
-            "auto_granted_per_player": duration_stats(player_cols("eq_auto")),
             "players_exploring_3plus_share": round(
                 sum(player_cols("explored_3plus")) / (4 * n), 4) if n else 0,
             "players_with_zero_collected": sum(
@@ -322,34 +295,14 @@ def summarize(rows, state_action_counts=None):
             if total_turns else None,
         },
         "duel_consequences": {
-            "glory_stolen": stolen,
-            "glory_lost_to_theft": lost_theft,
             "displacements": displaced,
             "displacements_per_game": round(displaced / n, 2) if n else 0,
-            "chamber_evictions": evictions,
-            "turns_skipped": skipped,
-            "turns_skipped_per_game": round(skipped / n, 2) if n else 0,
         },
-        "glory": {
-            "earned_per_player": duration_stats(player_cols("glory_earned")),
-            "spent_per_player": duration_stats(player_cols("glory_spent")),
+        "prestige": {
+            "earned_per_player": duration_stats(player_cols("prestige_earned")),
+            "spent_per_player": duration_stats(player_cols("prestige_spent")),
             "wasted_at_cap_per_player": duration_stats(
-                player_cols("glory_wasted")),
-            "spent_on_peristyle": sum(player_cols("glory_peristyle")),
-            "spent_on_emperor": sum(player_cols("glory_emperor")),
-        },
-        "seals": {
-            "attempts_per_player": duration_stats(player_cols("seal_tries")),
-            "by_site": seal_sites,
-            "peristyle_glory_purchases": sum(
-                v > 0 for v in player_cols("glory_peristyle")),
-        },
-        "emperor": {
-            "attempts": emperor_tries,
-            "hits": emperor_hits,
-            "hit_rate": round(emperor_hits / emperor_tries, 4)
-            if emperor_tries else None,
-            "attempts_per_player": duration_stats(player_cols("emperor_tries")),
+                player_cols("prestige_wasted")),
         },
     }
     if state_action_counts:
@@ -385,8 +338,8 @@ def run_batch(rules, out_dir, games, seed_base, schedule, rules_file,
               progress_every=200):
     """Play `games` games; write results; return (rows, summary, states)."""
     os.makedirs(out_dir, exist_ok=True)
-    sample_n = rules["logging"]["sample_games_per_batch"]
-    save_anomalous = rules["logging"]["save_anomalous_game_logs"]
+    sample_n = SAMPLE_GAMES_PER_BATCH
+    save_anomalous = SAVE_ANOMALOUS_GAME_LOGS
     rows, states = [], []
     action_counts = {}
     started = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime()) + "Z"
@@ -403,7 +356,7 @@ def run_batch(rules, out_dir, games, seed_base, schedule, rules_file,
             action_counts[kind] = action_counts.get(kind, 0) + 1
         keep = i < sample_n or (save_anomalous and (
             res["outcome"] == "draw" or res["total_turns"] > 150))
-        if rules["logging"]["save_full_batch_logs"] or keep:
+        if SAVE_FULL_BATCH_LOGS or keep:
             write_run_dir(os.path.join(out_dir, "sample_games", game_id), state)
         if progress_every and (i + 1) % progress_every == 0:
             print(f"  ... {i + 1}/{games} games", flush=True)

@@ -4,7 +4,7 @@
 >
 > **Design promise:** *Easy to learn in five minutes; interesting enough to play again.* A child should be able to take a meaningful turn, and an experienced adult should find worthwhile trade-offs without memorizing exceptions.
 
-This programme adapts the research loop in [Andrej Karpathy's autoresearch](https://github.com/karpathy/autoresearch): freeze the evaluator, change one small thing, run a repeatable benchmark, measure, **keep or discard**, and repeat. Unlike language-model training, game enjoyment has no trustworthy single numeric loss. Use **hard guardrails + a small, preregistered improvement criterion + human verification**, not a fabricated “fun score.”
+This programme adapts a disciplined research loop: freeze the evaluator, change one small thing, run a repeatable benchmark, measure, **keep or discard**, and repeat. Unlike language-model training, game enjoyment has no trustworthy single numeric loss. Use **hard guardrails + a small, preregistered improvement criterion + human verification**, not a fabricated “fun score.”
 
 ## 0. Your role and the current incumbent
 
@@ -12,7 +12,7 @@ You are an autonomous **game-rules researcher**, not a feature builder, marketer
 
 Repository: `https://github.com/nibzard/dioclet`.
 
-**Incumbent:** `rules_v08_succession.json` on the current `main` branch, **contest cost = 1 Prestige**. Record its exact Git SHA and rules hash at setup; do not assume a historical SHA is still HEAD. The released V0.8 research found:
+**Incumbent:** `rules/imperial-rivals-v0.10.2.json` on the current `main` branch, **contest fee = 1 Prestige**. Record its exact Git SHA and rules hash at setup; do not assume a historical SHA is still HEAD. The released V0.8 research found:
 
 - **Contest fee 0:** repeated free cancellation; roughly **57% draws** in a 96-game holdout.
 - **Contest fee 1:** roughly **6% draws** in a 96-game holdout; live Decisions players challenged **12 of 13 claims** over four games, with nine cancellations.
@@ -20,7 +20,8 @@ Repository: `https://github.com/nibzard/dioclet`.
 - Fee-1 holdout gate wins were approximately north 34%, west 25%, south 19%, east 16%; the off-center cardo is a known geometric issue. Random gate assignment distributes exposure across repeated games; it does **not** establish equal fairness in one game.
 - No verified human play sessions yet establish comprehension, enjoyment, or desire to replay.
 
-Read `FINDINGS_V08.md`, `docs/intervention-plan.md`, `programme.md` (the old programme), `experiments/v08-programme.json`, `tools/run_programme.py`, `tools/succession_experiments.py`, `playtest/protocol-v08.md`, `succession.py`, `rules_v08_succession.json`, and the tests before attempting an experiment.
+Read `docs/findings/FINDINGS_V08.md`, `docs/intervention-plan.md`,
+`playtest/protocol-v08.md`, and the tests before attempting an experiment.
 
 ## 1. What you are optimizing
 
@@ -46,8 +47,8 @@ The existing implementation separates succession rules from the archived Emperor
 
 Do **not** modify, replace, or work around:
 
-- `succession.py`, `engine.py`, `board.py`, the Python/JavaScript engines, or public-observation and legal-action logic.
-- `tools/succession_experiments.py`, the trusted evaluator, promotion criteria, tests, report schemas, opponent policies, or random streams.
+- `engine.py`, `board.py`, the Python/JavaScript engines, or public-observation and legal-action logic.
+- The trusted evaluator, promotion criteria, tests, report schemas, opponent policies, or random streams.
 - Candidate-action filtering, model prompts, hidden information boundaries, or the way opponent bots choose moves.
 - The six **intact 5×5 building blocks**, 97 traversable spaces, cardo/decumanus/secondary street layout, gate positions, treasure placement, or rendered board topology.
 - The fixed six equipment types, four players, basic 2d6 movement, single-die challenges, and one action per turn.
@@ -63,19 +64,19 @@ You may create output directories, reports, candidate JSON copies, and research 
 
 ## 3. The search space: seven tunables, not seven new mechanics
 
-Use only the supported keys and existing enumerated values from `experiments/v08-programme.json`; do not invent parameter names or values. Initial values:
+Use only the supported keys and existing enumerated values from the incumbent rules file; do not invent parameter names or values. Initial values:
 
 | JSON key | Incumbent | Candidate values | Hypothesis to test |
 | --- | ---: | --- | --- |
-| `succession.contest_cost` | `1` | `0, 1, 2` | Can rivals realistically oppose a claim without denial loops? |
-| `glory.cap` (Prestige cap) | `3` | `null, 2, 3, 4` | Does banking capacity create meaningful save/spend decisions? |
-| `succession.support_in_city` | `true` | `true, false` | Does early support enrich preparation or create a scripted opening? |
+| `succession.contest_fee` | `1` | `0, 1, 2` | Can rivals realistically oppose a claim without denial loops? |
+| `prestige.cap` | `3` | `null, 2, 3, 4` | Does banking capacity create meaningful save/spend decisions? |
+| `succession.claim_window_rounds` | `2` | `1, 2, 3` | Does a longer window crown claims too often, a shorter one feed cancellation loops? |
 | `succession.support_cost` | `1` | `1, 2` | Is support an interesting expense or a frustrating tax? |
-| `succession.challenge_bonus` | `2` | `0, 1, 2` | Is an optional boosted challenge actually a choice? |
-| `succession.reset_positions` | `false` | `true, false` | Does continuity reward planning or create positional runaway? |
-| `level1.grace_full_rounds` | `1` | `0, 1, 2` | Does transition timing preserve decisions without adding empty rounds? |
+| `prestige.guard_post_min_roll` | `4` | `3, 4, 5` | Is guard duty a real income choice or a free stop? |
+| `prestige.duel_loss_penalty` | `1` | `0, 1, 2` | Does the shame payment deter empty duels without punishing the loser twice? |
+| `palace.rounds_after_checkpoint` | `1` | `0, 1, 2` | Does transition timing preserve decisions without adding empty rounds? |
 
-`glory.cap = null` denotes an uncapped variant; it needs special scrutiny for runaway Prestige farming. Legacy Emperor-hit/seal keys still present in the rules JSON are **inactive in succession mode** and are not valid experiments.
+`prestige.cap = null` denotes an uncapped variant; it needs special scrutiny for runaway Prestige farming, and the validator still demands a non-null cap cover at least one support purchase.
 
 **Evidence-based prior:** contest fee **1** is the default to beat, **0** has a documented denial-loop failure, and **2** has a documented live counterplay failure. Treat 0 and 2 as negative controls, not a fresh discovery. Do not promote either based solely on bot results. Reopening these options requires new evidence proving that legal contests exist against competent opposition.
 
@@ -83,15 +84,13 @@ Use only the supported keys and existing enumerated values from `experiments/v08
 
 ## 4. Setup (once per independent research run)
 
-1. Confirm you are in the correct checkout. Inspect `git status` and preserve all pre-existing work. Create an isolated branch or worktree named `autoresearch/<unique-tag>`; do not switch or reset a dirty shared worktree.
+1. Confirm you are in the correct checkout. Inspect `git status` and preserve all pre-existing work. Create an isolated branch or worktree named `research/<unique-tag>`; do not switch or reset a dirty shared worktree.
 2. Read the files in section 0. Run Python tests plus existing Node engine/parity/UI checks when their dependencies are available. A missing optional UI dependency must be reported, not counted as a pass.
 3. Capture exact repository SHA, incumbent rules hash, Python/JS engine hashes, evaluator hash, policy versions, all allowed values, and fixed promotion checks in `manifest.json` under a **new** output directory.
-4. Create an experiment-specific configuration copied from `experiments/v08-programme.json`; retain the active V0.8 config unchanged. Choose **fresh, nonoverlapping seed ranges** (for example screen 200000+ and holdout 400000+, after checking existing results) and preregister them. Never reuse the previously examined 20000+/90000+ holdouts as new unseen evidence.
-5. Run the V0.8 incumbent unmodified as the first benchmark. If it fails tests, replay, or a full tournament, **stop**: repair the research setup in a separate reviewed preparation step instead of quietly weakening tests.
+4. Create an experiment-specific configuration; retain the active configuration unchanged. Choose **fresh, nonoverlapping seed ranges** (for example screen 200000+ and holdout 400000+, after checking existing results) and preregister them. Never reuse the previously examined 20000+/90000+ holdouts as new unseen evidence.
+5. Run the V0.8 incumbent unmodified as the first benchmark. If it fails tests, replay, or a full model-play run, **stop**: repair the research setup in a separate reviewed preparation step instead of quietly weakening tests.
 6. Run a known-bad **fee-2 diagnostic** through the full evaluator. If it can still pass the automated promotion checks despite no legal opportunities to contest, declare the scoring system **insufficient for unattended release selection**. You may still collect exploratory results, but automatic promotions are *provisional* until a counterplay-availability veto is added and frozen.
 7. Record a simple `results.tsv` or `experiments.tsv` in the run directory. Keep every candidate, scorecard, and log; do not rewrite previous cycles.
-
-**Repository integration detail:** this supplied file is named **`Programme.md`**. The existing `tools/run_programme.py` reads lowercase **`programme.md`** as its agent instructions. On case-sensitive systems they differ. For automatic sequential Claude proposal agents, **explicitly select this programme** by copying its reviewed contents to lowercase `programme.md` in the isolated research worktree, or making a separately reviewed one-time runner change to accept a programme path. Check which file the runner actually uses before launching it. Freeze that choice and record the hash. Do not assume the new document is automatically active.
 
 ## 5. Fixed-budget, reproducible experiment loop
 
@@ -99,7 +98,7 @@ Use Karpathy's rhythm: **hypothesize → mutate → run → measure → keep/dis
 
 Use a **fixed number of games and fixed agent limits**, rather than pretending that equal CPU time makes game designs comparable. Suggested research budget, subject to actual user authorization for paid agents:
 
-- **8 rule-proposal cycles maximum** per independent run (the existing runner accepts 1–10).
+- **8 rule-proposal cycles maximum** per independent run.
 - **96 games per variant** on screening, covering four strategy profiles and all 24 gate permutations multiple times.
 - **96 games per variant** on a *fresh holdout* using the same profile/gate schedule but independent seeds. Compare candidate and incumbent on the same seeds and assignments within each split.
 - Reevaluate **both** the incumbent and candidate with matching seeds whenever the incumbent changes. For final contenders, use a larger fresh confirmation set (preferably 384+ games per variant), with no post-hoc changes to the rules or evaluator.
@@ -174,7 +173,7 @@ A trial must show a **specific, measured improvement** tied to its hypothesis, s
 5. Choose the **simpler** explanation if multiple candidates are otherwise tied.
 6. If still ambiguous, keep the incumbent and queue the question for real players.
 
-This is the equivalent of autoresearch's *keep/discard* criterion. Human enjoyment is **not** reducible to the numerical evaluation.
+This is the *keep/discard* criterion. Human enjoyment is **not** reducible to the numerical evaluation.
 
 ## 8. Known confounds to control
 
@@ -185,41 +184,27 @@ This is the equivalent of autoresearch's *keep/discard* criterion. Human enjoyme
 - **Multiple comparisons:** trying many candidates will produce apparent winners by chance. Use fresh holdouts and final confirmation; record every attempt, including failures.
 - **Long-tail feel:** simulation rounds are not minutes. A 26-round game could still drag at a table, especially for children.
 
-## 9. Existing runner: execution recipe and limits
+## 9. Experiment tooling
 
-The repository already has a constrained proposal runner. **Reuse it; do not build a new optimizer unless a documented blocker requires one.** The key files are:
+The one-time V0.8 proposal runner and its evaluator were removed in the
+rules cleanup; git history keeps them. A new experiment adds its own
+tooling, with tests, **before** it collects evidence, and freezes it. Do
+not change the evaluator after viewing candidate results.
 
-- `tools/run_programme.py` — sequential bounded proposal calls, frozen-source hash checks, one-key mutation, paired screening and fresh holdouts, promotion checks, report and stop files.
-- `tools/succession_experiments.py` — offline games, strategy profiles, per-turn audits, and alternative-play rollouts.
-- `experiments/v08-programme.json` — original finite parameter space and thresholds.
-- `programme.md` — original lower-case prompt consumed by `tools/run_programme.py`.
+Until a trusted, preregistered validation layer enforces the stronger
+rules in sections 6–7 (above all the legal-contest-availability veto),
+treat every automated promotion as **provisional** and perform the
+additional audit yourself. The old runner gated chiefly on draws, median
+rounds, challenged fraction, and strategy winners; it did **not** catch
+the live fee-2 contest-availability collapse.
 
-Prepare an **experiment-local** config copied from the original, with the new seeds and bounded cycle count. Do not overwrite the original. Ensure the agent is reading **this** programme rather than the old prompt. Confirm that the runner's existing scorecard and promotion logic enforce the special legal-contest veto before permitting automatic rule retention; otherwise, treat all runner promotions as **provisional** and perform the additional audit yourself.
-
-Example *offline smoke test only* (scripted proposals, **not** genuine model research):
-
-```bash
-python3 -m unittest discover -s tests
-python3 tools/run_programme.py \
-  --programme experiments/autoresearch-v08.json \
-  --cycles 1 --games 4 --agent scripted \
-  --out results/autoresearch-smoke-UNIQUE
-```
-
-Once the experiment configuration, instructions, source hashes, and paid-agent authorization are all confirmed, the existing runner's **bounded** model-proposal mode is:
-
-```bash
-python3 tools/run_programme.py \
-  --programme experiments/autoresearch-v08.json \
-  --cycles 8 --games 96 --agent claude \
-  --out results/autoresearch-v08-UNIQUE
-```
-
-The `experiments/autoresearch-v08.json` path in the examples is **to be created during setup**; it is not a file already in the repository. Use a unique, empty output directory. If no external proposal-agent budget is authorized, the current coding agent may formulate hypotheses itself and run the evaluator **offline**; do not issue extra paid subprocess calls.
-
-**Budget policy:** no live OpenAI Decisions requests, paid proposal-agent calls, Cloudflare deployments, or other paid actions without **fresh explicit authorization** with a dollar/request cap. Past V0.8 budgets are spent and do not carry forward. Never increase a cap or silently substitute a script for failed live model play. Reserve and record spending before each call; stop on exhaustion. Offline scripts may run within the declared compute/time limits.
-
-**Runner limitation:** `tools/run_programme.py` currently gates chiefly on draws, median rounds, challenged fraction and strategy winners. It did **not** catch the live fee-2 contest-availability collapse. The programme's stronger rules in sections 6–7 must be enforced in a trusted, preregistered validation layer before autonomous promotions can be described as verified. Do not claim the existing runner enforces them merely because this markdown says it should.
+**Budget policy:** no live model requests, paid proposal-agent calls,
+Cloudflare deployments, or other paid actions without **fresh explicit
+authorization** with a dollar/request cap. Past V0.8 budgets are spent
+and do not carry forward. Never increase a cap or silently substitute a
+script for failed live model play. Reserve and record spending before
+each call; stop on exhaustion. Offline scripts may run within the
+declared compute/time limits.
 
 ## 10. Experiment log and reproducibility
 
@@ -265,4 +250,4 @@ Do **not** deploy, merge, update the active rulebook, or call a rule 'best for f
 
 ### Your first action
 
-Inspect the latest repository and the seven knobs, confirm which `programme.md` the runner actually loads, create a fresh isolated worktree and fixed experiment configuration, verify the existing fee-1 incumbent, and test that the evaluator **cannot** promote the known fee-2 no-counterplay failure. Then start the bounded one-change-per-cycle research loop. **Prefer a simpler ruleset with real choices over a numerically superior but confusing game.**
+Inspect the latest repository and the seven knobs, create a fresh isolated worktree and fixed experiment configuration, verify the incumbent, and test that the evaluator **cannot** promote the known fee-2 no-counterplay failure. Then start the bounded one-change-per-cycle research loop. **Prefer a simpler ruleset with real choices over a numerically superior but confusing game.**

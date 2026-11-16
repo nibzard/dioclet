@@ -21,11 +21,13 @@ def _provider_label(name, model):
 
 def wizard(console):
     """Ask for rules, seed, seats, and budget; return a validated MatchConfig."""
-    rules_files = sorted(glob.glob(
-        os.path.join(match_mod.ARENA_DIR, "rules", "*.json")))
+    rules_dir = os.path.join(match_mod.ARENA_DIR, "..", "rules")
+    rules_files = sorted(
+        path for path in glob.glob(os.path.join(rules_dir, "*.json"))
+        if os.path.basename(path) != "rules.schema.json")
     if not rules_files:
         raise match_mod.MatchConfigError(
-            "no rules files found under arena/rules; add one first")
+            "no rules files found in the repository rules/ folder")
     labels = [os.path.relpath(path, match_mod.ARENA_DIR)
               for path in rules_files]
     rules_label = Prompt.ask("Rules file", choices=labels,
@@ -185,8 +187,8 @@ def describe_events(record):
             parts.append("draw")
         elif kind == "turn_skipped":
             parts.append(f"{ev.get('player', '?')} skips (lost turn)")
-        elif kind == "support_site_revealed":
-            parts.append("support site revealed")
+        elif kind == "card_space_revealed":
+            parts.append("card space revealed")
         elif kind == "ability_used":
             parts.append("ability used")
         else:

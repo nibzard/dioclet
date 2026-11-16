@@ -15,7 +15,7 @@ from arena.providers import (REMOTE_PROVIDERS, REQUIRED_ENV, clef, gateway,
                              jev, openai_decisions, pplx)
 from arena.rules_loader import load_rules_strict
 
-RULES_PATH = Path(__file__).resolve().parents[1] / "rules" / "v0102.json"
+RULES_PATH = Path(__file__).resolve().parents[2] / "rules" / "imperial-rivals-v0.10.2.json"
 
 
 @pytest.fixture(scope="module")

@@ -13,22 +13,23 @@ from arena import engine_adapter, match as match_mod
 from arena.providers import Decision, TransportError
 
 ARENA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RULES_PATH = os.path.join(ARENA_DIR, "rules", "v0102.json")
+RULES_PATH = os.path.join(ARENA_DIR, "..", "rules",
+                          "imperial-rivals-v0.10.2.json")
 DECISION_FIELDS = {"seq", "round", "turn_id", "phase", "seat", "provider",
                    "model", "action_id", "action_kind", "action_summary",
                    "p_chosen", "latency_ms", "cost_usd", "usage", "attempt",
                    "reason", "legal_count", "candidate_count"}
 
 
-def tiny_rules(tmp_path, level1_rounds=1, level2_rounds=1, reveal_all=False):
+def tiny_rules(tmp_path, palace_rounds=1, succession_rounds=1, reveal_all=False):
     with open(RULES_PATH, "r", encoding="utf-8") as fh:
         rules = json.load(fh)
-    rules["level1"]["max_rounds"] = level1_rounds
-    rules["level2"]["max_rounds"] = level2_rounds
+    rules["palace"]["max_rounds"] = palace_rounds
+    rules["succession"]["max_rounds"] = succession_rounds
     if reveal_all:
-        # Keeps the scripted policies off the galea branch that assumes
-        # districts exist on the phase-2 board (see succession.py:1100).
-        rules["start_reveals"] = 6
+        # Starts the game with every treasure face up, so scripted play
+        # sees a fully revealed board from the first turn.
+        rules["treasures"]["start_face_up"] = 6
     path = tmp_path / "tiny_rules.json"
     path.write_text(json.dumps(rules), encoding="utf-8")
     return str(path)
@@ -111,14 +112,14 @@ def write_match_file(tmp_path, doc):
 # ---------------------------------------------------------------------------
 
 def test_rejects_three_seats(tmp_path):
-    doc = {"rules": "rules/v0102.json", "seed": 1,
+    doc = {"rules": "../rules/imperial-rivals-v0.10.2.json", "seed": 1,
            "seats": [{"provider": "balanced"} for _ in range(3)]}
     with pytest.raises(match_mod.MatchConfigError, match="exactly 4"):
         match_mod.load_match(write_match_file(tmp_path, doc))
 
 
 def test_rejects_unknown_provider(tmp_path):
-    doc = {"rules": "rules/v0102.json", "seed": 1,
+    doc = {"rules": "../rules/imperial-rivals-v0.10.2.json", "seed": 1,
            "seats": [{"provider": "deep-blue"} for _ in range(4)]}
     with pytest.raises(match_mod.MatchConfigError, match="unknown provider"):
         match_mod.load_match(write_match_file(tmp_path, doc))
@@ -133,7 +134,7 @@ def test_rejects_missing_rules_file(tmp_path):
 
 def test_rejects_remote_seat_without_keys(tmp_path, monkeypatch):
     monkeypatch.delenv("TYPESAFE_API_KEY", raising=False)
-    doc = {"rules": "rules/v0102.json", "seed": 1,
+    doc = {"rules": "../rules/imperial-rivals-v0.10.2.json", "seed": 1,
            "seats": [{"provider": "jev"} for _ in range(4)]}
     with pytest.raises(match_mod.MatchConfigError,
                        match="TYPESAFE_API_KEY"):
@@ -141,7 +142,7 @@ def test_rejects_remote_seat_without_keys(tmp_path, monkeypatch):
 
 
 def test_rejects_unknown_top_level_key(tmp_path):
-    doc = {"rules": "rules/v0102.json", "seed": 1,
+    doc = {"rules": "../rules/imperial-rivals-v0.10.2.json", "seed": 1,
            "seats": [{"provider": "balanced"} for _ in range(4)],
            "seeds": 2}
     with pytest.raises(match_mod.MatchConfigError, match="seeds"):
@@ -149,7 +150,7 @@ def test_rejects_unknown_top_level_key(tmp_path):
 
 
 def test_rejects_negative_budget(tmp_path):
-    doc = {"rules": "rules/v0102.json", "seed": 1,
+    doc = {"rules": "../rules/imperial-rivals-v0.10.2.json", "seed": 1,
            "seats": [{"provider": "balanced"} for _ in range(4)],
            "budget": {"max_calls": -1}}
     with pytest.raises(match_mod.MatchConfigError, match="max_calls"):
@@ -331,7 +332,7 @@ def test_match_start_records_schema_and_full_rules(tmp_path):
     run_dir = str(tmp_path / "run")
     match_mod.run_match(config, run_dir)
     start = read_lines(run_dir)[0]
-    assert start["schema"] == match_mod.LOG_SCHEMA
+    assert start["schema"] == match_mod.LOG_SCHEMA == "arena-match-v2"
     assert start["rules"]["doc"] == config.rules
 
 

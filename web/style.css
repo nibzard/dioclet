@@ -56,12 +56,6 @@ aside { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
 .player-kind { display: block; margin: 3px 0 10px 16px; color: var(--muted); font-size: 10px; }
 .pstats { display: flex; justify-content: space-between; align-items: center; gap: 5px; font-size: 10px; color: #687164; border-top: 1px solid #e9e8de; padding-top: 8px; }
 .pstats strong { font-weight: 600; color: var(--ink); }
-.gtoken { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #c8a357; border: 1px solid #a98a48; margin-right: 3px; }
-.gtoken.off { background: transparent; border-color: #d8d6c5; }
-.seals { margin-top: 7px; font-size: 10px; color: var(--muted); }
-.sealtag { display: inline-block; padding: 0 4px; border-radius: 0; font-size: 9px; border: 1px solid var(--line); margin-right: 3px; color: var(--muted); }
-.sealtag.got { background: #e4ecdb; color: #3d5630; border-color: #7d9166; }
-.hittag { color: var(--red); font-weight: bold; }
 #dicebox { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--purple); color: var(--card); border-radius: 0; padding: 17px 16px; }
 #dicelabel { max-width: 64px; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: #d9e3d3; line-height: 1.6; }
 #dice { display: flex; gap: 6px; justify-content: center; align-items: center; }
@@ -91,7 +85,7 @@ button.text-button:hover { color: #92703b; }
 #log > div { padding: 7px 0; border-bottom: 1px solid #e9e8de; }
 #log > div:last-child { border-bottom: none; color: var(--ink); }
 #log .evt { color: var(--red); }
-#log .glory { color: #92703b; }
+#log .prestige { color: #92703b; }
 .empty-state { grid-column: 1 / -1; font: italic 13px/1.7 var(--serif); color: var(--muted); margin: 0; }
 .site-footer { max-width: 1440px; margin: auto; display: flex; justify-content: space-between; gap: 15px; padding: 0 40px 22px; color: #85897c; font-size: 10px; }
 .site-footer > span > span { color: #b5b8ab; margin: 0 8px; }

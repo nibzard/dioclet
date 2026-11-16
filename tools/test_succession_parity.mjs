@@ -1,6 +1,6 @@
 // Check complete seeded action sequences against the Python succession
 // engine on the V0.10.2 twin-board rules. Three scenario families:
-// 'city' (natural games), 'prepared' (hand-built phase 2 with no dealt
+// 'palace' (natural games), 'prepared' (hand-built phase 2 with no dealt
 // faction sites, exercising the fixed-cells fallback), and 'blind'
 // (a forced checkpoint claim so the phase transition, gate reset, and
 // blind faction deal run inside the replay).
@@ -9,10 +9,10 @@ import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import vm from 'node:vm';
 const root = new URL('../', import.meta.url);
-const rules = JSON.parse(readFileSync(new URL('rules_v0102_bigboard.json', root), 'utf8'));
+const rules = JSON.parse(readFileSync(new URL('rules/imperial-rivals-v0.10.2.json', root), 'utf8'));
 const python = String.raw`
 import copy,json,sys,random
-import engine,succession
+import engine
 payload=json.load(sys.stdin)
 def norm_action(a):
  return {'kind':a['kind'],'dest':','.join(map(str,a['destination'])),'target':a.get('target'),'faction':a.get('faction'),'district':a.get('district'),'spend_prestige':a.get('spend_prestige'),'contest_cost':a.get('contest_cost')}
@@ -22,8 +22,10 @@ def snapshot(g):
  'order':g['turn_order'],'round_start':g['round_start'],'roll':g['current_roll'],
  'dice':g['current_dice'] if g['current_roll'] is not None else [],
  'first':g['first_challenger'],'trigger':g['trigger_round'],
- 'winner':g['winner'],'end':g['end_reason'],'draw':g['phase2_timeout'],'status':g['status'],
- 'phase1_timeout':g['phase1_timeout'],'rounds1':g['rounds_level1'],
+ 'winner':g['winner'],
+ 'end':g['end_reason'],
+ 'draw':g['succession_timeout'],'status':g['status'],
+ 'palace_timeout':g['palace_timeout'],'rounds_palace':g['rounds_palace'],
  'equip_at_transition':g['equipment_at_transition'],
  'pending':None if pending is None else {'player':pending['player'],'id':pending['claim_id'],'round':pending['round'],'responded':sorted(pending['responded'])},
  'players':{pid:{'gate':','.join(map(str,p['gate'])),'gate_id':p['gate_id'],'pos':','.join(map(str,p['pos'])),'prestige':p['prestige'],'support':sorted(p['support']),'equipment':sorted(p['equipment']),'turns':p['turns'],'abilities':dict(sorted(p['abilities_used'].items()))} for pid,p in g['players'].items()},
@@ -32,17 +34,17 @@ def snapshot(g):
  'faction_revealed':None if g['faction_sites_revealed'] is None else dict(sorted(g['faction_sites_revealed'].items())),
  'rng':dict(g['rng'])}
 cases=[]
-for scenario in ['city','prepared','blind']:
+for scenario in ['palace','prepared','blind']:
  for fee in [0,1]:
   for seed in [1,2026,71519]:
-   r=copy.deepcopy(payload['rules']);r['succession']['contest_cost']=fee
-   if seed==71519:r['succession']['gate_assignment']='rotation';r['succession']['gate_rotation']=2;r['glory']['cap']=None
+   r=copy.deepcopy(payload['rules']);r['succession']['contest_fee']=fee
+   if seed==71519:r['prestige']['cap']=None
    if seed==1:r['turns']['rotate_first_player_each_round']=False
    g=engine.new_game(r,seed,'parity');prng=random.Random(seed+fee)
    if scenario=='prepared':
     g['phase']=2
     for i,(pid,p) in enumerate(g['players'].items()):
-     p['pos']=r['board_level2']['checkpoint'][:];p['prestige']=2;p['support']=['army','elites'];p['equipment']=r['equipment'][:3+i%2*3]
+     p['pos']=r['succession']['map']['checkpoint'][:];p['prestige']=2;p['support']=['army','elites'];p['equipment']=r['treasures']['items'][:3+i%2*3]
    if scenario=='blind':
     g['first_challenger']='P0';g['trigger_round']=g['round']
    case={'rules':r,'seed':seed,'scenario':scenario,'initial':snapshot(g),'steps':[]}
@@ -73,9 +75,8 @@ function load(caseRules) {
   const B = ctx.DIOCLET_BOARD;
   // The Python side mutates its rules per case; the engines read these
   // board fields live, so the same mutations apply here.
-  B.succession.contestCost = caseRules.succession.contest_cost;
-  if (caseRules.succession.gate_assignment === 'rotation') B.succession.gateAssignment = 'rotation';
-  if (caseRules.glory.cap === null) B.glory.cap = null;
+  B.succession.contestFee = caseRules.succession.contest_fee;
+  if (caseRules.prestige.cap === null) B.prestige.cap = null;
   if (caseRules.turns.rotate_first_player_each_round === false) B.rotateFirst = false;
   vm.runInContext(readFileSync(new URL('web/engine.js',root),'utf8'),ctx);
   vm.runInContext(readFileSync(new URL('web/succession-engine.js',root),'utf8'),ctx);
@@ -83,8 +84,8 @@ function load(caseRules) {
 }
 function normAction(a){return {kind:a.kind,dest:a.dest,target:a.target??null,faction:a.faction??null,district:a.district??null,spend_prestige:a.spend_prestige??null,contest_cost:a.contest_cost??null};}
 function snapshot(g,E){return plain({phase:g.phase,round:g.round,turn:g.turnSeq,active:E.active(g).id,order:g.order,round_start:g.turnRoundStart,roll:g.currentRoll?.total??null,dice:g.currentRoll?.dice??[],first:g.firstClaimer,trigger:g.triggerRound,
- winner:g.winner,end:g.endReason,draw:g.phase2Timeout,status:g.status,
- phase1_timeout:g.phase1Timeout,rounds1:g.roundsLevel1,equip_at_transition:g.equipmentAtTransition,
+ winner:g.winner,end:g.endReason,draw:g.successionTimeout,status:g.status,
+ palace_timeout:g.palaceTimeout,rounds_palace:g.roundsPalace,equip_at_transition:g.equipmentAtTransition,
  pending:g.pendingClaim&&{player:g.pendingClaim.player,id:g.pendingClaim.claimId,round:g.pendingClaim.round,responded:g.pendingClaim.responded.slice().sort()},
  players:Object.fromEntries(g.players.map(p=>[p.id,{gate:p.gate,gate_id:p.gateId,pos:p.pos,prestige:p.prestige,support:p.support.slice().sort(),equipment:p.equipment.slice().sort(),turns:p.turns,abilities:Object.fromEntries(Object.keys(p.abilitiesUsed).sort().map(k=>[k,p.abilitiesUsed[k]]))}])),
  revealed:g.revealed,mapping:g.districtEquipment,
@@ -95,17 +96,14 @@ let turns=0;
 for(const c of cases){
  const {E,B}=load(c.rules);
  const seats=['P0','P1','P2','P3'].map(id=>({id,name:id,kind:'human'}));
- const opts={};
- if(c.rules.succession.gate_assignment==='rotation')opts.gateMode='rotation';
- if(c.rules.succession.gate_rotation)opts.gateRotation=c.rules.succession.gate_rotation;
- const g=E.newGame(c.seed,seats,opts);
+ const g=E.newGame(c.seed,seats);
  if(c.scenario==='prepared'){
-  g.phase=2;g.players.forEach((p,i)=>{p.pos=B.boardLevel2.checkpoint.join(',');p.prestige=2;p.support=['army','elites'];p.equipment=B.equipment.slice(0,3+i%2*3);});
+  g.phase=2;g.players.forEach((p,i)=>{p.pos=B.successionMap.checkpoint.join(',');p.prestige=2;p.support=['army','elites'];p.equipment=B.equipment.slice(0,3+i%2*3);});
  }
  if(c.scenario==='blind'){
-  g.firstClaimer='P0';g.triggerRound=g.round;g.transitionAt=Math.min(g.round+B.graceRounds,B.l1MaxRounds);
+  g.firstClaimer='P0';g.triggerRound=g.round;g.transitionAt=Math.min(g.round+B.graceRounds,B.palaceMaxRounds);
  }
- const label=`${c.scenario} seed=${c.seed} fee=${c.rules.succession.contest_cost}`;
+ const label=`${c.scenario} seed=${c.seed} fee=${c.rules.succession.contest_fee}`;
  assert.deepEqual(snapshot(g,E),c.initial,label+' initial state');
  for(const [i,step] of c.steps.entries()){
   const legal=E.legalActions(g);

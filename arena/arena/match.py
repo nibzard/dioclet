@@ -17,7 +17,7 @@ from arena.rules_loader import load_rules_strict
 ARENA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SEATS = ("P0", "P1", "P2", "P3")
 # Version of the match.jsonl record shapes. Change it when a shape changes.
-LOG_SCHEMA = "arena-match-v1"
+LOG_SCHEMA = "arena-match-v2"
 
 
 class MatchConfigError(Exception):
@@ -210,23 +210,11 @@ def _action_summary(action, districts):
         text = f"duel {action.get('target', '?')}"
         if action.get("spend_prestige"):
             text += " +prestige"
-        if action.get("spend_glory"):
-            text += " +glory"
         return text
     if kind == "guard_post":
         return f"guard post {at()}".strip()
     if kind == "claim_checkpoint":
         return "claim checkpoint"
-    if kind == "attempt_seal":
-        text = f"seal at {at()}".strip()
-        if action.get("spend_glory"):
-            text += " (spend glory)"
-        return text
-    if kind == "attack_emperor":
-        text = "attack emperor"
-        if action.get("spend_glory"):
-            text += " +glory"
-        return text
     if kind == "proclaim":
         return "proclaim claim"
     if kind == "maintain_claim":

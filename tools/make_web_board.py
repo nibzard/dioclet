@@ -5,7 +5,9 @@ The web board is generated, never hand-copied, so it always mirrors the
 active ruleset. V0.10.2 is a twin-board game: the payload carries both
 maps (they share one street grid but differ in gates, Peristyle, guard
 posts, and card spaces), the six equipment abilities, and the blind
-faction-card configuration."""
+faction-card configuration. The payload uses the printed names: palace
+and succession maps, prestige, guard posts, treasure entries, and card
+spaces."""
 
 import json
 import os
@@ -15,80 +17,72 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import engine  # noqa: E402
 from board import Board, validate_six_block_layout  # noqa: E402
 
-RULES = "rules_v0102_bigboard.json"
+RULES = "rules/imperial-rivals-v0.10.2.json"
 OUT = "web/board-data.js"
 
 
 def main():
     rules = engine.load_rules(RULES)
     validate_six_block_layout(rules)
-    if rules.get("gameplay_mode") != "succession-v1":
-        raise SystemExit("the browser game needs the succession-v1 ruleset")
-    twin = rules.get("board_level2")
-    if not isinstance(twin, dict):
-        raise SystemExit("the browser game needs a board_level2 succession map")
+    if rules["game"]["name"] != "Imperial Rivals: 305 AD":
+        raise SystemExit("the browser game needs the Imperial Rivals ruleset")
     cfg = rules["succession"]
     b = Board(rules)
+    twin = Board(rules, "succession")
     blocked = sorted(list(c) for c in b.blocked)
+    faction_cells = engine._faction_cells(rules)
     data = {
-        "mode": rules["gameplay_mode"],
-        "rulesVersion": rules.get("rules_version", ""),
-        "map1": {
+        "rulesVersion": rules["game"]["rules_version"],
+        "palaceMap": {
             "width": b.width,
             "height": b.height,
             "blocked": blocked,
-            "buildings": rules["board"].get("buildings", []),
-            "streets": rules["board"].get("streets", {}),
+            "buildings": rules["palace"]["map"]["buildings"],
+            "streets": rules["palace"]["map"]["streets"],
             "gates": {p: list(c) for p, c in b.gates.items()},
-            "districts": {n: list(c) for n, c in b.districts.items()},
+            "treasureEntries": {n: list(c) for n, c in b.districts.items()},
             "checkpoint": list(b.checkpoint),
-            "gloryPosts": [list(c) for c in b.glory_posts],
+            "guardPosts": [list(c) for c in b.guard_posts],
         },
-        "boardLevel2": {
-            "width": twin["width"],
-            "height": twin["height"],
-            "blocked": sorted(list(c) for c in twin["blocked"]),
-            "gates": {p: list(c) for p, c in twin["gates"].items()},
-            "checkpoint": list(twin["checkpoint"]),
-            "gloryPosts": [list(c) for c in twin["glory_posts"]],
-            "supportSites": [list(c) for c in twin["support_sites"]],
+        "successionMap": {
+            "width": twin.width,
+            "height": twin.height,
+            "blocked": sorted(list(c) for c in twin.blocked),
+            "gates": {p: list(c) for p, c in twin.gates.items()},
+            "checkpoint": list(twin.checkpoint),
+            "guardPosts": [list(c) for c in twin.guard_posts],
+            "cardSpaces": [list(c) for c in cfg["map"]["card_spaces"]],
         },
-        "equipment": rules["equipment"],
+        "equipment": rules["treasures"]["items"],
         "movement": {"sides": rules["movement"]["die_sides"],
-                     "count": rules["movement"].get("dice_count", 1),
-                     "duelRange": rules["movement"]["duel_range"],
+                     "count": rules["movement"]["dice"],
+                     "duelRange": rules["duels"]["range"],
                      "allowStationary": rules["movement"]["allow_stationary_special_actions"]},
-        "glory": {"cap": rules["glory"]["cap"],
-                  "guardMinRoll": rules["glory"]["guard_post_success_min_roll"],
-                  "guardReward": rules["glory"]["guard_post_reward"],
-                  "duelWinReward": rules["glory"]["duel_win_reward"],
-                  "firstChallengerReward": rules["glory"].get("first_challenger_reward", 0),
-                  "duelLoserCost": rules["glory"].get("duel_loser_cost", cfg.get("duel_loser_cost", 0))},
-        "combat": {"abilities": rules["combat"].get("abilities", {}),
-                   "abilityStacking": rules["combat"].get("ability_stacking", "best"),
-                   "tieGoesToDefender": rules["combat"].get("tie_goes_to_defender", False)},
-        "rotateFirst": rules.get("turns", {}).get("rotate_first_player_each_round", False),
-        "l1MaxRounds": rules["level1"]["max_rounds"],
-        "l2MaxRounds": rules["level2"]["max_rounds"],
-        "graceRounds": rules["level1"]["grace_full_rounds"],
-        "startReveals": rules.get("start_reveals", 0),
-        "claimRequiredEquipment": rules["level1"].get("claim_required_equipment", 6),
+        "prestige": {"cap": rules["prestige"]["cap"],
+                     "guardMinRoll": rules["prestige"]["guard_post_min_roll"],
+                     "guardReward": rules["prestige"]["guard_post_reward"],
+                     "duelWinReward": rules["prestige"]["duel_win_reward"],
+                     "duelLoserCost": rules["prestige"]["duel_loss_penalty"]},
+        "combat": {"abilities": rules["treasures"]["abilities"],
+                   "tieGoesToDefender": rules["duels"]["tie_winner"] == "defender"},
+        "rotateFirst": rules["turns"]["rotate_first_player_each_round"],
+        "palaceMaxRounds": rules["palace"]["max_rounds"],
+        "successionMaxRounds": rules["succession"]["max_rounds"],
+        "graceRounds": rules["palace"]["rounds_after_checkpoint"],
+        "startReveals": rules["treasures"]["start_face_up"],
+        "claimRequiredEquipment": rules["palace"]["checkpoint_items_required"],
         "succession": {
             "supportCost": cfg["support_cost"],
-            "requiredSupport": cfg["required_support"],
-            "proclaimCost": cfg.get("proclaim_cost", 0),
-            "contestCost": cfg.get("contest_cost", 0),
-            "challengeBonus": cfg.get("challenge_bonus", 0),
-            "challengeCost": cfg.get("challenge_cost", 0),
-            "challengeRadius": cfg.get("challenge_radius", 0),
-            "claimWindowRounds": cfg.get("claim_window_rounds", 2),
-            "gateAssignment": cfg.get("gate_assignment", "random"),
-            "gateRotation": cfg.get("gate_rotation", 0),
-            "blindSupport": bool(cfg.get("blind_support")),
-            "factionNames": sorted(cfg["factions"].keys()),
-            # Only read by the non-blind fallback branch in the engine
+            "requiredSupport": cfg["factions_to_proclaim"],
+            "proclaimCost": cfg["proclaim_cost"],
+            "contestFee": cfg["contest_fee"],
+            "claimWindowRounds": cfg["claim_window_rounds"],
+            "gateAssignment": cfg["gate_assignment"],
+            "factionNames": sorted(cfg["faction_cards"]["factions"]),
+            # Only read by the fixed-cells fallback branch in the engine
             # (hand-built states without a dealt faction_sites map).
-            "factionCells": {name: list(cell) for name, cell in cfg["factions"].items()},
+            "factionCells": {name: faction_cells[name]
+                             for name in cfg["faction_cards"]["factions"]},
         },
     }
     js = ("// Generated by tools/make_web_board.py from "
@@ -105,8 +99,8 @@ def main():
         fh.write("// Generated from " + RULES + ". Do not edit.\n" +
                  "window.DIOCLET_RULES = " + json.dumps(rulebook_html(rules)) + ";\n")
     walkable = b.width * b.height - len(blocked)
-    print(f"wrote {OUT}: map1 {b.width}x{b.height}, {walkable} street spaces; "
-          f"map2 checkpoint {data['boardLevel2']['checkpoint']}")
+    print(f"wrote {OUT}: palace map {b.width}x{b.height}, {walkable} street spaces; "
+          f"succession checkpoint {data['successionMap']['checkpoint']}")
 
 
 if __name__ == "__main__":
