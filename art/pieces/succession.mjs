@@ -59,11 +59,11 @@ export function renderSuccession(layout, { dpi = 200, seed = 400 } = {}) {
   const key = (p) => `${p[0].toFixed(2)},${p[1].toFixed(2)}`;
   for (const p of Object.values(S.gates)) special.add(key(p));
   for (const p of S.card_spaces) special.add(key(p));
-  for (const p of S.glory_posts) special.add(key(p));
+  for (const p of S.guard_posts) special.add(key(p));
   special.add(key(S.checkpoint));
   for (const s of S.spaces) if (!special.has(key(s.mm))) K.streetSpace(a, s.mm[0], s.mm[1], 9.2);
   for (const p of S.card_spaces) K.cardSpace(a, p[0], p[1], 10.6);
-  for (const p of S.glory_posts) K.guardPost(a, p[0], p[1], 9.6);
+  for (const p of S.guard_posts) K.guardPost(a, p[0], p[1], 9.6);
   for (const [id, p] of Object.entries(S.gates)) K.gateMark(a, p[0], p[1], 11.4, { color: C.gates[id] });
   K.peristyle(a, S.checkpoint[0], S.checkpoint[1], 11.2);
   text(a, "PERISTYLE", S.checkpoint[0], S.checkpoint[1] - 12.6, 2.5, { medium: "charcoal", weight: 1.2 });

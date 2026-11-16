@@ -143,7 +143,7 @@ class BoardMatchesRules(unittest.TestCase):
         self.assertEqual(counts["buildings"], 6)
         self.assertEqual(counts["gates"], len(self.board.gates))
         self.assertEqual(counts["districts"], len(self.board.districts))
-        self.assertEqual(counts["glory_posts"], len(self.board.guard_posts))
+        self.assertEqual(counts["guard_posts"], len(self.board.guard_posts))
         self.assertEqual(self.rules["game"]["rules_version"], "0.10.2")
 
     def test_special_positions_match_rules(self):
@@ -195,7 +195,7 @@ class BoardMatchesRules(unittest.TestCase):
                    + [(tuple(v), 11.4) for v in specials["gates"].values()]
                    + [(tuple(v), 10.6) for v in specials["districts"].values()]
                    + [(tuple(specials["checkpoint"]), 11.2)]
-                   + [(tuple(v), 9.6) for v in specials["glory_posts"]])
+                   + [(tuple(v), 9.6) for v in specials["guard_posts"]])
         self.assertGreater(len(symbols), 100)
         for (px, py), radius in symbols:
             box = (px - radius, py - radius, px + radius, py + radius)
@@ -244,7 +244,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
     def test_rulebook_pins_the_economy_numbers(self):
         text = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
         self.assertIn("mandatory fee of 1 Prestige", text)          # contest fee
-        self.assertIn("hold at most 3 Prestige", text)              # glory cap
+        self.assertIn("hold at most 3 Prestige", text)              # prestige cap
         self.assertIn("A 4, 5 or 6 earns 1 Prestige", text)         # guard post
         self.assertIn("round 24", text)                             # round limits
         self.assertIn("Two ordinary six-sided dice for movement", text)
@@ -404,13 +404,13 @@ class SuccessionMapMatchesRules(unittest.TestCase):
         self.assertEqual(len(spaces), 97)
         self.assertEqual(len(blocked), 150)
         self.assertFalse(spaces & blocked)
-        counts = self.manifest["counts_level2"]
+        counts = self.manifest["counts_succession"]
         self.assertEqual(counts["street_spaces"], 97)
         self.assertEqual(counts["blocked"], 150)
         self.assertEqual(counts["gates"], 4)
         self.assertEqual(counts["blocks"], 6)
         self.assertEqual(counts["card_spaces"], 6)
-        self.assertEqual(counts["glory_posts"], 4)
+        self.assertEqual(counts["guard_posts"], 4)
 
     def test_special_positions_match_rules(self):
         layout = self.manifest["layout"]["succession_map_mm"]
@@ -423,7 +423,7 @@ class SuccessionMapMatchesRules(unittest.TestCase):
         self.assertEqual(specials["card_spaces"],
                          [[round(v, 2) for v in self.S["pos"](tuple(c))]
                           for c in self.rules["succession"]["map"]["card_spaces"]])
-        self.assertEqual(specials["glory_posts"],
+        self.assertEqual(specials["guard_posts"],
                          [[round(v, 2) for v in self.S["pos"](tuple(c))]
                           for c in self.rules["succession"]["map"]["guard_posts"]])
         self.assertEqual(self.board.guard_posts, [(0, 2), (18, 10), (2, 0), (16, 12)])

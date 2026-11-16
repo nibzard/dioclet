@@ -2388,12 +2388,12 @@ def main():
         "counts": {"street_spaces": len(L["spaces"]), "blocked": len(b.blocked),
                    "buildings": len(rules["palace"]["map"]["buildings"]),
                    "gates": len(b.gates), "districts": len(b.districts),
-                   "glory_posts": len(b.guard_posts)},
-        "counts_level2": {
+                   "guard_posts": len(b.guard_posts)},
+        "counts_succession": {
             "street_spaces": len(S["spaces"]), "blocked": len(S["board"].blocked),
             "gates": len(S["board"].gates), "blocks": len(S["blocks"]),
             "card_spaces": len(S["card_spaces"]),
-            "glory_posts": len(S["board"].guard_posts)},
+            "guard_posts": len(S["board"].guard_posts)},
         "layout": {
             "cell_mm": CELL, "overlap_mm": OVERLAP, "safe_mm": SAFE,
             "page_mm": [PAGE_W, PAGE_H],
@@ -2409,7 +2409,7 @@ def main():
                 "districts": {name: [round(v, 2) for v in L["pos"](tuple(cell))]
                               for name, cell in b.districts.items()},
                 "checkpoint": [round(v, 2) for v in L["pos"](tuple(b.checkpoint))],
-                "glory_posts": [list(map(round, L["pos"](tuple(cell)))) for cell in b.guard_posts],
+                "guard_posts": [list(map(round, L["pos"](tuple(cell)))) for cell in b.guard_posts],
             },
             "succession_map_mm": {
                 "cell_mm": CELL, "grid_mm": [S["grid_w"], S["grid_h"]],
@@ -2421,7 +2421,7 @@ def main():
                     "checkpoint": [round(v, 2) for v in S["pos"](tuple(S["board"].checkpoint))],
                     "card_spaces": [[round(v, 2) for v in S["pos"](cell)]
                                     for cell in S["card_spaces"]],
-                    "glory_posts": [[round(v, 2) for v in S["pos"](tuple(cell))]
+                    "guard_posts": [[round(v, 2) for v in S["pos"](tuple(cell))]
                                     for cell in S["board"].guard_posts],
                 },
                 "blocks": [list(block) for block in S["blocks"]],
