@@ -51,11 +51,11 @@ const B = window.DIOCLET_BOARD;
 const E = window.DIOCLET_ENGINE;
 const K = c => c.join(",");
 const gate2Transform = {};
-for (const [id, c] of Object.entries(B.boardLevel2.gates)) {
+for (const [id, c] of Object.entries(B.successionMap.gates)) {
   gate2Transform[id] = `translate(${36 + c[0] * 44 + 22},${36 + c[1] * 44 + 22})`;
 }
-check("board artifact is the V0.10.2 twin-board mode",
-  B.mode === "succession-v1" && B.rulesVersion === "0.10.2");
+check("board artifact is the V0.10.2 twin-board payload",
+  B.rulesVersion === "0.10.2" && B.palaceMap && B.successionMap);
 
 // --- rules overlay --------------------------------------------------
 const overlay = document.getElementById("rules");
@@ -87,23 +87,23 @@ check("setup remains open", !document.getElementById("setup").classList.contains
 const districtLabels = () => [...document.querySelectorAll('[id^="district-"]')];
 check("six hidden district cards", districtLabels().length === 6 &&
   districtLabels().every(n => n.textContent === "Hidden treasure"));
-check("six distinct block labels", document.querySelectorAll(".city-block").length === 6 &&
-  new Set([...document.querySelectorAll(".city-block")].map(b => b.dataset.district)).size === 6);
+check("six distinct block labels", document.querySelectorAll(".palace-block").length === 6 &&
+  new Set([...document.querySelectorAll(".palace-block")].map(b => b.dataset.district)).size === 6);
 check("each district has exactly one reveal label", new Set(districtLabels().map(n => n.id)).size === 6);
 
 // --- twin-board markers ---------------------------------------------
-const cityMarkers = document.getElementById("city-markers");
+const palaceMarkers = document.getElementById("palace-markers");
 const successionMarkers = document.getElementById("succession-markers");
-check("phase 1 shows the city layer only",
-  cityMarkers.getAttribute("display") === "inline" &&
+check("phase 1 shows the palace layer only",
+  palaceMarkers.getAttribute("display") === "inline" &&
   successionMarkers.getAttribute("display") === "none");
 check("six face-down faction cards wait on the succession layer",
   [...successionMarkers.querySelectorAll('[id^="site-"]')].length === 6 &&
   [...successionMarkers.querySelectorAll('[id^="sitetext-"]')].every(t => t.textContent === "?"));
 check("the south gate chip moves between maps",
-  document.querySelector('[data-k="12,12"]').classList.contains("m2-site") &&
-  document.querySelector('[data-k="6,12"]').classList.contains("m1-site"));
-check("city legend names the checkpoint",
+  document.querySelector('[data-k="12,12"]').classList.contains("succession-site") &&
+  document.querySelector('[data-k="6,12"]').classList.contains("palace-site"));
+check("palace legend names the checkpoint",
   document.getElementById("checkpoint-key").textContent === "Checkpoint");
 check("claim marker starts hidden",
   document.getElementById("claim-marker").getAttribute("display") === "none");
@@ -174,12 +174,12 @@ const orderHumanFirst = game => {
 const dealSites = (game, real = {}) => {
   game.factionSites = {};
   game.factionSitesRevealed = {};
-  for (const c of B.boardLevel2.supportSites) game.factionSites[K(c)] = null;
+  for (const c of B.successionMap.cardSpaces) game.factionSites[K(c)] = null;
   for (const [k, f] of Object.entries(real)) game.factionSites[k] = f;
 };
 
 // --- auto-collection at a treasure entry ----------------------------
-const entryA = B.map1.districts.A;
+const entryA = B.palaceMap.treasureEntries.A;
 await startForcedGame(game => {
   orderHumanFirst(game);
   E.player(game, "P0").pos = K([entryA[0] + 1, entryA[1]]);
@@ -246,7 +246,7 @@ galeaCell.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
 check("galea opens a district picker", !choiceDialog.classList.contains("hidden") &&
   [...document.querySelectorAll("#choice-actions button")]
     .filter(b => b.textContent.includes("reveal district")).length >= 1);
-const hiddenDistrict = Object.keys(B.map1.districts)
+const hiddenDistrict = Object.keys(B.palaceMap.treasureEntries)
   .find(n => !(n in galeaGame.revealed));
 [...document.querySelectorAll("#choice-actions button")]
   .find(b => b.textContent.includes("reveal district " + hiddenDistrict)).click();
@@ -265,8 +265,8 @@ await startForcedGame(game => {
   dealSites(game, { [siteA]: "officials" });
   E.player(game, "P0").pos = "4,0";
 }, { P0: "human", P1: "human", P2: "human", P3: "human" });
-check("phase flip hides the city layer and the treasure plates",
-  cityMarkers.getAttribute("display") === "none" &&
+check("phase flip hides the palace layer and the treasure plates",
+  palaceMarkers.getAttribute("display") === "none" &&
   successionMarkers.getAttribute("display") === "inline" &&
   [...document.querySelectorAll(".district-plate")].every(p => p.getAttribute("display") === "none"));
 check("phase label reports the succession map",
@@ -341,8 +341,8 @@ check("chronicle records the proclamation",
   document.getElementById("log").textContent.includes("proclaim"));
 
 // --- contesting an active claim -------------------------------------
-const savedContestCost = B.succession.contestCost;
-B.succession.contestCost = 1;
+const savedContestCost = B.succession.contestFee;
+B.succession.contestFee = 1;
 let contestedGame;
 await startForcedGame(game => {
   orderHumanFirst(game);
@@ -380,7 +380,7 @@ check("beaten claimant returns to the succession-map gate",
   loserPawn.getAttribute("transform") === gate2Transform[E.player(contestedGame, "P1").gateId]);
 check("the beaten claimant pays the shame",
   E.player(contestedGame, "P1").prestige === 0);
-B.succession.contestCost = savedContestCost;
+B.succession.contestFee = savedContestCost;
 
 // --- watch four bots finish a whole game ----------------------------
 document.getElementById("watchbtn").click();
@@ -411,7 +411,7 @@ await sleep(50);
 check("setup overlay hidden after start",
   document.getElementById("setup").classList.contains("hidden"));
 check("all board street spaces render", document.querySelectorAll(".cell").length ===
-  B.map1.width * B.map1.height - B.map1.blocked.length);
+  B.palaceMap.width * B.palaceMap.height - B.palaceMap.blocked.length);
 check("4 pawns placed", document.querySelectorAll(".pawn").length === 4);
 const zoom = document.getElementById("zoom-board");
 zoom.click();
@@ -428,18 +428,18 @@ check("all special chips pass clicks through",
 check("pawns pass clicks through",
   [...document.querySelectorAll(".pawn")].every(p =>
     p.getAttribute("pointer-events") === "none"));
-const gateCell = document.querySelector(`[data-k="${K(B.map1.gates.P0)}"]`);
+const gateCell = document.querySelector(`[data-k="${K(B.palaceMap.gates.P0)}"]`);
 check("gate cell has a tooltip",
   gateCell.querySelector("title")?.textContent.includes("Gate"));
-const cpCell = document.querySelector(`[data-k="${K(B.map1.checkpoint)}"]`);
+const cpCell = document.querySelector(`[data-k="${K(B.palaceMap.checkpoint)}"]`);
 check("checkpoint cell has a tooltip",
   cpCell.querySelector("title")?.textContent.includes("Checkpoint"));
-const entryCell = document.querySelector(`[data-k="${K(B.map1.districts.A)}"]`);
+const entryCell = document.querySelector(`[data-k="${K(B.palaceMap.treasureEntries.A)}"]`);
 check("entry A cell has a tooltip",
   entryCell.querySelector("title")?.textContent.includes("Treasure entry"));
 const cardCell = document.querySelector(`[data-k="${siteA}"]`);
 check("card space carries its succession tooltip",
-  cardCell.dataset.palaceTitle.includes("search"));
+  cardCell.dataset.successionTitle.includes("search"));
 
 // --- the human-seat loop --------------------------------------------
 let sawHint = false, sawSuccession = false, usedKeyboard = false;
@@ -483,20 +483,20 @@ check("game-over declares a succession outcome",
 check("keyboard move completes", usedKeyboard);
 document.getElementById("againbtn").click();
 check("replay hides all treasure cards", districtLabels().every(n => n.textContent === "Hidden treasure"));
-check("replay restores the city phase",
-  document.getElementById("phase-label").textContent === "City · Phase I" &&
+check("replay restores the palace phase",
+  document.getElementById("phase-label").textContent === "Palace · Phase I" &&
   document.getElementById("checkpoint-key").textContent === "Checkpoint" &&
-  cityMarkers.getAttribute("display") === "inline" &&
+  palaceMarkers.getAttribute("display") === "inline" &&
   successionMarkers.getAttribute("display") === "none");
 check("replay turns every faction card face down",
   [...document.querySelectorAll('[id^="sitetext-"]')].every(t => t.textContent === "?"));
-// Resetting the table also restores every pawn to a city gate.
+// Resetting the table also restores every pawn to a palace gate.
 const pawnTransforms = ["P0", "P1", "P2", "P3"].map(id =>
   document.getElementById("pawn-" + id).getAttribute("transform"));
-const cityGateTransforms = Object.values(B.map1.gates).map(c =>
+const palaceGateTransforms = Object.values(B.palaceMap.gates).map(c =>
   `translate(${36 + c[0] * 44 + 22},${36 + c[1] * 44 + 22})`).sort();
-check("replay restores pawns to the four city gates",
-  JSON.stringify(pawnTransforms.sort()) === JSON.stringify(cityGateTransforms));
+check("replay restores pawns to the four palace gates",
+  JSON.stringify(pawnTransforms.sort()) === JSON.stringify(palaceGateTransforms));
 
 if (failures) { console.error(failures + " failures"); process.exit(1); }
 console.log("all V0.10.2 twin-board UI tests pass");

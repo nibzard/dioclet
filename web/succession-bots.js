@@ -6,7 +6,6 @@
 (function (global) {
   "use strict";
   const B = global.DIOCLET_BOARD;
-  if (B.mode !== "succession-v1") return;
   const E = global.DIOCLET_ENGINE, C = B.succession, ABIL = B.combat.abilities || {};
   const VERSION = "succession-bots-v0100.1";
   const byKind = (acts, kind) => acts.filter(a => a.kind === kind);
@@ -35,8 +34,8 @@
   function closest(g, from, cells) {
     return cells.slice().sort((a, b) => dist(g, from, a) - dist(g, from, b) || (a < b ? -1 : a > b ? 1 : 0))[0];
   }
-  const districtCells = Object.values(B.map1.districts).map(c => c.join(","));
-  const nameByCell = Object.fromEntries(Object.entries(B.map1.districts).map(([n, c]) => [c.join(","), n]));
+  const districtCells = Object.values(B.palaceMap.treasureEntries).map(c => c.join(","));
+  const nameByCell = Object.fromEntries(Object.entries(B.palaceMap.treasureEntries).map(([n, c]) => [c.join(","), n]));
   function missingTreasure(view, p) {
     // Unknown cards remain equally unknown. Never read districtEquipment.
     const known = [], unknown = [];
@@ -117,8 +116,8 @@
     const guard = byKind(acts, "guard_post");
     const duels = byKind(acts, "duel");
     const neededSupport = p.support.length < C.requiredSupport;
-    const treasuryGoal = neededSupport ? C.supportCost : C.contestCost;
-    const canBank = B.glory.cap == null || p.prestige < B.glory.cap;
+    const treasuryGoal = neededSupport ? C.supportCost : C.contestFee;
+    const canBank = B.prestige.cap == null || p.prestige < B.prestige.cap;
     // Blind support: head for a revealed faction that is still needed,
     // else for the nearest unsearched card space.
     const supportTargets = view.factionRevealed
@@ -126,7 +125,7 @@
       : [];
     const supportTarget = supportTargets.length ? closest(g, p.pos, supportTargets) : null;
     const unsearched = view.factionRevealed
-      ? B.boardLevel2.supportSites.map(c => c.join(",")).filter(cell => !Object.hasOwn(view.factionRevealed, cell))
+      ? B.successionMap.cardSpaces.map(c => c.join(",")).filter(cell => !Object.hasOwn(view.factionRevealed, cell))
       : [];
     const searchTarget = unsearched.length ? closest(g, p.pos, unsearched) : null;
     const treasureTarget = missingTreasure(view, p);

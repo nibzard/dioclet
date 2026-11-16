@@ -6,7 +6,7 @@
  * per-map geometry: neighbor walks, breadth-first distances, and the
  * deterministic N-E-S-W path, each cached per map. All game rules live
  * in succession-engine.js, which mirrors the Python reference
- * (succession.py, rules_v0102_bigboard.json).
+ * (engine.py, rules/imperial-rivals-v0.10.2.json).
  *
  * The module is environment agnostic: it runs in the browser and in
  * Node for the logic tests (tools/test_web_engine.mjs).
@@ -26,8 +26,8 @@
              distanceMaps: new Map() };
   }
   const MAPS = {
-    map1: makeGraph(B.map1),
-    map2: makeGraph(B.boardLevel2),
+    palace: makeGraph(B.palaceMap),
+    succession: makeGraph(B.successionMap),
   };
 
   function neighbors(k, graph) {

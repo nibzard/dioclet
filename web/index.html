@@ -4,29 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#203d35">
-<meta name="description" content="Enter Diocletian’s Palace. Collect equipment, secure faction support, and contest the imperial succession in a four-player strategy board game.">
-<title>Diocletian's Palace · Six treasures</title>
+<meta name="description" content="Imperial Rivals: 305 AD. Collect equipment, secure faction support, and contest the imperial succession in a four-player strategy board game.">
+<title>Imperial Rivals · 305 AD</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="site-header">
-  <a class="brand" href="./" aria-label="Diocletian’s Palace home">
+  <a class="brand" href="./" aria-label="Imperial Rivals home">
     <span class="brand-mark" aria-hidden="true">D</span>
-    <span><span class="eyebrow">Six treasures · A game of strategy</span><h1>Diocletian’s Palace</h1></span>
+    <span><span class="eyebrow">305 AD · A game of strategy</span><h1>Imperial Rivals</h1></span>
   </a>
   <button id="rulesbtn" class="ghost"><span aria-hidden="true">▤</span> How to play</button>
 </header>
 <div class="table-heading">
-  <div><span class="eyebrow">The game table</span><p id="turnline" role="status">The city awaits. Take your place at the gates.</p></div>
+  <div><span class="eyebrow">The game table</span><p id="turnline" role="status">The palace awaits. Take your place at the gates.</p></div>
   <ol class="journey" aria-label="Your path to the throne">
-    <li class="current" id="city-step"><span>01</span> Collect treasures</li>
-    <li id="palace-step"><span>02</span> Secure support</li>
+    <li class="current" id="palace-step"><span>01</span> Collect treasures</li>
+    <li id="succession-step"><span>02</span> Secure support</li>
     <li id="emperor-step"><span>03</span> Claim the throne</li>
   </ol>
 </div>
 <main>
   <section id="boardwrap" aria-label="Game board">
-    <div class="board-heading"><h2>The palace grounds</h2><div class="board-tools"><span id="phase-label" class="phase-label">City · Level I</span><button id="zoom-board" class="zoom-button" aria-pressed="false" aria-label="Enlarge the board" title="Enlarge the board">＋</button></div></div>
+    <div class="board-heading"><h2>The palace grounds</h2><div class="board-tools"><span id="phase-label" class="phase-label">Palace · Phase I</span><button id="zoom-board" class="zoom-button" aria-pressed="false" aria-label="Enlarge the board" title="Enlarge the board">＋</button></div></div>
     <div class="board-viewport" tabindex="0" aria-label="Board view. Scroll to explore when enlarged."><svg id="board" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Palace board. Select a highlighted street space to move."></svg></div>
     <div class="legend" aria-label="Board key">
       <span><i class="sw gate"></i>Gate</span>
@@ -53,7 +53,7 @@
     <section id="logbox" aria-labelledby="log-heading"><div class="section-heading"><h2 id="log-heading">Chronicle</h2><span class="live-dot">Live</span></div><div id="log" tabindex="0" aria-label="Game chronicle"><p class="empty-state">Every great story starts with a first move.</p></div></section>
   </aside>
 </main>
-<footer class="site-footer"><span>Diocletian’s Palace <span aria-hidden="true">/</span> Six treasures</span><span>Split, After 305 AD · Twin boards · Rules V0.10.2</span></footer>
+<footer class="site-footer"><span>Imperial Rivals <span aria-hidden="true">/</span> 305 AD</span><span>Split, After 305 AD · Twin boards · Rules V0.10.2</span></footer>
 <div id="rules" class="overlay hidden" role="dialog" aria-modal="true" aria-label="How to play" tabindex="-1">
   <div class="panel rulespanel">
     <button id="rulesclose" class="ghost close">✕ Close</button>
@@ -86,9 +86,9 @@
         <label id="rotation-label" hidden>Game in the rotation <select id="gate-rotation"><option value="0">1 of 4</option><option value="1">2 of 4</option><option value="2">3 of 4</option><option value="3">4 of 4</option></select></label>
       </div>
       <p id="setup-error" role="alert"></p>
-      <div class="seed-row"><label for="seed">Game seed</label><input id="seed" type="number" value="2026" aria-describedby="seed-help"><span id="seed-help">Same seed, same starting city.</span></div>
+      <div class="seed-row"><label for="seed">Game seed</label><input id="seed" type="number" value="2026" aria-describedby="seed-help"><span id="seed-help">Same seed, same starting gates.</span></div>
       <div class="row setup-actions">
-        <button id="startbtn" class="primary">Enter the city <span aria-hidden="true">→</span></button>
+        <button id="startbtn" class="primary">Enter the palace <span aria-hidden="true">→</span></button>
         <button id="watchbtn">Watch four bots</button>
       </div>
       <p class="setup-help">New to the palace? <button id="setup-rulesbtn" class="text-button">Read how to play <span aria-hidden="true">↗</span></button></p>
