@@ -3,8 +3,9 @@
 Phase 4 of [`docs/model-context-plan.md`](../model-context-plan.md):
 the series runner (`arena --series`), the metrics in `summary.json`,
 and the tactical fixture check (`arena --fixtures`). This file records
-the methodology and the metric definitions. The coordinator runs the
-baseline and fills in the results section at the end.
+the methodology, the metric definitions, and the results of each
+measurement series. Every later phase adds its series under
+"Measurements against the baseline".
 
 ## Methodology
 
@@ -15,9 +16,9 @@ baseline is [`arena/matches/series-four-way.json`](../../arena/matches/series-fo
 
 | Element | Value | Why |
 |---|---|---|
-| Players | `clef/clef-flash`, `pplx/pplx-decider-v1.3`, `gateway/nace-ai/drex-v2.0`, `gateway/baseten/elephant-1` | Two cheap dedicated decision models and two gateway models on the free tier |
-| Seeds | 42-46 (5 seeds) | Each seed gives 4 games, one per seat |
-| Budget | 2200 calls, $1.00 | ~110 turns x 20 games, per the plan |
+| Players | `clef/clef-flash`, `pplx/pplx-decider-v1.3`, `clef/clef`, `pplx/pplx-decider-flash-v1.3` | Two providers with usable rate limits, two models each. The gateway free tier (5 requests per minute) collapsed the first attempt, so no gateway seat |
+| Seeds | 42-44 (3 seeds) | Each seed gives 4 games, one per seat. Cut from 5 seeds to keep the `clef` model under the budget |
+| Budget | 2000 calls, $0.75 | ~110 turns x 12 games at the plan's estimate |
 | `rotate_seats` | true | Seat position is part of the measurement |
 | `shuffle_candidates` | true | Position bias is part of the measurement |
 
@@ -117,20 +118,33 @@ Regenerate the fixtures with
 engine change; it plays seeded bot games and freezes the first
 position that meets each situation.
 
-## Baseline (to be run)
+## Baseline
 
-Not run yet. The coordinator runs:
+Run 2026-11-18, commit `e076bd2`, series `20261118T115223Z-86e515e7-series`.
+12 games (seeds 42-44 x 4 seats), 0 incomplete, 0 skipped, 1616 of
+2000 calls, $0.5330 total, 1128 s. Every game ended `survived_window`;
+turns ran 124-156 (mean 134), above the 110-turn estimate, and the
+input tokens per call ran about 4200 (clef) to 4900 (pplx), below the
+6000-token estimate.
 
-```bash
-cd arena
-uv run --extra decisions arena --yes --series matches/series-four-way.json
-```
+| Player | Wins | Wilson 95% | Wins by seat | Missed | Cost | p95 ms | Pos-1 rate |
+|---|---|---|---|---|---|---|---|
+| `pplx/pplx-decider-v1.3` | 10/12 (0.83) | [0.552, 0.953] | P0:2 P1:3 P2:3 P3:2 | 1 | $0.0395 | 803 | 0.064 |
+| `clef/clef` | 2/12 (0.17) | [0.047, 0.448] | P0:1 P1:1 | 1 | $0.4094 | 986 | 0.099 |
+| `clef/clef-flash` | 0/12 (0.00) | [0.000, 0.243] | - | 5 | $0.0643 | 2865 | 0.074 |
+| `pplx/pplx-decider-flash-v1.3` | 0/12 (0.00) | [0.000, 0.243] | - | 6 | $0.0199 | 427 | 0.059 |
 
-and copies the printed scoreboard and `summary.json` here. Fill in:
+Read of the numbers:
 
-- Per-player win rates with the Wilson intervals, seat split, and cost.
-- Missed interventions per player, next to the `cancel-winning-claim`
-  fixture score.
-- Position-1 rates, to judge how much the candidate order sways each
-  model.
-- Any games the call cap skipped, with the measured turns per game.
+- `pplx-decider-v1.3` beats `clef` with no interval overlap (0.448 <
+  0.552) and wins from every seat, so the lead is not a seat artifact.
+- Price does not buy wins: `clef` cost $0.41 (77% of the series, at
+  $0.24/M input) for 2 wins; `pplx-decider-v1.3` cost $0.04 for 10.
+- Both flash models lost every game and account for 11 of the 13
+  missed interventions. The missed-intervention gap (1 vs 5-6) tracks
+  the win gap, which supports the metric: the losers let winning
+  claims survive.
+- Position-1 rates sit at 6-10% for every model, close together, so
+  the shuffled shortlist order sways no model in a visible way.
+- No `--fixtures` score was collected at the baseline; the fixture
+  set ran only against local bots (random 2/3, tactical 3/3).
