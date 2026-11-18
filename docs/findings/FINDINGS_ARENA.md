@@ -177,3 +177,32 @@ size. The strongest decider already inferred outcomes from the rule
 summary and duel odds; the flash models could not use the extra
 numbers. Keep the feature (it is honest public data and cheap), but
 do not expect win-rate movement from it alone.
+
+### Phase 6: the claim deadline block (commit `c6f02d0`)
+
+Run 2026-11-18, series `20261118T125103Z-86e515e7-series`. 12 games
+(seeds 42-44), 0 incomplete, 1636 calls, $0.5771, 1411 s, turns
+124-160 (mean 136), all `survived_window`.
+
+| Player | Wins | Wilson 95% | Missed | Cost |
+|---|---|---|---|---|
+| `pplx/pplx-decider-v1.3` | 7/12 (0.58) | [0.320, 0.807] | 0 | $0.0430 |
+| `clef/clef` | 4/12 (0.33) | [0.138, 0.609] | 0 | $0.4434 |
+| `clef/clef-flash` | 1/12 (0.08) | [0.015, 0.354] | 3 | $0.0689 |
+| `pplx/pplx-decider-flash-v1.3` | 0/12 (0.00) | [0.000, 0.243] | 9 | $0.0219 |
+
+Across the three series the win rates walk in opposite directions:
+`pplx-decider-v1.3` 0.83 to 0.75 to 0.58, `clef` 0.17 to 0.25 to
+0.33. No single step is significant at 12 games (every interval
+overlaps the step before), and the baseline's non-overlapping gap
+between the two leaders has closed into overlap — the field is
+tighter, not reordered. Missed interventions fell the most where the
+deadline block should help: `clef` 1 to 0, `clef-flash` 7 to 3,
+`pplx-decider-v1.3` 1 to 0. `pplx-decider-flash-v1.3` stays lost
+(10, then 9).
+
+Read: the deadline block looks like it does what it is designed to
+do — seats stopped sitting on cancelable winning claims (missed
+interventions 18 to 12 overall) — and the leader's edge narrowed.
+Whether that is a real shift or a three-sample walk needs more
+games per arm; nothing here rejects "no change".
