@@ -10,9 +10,10 @@ only filters, groups, and annotates the engine's `legal_actions`.
 
 import json
 
+import engine
 from board import Board
 
-SUCCESSION_SCHEMA_VERSION = "v0102-succession-proj-2"
+SUCCESSION_SCHEMA_VERSION = "v0102-succession-proj-3"
 
 
 def _enumerate_with_sides(sides):
@@ -166,6 +167,7 @@ def rule_summary(rules):
 def project_observation(obs, rules):
     """Compact, stable, fully public projection for the model."""
     me = obs["players"][obs["viewer"]]
+    claim = _claim_block(obs, rules)
     public_players = []
     for pid, p in sorted(obs["players"].items()):
         public_players.append({
@@ -194,6 +196,7 @@ def project_observation(obs, rules):
         "self": next(p for p in public_players if p["id"] == obs["viewer"]),
         "opponents": [p for p in public_players if p["id"] != obs["viewer"]],
         "pending_claim": obs.get("pending_claim"),
+        **({"claim": claim} if claim else {}),
         "public_locations": {key: obs["board"][key] for key in (
             "width", "height", "blocked", "gates", "districts", "guard_posts",
             "checkpoint") if key in obs["board"]},
@@ -262,6 +265,61 @@ def _succession_goals(obs, rules):
 def _public_player(obs, pid):
     """The id and equipment a duel needs, from one public observation."""
     return {"id": pid, "equipment": obs["players"][pid]["equipment"]}
+
+
+def _claim_block(obs, rules):
+    """The pending claim's deadline, remaining schedule, and cancel chances.
+
+    The deadline calls the engine's own window rule
+    (engine.claim_window_deadline), so projection and engine share one
+    source. Every input is public: the claim, the turn order, and the
+    rules file. Without a claim window the acclamation response rule
+    decides the win, so the schedule fields stay empty. A deadline past
+    the last succession round never arrives; the schedule then runs to
+    the game's end and the win turn stays unset.
+    """
+    pending = obs.get("pending_claim")
+    if not pending:
+        return None
+    claimant = pending["player"]
+    can_cancel = any(a["kind"] == "duel" and a.get("target") == claimant
+                     for a in obs["legal_actions"])
+    order = list(obs["turn_order"])
+    seated = order.index(obs["active_player"])
+    deadline_round = engine.claim_window_deadline(
+        pending["round"], rules["succession"]["claim_window_rounds"])
+    if deadline_round is None:
+        return {"claimant": claimant, "wins_after_turn": None,
+                "remaining_turns": [], "cancel_chances": {},
+                "can_cancel_this_turn": can_cancel}
+    max_round = rules["succession"]["max_rounds"]
+    wins_after_turn = None
+    if deadline_round <= max_round:
+        wins_after_turn = (obs["turn_id"] + len(order) - 1 - seated
+                           + len(order) * (deadline_round - obs["round"]))
+    last_round = min(deadline_round, max_round)
+    turn, idx = obs["turn_id"], seated
+    rotate = rules["turns"]["rotate_first_player_each_round"]
+    span = len(order) - idx + len(order) * (last_round - obs["round"])
+    if wins_after_turn is not None:
+        span = min(span, wins_after_turn - turn + 1)
+    turns, chances = [], {}
+    round_no = obs["round"]
+    for _ in range(span):
+        player = order[idx]
+        turns.append({"round": round_no, "turn": turn, "player": player})
+        if player != claimant:
+            chances[player] = chances.get(player, 0) + 1
+        turn += 1
+        idx += 1
+        if idx == len(order):
+            idx = 0
+            round_no += 1
+            if rotate:
+                order = order[1:] + order[:1]
+    return {"claimant": claimant, "wins_after_turn": wins_after_turn,
+            "remaining_turns": turns, "cancel_chances": chances,
+            "can_cancel_this_turn": can_cancel}
 
 
 # ---------------------------------------------------------------------------

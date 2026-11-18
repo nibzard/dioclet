@@ -481,6 +481,18 @@ def current_order(state):
     return state["turn_order"][start:] + state["turn_order"][:start]
 
 
+def claim_window_deadline(claim_round, window):
+    """Public rule fact: the round whose last turn closes a claim window.
+
+    A claim proclaimed in round R wins at the end of round R + window.
+    Window 0 has no round deadline; the acclamation response rule
+    crowns such a claim instead.
+    """
+    if not window:
+        return None
+    return claim_round + window
+
+
 def _stats():
     return {name: 0 for name in (
         "prestige_earned", "prestige_spent", "prestige_wasted_at_cap",
@@ -935,8 +947,10 @@ def _advance(state):
         rules = state["rules"]
         window = rules["succession"]["claim_window_rounds"]
         pending = state["pending_claim"]
-        if (window and state["phase"] == 2 and pending
-                and state["round"] - pending["round"] > window):
+        deadline = (claim_window_deadline(pending["round"], window)
+                    if pending else None)
+        if (state["phase"] == 2 and deadline is not None
+                and state["round"] > deadline):
             # A claim proclaimed in round R wins when the last turn of
             # round R + window ends, so it survives window full rounds
             # (end_reason survived_window). The event rides the last
@@ -1044,7 +1058,8 @@ def check_invariants(state):
         if state["end_reason"] == "survived_window":
             assert pending, "window win without a pending claim"
             window = state["rules"]["succession"]["claim_window_rounds"]
-            assert window and state["round"] - pending["round"] > window, "claim window not actually survived"
+            deadline = claim_window_deadline(pending["round"], window)
+            assert deadline is not None and state["round"] > deadline, "claim window not actually survived"
         else:
             assert state["end_reason"] == "acclamation" and pending and len(pending["responded"]) == 3, "incomplete acclamation"
     if state["faction_sites"]:
