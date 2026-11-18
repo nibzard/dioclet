@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass
 from typing import Protocol
+import re
 
 
 class ProviderError(Exception):
@@ -10,16 +11,43 @@ class ProviderError(Exception):
 
     `exchange` holds the request sent and the response received, when
     the failure happened after the request was built. It never holds
-    keys or HTTP headers.
+    keys or HTTP headers. `retry_after_s` carries the provider's own
+    wait hint when the failure is a rate limit.
     """
 
-    def __init__(self, message, exchange=None):
+    def __init__(self, message, exchange=None, retry_after_s=None):
         super().__init__(message)
         self.exchange = exchange
+        self.retry_after_s = retry_after_s
 
 
 class TransportError(ProviderError):
     """Network, timeout, or HTTP-level failure."""
+
+
+_RETRY_AFTER_TEXT = re.compile(r"[Rr]etry [Aa]fter (\d+) ?s")
+
+
+def parse_retry_after(*texts):
+    """The provider's wait hint in seconds, or None.
+
+    Reads a Retry-After style hint from any error text the adapters
+    hold: the HTTP header value (a bare seconds count), or a body or
+    SDK message that says "Retry after Ns". Only whole-second hints
+    are understood.
+    """
+    for text in texts:
+        if not text:
+            continue
+        if isinstance(text, (int, float)) and not isinstance(text, bool):
+            return float(text)
+        stripped = str(text).strip()
+        if stripped.isdigit():
+            return float(stripped)
+        match = _RETRY_AFTER_TEXT.search(stripped)
+        if match:
+            return float(match.group(1))
+    return None
 
 
 class RefusalError(ProviderError):

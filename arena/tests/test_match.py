@@ -219,6 +219,44 @@ def test_transport_error_once_then_success_retries(tmp_path, monkeypatch):
                for line in decisions)
 
 
+def test_rate_limit_wait_is_honored_before_the_retry(tmp_path, monkeypatch):
+    config = make_config(tiny_rules(tmp_path), provider="jev",
+                         monkeypatch=monkeypatch)
+    double = Scripted([TransportError("HTTP 429: rate limited",
+                                      retry_after_s=9.0)])
+    sleeps = []
+
+    def fake_sleep(seconds):
+        sleeps.append(seconds)
+
+    monkeypatch.setattr(match_mod.time, "sleep", fake_sleep)
+    summary = match_mod.run_match(config, str(tmp_path / "run"),
+                                  provider_factory=lambda seat: double)
+    assert summary["incomplete"] is False
+    assert sleeps == [10.0]
+    waits = [a["waited_s"] for line in read_lines(str(tmp_path / "run"))
+             if line["type"] == "decision" for a in line["attempts"]
+             if "waited_s" in a]
+    assert waits == [10.0]
+
+
+def test_rate_limit_wait_is_capped(tmp_path, monkeypatch):
+    config = make_config(tiny_rules(tmp_path), provider="jev",
+                         monkeypatch=monkeypatch)
+    double = Scripted([TransportError("HTTP 429: rate limited",
+                                      retry_after_s=500.0)])
+    sleeps = []
+
+    def fake_sleep(seconds):
+        sleeps.append(seconds)
+
+    monkeypatch.setattr(match_mod.time, "sleep", fake_sleep)
+    summary = match_mod.run_match(config, str(tmp_path / "run"),
+                                  provider_factory=lambda seat: double)
+    assert summary["incomplete"] is False
+    assert sleeps == [60.0]
+
+
 def test_illegal_answer_once_then_legal_retries(tmp_path, monkeypatch):
     config = make_config(tiny_rules(tmp_path), provider="jev",
                          monkeypatch=monkeypatch)

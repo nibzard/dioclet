@@ -13,7 +13,8 @@ import pytest
 from arena import engine_adapter
 from arena.evidence import EVIDENCE_SCHEMA, build_evidence
 from arena.providers import (InvalidAnswerError, ProviderError,
-                             RefusalError, TransportError, TurnView)
+                             RefusalError, TransportError, TurnView,
+                             parse_retry_after)
 from arena.providers import (REMOTE_PROVIDERS, REQUIRED_ENV, clef, gateway,
                              jev, openai_decisions, pplx)
 from arena.providers.openai_decisions import OpenAIDecisions
@@ -105,6 +106,40 @@ class TestJev:
         provider = jev.build(http_client=_capture_client(handler))
         with pytest.raises(TransportError, match=str(status)):
             provider.decide(view)
+
+    def test_rate_limit_carries_the_wait_hint(self, view, monkeypatch):
+        monkeypatch.setenv("TYPESAFE_API_KEY", "test-key")
+
+        def handler(request):
+            return httpx.Response(
+                429, text="Rate limit exceeded. Retry after 9s.",
+                headers={"retry-after": "13"})
+
+        provider = jev.build(http_client=_capture_client(handler))
+        with pytest.raises(TransportError) as caught:
+            provider.decide(view)
+        assert caught.value.retry_after_s == 13.0
+
+    def test_rate_limit_without_header_reads_the_body(self, view, monkeypatch):
+        monkeypatch.setenv("TYPESAFE_API_KEY", "test-key")
+
+        def handler(request):
+            return httpx.Response(429, text="Rate limit exceeded. Retry after 9s.")
+
+        provider = jev.build(http_client=_capture_client(handler))
+        with pytest.raises(TransportError) as caught:
+            provider.decide(view)
+        assert caught.value.retry_after_s == 9.0
+
+
+class TestParseRetryAfter:
+    def test_reads_header_numbers_body_text_and_sdk_messages(self):
+        assert parse_retry_after(13) == 13.0
+        assert parse_retry_after("13") == 13.0
+        assert parse_retry_after("Retry-After: 7") is None
+        assert parse_retry_after(None, "Rate limit. Retry after 46s") == 46.0
+        assert parse_retry_after("Error code: 429 - retry after 3 s") == 3.0
+        assert parse_retry_after(None, "overloaded") is None
 
     @pytest.mark.parametrize("status", [400, 401, 422])
     def test_permanent_status_is_provider_error(self, view, monkeypatch,

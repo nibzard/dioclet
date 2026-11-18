@@ -164,6 +164,8 @@ dice, the rules, and the result.
   tries again one time. When the second try also fails, the game stops and
   Arena marks it as incomplete. Arena does not replace a failed answer with
   a bot move.
+- When the failure is a rate limit that names its own wait, Arena waits that
+  long (plus one second, capped at 60 seconds) before the retry.
 - When you push Ctrl-C, the game stops. Arena writes the result as
   `interrupted` and shows the scoreboard.
 
@@ -264,13 +266,13 @@ uv run --extra decisions arena --yes --series matches/series-four-way.json
 {
   "rules": "../rules/imperial-rivals-v0.10.2.json",
   "players": [
-    {"provider": "clef",    "model": "clef-flash"},
-    {"provider": "pplx",    "model": "pplx-decider-v1.3"},
-    {"provider": "gateway", "model": "nace-ai/drex-v2.0"},
-    {"provider": "gateway", "model": "baseten/elephant-1"}
+    {"provider": "clef", "model": "clef-flash"},
+    {"provider": "pplx", "model": "pplx-decider-v1.3"},
+    {"provider": "clef", "model": "clef"},
+    {"provider": "pplx", "model": "pplx-decider-flash-v1.3"}
   ],
-  "seeds": [42, 43, 44, 45, 46],
-  "budget": {"max_calls": 2200, "max_usd": 1.0},
+  "seeds": [42, 43, 44],
+  "budget": {"max_calls": 2000, "max_usd": 0.75},
   "rotate_seats": true,
   "shuffle_candidates": true
 }

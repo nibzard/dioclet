@@ -1,13 +1,32 @@
 {
   "rules": "../rules/imperial-rivals-v0.10.2.json",
   "players": [
-    {"provider": "clef", "model": "clef-flash"},
-    {"provider": "pplx", "model": "pplx-decider-v1.3"},
-    {"provider": "gateway", "model": "nace-ai/drex-v2.0"},
-    {"provider": "gateway", "model": "baseten/elephant-1"}
+    {
+      "provider": "clef",
+      "model": "clef-flash"
+    },
+    {
+      "provider": "pplx",
+      "model": "pplx-decider-v1.3"
+    },
+    {
+      "provider": "clef",
+      "model": "clef"
+    },
+    {
+      "provider": "pplx",
+      "model": "pplx-decider-flash-v1.3"
+    }
   ],
-  "seeds": [42, 43, 44, 45, 46],
-  "budget": {"max_calls": 2200, "max_usd": 1.0},
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "budget": {
+    "max_calls": 2000,
+    "max_usd": 0.75
+  },
   "rotate_seats": true,
   "shuffle_candidates": true
 }

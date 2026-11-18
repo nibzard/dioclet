@@ -7,7 +7,8 @@ import os
 import time
 
 from arena.providers import (Decision, InvalidAnswerError, ProviderError,
-                             RefusalError, TransportError, TurnView)
+                             RefusalError, TransportError, TurnView,
+                             parse_retry_after)
 from arena.evidence import build_evidence
 from arena.prompt import INTRO, PROJECTION_INSTRUCTIONS, succession_instructions
 
@@ -74,7 +75,8 @@ class OpenAIDecisions:
         except Exception as exc:
             raise TransportError(
                 f"{self.name} decisions call failed: {exc}",
-                exchange=exchange) from None
+                exchange=exchange,
+                retry_after_s=parse_retry_after(str(exc))) from None
         latency_ms = round((time.monotonic() - started) * 1000, 1)
         exchange["response"] = {"status_code": None, "body": _dump(response)}
         try:

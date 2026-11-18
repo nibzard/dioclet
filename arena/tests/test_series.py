@@ -153,14 +153,10 @@ def test_shipped_series_file_validates(monkeypatch):
     for var, value in REMOTE_ENV.items():
         monkeypatch.setenv(var, value)
     spec = series_mod.load_series(SHIPPED_SERIES)
-    assert len(spec.seeds) == 5
+    assert len(spec.seeds) == 3
     assert spec.has_remote_players
-    from arena.providers import gateway
-
-    second_gateway = spec.players[3]
-    assert second_gateway["provider"] == "gateway"
-    assert second_gateway["model"] in gateway.PRICING, \
-        "the second gateway seat needs a price for the budget to work"
+    assert spec.labels == ["clef/clef-flash", "pplx/pplx-decider-v1.3",
+                           "clef/clef", "pplx/pplx-decider-flash-v1.3"]
 
 
 def test_load_series_rejects_unknown_keys(tmp_path, monkeypatch):
@@ -581,17 +577,18 @@ def test_estimate_uses_the_price_tables(monkeypatch):
         monkeypatch.setenv(var, value)
     spec = series_mod.load_series(SHIPPED_SERIES)
     estimate = series_mod.estimate_series(spec)
-    assert estimate["games"] == 20
-    assert estimate["calls"] == 2200
-    from arena.providers import gateway
+    assert estimate["games"] == 12
+    assert estimate["calls"] == 1320
+    from arena.providers import clef, pplx
 
-    drex = gateway.PRICING["nace-ai/drex-v2.0"]
-    elephant = gateway.PRICING["baseten/elephant-1"]
-    calls_each = 20 * (series_mod.EST_TURNS_PER_GAME / 4)
+    rates = (clef.PRICING["clef-flash"] + clef.PRICING["clef"]
+             + pplx.PRICING["pplx-decider-v1.3"]
+             + pplx.PRICING["pplx-decider-flash-v1.3"])
+    calls_each = 12 * (series_mod.EST_TURNS_PER_GAME / 4)
     tokens = calls_each * series_mod.EST_INPUT_TOKENS_PER_CALL
-    expected = (0.038 + 0.02 + drex + elephant) * tokens / 1_000_000
+    expected = rates * tokens / 1_000_000
     assert estimate["cost_usd"] == pytest.approx(round(expected, 4))
-    assert estimate["cost_usd"] < 1.0, \
+    assert estimate["cost_usd"] < spec.budget.max_usd, \
         "the shipped series must fit its own budget"
     assert set(estimate["per_player"]) == set(spec.labels)
 

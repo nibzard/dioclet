@@ -8,7 +8,7 @@ import time
 import httpx
 
 from arena.providers import (Decision, InvalidAnswerError, ProviderError,
-                             TransportError, TurnView)
+                             TransportError, TurnView, parse_retry_after)
 from arena.evidence import build_evidence
 from arena.prompt import CLASSIC_INSTRUCTIONS, INTRO, succession_instructions
 
@@ -92,7 +92,10 @@ class SystemOneProvider:
         exchange = {"request": request, "response": _recorded(response)}
         if response.status_code in TRANSIENT_STATUS \
                 or response.status_code >= 500:
-            raise TransportError(detail, exchange=exchange)
+            raise TransportError(
+                detail, exchange=exchange,
+                retry_after_s=parse_retry_after(
+                    response.headers.get("retry-after"), response.text))
         raise ProviderError(detail, exchange=exchange)
 
     def _json(self, response) -> dict:

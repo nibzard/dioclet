@@ -307,10 +307,19 @@ def run_match(config, run_dir, hooks=None, provider_factory=None):
                         decision = provider.decide(view)
                     except ProviderError as exc:
                         error_class, error_text = type(exc).__name__, str(exc)
-                        attempts.append({"attempt": try_index, "ok": False,
-                                         "error_class": error_class,
-                                         "error": error_text,
-                                         "exchange": exc.exchange})
+                        attempt_record = {"attempt": try_index, "ok": False,
+                                          "error_class": error_class,
+                                          "error": error_text,
+                                          "exchange": exc.exchange}
+                        # A rate limit names its own wait; honor it once,
+                        # capped, so a retry can clear the limit instead
+                        # of racing back into the same refusal.
+                        wait_s = getattr(exc, "retry_after_s", None)
+                        if wait_s and try_index == 1:
+                            waited = round(min(wait_s + 1.0, 60.0), 1)
+                            attempt_record["waited_s"] = waited
+                            time.sleep(waited)
+                        attempts.append(attempt_record)
                         continue
                     if decision.action_id not in view.legal_ids:
                         error_class = "InvalidAnswerError"
