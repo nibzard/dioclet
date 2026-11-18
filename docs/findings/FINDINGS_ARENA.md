@@ -148,3 +148,32 @@ Read of the numbers:
   the shuffled shortlist order sways no model in a visible way.
 - No `--fixtures` score was collected at the baseline; the fixture
   set ran only against local bots (random 2/3, tactical 3/3).
+
+## Measurements against the baseline
+
+### Phase 5: candidate outcomes (commit `ef0c590`)
+
+Run 2026-11-18, series `20261118T122446Z-86e515e7-series`. 12 games
+(seeds 42-44, same as the baseline), 0 incomplete, 1620 calls,
+$0.5706, 1378 s, turns 120-152 (mean 135), all `survived_window`.
+
+| Player | Wins | Wilson 95% | Missed | Cost |
+|---|---|---|---|---|
+| `pplx/pplx-decider-v1.3` | 9/12 (0.75) | [0.468, 0.911] | 0 | $0.0423 |
+| `clef/clef` | 3/12 (0.25) | [0.089, 0.532] | 1 | $0.4383 |
+| `clef/clef-flash` | 0/12 (0.00) | [0.000, 0.243] | 7 | $0.0684 |
+| `pplx/pplx-decider-flash-v1.3` | 0/12 (0.00) | [0.000, 0.243] | 10 | $0.0216 |
+
+Against the baseline: no change outside noise. `pplx-decider-v1.3`
+0.83 to 0.75, `clef` 0.17 to 0.25; both intervals overlap the
+baseline intervals by a wide margin, and the model ordering is
+unchanged. The flash models still won nothing, and their missed
+interventions rose (5 to 7, 6 to 10) while `pplx-decider-v1.3` fell
+to 0. Cost per series rose 7% ($0.533 to $0.571) from the larger
+evidence payload.
+
+Read: exact outcome branches did not move play quality at this sample
+size. The strongest decider already inferred outcomes from the rule
+summary and duel odds; the flash models could not use the extra
+numbers. Keep the feature (it is honest public data and cheap), but
+do not expect win-rate movement from it alone.
