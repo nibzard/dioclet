@@ -125,7 +125,7 @@ class TestClaimDeadline(unittest.TestCase):
         self.assertEqual(claimant, "P0")
         obs = engine.observe(state, state["active_player"])
         projection = candidate_actions.project_observation(obs, rules)
-        self.assertEqual(projection["schema"], "v0102-succession-proj-3")
+        self.assertEqual(projection["schema"], "v0102-succession-proj-4")
         block = projection["claim"]
         # The window closes after the last turn of round 1 + 2.
         self.assertEqual(block["claimant"], "P0")

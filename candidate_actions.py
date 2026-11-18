@@ -8,12 +8,13 @@ future randomness. The shortlist never invents or renames actions: it
 only filters, groups, and annotates the engine's `legal_actions`.
 """
 
+import itertools
 import json
 
 import engine
 from board import Board
 
-SUCCESSION_SCHEMA_VERSION = "v0102-succession-proj-3"
+SUCCESSION_SCHEMA_VERSION = "v0102-succession-proj-4"
 
 
 def _enumerate_with_sides(sides):
@@ -195,6 +196,7 @@ def project_observation(obs, rules):
                  "turn_order_this_round": obs["turn_order"]},
         "self": next(p for p in public_players if p["id"] == obs["viewer"]),
         "opponents": [p for p in public_players if p["id"] != obs["viewer"]],
+        "goals": _projection_goals(obs, rules),
         "pending_claim": obs.get("pending_claim"),
         **({"claim": claim} if claim else {}),
         "public_locations": {key: obs["board"][key] for key in (
@@ -374,6 +376,173 @@ def _hidden_cards(obs, rules):
     if total <= 0 or blanks < 0:
         return None
     return factions, blanks, total
+
+
+# ---------------------------------------------------------------------------
+# Named goals
+# ---------------------------------------------------------------------------
+
+def move_reach_probability(distance, rules):
+    """Exact share of movement dice sums that cover the street distance.
+
+    The engine offers a move to a cell when the street distance is at
+    most the roll, so this is also the chance the cell is reachable on
+    the next turn.
+    """
+    movement = rules["movement"]
+    dice, sides = movement["dice"], movement["die_sides"]
+    if distance <= 0:
+        return 1.0
+    if distance > dice * sides:
+        return 0.0
+    rolls = itertools.product(range(1, sides + 1), repeat=dice)
+    reached = sum(1 for roll in rolls if sum(roll) >= distance)
+    return reached / sides ** dice
+
+
+def _reach_next_turn(steps, rules):
+    """Exact one-turn chance, or a turn estimate when one roll cannot span it."""
+    movement = rules["movement"]
+    dice, sides = movement["dice"], movement["die_sides"]
+    reach = {"dice": dice, "die_sides": sides}
+    if steps <= dice * sides:
+        reach.update(kind="exact",
+                     probability=round(move_reach_probability(steps, rules), 6))
+    else:
+        reach.update(kind="estimate", turns_at_best=-(-steps // (dice * sides)))
+    return reach
+
+
+def _goal(name, kind, target, dists, prerequisites, rules):
+    steps = dists[tuple(target)]
+    return {"name": name, "kind": kind, "target": list(target),
+            "steps": steps, "reach_next_turn": _reach_next_turn(steps, rules),
+            "prerequisites": prerequisites,
+            "prerequisites_met": all(p["met"] for p in prerequisites)}
+
+
+def _pay_prestige(cost, prestige):
+    return {"need": "prestige", "cost": cost, "have": prestige,
+            "met": prestige >= cost}
+
+
+def _claim_goal(obs, me, dists, rules):
+    if obs["phase"] == 2:
+        name = "Peristyle"
+        if obs.get("pending_claim") and \
+                obs["pending_claim"]["player"] == obs["viewer"]:
+            prereqs = [{"need": "hold_claim", "met": True}]
+        else:
+            required = rules["succession"]["factions_to_proclaim"]
+            prereqs = [
+                {"need": "factions", "required": required,
+                 "have": len(me["support"]), "met": len(me["support"]) >= required},
+                _pay_prestige(rules["succession"]["proclaim_cost"],
+                              me["prestige"]),
+            ]
+    else:
+        if obs["progress"]["first_challenger"] is not None:
+            return None  # the checkpoint is already claimed
+        name = "Checkpoint"
+        required = rules["palace"]["checkpoint_items_required"]
+        prereqs = [{"need": "items", "required": required,
+                    "have": len(me["equipment"]),
+                    "met": len(me["equipment"]) >= required}]
+    return _goal(name, "claim", obs["board"]["checkpoint"], dists,
+                 prereqs, rules)
+
+
+def _support_goals(obs, me, dists, rules):
+    goals = []
+    board = obs["board"]
+    spaces = board.get("card_spaces")
+    cost = rules["succession"]["support_cost"]
+    if spaces is None:
+        for faction, cell in sorted(board.get("factions", {}).items()):
+            if faction in me["support"]:
+                continue
+            prereqs = [_pay_prestige(cost, me["prestige"])]
+            goals.append(_goal(f"{faction.capitalize()} support", "support",
+                               cell, dists, prereqs, rules))
+        return goals
+    letters = {tuple(cell): chr(ord("A") + index)
+               for index, cell in enumerate(spaces["candidates"])}
+    hidden = _hidden_cards(obs, rules)
+    for cell in spaces["candidates"]:
+        key = f"{cell[0]},{cell[1]}"
+        if key in spaces["revealed"]:
+            faction = spaces["revealed"][key]
+            if not faction or faction in me["support"]:
+                continue  # a searched blank, or support already held
+            prereqs = [
+                {"need": "card", "state": "face up", "faction": faction,
+                 "met": True},
+                _pay_prestige(cost, me["prestige"]),
+            ]
+            goals.append(_goal(f"{faction.capitalize()} support", "support",
+                               cell, dists, prereqs, rules))
+        else:
+            prereqs = [{"need": "card", "state": "face down", "met": False}]
+            goal = _goal(f"card space {letters[tuple(cell)]}", "support",
+                         cell, dists, prereqs, rules)
+            if hidden is not None:
+                factions, blanks, total = hidden
+                # Public composition only: how many of the face-down
+                # cards must be factions by the setup rules.
+                goal["hidden_cards"] = {"total": total,
+                                        "factions": len(factions),
+                                        "blanks": blanks}
+            goals.append(goal)
+    return goals
+
+
+def _treasure_goals(obs, me, dists, rules):
+    goals = []
+    for name, cell in sorted(obs["board"]["districts"].items()):
+        revealed = obs["revealed_districts"].get(name)
+        if revealed is not None and revealed in me["equipment"]:
+            continue  # the item is already collected
+        goal = _goal(f"district {name}", "treasure", cell, dists, [], rules)
+        if revealed is not None:
+            goal["item"] = revealed
+        goals.append(goal)
+    return goals
+
+
+def _guard_goal(obs, me, dists, rules):
+    cap = obs["prestige_cap"]
+    posts = sorted((cell for cell in obs["board"]["guard_posts"]
+                    if dists[tuple(cell)] > 0),
+                   key=lambda cell: (dists[tuple(cell)], tuple(cell)))
+    if not posts:
+        return None
+    prereqs = [{"need": "prestige_below_cap", "cap": cap,
+                "have": me["prestige"],
+                "met": cap is None or me["prestige"] < cap}]
+    return _goal("Guard post", "prestige", posts[0], dists, prereqs, rules)
+
+
+def _projection_goals(obs, rules):
+    """Named destinations for the viewing seat, with public prerequisites.
+
+    Distances reuse the engine's street graph (Board.distances), the one
+    legal moves come from; the reach chance is the exact share of
+    movement dice that cover the distance in one turn.
+    """
+    me = obs["players"][obs["viewer"]]
+    dists = _succession_distances(obs, rules, me["position"])
+    goals = []
+    claim = _claim_goal(obs, me, dists, rules)
+    if claim is not None:
+        goals.append(claim)
+    if obs["phase"] == 2:
+        goals.extend(_support_goals(obs, me, dists, rules))
+    else:
+        goals.extend(_treasure_goals(obs, me, dists, rules))
+    guard = _guard_goal(obs, me, dists, rules)
+    if guard is not None:
+        goals.append(guard)
+    return goals
 
 
 def _duel_outcomes(action, obs, rules):
