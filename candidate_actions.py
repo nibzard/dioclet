@@ -12,7 +12,7 @@ import json
 
 from board import Board
 
-SUCCESSION_SCHEMA_VERSION = "v0102-succession-proj-1"
+SUCCESSION_SCHEMA_VERSION = "v0102-succession-proj-2"
 
 
 def _enumerate_with_sides(sides):
@@ -209,7 +209,8 @@ def project_observation(obs, rules):
         "progress": dict(obs["progress"]),
         "rule_summary": rule_summary(rules),
         "limits": (
-            "Only one-step dice probabilities are exact. Action choice "
+            "Outcome probabilities from dice and from the public remaining "
+            "composition of the board are exact. Action choice "
             "probabilities are model preferences, not win rates or human fun scores. "
             "Unrevealed treasure locations and future dice are not supplied."),
     }
@@ -263,6 +264,183 @@ def _public_player(obs, pid):
     return {"id": pid, "equipment": obs["players"][pid]["equipment"]}
 
 
+# ---------------------------------------------------------------------------
+# Predicted outcomes
+# ---------------------------------------------------------------------------
+
+def _prestige_after_award(prestige, amount, rules):
+    """Prestige after one award; the cap clamps the gain like the engine."""
+    cap = rules["prestige"]["cap"]
+    got = amount if cap is None else min(amount, max(0, cap - prestige))
+    return prestige + got
+
+
+def _leaves_claim(obs, action):
+    """True when the acting claimant ends this action off the Peristyle."""
+    pending = obs.get("pending_claim")
+    return bool(pending and pending["player"] == obs["viewer"]
+                and tuple(action["destination"])
+                != tuple(obs["board"]["checkpoint"]))
+
+
+def _displacement_preventers(rules):
+    """Items whose ability keeps a beaten claimant on the square."""
+    abilities = rules["treasures"]["abilities"]
+    return {item for item, spec in abilities.items()
+            if spec["type"] == "prevent_displacement"}
+
+
+def _hidden_items(obs):
+    """Items still face down, derived from public reveals and equipment."""
+    revealed = set(obs["revealed_districts"].values())
+    owned = {item for player in obs["players"].values()
+             for item in player["equipment"]}
+    return [name for name in obs["equipment_names"]
+            if name not in revealed and name not in owned]
+
+
+def _hidden_cards(obs, rules):
+    """Faction names and blanks still hidden in the card spaces.
+
+    Returns None when the public counts cannot describe the deal.
+    """
+    spaces = obs["board"].get("card_spaces")
+    if spaces is None:
+        return None
+    revealed = spaces["revealed"]
+    total = len(spaces["candidates"]) - len(revealed)
+    found = {name for name in revealed.values() if name}
+    deck = rules["succession"]["faction_cards"]["factions"]
+    factions = sorted(set(deck) - found)
+    blanks = total - len(factions)
+    if total <= 0 or blanks < 0:
+        return None
+    return factions, blanks, total
+
+
+def _duel_outcomes(action, obs, rules):
+    """Win and lose branches with the engine's exact prestige arithmetic."""
+    pending = obs.get("pending_claim")
+    prestige_cfg = rules["prestige"]
+    cost = action.get("contest_cost", 0)
+    at_risk = obs["players"][obs["viewer"]]["prestige"] - cost
+    vs_claimant = bool(pending and pending["player"] == action["target"])
+    shame = prestige_cfg["duel_loss_penalty"]
+    win = {
+        "prestige_after": _prestige_after_award(
+            at_risk, prestige_cfg["duel_win_reward"], rules),
+        "claim_cancelled": vs_claimant or _leaves_claim(obs, action),
+    }
+    lose = {
+        "prestige_after": at_risk - (min(shame, at_risk) if shame else 0),
+        "claim_cancelled": _leaves_claim(obs, action),
+    }
+    if vs_claimant and not (_displacement_preventers(rules)
+                            & set(obs["players"][action["target"]]["equipment"])):
+        # Without such an item the beaten claimant always returns to the
+        # gate. Holding one makes the once-per-game use private, so the
+        # outcome stays silent instead of guessing.
+        win["claimant_to_gate"] = True
+    odds = duel_odds(_public_player(obs, obs["viewer"]),
+                     _public_player(obs, action["target"]), rules, pending)
+    return [
+        {"condition": "win", "probability": round(odds["probability"], 6),
+         "effects": win},
+        {"condition": "lose",
+         "probability": round(1 - odds["probability"], 6), "effects": lose},
+    ]
+
+
+def _guard_post_outcomes(action, obs, rules):
+    """One die against the guard threshold: prestige on a pass only."""
+    prestige_cfg = rules["prestige"]
+    prestige = obs["players"][obs["viewer"]]["prestige"]
+    chance = threshold_probability(prestige_cfg["guard_post_min_roll"],
+                                   rules["movement"]["die_sides"])
+    cancelled = _leaves_claim(obs, action)
+    return [
+        {"condition": "win", "probability": round(chance, 6),
+         "effects": {"prestige_after": _prestige_after_award(
+             prestige, prestige_cfg["guard_post_reward"], rules),
+             "claim_cancelled": cancelled}},
+        {"condition": "lose", "probability": round(1 - chance, 6),
+         "effects": {"prestige_after": prestige,
+                     "claim_cancelled": cancelled}},
+    ]
+
+
+def _flat_outcome(action, obs, cost, effects=()):
+    """The single certain outcome of a paid, dice-free action."""
+    base = {"prestige_after": obs["players"][obs["viewer"]]["prestige"] - cost,
+            "claim_cancelled": _leaves_claim(obs, action)}
+    base.update(effects)
+    return [{"condition": "always", "probability": 1.0, "effects": base}]
+
+
+def _explore_outcomes(action, obs, rules, district):
+    """One branch per hidden item; one certain branch when the item is public."""
+    prestige = obs["players"][obs["viewer"]]["prestige"]
+    known = obs["revealed_districts"].get(district)
+    if known is not None:
+        return _flat_outcome(action, obs, 0,
+                             {"item_gained": known})
+    hidden = _hidden_items(obs)
+    count = len(obs["board"]["districts"]) - len(obs["revealed_districts"])
+    if len(hidden) != count:
+        return None
+    chance = round(1 / count, 6)
+    return [{"condition": f"reveal {name}", "probability": chance,
+             "effects": {"prestige_after": prestige,
+                         "claim_cancelled": _leaves_claim(obs, action),
+                         "item_gained": name}}
+            for name in hidden]
+
+
+def _search_outcomes(action, obs, rules):
+    """One branch per remaining faction card, plus one blank branch."""
+    cards = _hidden_cards(obs, rules)
+    if cards is None:
+        return None
+    factions, blanks, total = cards
+    prestige = obs["players"][obs["viewer"]]["prestige"]
+    cancelled = _leaves_claim(obs, action)
+    outcomes = [{"condition": f"reveal {name}",
+                 "probability": round(1 / total, 6),
+                 "effects": {"prestige_after": prestige,
+                             "claim_cancelled": cancelled,
+                             "card_revealed": name}}
+                for name in factions]
+    if blanks:
+        outcomes.append({"condition": "reveal blank",
+                         "probability": round(blanks / total, 6),
+                         "effects": {"prestige_after": prestige,
+                                     "claim_cancelled": cancelled,
+                                     "card_revealed": None}})
+    return outcomes
+
+
+def _action_outcomes(action, obs, rules):
+    """Public outcomes for one candidate; None when not computable."""
+    kind = action["kind"]
+    if kind == "duel":
+        return _duel_outcomes(action, obs, rules)
+    if kind == "guard_post":
+        return _guard_post_outcomes(action, obs, rules)
+    if kind == "gain_support":
+        return _flat_outcome(action, obs, rules["succession"]["support_cost"])
+    if kind == "proclaim":
+        return _flat_outcome(action, obs, rules["succession"]["proclaim_cost"])
+    if kind == "explore":
+        district = next((name for name, cell in obs["board"]["districts"].items()
+                         if list(cell) == action["destination"]), None)
+        if district is None:
+            return None
+        return _explore_outcomes(action, obs, rules, district)
+    if kind == "search_site":
+        return _search_outcomes(action, obs, rules)
+    return None
+
+
 def _succession_features(action, obs, rules):
     me = obs["players"][obs["viewer"]]
     dest = action["destination"]
@@ -300,6 +478,9 @@ def _succession_features(action, obs, rules):
         # Do not use action.get('item') even if a malformed caller supplies it.
         if district in obs["revealed_districts"]:
             feats["public_item"] = obs["revealed_districts"][district]
+    outcomes = _action_outcomes(action, obs, rules)
+    if outcomes is not None:
+        feats["outcomes"] = outcomes
     return feats
 
 
