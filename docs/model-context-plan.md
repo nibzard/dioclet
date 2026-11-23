@@ -1,8 +1,9 @@
 # Plan: correct and fair context for model players
 
-Status: in implementation since 2026-11-16. The three open decisions
-are made (see the decision section); each phase lands as one commit
-with all checks passing.
+Status: done 2026-11-23. Phases 1-7 landed, one commit each with
+all checks passing. Phase 8 is skipped under its own rule: no phase
+showed win-rate gains at 12 games per arm (see
+[`findings/FINDINGS_ARENA.md`](findings/FINDINGS_ARENA.md)).
 
 ## Goal
 
