@@ -206,3 +206,42 @@ do — seats stopped sitting on cancelable winning claims (missed
 interventions 18 to 12 overall) — and the leader's edge narrowed.
 Whether that is a real shift or a three-sample walk needs more
 games per arm; nothing here rejects "no change".
+
+### Phase 7: named goals (commit `f9b80a6`)
+
+A first attempt on 2026-11-18 lost 4 of 12 games to transport
+failures spread across both providers (two 65 s pplx timeouts, a
+pplx connection reset, a clef disconnect); that run cost $0.44 and
+is discarded. The re-run on 2026-11-23, series
+`20261123T182329Z-86e515e7-series`, played 12 games, 0 incomplete,
+1516 calls, $0.5857, 934 s, turns 112-144 (mean 126).
+
+| Player | Wins | Wilson 95% | Missed | Cost |
+|---|---|---|---|---|
+| `pplx/pplx-decider-v1.3` | 9/12 (0.75) | [0.468, 0.911] | 0 | $0.0429 |
+| `pplx/pplx-decider-flash-v1.3` | 2/12 (0.17) | [0.047, 0.448] | 14 | $0.0223 |
+| `clef/clef` | 1/12 (0.08) | [0.015, 0.354] | 6 | $0.4500 |
+| `clef/clef-flash` | 0/12 (0.00) | [0.000, 0.243] | 8 | $0.0705 |
+
+## Verdict across the four series
+
+| Player | Baseline | + outcomes | + claim block | + goals |
+|---|---|---|---|---|
+| `pplx/pplx-decider-v1.3` | 0.83 | 0.75 | 0.58 | 0.75 |
+| `clef/clef` | 0.17 | 0.25 | 0.33 | 0.08 |
+| `clef/clef-flash` | 0.00 | 0.00 | 0.08 | 0.00 |
+| `pplx/pplx-decider-flash-v1.3` | 0.00 | 0.00 | 0.00 | 0.17 |
+| Missed interventions | 13 | 18 | 12 | 28 |
+
+No context feature moved win rates outside noise at 12 games per
+arm. The Phase 6 dip of the leader was a walk, not a trend: it
+returned to 0.75 with goals in the evidence. Every interval crosses
+its neighbor. `pplx-decider-v1.3` stays the clear front runner in
+all four series (9-10 wins in three of them) and never misses an
+intervention after the baseline; the flash models stay at the
+bottom in every arm.
+
+Phase 8 (event history) is skipped under the plan's own rule: no
+phase showed gains, so the condition to try more context is not
+met. Total spend: $2.27 across five series runs (one discarded to
+transport failures).
