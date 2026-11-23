@@ -418,9 +418,28 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         tokens = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 2)
         self.assertEqual(tokens.count(
             f"City phase (max {self.rules['palace']['max_rounds']} rounds):"), 1)
-        self.assertEqual(tokens.count(
-            f"Succession phase (max {self.rules['succession']['max_rounds']} rounds):"), 1)
+        # The succession phase has no round limit; its boxes only tally
+        # rounds for the claim window.
+        self.assertEqual(tokens.count("Succession phase (no round limit):"), 1)
+        self.assertNotIn(
+            f"max {self.rules['succession']['max_rounds']} rounds", tokens)
         self.assertIn("PAWN", tokens.upper())  # fold-up pawns I-IV
+
+    def test_printed_game_has_no_succession_round_limit(self):
+        # A standing claim is the only way the game ends. The engine's
+        # succession.max_rounds is a backstop that the kit never states.
+        cap = self.rules["succession"]["max_rounds"]
+        for name in ("imperial-rivals-305ad-rulebook-A4-BW.pdf",
+                     "imperial-rivals-305ad-quick-reference-A4-BW.pdf",
+                     "imperial-rivals-305ad-teaching-guide-A4-BW.pdf",
+                     "imperial-rivals-305ad-player-sheets-A4-BW.pdf",
+                     "imperial-rivals-305ad-cards-tokens-A4-BW.pdf"):
+            text = whole_text(name)
+            self.assertNotIn("ends in a draw", text, name)
+            self.assertNotIn("If nobody wins", text, name)
+            self.assertNotIn("= draw", text, name)
+            self.assertNotIn(f"round {cap}", text, name)
+            self.assertNotIn(f"max {cap} rounds", text, name)
 
 
 class SuccessionMapMatchesRules(unittest.TestCase):

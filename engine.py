@@ -1018,6 +1018,8 @@ def _advance(state):
                 state["events"][-1]["events"].append({"type": "phase_transition", "from_phase": 1,
                     "to_phase": 2, "palace_timeout": state["palace_timeout"]})
         elif state["round"] > rules["succession"]["max_rounds"]:
+            # An engine backstop for a stalled game, not a printed rule:
+            # the printed game ends only by a standing claim (D58).
             state["status"], state["winner"], state["end_reason"] = "finished", None, "succession_timeout"
             state["succession_timeout"] = True
             state["round"] = rules["succession"]["max_rounds"]

@@ -65,6 +65,10 @@ PRODUCT = f"{BRAND}: {EDITION}"
 DESCRIPTOR = "The Roman Succession"
 TAGLINE = "Claim the throne. Survive the challenge."
 
+# Boxes on the succession round tally of the tokens page. The phase has
+# no round limit; the boxes only count rounds for the claim window.
+SUCCESSION_TALLY = 24
+
 
 # ---------------------------------------------------------------------------
 # Rules values in prose. Every rule number in the printed text is read
@@ -122,7 +126,6 @@ def printed_values(rules):
         "window": window,
         "transition_min_prestige": s["transition_min_prestige"],
         "city_rounds": rules["palace"]["max_rounds"],
-        "succession_rounds": s["max_rounds"],
         "grace": rules["palace"]["rounds_after_checkpoint"],
         "items_required": rules["palace"]["checkpoint_items_required"],
         "items": rules["treasures"]["items"],
@@ -1522,9 +1525,8 @@ def cards_tokens_pdf(path, rules):
             c.drawCentredString((60.3 + i * 5.6) * mm, (y - 5.4) * mm, str(i + 1))
     y -= 10
     c.setFont("Times-Roman", 8)
-    c.drawString(16 * mm, y * mm,
-                 f"Succession phase (max {v['succession_rounds']} rounds):")
-    for i in range(v["succession_rounds"]):
+    c.drawString(16 * mm, y * mm, "Succession phase (no round limit):")
+    for i in range(SUCCESSION_TALLY):
         box(c, 58.0 + i * 5.6, y - 1.6, 4.6, 5.2, lw=0.7)
     y -= 8
     grace = v["grace"]
@@ -1532,7 +1534,7 @@ def cards_tokens_pdf(path, rules):
     c.drawString(16 * mm, y * mm,
                  f"The city phase ends {grace} full round{'' if grace == 1 else 's'} "
                  f"after the first checkpoint claim (or at round {v['city_rounds']}). "
-                 f"Track rounds only if you use the {v['city_rounds']}-round limits.")
+                 f"The succession phase has no round limit.")
     doc_footer(c, 3)
     c.showPage()
 
@@ -1766,7 +1768,7 @@ def rulebook_pages(rules):
     rng, tie = v["duel_range"], v["tie_winner"]
     sc, cf = v["support_cost"], v["contest_fee"]
     req, win = v["factions_to_proclaim"], v["window"]
-    city_rounds, succ_rounds = v["city_rounds"], v["succession_rounds"]
+    city_rounds = v["city_rounds"]
     grace, items_req = v["grace"], v["items_required"]
     items, up = v["items"], v["start_face_up"]
     n_items = len(items)
@@ -2014,9 +2016,6 @@ def rulebook_pages(rules):
               f"Marcus, the {tie}, wins. The claim is canceled, Livia pays {dl} "
               "Prestige shame, and she may still use the armor to stay "
               f"at the Peristyle. Marcus earns {dw} Prestige."),
-        ("h", "If nobody wins"),
-        ("p", f"If no claim survives by the end of round {succ_rounds} of the succession phase, "
-              "the game ends in a draw - the throne stays empty. This is rare."),
         ("h", "Remember"),
         ("b", "An ordinary duel is free. Challenging a claim always costs the "
               f"{cf} Prestige fee."),
@@ -2171,7 +2170,7 @@ def quick_reference_pdf(path, rules):
     sc, cf = v["support_cost"], v["contest_fee"]
     rng, tie = v["duel_range"], v["tie_winner"]
     req, win = v["factions_to_proclaim"], v["window"]
-    city_rounds, succ_rounds = v["city_rounds"], v["succession_rounds"]
+    city_rounds = v["city_rounds"]
     grace, items_req = v["grace"], v["items_required"]
     factions = v["factions"]
     empty = v["empty_streets"]
@@ -2219,8 +2218,7 @@ def quick_reference_pdf(path, rules):
                              "before you roll.", "Win: claim "
                              "canceled, claimant returns to their gate on the succession "
                              "map (armor: stay put once), keeps everything."]),
-        ("WINNING", [f"A claim that stands {full_rounds(win)} = emperor.",
-                     f"No claim standing by succession round {succ_rounds} = draw."]),
+        ("WINNING", [f"A claim that stands {full_rounds(win)} = emperor."]),
     ]
     # The blocks must end above the footer rule (13 mm). Use the most
     # generous line pitch that fits; fail loudly if none does.

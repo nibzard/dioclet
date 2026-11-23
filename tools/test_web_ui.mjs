@@ -71,6 +71,9 @@ check("rulebook teaches the twin boards and the window",
   body.innerHTML.includes("succession map") &&
   body.innerHTML.includes("1 full round") &&
   body.innerHTML.includes("Dagger"));
+check("rulebook states no succession round limit",
+  !body.innerHTML.includes("ends in a draw") &&
+  !/round\s+\d+\s+of the succession/.test(body.innerHTML));
 document.getElementById("rulesclose").click();
 check("close button hides overlay", overlay.classList.contains("hidden"));
 

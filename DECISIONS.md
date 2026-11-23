@@ -724,3 +724,23 @@ practical. No baseline rule values were changed.
      (validated in schema, engine, web board, and print kit) so nobody
      starts Map 2 locked out. Golden traces, web bundles, card art, and
      BW/ART/COLOR print kits regenerated in lockstep.
+
+- **D58 No succession round limit (2026-11-23).** The owner removed the
+  24-round succession cap from the game. The rulebook's "If nobody
+  wins" draw, the quick-reference draw line, the web rulebook's draw
+  sentence, and the "max 24 rounds" wording on the tokens-page round
+  track are gone. `succession.max_rounds` stays in the rules file at 100
+  as an engine backstop for a stalled game, because an arena seat bills
+  by the turn; a game that reaches it still reports
+  `succession_timeout`. Evidence on the D57 rules with the built-in
+  bots and the cap lifted to 600:
+  1. 4,224 games (seeds 1200000+, 384; seeds 1300000+, 3,840): every
+     game crowned an emperor, and none ran past succession round 43.
+  2. 70 games (1.7%) ran past round 24, and all of them finished on
+     their own, most by round 30. Under the old rule each was a draw.
+  3. The 200 golden-trace games held 5 draws at round 24. All five now
+     end in a win (succession rounds 26, 26, 26, 30, 55), and each keeps
+     its old turns as an exact prefix.
+  The palace cap (`palace.max_rounds`, 24) stays. It moves the game to
+  the succession map instead of ending it, and no bot game in 3,840
+  reached it (palace median 14 rounds, maximum 19).

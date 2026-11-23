@@ -39,8 +39,11 @@ The game has two phases and two boards:
   1, so the claim survives round R + 1 in full.
 - A rival cancels a standing claim only by winning a challenge duel,
   after paying the mandatory **contest fee** of 1 Prestige.
-- If no claim stands by succession round 24, the game ends in a
-  **draw** (`succession_timeout`).
+
+The succession phase has no round limit, and the printed game has no
+draw. `succession.max_rounds` (100) is an engine backstop for a
+stalled game: a game that reaches it ends in a **draw** (`end_reason`
+`succession_timeout`).
 
 The engine also implements a second win route for rules files that set
 `succession.claim_window_rounds` to 0: a claim is crowned by
@@ -77,7 +80,7 @@ rejects every unknown key. No value is supplied by code.
   "duels":       {"range": 2, "tie_winner": "attacker"},
   "palace":      {"max_rounds": 24, "checkpoint_items_required": 6,
                   "rounds_after_checkpoint": 1, "map": {"...": "..."}},
-  "succession":  {"max_rounds": 24, "support_cost": 1,
+  "succession":  {"max_rounds": 100, "support_cost": 1,
                   "factions_to_proclaim": 2, "contest_fee": 1,
                   "claim_window_rounds": 1, "proclaim_cost": 0,
                   "transition_min_prestige": 1,
@@ -300,7 +303,8 @@ equipment, support, abilities used, telemetry counters,
 
 `palace_timeout` is true when the palace phase ended at round 24 with
 no checkpoint claim. `succession_timeout` is true when the succession
-phase ended at round 24 with no standing claim (a draw).
+phase reached `succession.max_rounds` (100) with no standing claim (a
+draw; an engine backstop, not a printed rule).
 
 ## 9. Randomness and determinism
 

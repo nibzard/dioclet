@@ -55,7 +55,7 @@ def pending_game():
 
 
 def standing_claim_game():
-    """A standing claim under the printed two-round window, with P1
+    """A standing claim under the printed claim window, with P1
     funded for a contest duel."""
     state = game()
     state["phase"] = 2
@@ -120,6 +120,30 @@ class TestClaimWindow(unittest.TestCase):
         self.assertIsNone(state["pending_claim"])
         self.assertIsNone(state["winner"])
         self.assertEqual(state["status"], "in_progress")
+        engine.check_invariants(state)
+
+    def test_a_claim_proclaimed_after_round_24_still_wins(self):
+        # The succession phase has no round limit: the game runs past
+        # round 24, and a claim proclaimed there is crowned at the end
+        # of its window.
+        state = game()
+        state["phase"] = 2
+        state["round"] = 30
+        window = state["rules"]["succession"]["claim_window_rounds"]
+        active(state, "P3")
+        take(state, "move")
+        self.assertEqual((state["status"], state["round"]), ("in_progress", 31))
+        state["players"]["P0"].update(pos=PERISTYLE[:], support=["army", "elites"])
+        active(state, "P0")
+        take(state, "proclaim")
+        guard = 0
+        while state["status"] == "in_progress" and guard < 40:
+            pid = state["active_player"]
+            take(state, "maintain_claim" if pid == "P0" else "move")
+            guard += 1
+        self.assertEqual(state["end_reason"], "survived_window")
+        self.assertEqual(state["winner"], "P0")
+        self.assertEqual(state["round"], 31 + window + 1)
         engine.check_invariants(state)
 
 

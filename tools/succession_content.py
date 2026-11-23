@@ -43,7 +43,6 @@ def rulebook_html(rules):
     trans_min = cfg["transition_min_prestige"]
     grace = palace["rounds_after_checkpoint"]
     l1_max = palace["max_rounds"]
-    l2_max = cfg["max_rounds"]
     min_roll = prestige["guard_post_min_roll"]
     gw = count_word(prestige["guard_post_reward"])
     dw = count_word(prestige["duel_win_reward"])
@@ -143,8 +142,7 @@ map and keeps everything it owns: items, Prestige, and support already gained.{t
 Challenging a standing claim costs a mandatory <b>{fee} Prestige fee</b>, paid before you roll - even if you lose.
 Without at least {fee} Prestige you cannot contest at all. A winning challenge cancels the claim;
 the claimant returns to their gate unless the armor (lorica segmentata) is unused, which once per game
-lets a beaten claimant keep the square (the claim still dies). If no claim survives by round
-{l2_max} of the succession, the game ends in a draw.</p>
+lets a beaten claimant keep the square (the claim still dies).</p>
 <h2>What you can see</h2>
 <p>Positions, equipment, Prestige, supporters, revealed cards, and claims are public. Face-down
 treasure and faction cards and future rolls are hidden. The same seed and setup reproduce the game.</p>
