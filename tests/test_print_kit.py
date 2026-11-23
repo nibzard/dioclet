@@ -3,15 +3,18 @@
 The kit is generated art, so these tests pin the contract a family
 relies on when they print it: page sizes and counts, board geometry
 against the rules JSON, every symbol inside a printable area of at
-least one tile, tracker counts, and the printed prose matching the
-rules JSON.
+least one tile, tracker counts, the printed prose matching the rules
+JSON, and a rebuild that gives the same bytes.
 """
 
 import itertools
 import json
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -585,6 +588,63 @@ class SuccessionMapMatchesRules(unittest.TestCase):
         self.assertIn("FACTION CARD BACKS", backs)
         self.assertEqual(backs.count("FACTION CARD"),
                          1 + len(deck["factions"]) + deck["empty"])  # header + backs
+
+
+class ReproducibleBuild(unittest.TestCase):
+    """A rebuild of unchanged content gives the same bytes.
+
+    ReportLab stamps each PDF with the wall clock and derives the file
+    ID from that stamp, so every rebuild used to be a new git blob. The
+    kit builds every canvas with a fixed stamp instead.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.rules = engine.load_rules(str(REPO / kit.RULES_FILE))
+        cls.scratch = Path(tempfile.mkdtemp(prefix="dioclet-rebuild-"))
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.scratch, ignore_errors=True)
+
+    def _assert_stable(self, name, draw):
+        """`draw(path)` under two wall clocks must write equal bytes."""
+        with self.subTest(pdf=name):
+            built = []
+            for instant in (1_000_000_000, 1_900_000_000):
+                path = self.scratch / f"{name}-{instant}.pdf"
+                with mock.patch("time.time", return_value=instant):
+                    draw(path)
+                built.append(path.read_bytes())
+            self.assertEqual(built[0], built[1],
+                             f"{name} changes with the clock")
+
+    def test_black_and_white_pdfs_ignore_the_clock(self):
+        L = kit.build_layout(self.rules)
+        self._assert_stable("board", lambda p: kit.board_pdf(str(p), L))
+        self._assert_stable("succession-map",
+                            lambda p: kit.succession_map_pdf(str(p), self.rules))
+        self._assert_stable("cards-tokens",
+                            lambda p: kit.cards_tokens_pdf(str(p), self.rules))
+        self._assert_stable("print-instructions",
+                            lambda p: kit.print_instructions_pdf(str(p)))
+
+    @unittest.skipUnless((Path(kit.ART_DIR) / "palace-board.png").exists(),
+                         "art assets not rendered (run: node art/render.mjs)")
+    def test_art_pdfs_ignore_the_clock(self):
+        L = kit.build_layout(self.rules)
+        self._assert_stable("art-board",
+                            lambda p: kit.art_board_pdf(str(p), L, kit.ART_DIR))
+
+    def test_the_combined_kit_ignores_the_clock(self):
+        def combined(path):
+            parts = []
+            for n in range(2):
+                part = self.scratch / f"part-{n}.pdf"
+                kit.print_instructions_pdf(str(part))
+                parts.append(str(part))
+            kit.combine(parts, str(path))
+        self._assert_stable("combined", combined)
 
 
 if __name__ == "__main__":

@@ -744,3 +744,14 @@ practical. No baseline rule values were changed.
   The palace cap (`palace.max_rounds`, 24) stays. It moves the game to
   the succession map instead of ending it, and no bot game in 3,840
   reached it (palace median 14 rounds, maximum 19).
+
+  **D58 follow-up (2026-11-23).** The backstop is not a rule a seat can
+  plan against, so it stays out of sight. `observe()` no longer reports
+  `progress.succession_max_rounds`. The claim projection no longer
+  reads the backstop, because a pending claim always has a deadline.
+  The engine never ends a game that has a pending claim by the
+  backstop: the claim wins or is canceled first, and a game without a
+  claim still ends at `succession.max_rounds`. The arena's tactical
+  fixtures are frozen again. They had stayed on the pre-D57 rules
+  since 2026-11-16, because the fixture test compared candidate ids
+  only; it now compares the whole rebuilt shortlist.

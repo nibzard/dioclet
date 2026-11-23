@@ -164,6 +164,11 @@ python3 tools/make_a4_print_kit.py --art    # also the drawn kit
 python3 tools/make_a4_print_kit.py --art --color  # and the full-colour kit
 ```
 
+The PDFs are reproducible: each is built with a fixed document date,
+so a rebuild of unchanged content gives identical bytes and git stores
+no new blobs. The committed playtest pack and web bundle must equal a
+fresh build; `tests/test_generated_files.py` fails when one is stale.
+
 The drawn assets are seeded and reproducible. To re-render them after
 changing the rules or the drawing code (`@napi-rs/canvas` needs Node 18+):
 

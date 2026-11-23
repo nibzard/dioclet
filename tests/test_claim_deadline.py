@@ -1,12 +1,14 @@
-# ABOUTME: Claim-deadline projection tests: the block must predict the exact
-# ABOUTME: turn the engine ends a survived claim, from public data only.
+# ABOUTME: Claim-deadline tests (the block predicts the exact turn a survived
+# ABOUTME: claim wins) and backstop tests (the round cap stays out of sight).
 """Phase 6 claim deadline tests.
 
 The claim block must agree with the engine on the turn a claim wins,
 must count each rival's cancel chances from the turn schedule, and must
 derive can_cancel_this_turn from the legal actions. Claims are proclaimed
 at each of the four positions in a round, because the schedule and the
-chance counts depend on the position.
+chance counts depend on the position. `TestEngineBackstop` keeps the
+succession round backstop out of the observation and away from a
+pending claim.
 """
 
 import copy
@@ -250,27 +252,6 @@ class TestClaimDeadline(unittest.TestCase):
         self.assertEqual(state["turn_id"], deadline)
         self.assertEqual(deadline, 8)
 
-    def test_claim_past_the_last_round_never_wins(self):
-        rules = _rules()
-        max_round = rules["succession"]["max_rounds"]
-        state = _ready_state(rules)
-        state["active_player"] = "P1"
-        state["turn_index"] = 1
-        state["round"] = max_round
-        state["players"]["P0"].update(pos=PERISTYLE[:])
-        state["pending_claim"] = {"player": "P0", "claim_id": state["turn_id"],
-                                  "responded": [], "round": state["round"]}
-        block = _claim_block(rules, state)
-        self.assertIsNone(block["wins_after_turn"])
-        self.assertEqual(sorted({t["round"] for t in block["remaining_turns"]}),
-                         [max_round])
-        while not engine.is_finished(state):
-            obs = engine.observe(state, state["active_player"])
-            action = _non_cancelling_action(obs)
-            engine.apply_action(state, obs["viewer"], obs["turn_id"],
-                                action["action_id"])
-        self.assertEqual(state["end_reason"], "succession_timeout")
-
     def test_the_block_reads_only_public_fields(self):
         rules = _rules()
         state, _claimant = _proclaim_at(rules, position=1)
@@ -291,6 +272,59 @@ class TestClaimDeadline(unittest.TestCase):
         self.assertEqual(set(projection["claim"]), {
             "claimant", "wins_after_turn", "remaining_turns",
             "cancel_chances", "can_cancel_this_turn"})
+
+
+class TestEngineBackstop(unittest.TestCase):
+    """succession.max_rounds ends a stalled game and is no printed rule.
+
+    The seats must not see it: no observation carries it, and a pending
+    claim keeps its deadline wherever the round counter stands.
+    """
+
+    def test_the_observation_does_not_report_the_backstop(self):
+        rules = _rules()
+        obs = engine.observe(_ready_state(rules), "P0")
+        self.assertNotIn("succession_max_rounds", obs["progress"])
+        self.assertNotIn("succession_max_rounds", json.dumps(obs))
+
+    def test_a_claim_in_the_backstop_round_still_wins(self):
+        rules = _rules()
+        max_round = rules["succession"]["max_rounds"]
+        state = _ready_state(rules)
+        state["active_player"] = "P1"
+        state["turn_index"] = 1
+        state["round"] = max_round
+        state["players"]["P0"].update(pos=PERISTYLE[:])
+        state["pending_claim"] = {"player": "P0", "claim_id": state["turn_id"],
+                                  "responded": [], "round": state["round"]}
+        block = _claim_block(rules, state)
+        self.assertIsNotNone(block["wins_after_turn"])
+        while not engine.is_finished(state):
+            obs = engine.observe(state, state["active_player"])
+            action = _non_cancelling_action(obs)
+            engine.apply_action(state, obs["viewer"], obs["turn_id"],
+                                action["action_id"])
+        self.assertEqual(state["end_reason"], "survived_window")
+        self.assertEqual(state["winner"], "P0")
+        self.assertEqual(state["turn_id"], block["wins_after_turn"])
+
+    def test_a_game_without_a_claim_still_ends_at_the_backstop(self):
+        rules = _rules()
+        state = _ready_state(rules)
+        state["round"] = rules["succession"]["max_rounds"]
+        for player in state["players"].values():
+            # The helper funds seats above the Prestige cap, which only
+            # the game-end invariants look at.
+            player.update(support=[], prestige=0)
+        while not engine.is_finished(state):
+            obs = engine.observe(state, state["active_player"])
+            move = next(a for a in obs["legal_actions"] if a["kind"] == "move")
+            engine.apply_action(state, obs["viewer"], obs["turn_id"],
+                                move["action_id"])
+        self.assertEqual(state["end_reason"], "succession_timeout")
+        self.assertIsNone(state["winner"])
+        self.assertEqual(state["round"], rules["succession"]["max_rounds"])
+        engine.check_invariants(state)
 
 
 if __name__ == "__main__":

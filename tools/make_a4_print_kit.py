@@ -625,8 +625,15 @@ def draw_tile_furniture(c, L, page_no, window):
         c.drawRightString((ax - x0) * mm, (ay - y0) * mm, note)
 
 
+def open_canvas(path, pagesize):
+    # Every PDF of the kit opens here. invariant=1 fixes the document
+    # dates and derives the file ID from the content, so a rebuild of
+    # unchanged content gives the same bytes and git stores no new blob.
+    return pdfcanvas.Canvas(path, pagesize=pagesize, invariant=1)
+
+
 def board_pdf(path, L):
-    c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
+    c = open_canvas(path, landscape(A4))
     c.setTitle(f"{PRODUCT} - board (4 x A4, black and white)")
     c.setAuthor("dioclet print kit")
     for page_no in ("1", "2", "3", "4"):
@@ -910,7 +917,7 @@ def draw_succession_map(c, S):
 
 def succession_map_pdf(path, rules):
     S = build_succession_layout(rules)
-    c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
+    c = open_canvas(path, landscape(A4))
     c.setTitle(f"{PRODUCT} - succession map (4 x A4, black and white)")
     c.setAuthor("dioclet print kit")
     for page_no in ("1", "2", "3", "4"):
@@ -934,7 +941,7 @@ PW, PH = 210.0, 297.0
 
 
 def new_doc(path, title, landscape_pages=False):
-    c = pdfcanvas.Canvas(path, pagesize=A4)
+    c = open_canvas(path, A4)
     c.setTitle(title)
     c.setAuthor(f"{BRAND} print kit")
     return c
@@ -1658,7 +1665,7 @@ def art_tiled_pdf(path, L, asset, title, asset_dir=ART_DIR):
     """A full-board artwork tiled onto four A4 pages under the BW furniture."""
     img = art_asset(asset, asset_dir)
     ax0, ay0, ax1, ay1 = L["art"]
-    c = pdfcanvas.Canvas(path, pagesize=landscape(A4))
+    c = open_canvas(path, landscape(A4))
     c.setTitle(title)
     c.setAuthor("dioclet print kit")
     for page_no in ("1", "2", "3", "4"):

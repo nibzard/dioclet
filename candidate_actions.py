@@ -278,9 +278,7 @@ def _claim_block(obs, rules):
     (engine.claim_window_deadline), so projection and engine share one
     source. Every input is public: the claim, the turn order, and the
     rules file. Without a claim window the acclamation response rule
-    decides the win, so the schedule fields stay empty. A deadline past
-    the last succession round never arrives; the schedule then runs to
-    the game's end and the win turn stays unset.
+    decides the win, so the schedule fields stay empty.
     """
     pending = obs.get("pending_claim")
     if not pending:
@@ -296,17 +294,11 @@ def _claim_block(obs, rules):
         return {"claimant": claimant, "wins_after_turn": None,
                 "remaining_turns": [], "cancel_chances": {},
                 "can_cancel_this_turn": can_cancel}
-    max_round = rules["succession"]["max_rounds"]
-    wins_after_turn = None
-    if deadline_round <= max_round:
-        wins_after_turn = (obs["turn_id"] + len(order) - 1 - seated
-                           + len(order) * (deadline_round - obs["round"]))
-    last_round = min(deadline_round, max_round)
+    wins_after_turn = (obs["turn_id"] + len(order) - 1 - seated
+                       + len(order) * (deadline_round - obs["round"]))
     turn, idx = obs["turn_id"], seated
     rotate = rules["turns"]["rotate_first_player_each_round"]
-    span = len(order) - idx + len(order) * (last_round - obs["round"])
-    if wins_after_turn is not None:
-        span = min(span, wins_after_turn - turn + 1)
+    span = wins_after_turn - turn + 1
     turns, chances = [], {}
     round_no = obs["round"]
     for _ in range(span):

@@ -677,7 +677,6 @@ def observe(state, player):
                                                 if len(state["players"][p]["equipment"]) >= rules["palace"]["checkpoint_items_required"]],
                 "claim_required_equipment": rules["palace"]["checkpoint_items_required"],
                 "palace_max_rounds": rules["palace"]["max_rounds"],
-                "succession_max_rounds": rules["succession"]["max_rounds"],
                 "grace_full_rounds": rules["palace"]["rounds_after_checkpoint"],
                 "support_cost": config["support_cost"],
                 "required_support": config["factions_to_proclaim"],
@@ -1017,9 +1016,10 @@ def _advance(state):
                 state["faction_sites_revealed"] = {}
                 state["events"][-1]["events"].append({"type": "phase_transition", "from_phase": 1,
                     "to_phase": 2, "palace_timeout": state["palace_timeout"]})
-        elif state["round"] > rules["succession"]["max_rounds"]:
+        elif pending is None and state["round"] > rules["succession"]["max_rounds"]:
             # An engine backstop for a stalled game, not a printed rule:
-            # the printed game ends only by a standing claim (D58).
+            # the printed game ends only by a standing claim (D58). A
+            # pending claim ends the game by itself, so it is never cut.
             state["status"], state["winner"], state["end_reason"] = "finished", None, "succession_timeout"
             state["succession_timeout"] = True
             state["round"] = rules["succession"]["max_rounds"]

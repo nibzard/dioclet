@@ -632,9 +632,11 @@ def test_fixtures_are_frozen_and_public():
         if card_spaces is not None:
             assert set(card_spaces) <= {"candidates", "revealed"}
         rebuilt = series_mod.fixture_view(doc, _fixture_rules(doc))[1]
-        assert [c["action_id"] for c in rebuilt] == \
-            [c["action_id"] for c in doc["candidates"]], \
-            f"{doc['name']}: the frozen shortlist drifted from the engine"
+        # The whole shortlist, not only its ids: a stale description
+        # misleads a provider as much as a stale id does.
+        assert rebuilt == doc["candidates"], (
+            f"{doc['name']}: the frozen shortlist drifted from the engine; "
+            "re-freeze with arena/tests/fixtures/tactical/make_fixtures.py")
         candidate_ids = {c["action_id"] for c in doc["candidates"]}
         assert set(doc["correct"]) <= candidate_ids
 

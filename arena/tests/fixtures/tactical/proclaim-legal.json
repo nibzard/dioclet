@@ -332,7 +332,7 @@
     },
     {
       "action_id": "a0031",
-      "description": "Proclaim your claim at the Peristyle. A proclaimed claim wins after it survives 2 full round(s) uncancelled; rivals must cancel it inside the window.",
+      "description": "Proclaim your claim at the Peristyle. A proclaimed claim wins after it survives 1 full round(s) uncancelled; rivals must cancel it inside the window.",
       "destination": [
         9,
         6
@@ -344,6 +344,16 @@
         "distance_to_peristyle_after": 0,
         "distance_to_prestige_after": 13,
         "distance_to_support_after": 12,
+        "outcomes": [
+          {
+            "condition": "always",
+            "effects": {
+              "claim_cancelled": false,
+              "prestige_after": 2
+            },
+            "probability": 1.0
+          }
+        ],
         "path_steps": 1,
         "support_after": 2
       },
@@ -2079,7 +2089,7 @@
     "players": {
       "P0": {
         "attack_bonus": 1,
-        "attack_vs_claimant_bonus": 1,
+        "attack_vs_claimant_bonus": 2,
         "defense_bonus": 1,
         "equipment": [
           "galea",
@@ -2108,7 +2118,7 @@
       },
       "P1": {
         "attack_bonus": 1,
-        "attack_vs_claimant_bonus": 1,
+        "attack_vs_claimant_bonus": 2,
         "defense_bonus": 1,
         "equipment": [
           "galea",
@@ -2136,7 +2146,7 @@
       },
       "P2": {
         "attack_bonus": 1,
-        "attack_vs_claimant_bonus": 1,
+        "attack_vs_claimant_bonus": 2,
         "defense_bonus": 1,
         "equipment": [
           "galea",
@@ -2165,7 +2175,7 @@
       },
       "P3": {
         "attack_bonus": 1,
-        "attack_vs_claimant_bonus": 1,
+        "attack_vs_claimant_bonus": 2,
         "defense_bonus": 1,
         "equipment": [
           "galea",
@@ -2195,7 +2205,7 @@
     "prestige_cap": 3,
     "progress": {
       "claim_required_equipment": 6,
-      "claim_window_rounds": 2,
+      "claim_window_rounds": 1,
       "contest_cost": 1,
       "duel_loser_cost": 1,
       "first_challenger": "P0",
@@ -2209,9 +2219,9 @@
       ],
       "proclaim_cost": 0,
       "required_support": 2,
-      "succession_max_rounds": 24,
       "support_cost": 1,
-      "transition_after_round": 13
+      "transition_after_round": 13,
+      "transition_min_prestige": 1
     },
     "revealed_districts": {
       "A": "lorica_segmentata",

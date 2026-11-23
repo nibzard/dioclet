@@ -214,9 +214,10 @@
         g.factionSitesRevealed = {};
         event(rec, "phase_transition", { from_phase: 1, to_phase: 2, palace_timeout: g.palaceTimeout });
         g.log.push("The succession map takes over. Every pawn returns to its gate; items, Prestige, and support remain yours.");
-      } else if (g.phase === 2 && g.round > B.successionMaxRounds) {
+      } else if (g.phase === 2 && !pending && g.round > B.successionMaxRounds) {
         // An engine backstop for a stalled game, not a printed rule: the
-        // printed game ends only by a standing claim (D58).
+        // printed game ends only by a standing claim (D58). A pending
+        // claim ends the game by itself, so it is never cut.
         g.draw = true; g.successionTimeout = true; g.status = "finished"; g.endReason = "succession_timeout";
         g.round = B.successionMaxRounds; g.currentRoll = null;
         event(rec, "game_draw", { reason: "succession_timeout" });

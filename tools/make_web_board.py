@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# ABOUTME: Generate web/board-data.js and web/rules.js from the adopted rules JSON.
+# ABOUTME: The bundle is generated, never hand-copied, so it mirrors the ruleset.
 """Generate web/board-data.js and web/rules.js from the adopted rules JSON.
 
 The web board is generated, never hand-copied, so it always mirrors the
@@ -21,9 +23,8 @@ RULES = "rules/imperial-rivals-v0.10.2.json"
 OUT = "web/board-data.js"
 
 
-def main():
-    rules = engine.load_rules(RULES)
-    validate_six_block_layout(rules)
+def generated(rules):
+    """The two generated files and the board payload: ({path: text}, data)."""
     if rules["game"]["name"] != "Imperial Rivals: 305 AD":
         raise SystemExit("the browser game needs the Imperial Rivals ruleset")
     cfg = rules["succession"]
@@ -93,14 +94,22 @@ def main():
           + json.dumps(data, separators=(",", ":"))
           + ";\n"
           "})(typeof window !== 'undefined' ? window : globalThis);\n")
-    with open(OUT, "w", encoding="utf-8") as fh:
-        fh.write(js)
     from tools.succession_content import rulebook_html
-    with open("web/rules.js", "w", encoding="utf-8") as fh:
-        fh.write("// Generated from " + RULES + ". Do not edit.\n" +
-                 "window.DIOCLET_RULES = " + json.dumps(rulebook_html(rules)) + ";\n")
-    walkable = b.width * b.height - len(blocked)
-    print(f"wrote {OUT}: palace map {b.width}x{b.height}, {walkable} street spaces; "
+    rules_js = ("// Generated from " + RULES + ". Do not edit.\n" +
+                "window.DIOCLET_RULES = " + json.dumps(rulebook_html(rules)) + ";\n")
+    return {OUT: js, "web/rules.js": rules_js}, data
+
+
+def main():
+    rules = engine.load_rules(RULES)
+    validate_six_block_layout(rules)
+    files, data = generated(rules)
+    for path, text in files.items():
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+    board = data["palaceMap"]
+    walkable = board["width"] * board["height"] - len(board["blocked"])
+    print(f"wrote {OUT}: palace map {board['width']}x{board['height']}, {walkable} street spaces; "
           f"succession checkpoint {data['successionMap']['checkpoint']}")
 
 

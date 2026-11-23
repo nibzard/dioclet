@@ -1,24 +1,42 @@
 {
   "candidates": [
     {
-      "action_id": "a0005",
-      "description": "Duel a rival for Prestige: target P1, exact single-contest win chance 58.3%, cost 0 Prestige; end at [6, 4].",
+      "action_id": "a0004",
+      "description": "Duel a rival for Prestige: target P1, exact single-contest win chance 58.3%, cost 0 Prestige; end at [1, 0].",
       "destination": [
-        6,
-        4
+        1,
+        0
       ],
       "faction": null,
       "features": {
         "counterclaim": false,
-        "distance_to_claim_after": 5,
-        "distance_to_counterclaim_after": 5,
-        "distance_to_peristyle_after": 5,
-        "distance_to_prestige_after": 8,
-        "distance_to_support_after": 7,
+        "distance_to_claim_after": 14,
+        "distance_to_counterclaim_after": 14,
+        "distance_to_peristyle_after": 14,
+        "distance_to_prestige_after": 1,
+        "distance_to_support_after": 10,
         "duel_win_probability_exact": 0.583333,
+        "outcomes": [
+          {
+            "condition": "win",
+            "effects": {
+              "claim_cancelled": false,
+              "prestige_after": 2
+            },
+            "probability": 0.583333
+          },
+          {
+            "condition": "lose",
+            "effects": {
+              "claim_cancelled": false,
+              "prestige_after": 0
+            },
+            "probability": 0.416667
+          }
+        ],
         "path_steps": 1,
         "prestige_cost": 0,
-        "support_after": 1,
+        "support_after": 2,
         "target_support_count": 1,
         "would_cancel_claim_if_won": false
       },
@@ -28,35 +46,53 @@
       "target": "P1"
     },
     {
-      "action_id": "a0006",
-      "description": "Duel a rival for Prestige: target P2, exact single-contest win chance 58.3%, cost 0 Prestige; end at [6, 4].",
+      "action_id": "a0005",
+      "description": "Duel a rival for Prestige: target P3, exact single-contest win chance 58.3%, cost 0 Prestige; end at [1, 0].",
       "destination": [
-        6,
-        4
+        1,
+        0
       ],
       "faction": null,
       "features": {
         "counterclaim": false,
-        "distance_to_claim_after": 5,
-        "distance_to_counterclaim_after": 5,
-        "distance_to_peristyle_after": 5,
-        "distance_to_prestige_after": 8,
-        "distance_to_support_after": 7,
+        "distance_to_claim_after": 14,
+        "distance_to_counterclaim_after": 14,
+        "distance_to_peristyle_after": 14,
+        "distance_to_prestige_after": 1,
+        "distance_to_support_after": 10,
         "duel_win_probability_exact": 0.583333,
+        "outcomes": [
+          {
+            "condition": "win",
+            "effects": {
+              "claim_cancelled": false,
+              "prestige_after": 2
+            },
+            "probability": 0.583333
+          },
+          {
+            "condition": "lose",
+            "effects": {
+              "claim_cancelled": false,
+              "prestige_after": 0
+            },
+            "probability": 0.416667
+          }
+        ],
         "path_steps": 1,
         "prestige_cost": 0,
-        "support_after": 1,
-        "target_support_count": 2,
+        "support_after": 2,
+        "target_support_count": 1,
         "would_cancel_claim_if_won": false
       },
       "kind": "duel",
       "path_steps": 1,
       "spend_prestige": false,
-      "target": "P2"
+      "target": "P3"
     },
     {
-      "action_id": "a0015",
-      "description": "Cancel the rival's pending claim if you win: target P0, exact single-contest win chance 58.3%, cost 1 Prestige; end at [7, 6].",
+      "action_id": "a0009",
+      "description": "Cancel the rival's pending claim if you win: target P0, exact single-contest win chance 72.2%, cost 1 Prestige; end at [7, 6].",
       "destination": [
         7,
         6
@@ -68,22 +104,40 @@
         "distance_to_counterclaim_after": 2,
         "distance_to_peristyle_after": 2,
         "distance_to_prestige_after": 11,
-        "distance_to_support_after": 10,
-        "duel_win_probability_exact": 0.583333,
-        "path_steps": 4,
+        "distance_to_support_after": 4,
+        "duel_win_probability_exact": 0.722222,
+        "outcomes": [
+          {
+            "condition": "win",
+            "effects": {
+              "claim_cancelled": true,
+              "prestige_after": 1
+            },
+            "probability": 0.722222
+          },
+          {
+            "condition": "lose",
+            "effects": {
+              "claim_cancelled": false,
+              "prestige_after": 0
+            },
+            "probability": 0.277778
+          }
+        ],
+        "path_steps": 11,
         "prestige_cost": 1,
-        "support_after": 1,
+        "support_after": 2,
         "target_support_count": 2,
         "would_cancel_claim_if_won": true
       },
       "kind": "duel",
-      "path_steps": 4,
+      "path_steps": 11,
       "spend_prestige": false,
       "target": "P0"
     },
     {
-      "action_id": "a0018",
-      "description": "Cancel the rival's pending claim if you win: target P0, exact single-contest win chance 58.3%, cost 1 Prestige; end at [8, 6].",
+      "action_id": "a0010",
+      "description": "Cancel the rival's pending claim if you win: target P0, exact single-contest win chance 72.2%, cost 1 Prestige; end at [8, 6].",
       "destination": [
         8,
         6
@@ -95,281 +149,131 @@
         "distance_to_counterclaim_after": 1,
         "distance_to_peristyle_after": 1,
         "distance_to_prestige_after": 12,
-        "distance_to_support_after": 11,
-        "duel_win_probability_exact": 0.583333,
-        "path_steps": 5,
+        "distance_to_support_after": 5,
+        "duel_win_probability_exact": 0.722222,
+        "outcomes": [
+          {
+            "condition": "win",
+            "effects": {
+              "claim_cancelled": true,
+              "prestige_after": 1
+            },
+            "probability": 0.722222
+          },
+          {
+            "condition": "lose",
+            "effects": {
+              "claim_cancelled": false,
+              "prestige_after": 0
+            },
+            "probability": 0.277778
+          }
+        ],
+        "path_steps": 12,
         "prestige_cost": 1,
-        "support_after": 1,
+        "support_after": 2,
         "target_support_count": 2,
         "would_cancel_claim_if_won": true
       },
       "kind": "duel",
-      "path_steps": 5,
+      "path_steps": 12,
       "spend_prestige": false,
       "target": "P0"
     },
     {
-      "action_id": "a0021",
-      "description": "Cancel the rival's pending claim if you win: target P0, exact single-contest win chance 58.3%, cost 1 Prestige; end at [9, 6].",
-      "destination": [
-        9,
-        6
-      ],
-      "faction": null,
-      "features": {
-        "counterclaim": true,
-        "distance_to_claim_after": 0,
-        "distance_to_counterclaim_after": 0,
-        "distance_to_peristyle_after": 0,
-        "distance_to_prestige_after": 13,
-        "distance_to_support_after": 12,
-        "duel_win_probability_exact": 0.583333,
-        "path_steps": 6,
-        "prestige_cost": 1,
-        "support_after": 1,
-        "target_support_count": 2,
-        "would_cancel_claim_if_won": true
-      },
-      "kind": "duel",
-      "path_steps": 6,
-      "spend_prestige": false,
-      "target": "P0"
-    },
-    {
-      "action_id": "a0022",
-      "description": "Cancel the rival's pending claim if you win: target P0, exact single-contest win chance 58.3%, cost 1 Prestige; end at [10, 6].",
-      "destination": [
-        10,
-        6
-      ],
-      "faction": null,
-      "features": {
-        "counterclaim": true,
-        "distance_to_claim_after": 1,
-        "distance_to_counterclaim_after": 1,
-        "distance_to_peristyle_after": 1,
-        "distance_to_prestige_after": 12,
-        "distance_to_support_after": 11,
-        "duel_win_probability_exact": 0.583333,
-        "path_steps": 7,
-        "prestige_cost": 1,
-        "support_after": 1,
-        "target_support_count": 2,
-        "would_cancel_claim_if_won": true
-      },
-      "kind": "duel",
-      "path_steps": 7,
-      "spend_prestige": false,
-      "target": "P0"
-    },
-    {
-      "action_id": "a0023",
-      "description": "Cancel the rival's pending claim if you win: target P0, exact single-contest win chance 58.3%, cost 1 Prestige; end at [11, 6].",
-      "destination": [
-        11,
-        6
-      ],
-      "faction": null,
-      "features": {
-        "counterclaim": true,
-        "distance_to_claim_after": 2,
-        "distance_to_counterclaim_after": 2,
-        "distance_to_peristyle_after": 2,
-        "distance_to_prestige_after": 11,
-        "distance_to_support_after": 10,
-        "duel_win_probability_exact": 0.583333,
-        "path_steps": 8,
-        "prestige_cost": 1,
-        "support_after": 1,
-        "target_support_count": 2,
-        "would_cancel_claim_if_won": true
-      },
-      "kind": "duel",
-      "path_steps": 8,
-      "spend_prestige": false,
-      "target": "P0"
-    },
-    {
-      "action_id": "a0024",
-      "description": "Gain elites support for 1 Prestige, without a die test.",
+      "action_id": "a0011",
+      "description": "Gain officials support for 1 Prestige, without a die test.",
       "destination": [
         3,
-        0
+        6
       ],
-      "faction": "elites",
+      "faction": "officials",
       "features": {
         "counterclaim": false,
-        "distance_to_claim_after": 12,
-        "distance_to_counterclaim_after": 12,
-        "distance_to_peristyle_after": 12,
-        "distance_to_prestige_after": 1,
+        "distance_to_claim_after": 6,
+        "distance_to_counterclaim_after": 6,
+        "distance_to_peristyle_after": 6,
+        "distance_to_prestige_after": 7,
         "distance_to_support_after": 0,
-        "faction": "elites",
-        "path_steps": 6,
+        "faction": "officials",
+        "outcomes": [
+          {
+            "condition": "always",
+            "effects": {
+              "claim_cancelled": false,
+              "prestige_after": 0
+            },
+            "probability": 1.0
+          }
+        ],
+        "path_steps": 11,
         "prestige_cost": 1,
-        "support_after": 2
+        "support_after": 3
       },
       "kind": "gain_support",
-      "path_steps": 6,
+      "path_steps": 11,
       "spend_prestige": false,
       "target": null
     },
     {
-      "action_id": "a0025",
-      "description": "Stand guard at [2, 0]; exact chance to earn Prestige 50%.",
+      "action_id": "a0012",
+      "description": "Stand guard at [0, 2]; exact chance to earn Prestige 50%.",
       "destination": [
-        2,
-        0
-      ],
-      "faction": null,
-      "features": {
-        "counterclaim": false,
-        "distance_to_claim_after": 13,
-        "distance_to_counterclaim_after": 13,
-        "distance_to_peristyle_after": 13,
-        "distance_to_prestige_after": 0,
-        "distance_to_support_after": 1,
-        "path_steps": 7,
-        "prestige_probability_exact": 0.5,
-        "support_after": 1
-      },
-      "kind": "guard_post",
-      "path_steps": 7,
-      "spend_prestige": false,
-      "target": null
-    },
-    {
-      "action_id": "a0030",
-      "description": "Move to [2, 0]; street distances after moving: peristyle 13, claim 13, support 1, prestige 0, counterclaim 13.",
-      "destination": [
-        2,
-        0
-      ],
-      "faction": null,
-      "features": {
-        "counterclaim": false,
-        "distance_to_claim_after": 13,
-        "distance_to_counterclaim_after": 13,
-        "distance_to_peristyle_after": 13,
-        "distance_to_prestige_after": 0,
-        "distance_to_support_after": 1,
-        "path_steps": 7,
-        "support_after": 1
-      },
-      "kind": "move",
-      "path_steps": 7,
-      "spend_prestige": false,
-      "target": null
-    },
-    {
-      "action_id": "a0032",
-      "description": "Move to [3, 0]; street distances after moving: peristyle 12, claim 12, support 0, prestige 1, counterclaim 12.",
-      "destination": [
-        3,
-        0
-      ],
-      "faction": null,
-      "features": {
-        "counterclaim": false,
-        "distance_to_claim_after": 12,
-        "distance_to_counterclaim_after": 12,
-        "distance_to_peristyle_after": 12,
-        "distance_to_prestige_after": 1,
-        "distance_to_support_after": 0,
-        "path_steps": 6,
-        "support_after": 1
-      },
-      "kind": "move",
-      "path_steps": 6,
-      "spend_prestige": false,
-      "target": null
-    },
-    {
-      "action_id": "a0039",
-      "description": "Move to [6, 1]; street distances after moving: peristyle 8, claim 8, support 4, prestige 5, counterclaim 8.",
-      "destination": [
-        6,
-        1
-      ],
-      "faction": null,
-      "features": {
-        "counterclaim": false,
-        "distance_to_claim_after": 8,
-        "distance_to_counterclaim_after": 8,
-        "distance_to_peristyle_after": 8,
-        "distance_to_prestige_after": 5,
-        "distance_to_support_after": 4,
-        "path_steps": 2,
-        "support_after": 1
-      },
-      "kind": "move",
-      "path_steps": 2,
-      "spend_prestige": false,
-      "target": null
-    },
-    {
-      "action_id": "a0040",
-      "description": "Move to [6, 2]; street distances after moving: peristyle 7, claim 7, support 5, prestige 6, counterclaim 7.",
-      "destination": [
-        6,
+        0,
         2
       ],
       "faction": null,
       "features": {
         "counterclaim": false,
-        "distance_to_claim_after": 7,
-        "distance_to_counterclaim_after": 7,
-        "distance_to_peristyle_after": 7,
-        "distance_to_prestige_after": 6,
-        "distance_to_support_after": 5,
-        "path_steps": 1,
-        "support_after": 1
-      },
-      "kind": "move",
-      "path_steps": 1,
-      "spend_prestige": false,
-      "target": null
-    },
-    {
-      "action_id": "a0041",
-      "description": "Move to [6, 4]; street distances after moving: peristyle 5, claim 5, support 7, prestige 8, counterclaim 5.",
-      "destination": [
-        6,
-        4
-      ],
-      "faction": null,
-      "features": {
-        "counterclaim": false,
-        "distance_to_claim_after": 5,
-        "distance_to_counterclaim_after": 5,
-        "distance_to_peristyle_after": 5,
-        "distance_to_prestige_after": 8,
+        "distance_to_claim_after": 13,
+        "distance_to_counterclaim_after": 13,
+        "distance_to_peristyle_after": 13,
+        "distance_to_prestige_after": 0,
         "distance_to_support_after": 7,
-        "path_steps": 1,
-        "support_after": 1
+        "outcomes": [
+          {
+            "condition": "win",
+            "effects": {
+              "claim_cancelled": false,
+              "prestige_after": 2
+            },
+            "probability": 0.5
+          },
+          {
+            "condition": "lose",
+            "effects": {
+              "claim_cancelled": false,
+              "prestige_after": 1
+            },
+            "probability": 0.5
+          }
+        ],
+        "path_steps": 4,
+        "prestige_probability_exact": 0.5,
+        "support_after": 2
       },
-      "kind": "move",
-      "path_steps": 1,
+      "kind": "guard_post",
+      "path_steps": 4,
       "spend_prestige": false,
       "target": null
     },
     {
-      "action_id": "a0042",
-      "description": "Move to [6, 5]; street distances after moving: peristyle 4, claim 4, support 8, prestige 9, counterclaim 4.",
+      "action_id": "a0013",
+      "description": "Move to [0, 0]; street distances after moving: peristyle 15, claim 15, support 9, prestige 2, counterclaim 15.",
       "destination": [
-        6,
-        5
+        0,
+        0
       ],
       "faction": null,
       "features": {
         "counterclaim": false,
-        "distance_to_claim_after": 4,
-        "distance_to_counterclaim_after": 4,
-        "distance_to_peristyle_after": 4,
-        "distance_to_prestige_after": 9,
-        "distance_to_support_after": 8,
+        "distance_to_claim_after": 15,
+        "distance_to_counterclaim_after": 15,
+        "distance_to_peristyle_after": 15,
+        "distance_to_prestige_after": 2,
+        "distance_to_support_after": 9,
         "path_steps": 2,
-        "support_after": 1
+        "support_after": 2
       },
       "kind": "move",
       "path_steps": 2,
@@ -377,41 +281,222 @@
       "target": null
     },
     {
-      "action_id": "a0055",
-      "description": "Move to [9, 6]; street distances after moving: peristyle 0, claim 0, support 12, prestige 13, counterclaim 0.",
+      "action_id": "a0014",
+      "description": "Move to [0, 1]; street distances after moving: peristyle 14, claim 14, support 8, prestige 1, counterclaim 14.",
       "destination": [
-        9,
+        0,
+        1
+      ],
+      "faction": null,
+      "features": {
+        "counterclaim": false,
+        "distance_to_claim_after": 14,
+        "distance_to_counterclaim_after": 14,
+        "distance_to_peristyle_after": 14,
+        "distance_to_prestige_after": 1,
+        "distance_to_support_after": 8,
+        "path_steps": 3,
+        "support_after": 2
+      },
+      "kind": "move",
+      "path_steps": 3,
+      "spend_prestige": false,
+      "target": null
+    },
+    {
+      "action_id": "a0015",
+      "description": "Move to [0, 2]; street distances after moving: peristyle 13, claim 13, support 7, prestige 0, counterclaim 13.",
+      "destination": [
+        0,
+        2
+      ],
+      "faction": null,
+      "features": {
+        "counterclaim": false,
+        "distance_to_claim_after": 13,
+        "distance_to_counterclaim_after": 13,
+        "distance_to_peristyle_after": 13,
+        "distance_to_prestige_after": 0,
+        "distance_to_support_after": 7,
+        "path_steps": 4,
+        "support_after": 2
+      },
+      "kind": "move",
+      "path_steps": 4,
+      "spend_prestige": false,
+      "target": null
+    },
+    {
+      "action_id": "a0024",
+      "description": "Move to [1, 0]; street distances after moving: peristyle 14, claim 14, support 10, prestige 1, counterclaim 14.",
+      "destination": [
+        1,
+        0
+      ],
+      "faction": null,
+      "features": {
+        "counterclaim": false,
+        "distance_to_claim_after": 14,
+        "distance_to_counterclaim_after": 14,
+        "distance_to_peristyle_after": 14,
+        "distance_to_prestige_after": 1,
+        "distance_to_support_after": 10,
+        "path_steps": 1,
+        "support_after": 2
+      },
+      "kind": "move",
+      "path_steps": 1,
+      "spend_prestige": false,
+      "target": null
+    },
+    {
+      "action_id": "a0027",
+      "description": "Move to [3, 0]; street distances after moving: peristyle 12, claim 12, support 12, prestige 1, counterclaim 12.",
+      "destination": [
+        3,
+        0
+      ],
+      "faction": null,
+      "features": {
+        "counterclaim": false,
+        "distance_to_claim_after": 12,
+        "distance_to_counterclaim_after": 12,
+        "distance_to_peristyle_after": 12,
+        "distance_to_prestige_after": 1,
+        "distance_to_support_after": 12,
+        "path_steps": 1,
+        "support_after": 2
+      },
+      "kind": "move",
+      "path_steps": 1,
+      "spend_prestige": false,
+      "target": null
+    },
+    {
+      "action_id": "a0028",
+      "description": "Move to [3, 6]; street distances after moving: peristyle 6, claim 6, support 0, prestige 7, counterclaim 6.",
+      "destination": [
+        3,
         6
       ],
       "faction": null,
       "features": {
         "counterclaim": false,
-        "distance_to_claim_after": 0,
-        "distance_to_counterclaim_after": 0,
-        "distance_to_peristyle_after": 0,
-        "distance_to_prestige_after": 13,
-        "distance_to_support_after": 12,
-        "path_steps": 6,
-        "support_after": 1
+        "distance_to_claim_after": 6,
+        "distance_to_counterclaim_after": 6,
+        "distance_to_peristyle_after": 6,
+        "distance_to_prestige_after": 7,
+        "distance_to_support_after": 0,
+        "path_steps": 11,
+        "support_after": 2
       },
       "kind": "move",
-      "path_steps": 6,
+      "path_steps": 11,
+      "spend_prestige": false,
+      "target": null
+    },
+    {
+      "action_id": "a0029",
+      "description": "Move to [4, 0]; street distances after moving: peristyle 11, claim 11, support 11, prestige 2, counterclaim 11.",
+      "destination": [
+        4,
+        0
+      ],
+      "faction": null,
+      "features": {
+        "counterclaim": false,
+        "distance_to_claim_after": 11,
+        "distance_to_counterclaim_after": 11,
+        "distance_to_peristyle_after": 11,
+        "distance_to_prestige_after": 2,
+        "distance_to_support_after": 11,
+        "path_steps": 2,
+        "support_after": 2
+      },
+      "kind": "move",
+      "path_steps": 2,
+      "spend_prestige": false,
+      "target": null
+    },
+    {
+      "action_id": "a0031",
+      "description": "Move to [5, 0]; street distances after moving: peristyle 10, claim 10, support 10, prestige 3, counterclaim 10.",
+      "destination": [
+        5,
+        0
+      ],
+      "faction": null,
+      "features": {
+        "counterclaim": false,
+        "distance_to_claim_after": 10,
+        "distance_to_counterclaim_after": 10,
+        "distance_to_peristyle_after": 10,
+        "distance_to_prestige_after": 3,
+        "distance_to_support_after": 10,
+        "path_steps": 3,
+        "support_after": 2
+      },
+      "kind": "move",
+      "path_steps": 3,
+      "spend_prestige": false,
+      "target": null
+    },
+    {
+      "action_id": "a0033",
+      "description": "Move to [6, 0]; street distances after moving: peristyle 9, claim 9, support 9, prestige 4, counterclaim 9.",
+      "destination": [
+        6,
+        0
+      ],
+      "faction": null,
+      "features": {
+        "counterclaim": false,
+        "distance_to_claim_after": 9,
+        "distance_to_counterclaim_after": 9,
+        "distance_to_peristyle_after": 9,
+        "distance_to_prestige_after": 4,
+        "distance_to_support_after": 9,
+        "path_steps": 4,
+        "support_after": 2
+      },
+      "kind": "move",
+      "path_steps": 4,
+      "spend_prestige": false,
+      "target": null
+    },
+    {
+      "action_id": "a0045",
+      "description": "Move to [8, 6]; street distances after moving: peristyle 1, claim 1, support 5, prestige 12, counterclaim 1.",
+      "destination": [
+        8,
+        6
+      ],
+      "faction": null,
+      "features": {
+        "counterclaim": false,
+        "distance_to_claim_after": 1,
+        "distance_to_counterclaim_after": 1,
+        "distance_to_peristyle_after": 1,
+        "distance_to_prestige_after": 12,
+        "distance_to_support_after": 5,
+        "path_steps": 12,
+        "support_after": 2
+      },
+      "kind": "move",
+      "path_steps": 12,
       "spend_prestige": false,
       "target": null
     }
   ],
   "correct": [
-    "a0015",
-    "a0018",
-    "a0021",
-    "a0022",
-    "a0023"
+    "a0009",
+    "a0010"
   ],
   "description": "A rival claim is pending and this round is its last: the claim wins when the last turn of this round ends. The seat is in duel range of the claimant.",
   "judgement": "Cancel the claim. Every duel against the claimant is correct; each one contests the claim before the window closes.",
   "name": "cancel-winning-claim",
   "observation": {
-    "active_player": "P3",
+    "active_player": "P2",
     "board": {
       "blocked": [
         [
@@ -1117,34 +1202,22 @@
         "action_id": "a0001",
         "contest_cost": 0,
         "destination": [
-          4,
-          6
+          0,
+          0
         ],
         "kind": "duel",
         "path": [
           [
-            6,
-            3
+            2,
+            0
           ],
           [
-            6,
-            4
+            1,
+            0
           ],
           [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            5,
-            6
-          ],
-          [
-            4,
-            6
+            0,
+            0
           ]
         ],
         "spend_prestige": false,
@@ -1154,397 +1227,167 @@
         "action_id": "a0002",
         "contest_cost": 0,
         "destination": [
-          4,
-          6
+          0,
+          0
         ],
         "kind": "duel",
         "path": [
           [
-            6,
-            3
+            2,
+            0
           ],
           [
-            6,
-            4
+            1,
+            0
           ],
           [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            5,
-            6
-          ],
-          [
-            4,
-            6
+            0,
+            0
           ]
         ],
         "spend_prestige": false,
-        "target": "P2"
+        "target": "P3"
       },
       {
         "action_id": "a0003",
         "contest_cost": 0,
         "destination": [
-          5,
-          6
+          0,
+          1
         ],
         "kind": "duel",
         "path": [
           [
-            6,
-            3
+            2,
+            0
           ],
           [
-            6,
-            4
+            1,
+            0
           ],
           [
-            6,
-            5
+            0,
+            0
           ],
           [
-            6,
-            6
-          ],
-          [
-            5,
-            6
+            0,
+            1
           ]
         ],
         "spend_prestige": false,
-        "target": "P1"
+        "target": "P3"
       },
       {
         "action_id": "a0004",
         "contest_cost": 0,
         "destination": [
-          5,
-          6
+          1,
+          0
         ],
         "kind": "duel",
         "path": [
           [
-            6,
-            3
+            2,
+            0
           ],
           [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            5,
-            6
+            1,
+            0
           ]
         ],
         "spend_prestige": false,
-        "target": "P2"
+        "target": "P1"
       },
       {
         "action_id": "a0005",
         "contest_cost": 0,
         "destination": [
-          6,
-          4
+          1,
+          0
         ],
         "kind": "duel",
         "path": [
           [
-            6,
-            3
+            2,
+            0
           ],
           [
-            6,
-            4
+            1,
+            0
           ]
         ],
         "spend_prestige": false,
-        "target": "P1"
+        "target": "P3"
       },
       {
         "action_id": "a0006",
         "contest_cost": 0,
         "destination": [
-          6,
-          4
+          3,
+          0
         ],
         "kind": "duel",
         "path": [
           [
-            6,
-            3
+            2,
+            0
           ],
           [
-            6,
-            4
+            3,
+            0
           ]
         ],
         "spend_prestige": false,
-        "target": "P2"
+        "target": "P1"
       },
       {
         "action_id": "a0007",
         "contest_cost": 0,
         "destination": [
-          6,
-          5
+          3,
+          0
         ],
         "kind": "duel",
         "path": [
           [
-            6,
-            3
+            2,
+            0
           ],
           [
-            6,
-            4
-          ],
-          [
-            6,
-            5
+            3,
+            0
           ]
         ],
         "spend_prestige": false,
-        "target": "P1"
+        "target": "P3"
       },
       {
         "action_id": "a0008",
         "contest_cost": 0,
         "destination": [
-          6,
-          5
+          4,
+          0
         ],
         "kind": "duel",
         "path": [
           [
-            6,
-            3
+            2,
+            0
           ],
           [
-            6,
-            4
+            3,
+            0
           ],
           [
-            6,
-            5
+            4,
+            0
           ]
         ],
         "spend_prestige": false,
-        "target": "P2"
+        "target": "P1"
       },
       {
         "action_id": "a0009",
-        "contest_cost": 0,
-        "destination": [
-          6,
-          6
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P1"
-      },
-      {
-        "action_id": "a0010",
-        "contest_cost": 0,
-        "destination": [
-          6,
-          6
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P2"
-      },
-      {
-        "action_id": "a0011",
-        "contest_cost": 0,
-        "destination": [
-          6,
-          7
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            6,
-            7
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P1"
-      },
-      {
-        "action_id": "a0012",
-        "contest_cost": 0,
-        "destination": [
-          6,
-          7
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            6,
-            7
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P2"
-      },
-      {
-        "action_id": "a0013",
-        "contest_cost": 0,
-        "destination": [
-          6,
-          8
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            6,
-            7
-          ],
-          [
-            6,
-            8
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P1"
-      },
-      {
-        "action_id": "a0014",
-        "contest_cost": 0,
-        "destination": [
-          6,
-          8
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            6,
-            7
-          ],
-          [
-            6,
-            8
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P2"
-      },
-      {
-        "action_id": "a0015",
         "contest_cost": 1,
         "destination": [
           7,
@@ -1553,357 +1396,24 @@
         "kind": "duel",
         "path": [
           [
-            6,
-            3
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
           ],
           [
             6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P0"
-      },
-      {
-        "action_id": "a0016",
-        "contest_cost": 0,
-        "destination": [
-          7,
-          6
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P1"
-      },
-      {
-        "action_id": "a0017",
-        "contest_cost": 0,
-        "destination": [
-          7,
-          6
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P2"
-      },
-      {
-        "action_id": "a0018",
-        "contest_cost": 1,
-        "destination": [
-          8,
-          6
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P0"
-      },
-      {
-        "action_id": "a0019",
-        "contest_cost": 0,
-        "destination": [
-          8,
-          6
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P1"
-      },
-      {
-        "action_id": "a0020",
-        "contest_cost": 0,
-        "destination": [
-          8,
-          6
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P2"
-      },
-      {
-        "action_id": "a0021",
-        "contest_cost": 1,
-        "destination": [
-          9,
-          6
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ],
-          [
-            9,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P0"
-      },
-      {
-        "action_id": "a0022",
-        "contest_cost": 1,
-        "destination": [
-          10,
-          6
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ],
-          [
-            9,
-            6
-          ],
-          [
-            10,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P0"
-      },
-      {
-        "action_id": "a0023",
-        "contest_cost": 1,
-        "destination": [
-          11,
-          6
-        ],
-        "kind": "duel",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ],
-          [
-            9,
-            6
-          ],
-          [
-            10,
-            6
-          ],
-          [
-            11,
-            6
-          ]
-        ],
-        "spend_prestige": false,
-        "target": "P0"
-      },
-      {
-        "action_id": "a0024",
-        "destination": [
-          3,
-          0
-        ],
-        "faction": "elites",
-        "kind": "gain_support",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            2
+            0
           ],
           [
             6,
@@ -1911,10 +1421,47 @@
           ],
           [
             6,
+            2
+          ],
+          [
+            6,
+            3
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            7,
+            6
+          ]
+        ],
+        "spend_prestige": false,
+        "target": "P0"
+      },
+      {
+        "action_id": "a0010",
+        "contest_cost": 1,
+        "destination": [
+          8,
+          6
+        ],
+        "kind": "duel",
+        "path": [
+          [
+            2,
             0
           ],
           [
-            5,
+            3,
             0
           ],
           [
@@ -1922,7 +1469,614 @@
             0
           ],
           [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            3
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            8,
+            6
+          ]
+        ],
+        "spend_prestige": false,
+        "target": "P0"
+      },
+      {
+        "action_id": "a0011",
+        "destination": [
+          3,
+          6
+        ],
+        "faction": "officials",
+        "kind": "gain_support",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            6
+          ],
+          [
             3,
+            6
+          ]
+        ]
+      },
+      {
+        "action_id": "a0012",
+        "destination": [
+          0,
+          2
+        ],
+        "kind": "guard_post",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ]
+        ]
+      },
+      {
+        "action_id": "a0013",
+        "destination": [
+          0,
+          0
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      },
+      {
+        "action_id": "a0014",
+        "destination": [
+          0,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "action_id": "a0015",
+        "destination": [
+          0,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ]
+        ]
+      },
+      {
+        "action_id": "a0016",
+        "destination": [
+          0,
+          3
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ]
+        ]
+      },
+      {
+        "action_id": "a0017",
+        "destination": [
+          0,
+          4
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ]
+        ]
+      },
+      {
+        "action_id": "a0018",
+        "destination": [
+          0,
+          5
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            5
+          ]
+        ]
+      },
+      {
+        "action_id": "a0019",
+        "destination": [
+          0,
+          6
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            6
+          ]
+        ]
+      },
+      {
+        "action_id": "a0020",
+        "destination": [
+          0,
+          7
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            0,
+            7
+          ]
+        ]
+      },
+      {
+        "action_id": "a0021",
+        "destination": [
+          0,
+          8
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            0,
+            7
+          ],
+          [
+            0,
+            8
+          ]
+        ]
+      },
+      {
+        "action_id": "a0022",
+        "destination": [
+          0,
+          9
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            0,
+            7
+          ],
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ]
+        ]
+      },
+      {
+        "action_id": "a0023",
+        "destination": [
+          0,
+          10
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            0,
+            7
+          ],
+          [
+            0,
+            8
+          ],
+          [
+            0,
+            9
+          ],
+          [
+            0,
+            10
+          ]
+        ]
+      },
+      {
+        "action_id": "a0024",
+        "destination": [
+          1,
+          0
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            1,
             0
           ]
         ]
@@ -1930,81 +2084,61 @@
       {
         "action_id": "a0025",
         "destination": [
-          2,
-          0
+          1,
+          6
         ],
-        "kind": "guard_post",
+        "kind": "move",
         "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
-          ],
-          [
-            6,
-            0
-          ],
-          [
-            5,
-            0
-          ],
-          [
-            4,
-            0
-          ],
-          [
-            3,
-            0
-          ],
           [
             2,
             0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            1,
+            6
           ]
         ]
       },
       {
         "action_id": "a0026",
         "destination": [
-          0,
-          0
+          2,
+          6
         ],
         "kind": "move",
         "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
-          ],
-          [
-            6,
-            0
-          ],
-          [
-            5,
-            0
-          ],
-          [
-            4,
-            0
-          ],
-          [
-            3,
-            0
-          ],
           [
             2,
             0
@@ -2016,95 +2150,67 @@
           [
             0,
             0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            6
           ]
         ]
       },
       {
         "action_id": "a0027",
         "destination": [
-          0,
-          6
+          3,
+          0
         ],
         "kind": "move",
         "path": [
           [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            5,
-            6
-          ],
-          [
-            4,
-            6
+            2,
+            0
           ],
           [
             3,
-            6
-          ],
-          [
-            2,
-            6
-          ],
-          [
-            1,
-            6
-          ],
-          [
-            0,
-            6
+            0
           ]
         ]
       },
       {
         "action_id": "a0028",
         "destination": [
-          1,
-          0
+          3,
+          6
         ],
         "kind": "move",
         "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
-          ],
-          [
-            6,
-            0
-          ],
-          [
-            5,
-            0
-          ],
-          [
-            4,
-            0
-          ],
-          [
-            3,
-            0
-          ],
           [
             2,
             0
@@ -2112,85 +2218,81 @@
           [
             1,
             0
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            1,
+            6
+          ],
+          [
+            2,
+            6
+          ],
+          [
+            3,
+            6
           ]
         ]
       },
       {
         "action_id": "a0029",
         "destination": [
-          1,
-          6
+          4,
+          0
         ],
         "kind": "move",
         "path": [
           [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            5,
-            6
-          ],
-          [
-            4,
-            6
+            2,
+            0
           ],
           [
             3,
-            6
+            0
           ],
           [
-            2,
-            6
-          ],
-          [
-            1,
-            6
+            4,
+            0
           ]
         ]
       },
       {
         "action_id": "a0030",
         "destination": [
-          2,
-          0
+          4,
+          6
         ],
         "kind": "move",
         "path": [
           [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
-          ],
-          [
-            6,
-            0
-          ],
-          [
-            5,
-            0
-          ],
-          [
-            4,
+            2,
             0
           ],
           [
@@ -2198,79 +2300,91 @@
             0
           ],
           [
-            2,
+            4,
             0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            3
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            5,
+            6
+          ],
+          [
+            4,
+            6
           ]
         ]
       },
       {
         "action_id": "a0031",
         "destination": [
-          2,
-          6
+          5,
+          0
         ],
         "kind": "move",
         "path": [
           [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            5,
-            6
-          ],
-          [
-            4,
-            6
+            2,
+            0
           ],
           [
             3,
-            6
+            0
           ],
           [
-            2,
-            6
+            4,
+            0
+          ],
+          [
+            5,
+            0
           ]
         ]
       },
       {
         "action_id": "a0032",
         "destination": [
-          3,
-          0
+          5,
+          6
         ],
         "kind": "move",
         "path": [
           [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
-          ],
-          [
-            6,
+            2,
             0
           ],
           [
-            5,
+            3,
             0
           ],
           [
@@ -2278,179 +2392,45 @@
             0
           ],
           [
-            3,
+            5,
             0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            3
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            5,
+            6
           ]
         ]
       },
       {
         "action_id": "a0033",
-        "destination": [
-          3,
-          6
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            5,
-            6
-          ],
-          [
-            4,
-            6
-          ],
-          [
-            3,
-            6
-          ]
-        ]
-      },
-      {
-        "action_id": "a0034",
-        "destination": [
-          4,
-          0
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
-          ],
-          [
-            6,
-            0
-          ],
-          [
-            5,
-            0
-          ],
-          [
-            4,
-            0
-          ]
-        ]
-      },
-      {
-        "action_id": "a0035",
-        "destination": [
-          4,
-          6
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            5,
-            6
-          ],
-          [
-            4,
-            6
-          ]
-        ]
-      },
-      {
-        "action_id": "a0036",
-        "destination": [
-          5,
-          0
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
-          ],
-          [
-            6,
-            0
-          ],
-          [
-            5,
-            0
-          ]
-        ]
-      },
-      {
-        "action_id": "a0037",
-        "destination": [
-          5,
-          6
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            5,
-            6
-          ]
-        ]
-      },
-      {
-        "action_id": "a0038",
         "destination": [
           6,
           0
@@ -2458,16 +2438,20 @@
         "kind": "move",
         "path": [
           [
-            6,
-            3
+            2,
+            0
           ],
           [
-            6,
-            2
+            3,
+            0
           ],
           [
-            6,
-            1
+            4,
+            0
+          ],
+          [
+            5,
+            0
           ],
           [
             6,
@@ -2476,7 +2460,7 @@
         ]
       },
       {
-        "action_id": "a0039",
+        "action_id": "a0034",
         "destination": [
           6,
           1
@@ -2484,12 +2468,24 @@
         "kind": "move",
         "path": [
           [
-            6,
-            3
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
           ],
           [
             6,
-            2
+            0
           ],
           [
             6,
@@ -2498,7 +2494,7 @@
         ]
       },
       {
-        "action_id": "a0040",
+        "action_id": "a0035",
         "destination": [
           6,
           2
@@ -2506,8 +2502,28 @@
         "kind": "move",
         "path": [
           [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
             6,
-            3
+            0
+          ],
+          [
+            6,
+            1
           ],
           [
             6,
@@ -2516,7 +2532,49 @@
         ]
       },
       {
-        "action_id": "a0041",
+        "action_id": "a0036",
+        "destination": [
+          6,
+          3
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            3
+          ]
+        ]
+      },
+      {
+        "action_id": "a0037",
         "destination": [
           6,
           4
@@ -2524,6 +2582,34 @@
         "kind": "move",
         "path": [
           [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
             6,
             3
           ],
@@ -2534,7 +2620,7 @@
         ]
       },
       {
-        "action_id": "a0042",
+        "action_id": "a0038",
         "destination": [
           6,
           5
@@ -2542,6 +2628,34 @@
         "kind": "move",
         "path": [
           [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
             6,
             3
           ],
@@ -2556,13 +2670,41 @@
         ]
       },
       {
-        "action_id": "a0043",
+        "action_id": "a0039",
         "destination": [
           6,
           6
         ],
         "kind": "move",
         "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
           [
             6,
             3
@@ -2582,7 +2724,7 @@
         ]
       },
       {
-        "action_id": "a0044",
+        "action_id": "a0040",
         "destination": [
           6,
           7
@@ -2590,6 +2732,34 @@
         "kind": "move",
         "path": [
           [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
             6,
             3
           ],
@@ -2612,7 +2782,7 @@
         ]
       },
       {
-        "action_id": "a0045",
+        "action_id": "a0041",
         "destination": [
           6,
           8
@@ -2620,218 +2790,28 @@
         "kind": "move",
         "path": [
           [
-            6,
-            3
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
           ],
           [
             6,
-            4
+            0
           ],
           [
             6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            6,
-            7
-          ],
-          [
-            6,
-            8
-          ]
-        ]
-      },
-      {
-        "action_id": "a0046",
-        "destination": [
-          6,
-          9
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            6,
-            7
-          ],
-          [
-            6,
-            8
-          ],
-          [
-            6,
-            9
-          ]
-        ]
-      },
-      {
-        "action_id": "a0047",
-        "destination": [
-          6,
-          10
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            6,
-            7
-          ],
-          [
-            6,
-            8
-          ],
-          [
-            6,
-            9
-          ],
-          [
-            6,
-            10
-          ]
-        ]
-      },
-      {
-        "action_id": "a0048",
-        "destination": [
-          6,
-          11
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            6,
-            7
-          ],
-          [
-            6,
-            8
-          ],
-          [
-            6,
-            9
-          ],
-          [
-            6,
-            10
-          ],
-          [
-            6,
-            11
-          ]
-        ]
-      },
-      {
-        "action_id": "a0049",
-        "destination": [
-          6,
-          12
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            6,
-            7
-          ],
-          [
-            6,
-            8
-          ],
-          [
-            6,
-            9
-          ],
-          [
-            6,
-            10
-          ],
-          [
-            6,
-            11
-          ],
-          [
-            6,
-            12
-          ]
-        ]
-      },
-      {
-        "action_id": "a0050",
-        "destination": [
-          7,
-          0
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
+            1
           ],
           [
             6,
@@ -2839,7 +2819,53 @@
           ],
           [
             6,
-            1
+            3
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            6,
+            8
+          ]
+        ]
+      },
+      {
+        "action_id": "a0042",
+        "destination": [
+          7,
+          0
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
           ],
           [
             6,
@@ -2852,7 +2878,7 @@
         ]
       },
       {
-        "action_id": "a0051",
+        "action_id": "a0043",
         "destination": [
           7,
           6
@@ -2860,6 +2886,34 @@
         "kind": "move",
         "path": [
           [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
             6,
             3
           ],
@@ -2882,7 +2936,7 @@
         ]
       },
       {
-        "action_id": "a0052",
+        "action_id": "a0044",
         "destination": [
           8,
           0
@@ -2890,16 +2944,20 @@
         "kind": "move",
         "path": [
           [
-            6,
-            3
+            2,
+            0
           ],
           [
-            6,
-            2
+            3,
+            0
           ],
           [
-            6,
-            1
+            4,
+            0
+          ],
+          [
+            5,
+            0
           ],
           [
             6,
@@ -2911,6 +2969,438 @@
           ],
           [
             8,
+            0
+          ]
+        ]
+      },
+      {
+        "action_id": "a0045",
+        "destination": [
+          8,
+          6
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            3
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            7,
+            6
+          ],
+          [
+            8,
+            6
+          ]
+        ]
+      },
+      {
+        "action_id": "a0046",
+        "destination": [
+          9,
+          0
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            7,
+            0
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            9,
+            0
+          ]
+        ]
+      },
+      {
+        "action_id": "a0047",
+        "destination": [
+          10,
+          0
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            7,
+            0
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            9,
+            0
+          ],
+          [
+            10,
+            0
+          ]
+        ]
+      },
+      {
+        "action_id": "a0048",
+        "destination": [
+          11,
+          0
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            7,
+            0
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            9,
+            0
+          ],
+          [
+            10,
+            0
+          ],
+          [
+            11,
+            0
+          ]
+        ]
+      },
+      {
+        "action_id": "a0049",
+        "destination": [
+          12,
+          0
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            7,
+            0
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            9,
+            0
+          ],
+          [
+            10,
+            0
+          ],
+          [
+            11,
+            0
+          ],
+          [
+            12,
+            0
+          ]
+        ]
+      },
+      {
+        "action_id": "a0050",
+        "destination": [
+          12,
+          1
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            7,
+            0
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            9,
+            0
+          ],
+          [
+            10,
+            0
+          ],
+          [
+            11,
+            0
+          ],
+          [
+            12,
+            0
+          ],
+          [
+            12,
+            1
+          ]
+        ]
+      },
+      {
+        "action_id": "a0051",
+        "destination": [
+          12,
+          2
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            7,
+            0
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            9,
+            0
+          ],
+          [
+            10,
+            0
+          ],
+          [
+            11,
+            0
+          ],
+          [
+            12,
+            0
+          ],
+          [
+            12,
+            1
+          ],
+          [
+            12,
+            2
+          ]
+        ]
+      },
+      {
+        "action_id": "a0052",
+        "destination": [
+          13,
+          0
+        ],
+        "kind": "move",
+        "path": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            7,
+            0
+          ],
+          [
+            8,
+            0
+          ],
+          [
+            9,
+            0
+          ],
+          [
+            10,
+            0
+          ],
+          [
+            11,
+            0
+          ],
+          [
+            12,
+            0
+          ],
+          [
+            13,
             0
           ]
         ]
@@ -2918,308 +3408,26 @@
       {
         "action_id": "a0053",
         "destination": [
-          8,
-          6
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ]
-        ]
-      },
-      {
-        "action_id": "a0054",
-        "destination": [
-          9,
+          14,
           0
         ],
         "kind": "move",
         "path": [
           [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
-          ],
-          [
-            6,
+            2,
             0
           ],
           [
-            7,
+            3,
             0
           ],
           [
-            8,
+            4,
             0
           ],
           [
-            9,
+            5,
             0
-          ]
-        ]
-      },
-      {
-        "action_id": "a0055",
-        "destination": [
-          9,
-          6
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ],
-          [
-            9,
-            6
-          ]
-        ]
-      },
-      {
-        "action_id": "a0056",
-        "destination": [
-          10,
-          0
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
-          ],
-          [
-            6,
-            0
-          ],
-          [
-            7,
-            0
-          ],
-          [
-            8,
-            0
-          ],
-          [
-            9,
-            0
-          ],
-          [
-            10,
-            0
-          ]
-        ]
-      },
-      {
-        "action_id": "a0057",
-        "destination": [
-          10,
-          6
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ],
-          [
-            9,
-            6
-          ],
-          [
-            10,
-            6
-          ]
-        ]
-      },
-      {
-        "action_id": "a0058",
-        "destination": [
-          11,
-          0
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
-          ],
-          [
-            6,
-            0
-          ],
-          [
-            7,
-            0
-          ],
-          [
-            8,
-            0
-          ],
-          [
-            9,
-            0
-          ],
-          [
-            10,
-            0
-          ],
-          [
-            11,
-            0
-          ]
-        ]
-      },
-      {
-        "action_id": "a0059",
-        "destination": [
-          11,
-          6
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            4
-          ],
-          [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ],
-          [
-            9,
-            6
-          ],
-          [
-            10,
-            6
-          ],
-          [
-            11,
-            6
-          ]
-        ]
-      },
-      {
-        "action_id": "a0060",
-        "destination": [
-          12,
-          0
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
-          ],
-          [
-            6,
-            2
-          ],
-          [
-            6,
-            1
           ],
           [
             6,
@@ -3248,72 +3456,29 @@
           [
             12,
             0
-          ]
-        ]
-      },
-      {
-        "action_id": "a0061",
-        "destination": [
-          12,
-          6
-        ],
-        "kind": "move",
-        "path": [
-          [
-            6,
-            3
           ],
           [
-            6,
-            4
+            13,
+            0
           ],
           [
-            6,
-            5
-          ],
-          [
-            6,
-            6
-          ],
-          [
-            7,
-            6
-          ],
-          [
-            8,
-            6
-          ],
-          [
-            9,
-            6
-          ],
-          [
-            10,
-            6
-          ],
-          [
-            11,
-            6
-          ],
-          [
-            12,
-            6
+            14,
+            0
           ]
         ]
       }
     ],
     "movement_dice": [
-      4,
-      5
+      6,
+      6
     ],
-    "movement_die": 9,
+    "movement_die": 12,
     "pending_claim": {
       "claim_id": 82,
       "player": "P0",
       "responded": [
         "P1",
-        "P2",
-        "P3"
+        "P2"
       ],
       "round": 8
     },
@@ -3321,7 +3486,7 @@
     "players": {
       "P0": {
         "attack_bonus": 1,
-        "attack_vs_claimant_bonus": 1,
+        "attack_vs_claimant_bonus": 2,
         "defense_bonus": 1,
         "equipment": [
           "galea",
@@ -3341,7 +3506,7 @@
           9,
           6
         ],
-        "prestige": 3,
+        "prestige": 2,
         "support": [
           "elites",
           "officials"
@@ -3350,7 +3515,7 @@
       },
       "P1": {
         "attack_bonus": 1,
-        "attack_vs_claimant_bonus": 1,
+        "attack_vs_claimant_bonus": 2,
         "defense_bonus": 1,
         "equipment": [
           "galea",
@@ -3367,18 +3532,18 @@
         ],
         "gate_id": "P1",
         "position": [
-          6,
-          6
+          2,
+          0
         ],
-        "prestige": 2,
+        "prestige": 1,
         "support": [
           "officials"
         ],
-        "turns": 23
+        "turns": 22
       },
       "P2": {
         "attack_bonus": 1,
-        "attack_vs_claimant_bonus": 1,
+        "attack_vs_claimant_bonus": 2,
         "defense_bonus": 1,
         "equipment": [
           "galea",
@@ -3395,19 +3560,19 @@
         ],
         "gate_id": "P2",
         "position": [
-          6,
-          6
+          2,
+          0
         ],
-        "prestige": 0,
+        "prestige": 1,
         "support": [
           "army",
           "elites"
         ],
-        "turns": 23
+        "turns": 22
       },
       "P3": {
         "attack_bonus": 1,
-        "attack_vs_claimant_bonus": 1,
+        "attack_vs_claimant_bonus": 2,
         "defense_bonus": 1,
         "equipment": [
           "galea",
@@ -3424,20 +3589,20 @@
         ],
         "gate_id": "P0",
         "position": [
-          6,
-          3
+          1,
+          0
         ],
         "prestige": 1,
         "support": [
           "officials"
         ],
-        "turns": 23
+        "turns": 21
       }
     },
     "prestige_cap": 3,
     "progress": {
       "claim_required_equipment": 6,
-      "claim_window_rounds": 2,
+      "claim_window_rounds": 1,
       "contest_cost": 1,
       "duel_loser_cost": 1,
       "first_challenger": "P0",
@@ -3451,9 +3616,9 @@
       ],
       "proclaim_cost": 0,
       "required_support": 2,
-      "succession_max_rounds": 24,
       "support_cost": 1,
-      "transition_after_round": 13
+      "transition_after_round": 13,
+      "transition_min_prestige": 1
     },
     "revealed_districts": {
       "A": "lorica_segmentata",
@@ -3463,17 +3628,17 @@
       "E": "gladius",
       "F": "pilum"
     },
-    "round": 10,
+    "round": 9,
     "seed": 1,
     "status": "in_progress",
-    "turn_id": 91,
+    "turn_id": 87,
     "turn_order": [
+      "P0",
       "P1",
       "P2",
-      "P3",
-      "P0"
+      "P3"
     ],
-    "viewer": "P3"
+    "viewer": "P2"
   },
   "rules": "../rules/imperial-rivals-v0.10.2.json"
 }

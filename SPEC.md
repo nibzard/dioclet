@@ -42,8 +42,10 @@ The game has two phases and two boards:
 
 The succession phase has no round limit, and the printed game has no
 draw. `succession.max_rounds` (100) is an engine backstop for a
-stalled game: a game that reaches it ends in a **draw** (`end_reason`
-`succession_timeout`).
+stalled game: a game that reaches it with no pending claim ends in a
+**draw** (`end_reason` `succession_timeout`). A pending claim ends
+the game by itself, so the backstop never cuts it. The backstop is
+not part of the observation.
 
 The engine also implements a second win route for rules files that set
 `succession.claim_window_rounds` to 0: a claim is crowned by
@@ -221,10 +223,10 @@ and future dice. Everything else is public.
 - `pending_claim` (or `null`).
 - `progress`: `first_challenger`, `players_with_full_equipment`,
   `claim_required_equipment`, `palace_max_rounds`,
-  `succession_max_rounds`, `grace_full_rounds`, `support_cost`,
+  `grace_full_rounds`, `support_cost`,
   `required_support`, `contest_cost`, `claim_window_rounds`,
-  `proclaim_cost`, `duel_loser_cost`, and `transition_after_round`
-  once the checkpoint is claimed.
+  `proclaim_cost`, `transition_min_prestige`, `duel_loser_cost`, and
+  `transition_after_round` once the checkpoint is claimed.
 - `legal_actions`: the same list `legal_actions(state)` returns.
 
 ## 6. Actions
