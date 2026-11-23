@@ -123,7 +123,7 @@ duelCase({attacker:[], defender:[], dice:[5,5], checks:({ev,a}) => {
   assert.equal(ev.winner, a.id, 'neither holds the pugio: the attacker wins the tie');
 }});
 duelCase({attacker:['gladius','pilum'], defender:[], dice:[2,2], vsClaimant:true, checks:({ev}) => {
-  assert.equal(ev.attacker_bonus, 1, 'gladius and pilum against the claimant add +1, not +2');
+  assert.equal(ev.attacker_bonus, 2, 'gladius (+1) and pilum (+2) against the claimant use the best one (+2), not a sum (+3)');
 }});
 duelCase({attacker:['scutum'], defender:[], dice:[6,3], checks:({ev}) => {
   assert.equal(ev.attacker_bonus, 0, 'the scutum only helps the defender');
@@ -191,16 +191,17 @@ duelCase({attacker:['gladius','pugio'], defender:['scutum'], dice:[3,3], checks:
       E.applyAction(g, acts.find(x => x.kind === 'maintain_claim') ?? acts[0]);
     } else E.applyAction(g, acts[0]);
   }
+  const win = BOARD.succession.claimWindowRounds;
   assert.equal(g.winner, claimant.id);
   assert.equal(g.endReason, 'survived_window');
-  // The win fires when the round counter reads R+3, so the last
-  // completed round is R+2: two full rounds after the proclaim.
-  assert.equal(g.round - proclaimedRound, 3);
+  // The win fires when the round counter reads R+window+1, so the last
+  // completed round is R+window.
+  assert.equal(g.round - proclaimedRound, win + 1);
 }
 {
   // The claim still lives through round R+window, so a rival can
-  // cancel it there. The old one-round-early timing crowned the
-  // claim before this round ever started.
+  // cancel it there.
+  const win = BOARD.succession.claimWindowRounds;
   const g = runToPhase2(mk());
   g.currentRoll = {dice:[2,2], total:4};
   const claimant = E.active(g);
@@ -209,7 +210,7 @@ duelCase({attacker:['gladius','pugio'], defender:['scutum'], dice:[3,3], checks:
   const proclaimedRound = g.pendingClaim.round;
   let guard = 0;
   while (!g.winner && guard++ < 60) {
-    if (g.round === proclaimedRound + 2 && E.active(g) !== claimant) break;
+    if (g.round === proclaimedRound + win && E.active(g) !== claimant) break;
     g.currentRoll = {dice:[2,2], total:4};
     if (E.active(g) === claimant) {
       E.applyAction(g, E.legalActions(g).find(x => x.kind === 'maintain_claim'));
@@ -217,7 +218,7 @@ duelCase({attacker:['gladius','pugio'], defender:['scutum'], dice:[3,3], checks:
       E.applyAction(g, E.legalActions(g).find(x => !(x.kind === 'duel' && x.target === claimant.id)));
     }
   }
-  assert.equal(g.round, proclaimedRound + 2, 'the claim survives into round R+window');
+  assert.equal(g.round, proclaimedRound + win, 'the claim survives into round R+window');
   assert.equal(E.active(g) === claimant, false);
   const rival = g.players.find(p => p.id !== claimant.id);
   rival.pos = '8,6'; rival.prestige = 1;
@@ -229,7 +230,7 @@ duelCase({attacker:['gladius','pugio'], defender:['scutum'], dice:[3,3], checks:
   E.applyAction(g, contest);
   assert.ok(!g.pendingClaim, 'the claim dies in round R+window');
   assert.ok(!g.winner && !g.draw, 'no crown: the extra round exists');
-  assert.equal(g.round, proclaimedRound + 2);
+  assert.equal(g.round, proclaimedRound + win);
 }
 {
   const g = runToPhase2(mk());
@@ -285,6 +286,21 @@ duelCase({attacker:['gladius','pugio'], defender:['scutum'], dice:[3,3], checks:
   assert.equal(a.abilitiesUsed.reveal_district, 'galea');
   g.currentRoll = {dice:[2,2], total:4};
   assert.ok(!find(g, 'inspect'), 'the galea works once per game');
+}
+// Phase-2 helmet reveal and transition Prestige floor.
+{
+  const g2 = runToPhase2(mk());
+  assert.ok(g2.players.every(p => p.prestige >= 1), 'every player enters phase 2 with at least 1 Prestige');
+  const a = E.active(g2);
+  a.equipment = ['galea'];
+  a.abilitiesUsed = {};
+  const hiddenSite = Object.keys(g2.factionSites).find(k => !(k in g2.factionSitesRevealed));
+  assert.ok(hiddenSite);
+  const act = find(g2, 'inspect', x => x.site === hiddenSite);
+  assert.ok(act, 'unused helmet may reveal a hidden faction card space in phase 2');
+  E.applyAction(g2, act);
+  assert.equal(g2.factionSitesRevealed[hiddenSite], g2.factionSites[hiddenSite]);
+  assert.equal(a.abilitiesUsed.reveal_district, 'galea');
 }
 // Forty seeded bot games finish. Every seat runs a different strategy;
 // each game must reach a winner or a timeout draw with sane Prestige.

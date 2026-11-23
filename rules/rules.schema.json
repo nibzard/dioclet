@@ -102,7 +102,7 @@
     "succession": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["max_rounds", "support_cost", "factions_to_proclaim", "contest_fee", "claim_window_rounds", "proclaim_cost", "faction_cards", "gate_assignment", "map"],
+      "required": ["max_rounds", "support_cost", "factions_to_proclaim", "contest_fee", "claim_window_rounds", "proclaim_cost", "transition_min_prestige", "faction_cards", "gate_assignment", "map"],
       "properties": {
         "max_rounds": {"type": "integer", "minimum": 1},
         "support_cost": {"type": "integer", "minimum": 1},
@@ -110,6 +110,7 @@
         "contest_fee": {"type": "integer", "minimum": 0},
         "claim_window_rounds": {"type": "integer", "minimum": 0, "maximum": 6},
         "proclaim_cost": {"type": "integer", "minimum": 0, "maximum": 3},
+        "transition_min_prestige": {"type": "integer", "minimum": 0, "maximum": 3},
         "faction_cards": {
           "type": "object",
           "additionalProperties": false,

@@ -118,8 +118,8 @@ def main():
         "succession": succession(rules),
         "cards": {
             "size_mm": [kit.CARD_W, kit.CARD_H],
-            "items": [{"name": name, "icon": icon, "text": text}
-                      for name, icon, text in kit.CARDS],
+            "items": [{"name": name, "latin": latin, "icon": icon, "text": text}
+                      for name, latin, icon, text in kit.CARDS],
             "abilities": abilities,
             "factions": [{"name": name, "badge": badge, "lines": [l1, l2]}
                          for name, badge, l1, l2 in kit.FACTION_CARDS],

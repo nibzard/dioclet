@@ -11,8 +11,10 @@ from html import escape
 
 FACTIONS = {"army": "Army", "officials": "Imperial officials", "elites": "City elites"}
 
-# Tracker lines use the short armor name for the lorica segmentata.
-_TRACKER_ALIASES = {"lorica_segmentata": "armor"}
+# Tracker lines use English primary names.
+_TRACKER_ALIASES = {"pugio": "dagger", "pilum": "javelin", "galea": "helmet",
+                    "scutum": "shield", "gladius": "sword",
+                    "lorica_segmentata": "armor"}
 
 _NUMBER_WORDS = {0: "zero", 1: "one", 2: "two", 3: "three", 4: "four",
                  5: "five", 6: "six", 7: "seven", 8: "eight", 9: "nine",
@@ -38,6 +40,7 @@ def rulebook_html(rules):
     required = cfg["factions_to_proclaim"]
     fee = cfg["contest_fee"]
     window = cfg["claim_window_rounds"]
+    trans_min = cfg["transition_min_prestige"]
     grace = palace["rounds_after_checkpoint"]
     l1_max = palace["max_rounds"]
     l2_max = cfg["max_rounds"]
@@ -79,10 +82,13 @@ def rulebook_html(rules):
     n_blocks = len(pmap["buildings"])
     limit = ("There is no storage cap." if cap is None
              else f"You can hold at most <b>{cap} Prestige</b>. Extra rewards are lost.")
+    trans_note = (f" Any player entering with less than {trans_min} Prestige rises to {trans_min}."
+                  if trans_min else "")
+    round_word = "full round" if window == 1 else "full rounds"
     return f'''<h2>The game in one minute</h2>
 <p>305 AD. {count_word(players).capitalize()} rivals prepare a claim to the throne. Collect equipment on the palace map,
 earn Prestige, then turn the board over: on the succession map, buy the backing of {count_word(required)}
-factions and proclaim at the Peristyle. A claim that survives <b>{window} full rounds</b> wins.</p>
+factions and proclaim at the Peristyle. A claim that survives <b>{window} {round_word}</b> wins.</p>
 <h2>Set the table</h2>
 <p>Choose {count_word(players)} humans or bots. Random gates use the game seed. You can also choose {count_word(n_gates)} distinct gates manually,
 or rotate gates across {count_word(n_gates)} games. Names and colors belong to players, not gates. The displayed assignment is final when you start.</p>
@@ -93,27 +99,27 @@ face-down faction cards. Every gate on the succession map is {count_word(gate_st
 <ol><li>Roll {count_word(dice)} {count_word(sides)}-sided dice for movement.</li><li>Move along the circles, up to the total. You may stop early and pass other pawns.</li>
 <li>Do <b>one action</b> at your destination: take equipment, stand guard, duel, search a
 faction card, gain support, claim the checkpoint, proclaim, maintain your claim, or reveal
-a district with the galea.</li></ol>
+a hidden card with the helmet.</li></ol>
 <p>Tap a highlighted circle. Collection is automatic when no competing action exists. Otherwise a modal shows the choices.
 A guard action or duel requires movement of at least one space. The other actions can be stationary.</p>
 <h2>Equipment stays yours</h2>
 <p>{count_word(n_entries).capitalize()} treasure entries hold {count_word(n_items)} shuffled equipment types. Cards start face down; {count_word(face_up)} begin face up.
 Each player can collect each type once, and only while the palace phase lasts. Equipment is never lost.</p>
 <table><tr><th>Item</th><th>Ability</th></tr>
-<tr><td><b>Gladius</b> · sword</td><td>+{gv} to your attack in any duel you start</td></tr>
-<tr><td><b>Scutum</b> · shield</td><td>+{sv} to your defense in any duel</td></tr>
-<tr><td><b>Pilum</b> · javelin</td><td>+{pv} to your attack against the standing claimant</td></tr>
-<tr><td><b>Pugio</b> · dagger</td><td>You win tied duels if only you hold it. Both or neither: the {tie} wins. Always active.</td></tr>
-<tr><td><b>Galea</b> · helmet</td><td>Once per game, as your action: reveal any one face-down treasure card</td></tr>
-<tr><td><b>Lorica segmentata</b> · armor</td><td>Once per game: when your claim is beaten, keep your square</td></tr></table>
+<tr><td><b>Sword</b> · gladius</td><td>+{gv} to your attack in any duel you start</td></tr>
+<tr><td><b>Shield</b> · scutum</td><td>+{sv} to your defense in any duel</td></tr>
+<tr><td><b>Javelin</b> · pilum</td><td>+{pv} to your attack against the standing claimant</td></tr>
+<tr><td><b>Dagger</b> · pugio</td><td>You win tied duels if only you hold it. Both or neither: the {tie} wins. Always active.</td></tr>
+<tr><td><b>Helmet</b> · galea</td><td>Once per game (either map), as your action: publicly reveal any one face-down treasure or faction card</td></tr>
+<tr><td><b>Armor</b> · lorica segmentata</td><td>Once per game: when your claim is beaten, keep your square</td></tr></table>
 <p>In a duel each side adds at most <b>one</b> number bonus - the best one that applies, never a sum.
-The pugio is not a number bonus: it is a passive tie-break that works next to your chosen bonus whenever
-the final totals are equal. Gladius and pugio together are legal; gladius and pilum together still add only +{gv}.</p>
+The dagger is not a number bonus: it is a passive tie-break that works next to your chosen bonus whenever
+the final totals are equal. Sword and dagger together are legal; sword and javelin together against the claimant use the best one (+{max(gv, pv)}).</p>
 <h2>Earn and spend Prestige</h2>
 <p>{limit} Move to a guard post (either map) and roll one die: <b>{min_roll} or higher earns {gw} Prestige</b>.
-The winner of a duel earns {dw} Prestige. The loser pays {dl} back to the bank.</p>
+The winner of a duel earns {dw} Prestige from the bank. The loser pays {dl} back to the bank (ordinary duel losers stay put).</p>
 <p>Resolve a duel in this order: both roll one die; each side adds its one best number bonus;
-compare totals; only if the totals are equal, apply the pugio - the lone holder wins, otherwise
+compare totals; only if the totals are equal, apply the dagger - the lone holder wins, otherwise
 the {tie} wins. Nobody loses equipment or support.</p>
 <h2>Search the faction cards</h2>
 <p>At the change to the succession map, {count_word(n_cards)} faction cards go face down on the ? spaces:
@@ -127,17 +133,16 @@ An empty street gives nothing. Every faction can support every player once. You 
 as their action. Finish that round, then <b>{grace} additional full round</b>, and the succession begins.
 If nobody claims by round {l1_max}, the succession begins anyway.</p>
 <p>At the change the palace map leaves the table. Every pawn returns to its gate on the succession
-map and keeps everything it owns: items, Prestige, and support already gained. Nothing is granted
-for free.</p>
+map and keeps everything it owns: items, Prestige, and support already gained.{trans_note}</p>
 <h2>Proclaim and contest a claim</h2>
 <ol><li>During the succession phase, stand at the Peristyle with {required} supporters and proclaim. Only one claim can stand at a time.</li>
 <li>Your claim now stands inside a {window}-round window. Rivals cancel it only by winning a challenge duel.</li>
 <li>On your turn you may maintain the claim and stay put. Leaving the Peristyle by your own move cancels it.</li>
-<li>If no rival cancels the claim before {window} full rounds pass, <b>you are emperor</b>.</li></ol>
+<li>If no rival cancels the claim before {window} {round_word} pass, <b>you are emperor</b>.</li></ol>
 <p>To challenge, end your move within {count_word(rng)} street circles of the claimant and duel them.
 Challenging a standing claim costs a mandatory <b>{fee} Prestige fee</b>, paid before you roll - even if you lose.
 Without at least {fee} Prestige you cannot contest at all. A winning challenge cancels the claim;
-the claimant returns to their gate unless the lorica segmentata is unused, which once per game
+the claimant returns to their gate unless the armor (lorica segmentata) is unused, which once per game
 lets a beaten claimant keep the square (the claim still dies). If no claim survives by round
 {l2_max} of the succession, the game ends in a draw.</p>
 <h2>What you can see</h2>

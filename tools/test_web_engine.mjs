@@ -21,12 +21,15 @@ const plain = v => JSON.parse(JSON.stringify(v));
      'startReveals','succession','successionMap','successionMaxRounds']);
   assert.deepEqual(Object.keys(B.succession).sort(),
     ['claimWindowRounds','contestFee','factionCells','factionNames',
-     'gateAssignment','proclaimCost','requiredSupport','supportCost']);
+     'gateAssignment','proclaimCost','requiredSupport','supportCost',
+     'transitionMinPrestige']);
   assert.deepEqual(Object.keys(B.prestige).sort(),
     ['cap','duelLoserCost','duelWinReward','guardMinRoll','guardReward']);
   assert.deepEqual(Object.keys(B.combat).sort(), ['abilities','tieGoesToDefender']);
   assert.equal(Object.keys(B.combat.abilities).length, 6);
-  assert.equal(B.succession.claimWindowRounds, 2);
+  assert.equal(B.combat.abilities.pilum.value, 2);
+  assert.equal(B.succession.claimWindowRounds, 1);
+  assert.equal(B.succession.transitionMinPrestige, 1);
   assert.equal(B.succession.contestFee, 1);
   assert.equal(B.prestige.duelLoserCost, 1);
   assert.equal(B.startReveals, 2);

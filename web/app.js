@@ -10,8 +10,8 @@
   const LETTER = { army: "A", officials: "O", elites: "C" };
   const FACTIONCOLOR = { army: "#7a5a2e", officials: "#3f6f9e", elites: "#5f7a4a" };
   const GATES = { P0: "North · Golden", P1: "East · Silver", P2: "South · Bronze", P3: "West · Iron" };
-  const ITEMS = { pugio: "Pugio", pilum: "Pilum", galea: "Galea", scutum: "Scutum",
-    gladius: "Gladius", lorica_segmentata: "Lorica" };
+  const ITEMS = { pugio: "Dagger", pilum: "Javelin", galea: "Helmet", scutum: "Shield",
+    gladius: "Sword", lorica_segmentata: "Armor" };
   const E = window.DIOCLET_ENGINE;
   const BOTS = window.DIOCLET_BOTS;
   const CELL = 44, PAD = 36;
@@ -503,7 +503,9 @@
         const known = g.revealed[a.dest];
         return "<b>Take the treasure</b>" + (known ? " (" + escapeHTML(ITEMS[known] || known) + ")" : "");
       }
-      case "inspect": return "<b>Consult the galea</b> · reveal district " + a.district;
+      case "inspect": return a.site
+        ? "<b>Consult the helmet</b> · reveal card space " + a.site
+        : "<b>Consult the helmet</b> · reveal district " + a.district;
       case "search_site": return "<b>Search the card space</b> · turn the faction card";
       case "guard_post": return "<b>Stand guard</b>: roll " + B.prestige.guardMinRoll + " or more for " + B.prestige.guardReward + " Prestige";
       case "gain_support": return "<b>Secure " + FACTIONS[a.faction] + " support</b> · " + C.supportCost + " Prestige";

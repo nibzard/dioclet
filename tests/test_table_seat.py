@@ -45,9 +45,10 @@ class ClaimLines(unittest.TestCase):
         obs = {"phase": 2, "pending_claim": pending, "progress": {}}
         # The recorded state embeds the pre-cleanup rules shape, so the
         # adopted rules file supplies the window and fee numbers.
+        window = RULES["succession"]["claim_window_rounds"]
         (line,) = table_seat.claim_lines(obs, RULES)
         self.assertIn("standing claim: P0 (proclaimed in round 9)", line)
-        self.assertIn("wins at the end of round 11", line)
+        self.assertIn(f"wins at the end of round {9 + window}", line)
         self.assertIn("fee 1 Prestige", line)
 
 

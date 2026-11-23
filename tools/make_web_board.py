@@ -77,6 +77,7 @@ def main():
             "proclaimCost": cfg["proclaim_cost"],
             "contestFee": cfg["contest_fee"],
             "claimWindowRounds": cfg["claim_window_rounds"],
+            "transitionMinPrestige": cfg["transition_min_prestige"],
             "gateAssignment": cfg["gate_assignment"],
             "factionNames": sorted(cfg["faction_cards"]["factions"]),
             # Only read by the fixed-cells fallback branch in the engine

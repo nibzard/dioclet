@@ -22,19 +22,21 @@ The game has two phases and two boards:
    claim the checkpoint. The palace phase ends one full round after
    that claim, or at round 24 if nobody claims.
 2. **Succession phase.** Every pawn returns to its gate on the
-   succession map and keeps everything it owns. Six face-down faction
-   cards sit on the card spaces: the Army, the Imperial officials, the
-   City elites, and three empty streets. Players search the cards,
-   pay 1 Prestige for a faction's support, and proclaim a claim at the
-   Peristyle with support from two different factions.
+   succession map and keeps everything it owns; any seat entering
+   below `transition_min_prestige` (1) rises to 1 Prestige. Six
+   face-down faction cards sit on the card spaces: the Army, the
+   Imperial officials, the City elites, and three empty streets.
+   Players search the cards, pay 1 Prestige for a faction's support,
+   and proclaim a claim at the Peristyle with support from two
+   different factions.
 
 **Win conditions, in the printed words:**
 
-- A claim that stands two full rounds unchallenged makes the claimant
+- A claim that stands one full round unchallenged makes the claimant
   **emperor** (engine `end_reason` `survived_window`). A claim
   proclaimed in round R wins when the last turn of round
-  R + `claim_window_rounds` ends. V0.10.2 sets the window to 2, so
-  the claim survives rounds R + 1 and R + 2 in full.
+  R + `claim_window_rounds` ends. The active rules set the window to
+  1, so the claim survives round R + 1 in full.
 - A rival cancels a standing claim only by winning a challenge duel,
   after paying the mandatory **contest fee** of 1 Prestige.
 - If no claim stands by succession round 24, the game ends in a
@@ -43,8 +45,8 @@ The game has two phases and two boards:
 The engine also implements a second win route for rules files that set
 `succession.claim_window_rounds` to 0: a claim is crowned by
 acclamation once every rival has completed one response turn
-(`end_reason` `acclamation`). V0.10.2 sets the window to 2, so this
-route does not fire in the printed game.
+(`end_reason` `acclamation`). The active rules set the window to 1,
+so this route does not fire in the printed game.
 
 ## 2. The rules file
 
@@ -77,7 +79,8 @@ rejects every unknown key. No value is supplied by code.
                   "rounds_after_checkpoint": 1, "map": {"...": "..."}},
   "succession":  {"max_rounds": 24, "support_cost": 1,
                   "factions_to_proclaim": 2, "contest_fee": 1,
-                  "claim_window_rounds": 2, "proclaim_cost": 0,
+                  "claim_window_rounds": 1, "proclaim_cost": 0,
+                  "transition_min_prestige": 1,
                   "faction_cards": {"factions": ["army", "elites", "officials"],
                                     "empty": 3},
                   "gate_assignment": "random", "map": {"...": "..."}}
@@ -130,12 +133,12 @@ spaces may not sit on a gate or the checkpoint.
 
 | Item | Type | Effect |
 | --- | --- | --- |
-| gladius | `attack_bonus` | +1 to your attack in any duel you start. |
-| scutum | `defense_bonus` | +1 to your defense in any duel. |
-| pilum | `attack_vs_claimant` | +1 to your attack against the standing claimant. |
-| pugio | `win_ties` | The lone holder wins tied duels. Both or neither: the attacker wins. |
-| galea | `reveal_district` | Once per game, as your action: reveal any one face-down treasure card. |
-| lorica segmentata | `prevent_displacement` | Once per game: when your claim is beaten, keep your square instead of returning to your gate. |
+| sword (`gladius`) | `attack_bonus` | +1 to your attack in any duel you start. |
+| shield (`scutum`) | `defense_bonus` | +1 to your defense in any duel. |
+| javelin (`pilum`) | `attack_vs_claimant` | +2 to your attack against the standing claimant. |
+| dagger (`pugio`) | `win_ties` | The lone holder wins tied duels. Both or neither: the attacker wins. |
+| helmet (`galea`) | `reveal_district` | Once per game (either phase), as your action: publicly reveal any one face-down treasure or faction card. |
+| armor (`lorica_segmentata`) | `prevent_displacement` | Once per game: when your claim is beaten, keep your square instead of returning to your gate. |
 
 The pugio is a passive tie-break, not a number bonus. It works next
 to the one number bonus. The number bonuses never stack.
@@ -232,7 +235,7 @@ where relevant `target`, `faction`, `district`, `contest_cost`, or
 | --- | --- | --- |
 | `move` | both | Destination within this roll; at least one step. |
 | `explore` | palace | Destination is a treasure entry whose item you do not own, or that is unrevealed. Grants the item; reveals the district to everyone. |
-| `inspect` | palace | Galea unused: reveal any one unrevealed district, without moving. |
+| `inspect` | both | Helmet unused: publicly reveal any one unrevealed district (palace) or unrevealed card space (succession), without moving. |
 | `guard_post` | both | You moved onto a guard post and your Prestige is below the cap. Roll one die; 4+ earns 1 Prestige. |
 | `duel` | both | You moved; the target's position is within `duels.range` of your destination. Against the standing claimant, pay the contest fee first. |
 | `search_site` | succession | Destination is an unrevealed card space. Turns its card face up for everyone. |

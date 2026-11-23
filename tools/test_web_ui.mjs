@@ -69,8 +69,8 @@ check("rulebook has 10 sections",
   (body.innerHTML.match(/<h2>/g) || []).length === 10);
 check("rulebook teaches the twin boards and the window",
   body.innerHTML.includes("succession map") &&
-  body.innerHTML.includes("2 full rounds") &&
-  body.innerHTML.includes("pugio"));
+  body.innerHTML.includes("1 full round") &&
+  body.innerHTML.includes("Dagger"));
 document.getElementById("rulesclose").click();
 check("close button hides overlay", overlay.classList.contains("hidden"));
 
@@ -198,7 +198,7 @@ check("player card shows the V0.10.2 succession state",
   collectorCard.querySelector(".pstats").textContent.includes("Gear 1/6") &&
   collectorCard.querySelector(".support-list").textContent.includes("0/2 support"));
 check("player card names the collected equipment",
-  /^(Pugio|Pilum|Galea|Scutum|Gladius|Lorica)$/.test(
+  /^(Dagger|Javelin|Helmet|Shield|Sword|Armor)$/.test(
     collectorCard.querySelector(".gear-list").textContent.split("·")[1]?.trim()));
 
 // A rival standing on the entry creates a real choice: collect or duel.
@@ -333,7 +333,7 @@ check("proclaiming needs no modal when uncontested",
   choiceDialog.classList.contains("hidden") && !claimBox.hidden);
 check("claim banner counts the window, not responses",
   claimBox.textContent.includes("Player 1 proclaims at the Peristyle") &&
-  claimBox.textContent.includes("2 more full rounds") &&
+  claimBox.textContent.includes("1 more full round") &&
   !claimBox.textContent.includes("responded"));
 check("claim marker lights the Peristyle",
   document.getElementById("claim-marker").getAttribute("display") === "inline");
@@ -354,7 +354,7 @@ await startForcedGame(game => {
   p.pos = "7,6";
   p.prestige = 2;
   game.pendingClaim = { player: "P1", claimId: 99, claim_id: 99,
-    round: game.round - 1, responded: [] };
+    round: game.round, responded: [] };
   E.player(game, "P1").pos = "9,6";
   E.player(game, "P1").prestige = 1;
   game.diceOverrides = { combat: [6, 1] };

@@ -152,6 +152,8 @@ def rule_summary(rules):
         summary["duel_loser_cost"] = rules["prestige"]["duel_loss_penalty"]
     if cfg["proclaim_cost"]:
         summary["proclaim_cost"] = cfg["proclaim_cost"]
+    if cfg["transition_min_prestige"]:
+        summary["transition_min_prestige"] = cfg["transition_min_prestige"]
     count = len(cfg["map"]["card_spaces"])
     summary["card_spaces"] = (
         f"Succession map: the three faction meeting places are hidden among "
@@ -665,6 +667,8 @@ def _action_outcomes(action, obs, rules):
         return _explore_outcomes(action, obs, rules, district)
     if kind == "search_site":
         return _search_outcomes(action, obs, rules)
+    if kind == "inspect" and "site" in action:
+        return _search_outcomes(action, obs, rules)
     return None
 
 
@@ -705,6 +709,11 @@ def _succession_features(action, obs, rules):
         # Do not use action.get('item') even if a malformed caller supplies it.
         if district in obs["revealed_districts"]:
             feats["public_item"] = obs["revealed_districts"][district]
+    elif action["kind"] == "inspect":
+        if "site" in action:
+            feats["site"] = action["site"]
+        elif "district" in action:
+            feats["district"] = action["district"]
     outcomes = _action_outcomes(action, obs, rules)
     if outcomes is not None:
         feats["outcomes"] = outcomes
@@ -715,6 +724,10 @@ def _describe_succession(action, feats, rules):
     kind, dest = action["kind"], action["destination"]
     if kind == "explore":
         return f"Collect at district {feats['district']}; equipment stays with you in both phases."
+    if kind == "inspect":
+        if "site" in action:
+            return f"Use the helmet to publicly reveal the face-down faction card at {action['site']}."
+        return f"Use the helmet to publicly reveal district {action['district']}."
     if kind == "search_site":
         return f"Search the face-down faction card at {dest}; the result is public."
     if kind == "gain_support":

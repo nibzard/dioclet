@@ -112,6 +112,7 @@
     if (checkpointClaim.length) return checkpointClaim[0];
     const support = byKind(acts, "gain_support");
     const search = byKind(acts, "search_site");
+    const inspect = byKind(acts, "inspect");
     const explore = byKind(acts, "explore");
     const guard = byKind(acts, "guard_post");
     const duels = byKind(acts, "duel");
@@ -124,6 +125,10 @@
       ? Object.entries(view.factionRevealed).filter(([cell, f]) => f && !p.support.includes(f)).map(([cell]) => cell)
       : [];
     const supportTarget = supportTargets.length ? closest(g, p.pos, supportTargets) : null;
+    if (view.phase === 2 && neededSupport && !supportTarget && inspect.length) {
+      const pick = inspect.slice().sort((a, b) => dist(g, p.pos, a.site) - dist(g, p.pos, b.site) || cmpId(a, b))[0];
+      return pick;
+    }
     const unsearched = view.factionRevealed
       ? B.successionMap.cardSpaces.map(c => c.join(",")).filter(cell => !Object.hasOwn(view.factionRevealed, cell))
       : [];

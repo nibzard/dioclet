@@ -698,3 +698,29 @@ practical. No baseline rule values were changed.
   became timeout draws, 26 games crowned a different seat, and every
   surviving claim now ends at succession round R + 3 on the state
   counter.
+
+- **D57 Session-002 rules & presentation pass (2026-11-23).** Driven by
+  human playtest session 002 (`playtest/human-session-002.md`) and its
+  11-arm matched-seed sweep (`notes/v10-session002-sweep-2026-11-23.md`):
+  1. **English primary card names with Latin in art:** Equipment cards,
+     player mats, rulebook, quick reference, teaching guide, and web UI
+     now use English primary names (`Sword`, `Shield`, `Javelin`,
+     `Dagger`, `Helmet`, `Armor`) while inscribing the Latin names
+     (`Gladius`, `Scutum`, `Pilum`, `Pugio`, `Galea`,
+     `Lorica Segmentata`) onto a carved stone plinth beneath the card
+     artwork; internal JSON/engine keys stay unchanged.
+  2. **Helmet (`galea`) works in both phases, publicly:** Once per game,
+     `inspect` reveals any face-down treasure entry in Phase 1 or any
+     face-down faction card space (`site`) in Phase 2, publicly for
+     everyone.
+  3. **Javelin (`pilum`) +2 vs claimant + 1-full-round claim window:**
+     Under `bonus_per_side: "best"`, `+1` pilum was strictly dominated by
+     gladius in 98% of contests, while the post-D56 2-full-round window
+     raised bot draws to 13.0%. Setting `pilum.value = 2` and
+     `claim_window_rounds = 1` cuts draws to 0.8%, keeps gates uniform
+     (`p = .80`), and makes the javelin active in 98.5% of contests.
+  4. **Succession transition Prestige floor (`transition_min_prestige: 1`):**
+     Any player entering the succession map with 0 Prestige rises to 1
+     (validated in schema, engine, web board, and print kit) so nobody
+     starts Map 2 locked out. Golden traces, web bundles, card art, and
+     BW/ART/COLOR print kits regenerated in lockstep.

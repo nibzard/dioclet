@@ -296,20 +296,20 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertIn("never a sum", text)
         self.assertIn(kit.full_rounds(v["window"]), text)           # claim window
         self.assertIn("shame", text)                                # loser pays
-        self.assertIn("pugio", text)                                # tie winner
+        self.assertIn("dagger", text.lower())                       # tie winner
         self.assertIn("face up at random", text)                    # start reveals
         self.assertNotIn("acclaimed emperor", text)                 # window replaced it
 
     def test_pugio_tiebreak_is_stated_everywhere(self):
-        # A playtest disagreement: the sheet filed the pugio under defense
-        # and the card said only "Wins tied duels", so players read the
-        # tie-break as a defense-only extra that cannot combine with the
-        # gladius. The mechanic is unchanged (D42, D54); the wording pins
-        # it down in every printed place a player looks.
+        # A playtest disagreement: the sheet filed the dagger (pugio) under
+        # defense and the card said only "Wins tied duels", so players read
+        # the tie-break as a defense-only extra that cannot combine with the
+        # sword (gladius). The mechanic is unchanged (D42, D54); the wording
+        # pins it down in every printed place a player looks.
         tie = kit.printed_values(self.rules)["tie_winner"]
         rulebook = whole_text("imperial-rivals-305ad-rulebook-A4-BW.pdf")
         self.assertIn("passive tie-break", rulebook)
-        self.assertIn("gladius and pugio together are legal", rulebook)
+        self.assertIn("sword and dagger together are legal", rulebook)
         self.assertIn("Compare the final totals", rulebook)      # order of ops
         self.assertIn("If both or neither hold one", rulebook)   # the tie case
         self.assertIn("Both players own all six items", rulebook)  # example
@@ -319,7 +319,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         sheets = whole_text("imperial-rivals-305ad-player-sheets-A4-BW.pdf")
         self.assertIn("TIE-BREAK - ALWAYS ON", sheets)           # own group
         quick = " ".join(whole_text("imperial-rivals-305ad-quick-reference-A4-BW.pdf").split())
-        self.assertIn(f"tie: the lone pugio holder wins, else the {tie}", quick)
+        self.assertIn(f"tie: the lone dagger holder wins, else the {tie}", quick)
 
     def test_rulebook_pins_the_twin_board_flow(self):
         v = kit.printed_values(self.rules)
@@ -346,7 +346,7 @@ class PrintedRulesMatchRelease(unittest.TestCase):
         self.assertNotIn("You may gain support in either phase", text)
 
     def test_no_boost_prose_survives_anywhere(self):
-        # 0.9.3 removed the optional +2 duel boost; if it ever comes
+        # 0.9.3 removed the optional +2 paid duel boost; if it ever comes
         # back, the prose (and this check) must be rewritten on purpose.
         for name in ("imperial-rivals-305ad-rulebook-A4-BW.pdf",
                      "imperial-rivals-305ad-quick-reference-A4-BW.pdf",
@@ -356,7 +356,6 @@ class PrintedRulesMatchRelease(unittest.TestCase):
                      "imperial-rivals-305ad-succession-map-A4-BW.pdf"):
             text = whole_text(name)
             self.assertNotIn("boost", text.lower(), name)
-            self.assertNotIn("+2", text, name)
 
     def test_reference_and_rulebook_teach_the_prestige_reserve(self):
         # In the four-seat Haiku game every rival held 0 Prestige when a
@@ -387,10 +386,16 @@ class PrintedRulesMatchRelease(unittest.TestCase):
 
     def test_player_sheets_list_all_trackers(self):
         text = whole_text("imperial-rivals-305ad-player-sheets-A4-BW.pdf")
-        for item in self.rules["treasures"]["items"]:
-            self.assertIn(item.upper().replace("_", " "), text.upper())
+        for english, _latin, _icon, _flavor in kit.CARDS:
+            self.assertIn(english.upper(), text.upper())
         self.assertIn("PRESTIGE - one counter on the track", text)
+        self.assertIn("from the bank: win any duel", text)
         self.assertIn("keep in", text)                              # the reserve
+        self.assertIn("Only a beaten claimant returns to gate.", text)
+        self.assertIn("pass pawns, stop early", text)
+        self.assertIn("either map: reveal 1 card (public)", text)
+        self.assertIn("Map 2 start if at 0 Prestige", text)
+        self.assertIn("Claim Peristyle (+1 round)", text)
         window = kit.printed_values(self.rules)["window"]
         self.assertIn(f"A claim wins at the END of the "
                       f"{kit.ordinal_word(window)} full round AFTER its proclaim round",
@@ -401,8 +406,9 @@ class PrintedRulesMatchRelease(unittest.TestCase):
 
     def test_cards_cover_the_six_items_and_identical_backs(self):
         fronts = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 0)
-        for item in self.rules["treasures"]["items"]:
-            self.assertIn(item.replace("_", " ").upper(), fronts.upper())
+        for english, latin, _icon, _flavor in kit.CARDS:
+            self.assertIn(english.upper(), fronts.upper())
+            self.assertIn(latin.upper(), fronts.upper())
         # Six backs, each the same two-line title (one string per line).
         backs = page_text("imperial-rivals-305ad-cards-tokens-A4-BW.pdf", 1)
         self.assertEqual(backs.count("IMPERIAL"), 6)

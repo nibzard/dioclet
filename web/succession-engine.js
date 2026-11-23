@@ -199,6 +199,12 @@
         // returns to its gate on that map.
         g.phase = 2;
         for (const p of g.players) p.pos = gateCell(p, 2);
+        const floor = C.transitionMinPrestige || 0;
+        if (floor > 0) {
+          for (const p of g.players) {
+            if (p.prestige < floor) grant(g, p, floor - p.prestige, rec, "phase_transition");
+          }
+        }
         g.round = 1; g.turnRoundStart = 0; g.turnIndex = 0;
         const cells = SUCCESSION.cardSpaces.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(key);
         g.factionSites = {};
@@ -265,11 +271,17 @@
         add("duel", dest, { target: q.id, spend_prestige: false, contest_cost: contestCost });
       }
     }
-    // Galea: a stationary, once-per-game public reveal of any unexplored
-    // district, wherever it is.
+    // Helmet (galea): stationary, once-per-game public reveal of any hidden
+    // treasure card (phase 1) or hidden faction card space (phase 2).
     if (B.movement.allowStationary !== false && usableAbility(p, "reveal_district")) {
-      for (const name of districtNames) {
-        if (!(name in g.revealed)) add("inspect", p.pos, { district: name });
+      if (g.phase === 1) {
+        for (const name of districtNames) {
+          if (!(name in g.revealed)) add("inspect", p.pos, { district: name });
+        }
+      } else if (g.phase === 2 && g.factionSites) {
+        for (const siteKey of Object.keys(g.factionSites).sort(cmp)) {
+          if (!(siteKey in g.factionSitesRevealed)) add("inspect", p.pos, { site: siteKey });
+        }
       }
     }
     if (g.pendingClaim?.player === p.id && p.pos === M.checkpoint) add("maintain_claim", p.pos);
@@ -277,12 +289,12 @@
       const [ax, ay] = a.dest.split(",").map(Number), [bx, by] = b.dest.split(",").map(Number);
       return cmp(a.kind, b.kind) || ax - bx || ay - by ||
         cmp(a.target || "", b.target || "") || Number(Boolean(a.spend_prestige)) - Number(Boolean(b.spend_prestige)) ||
-        cmp(a.faction || "", b.faction || "");
+        cmp(a.faction || "", b.faction || "") || cmp(a.district || "", b.district || "") || cmp(a.site || "", b.site || "");
     });
     return actions.map((a, i) => ({ ...a, action_id: "a" + String(i + 1).padStart(4, "0") }));
   }
 
-  const actionFields = ["kind", "dest", "target", "spend_prestige", "faction", "district", "turnId", "action_id", "contest_cost"];
+  const actionFields = ["kind", "dest", "target", "spend_prestige", "faction", "district", "site", "turnId", "action_id", "contest_cost"];
   function sameAction(a, b) { return actionFields.every(k => a[k] === b[k]); }
 
   function applyAction(g, supplied) {
@@ -308,13 +320,21 @@
         rec.notes.push("collected " + item);
       } else rec.notes.push("already owns this equipment");
     } else if (action.kind === "inspect") {
-      const district = action.district;
       const item = usableAbility(p, "reveal_district");
-      g.revealed[district] = g.districtEquipment[district];
       p.abilitiesUsed.reveal_district = item;
-      event(rec, "district_revealed", { district, item: g.districtEquipment[district] });
-      event(rec, "ability_used", { player: p.id, ability: item, district });
-      rec.notes.push("the galea reveals district " + district + ": " + g.districtEquipment[district]);
+      if (action.site) {
+        const faction = g.factionSites[action.site];
+        g.factionSitesRevealed[action.site] = faction;
+        event(rec, "support_site_revealed", { player: p.id, cell: action.site.split(",").map(Number), faction });
+        event(rec, "ability_used", { player: p.id, ability: item, site: action.site });
+        rec.notes.push("the helmet reveals card space " + action.site + ": " + (faction || "empty street"));
+      } else {
+        const district = action.district;
+        g.revealed[district] = g.districtEquipment[district];
+        event(rec, "district_revealed", { district, item: g.districtEquipment[district] });
+        event(rec, "ability_used", { player: p.id, ability: item, district });
+        rec.notes.push("the helmet reveals district " + district + ": " + g.districtEquipment[district]);
+      }
     } else if (action.kind === "guard_post") {
       const roll = die(g, "combat"); rec.dice.push(roll);
       const success = roll >= PR.guardMinRoll;

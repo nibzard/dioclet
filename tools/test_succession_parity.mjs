@@ -15,7 +15,7 @@ import copy,json,sys,random
 import engine
 payload=json.load(sys.stdin)
 def norm_action(a):
- return {'kind':a['kind'],'dest':','.join(map(str,a['destination'])),'target':a.get('target'),'faction':a.get('faction'),'district':a.get('district'),'spend_prestige':a.get('spend_prestige'),'contest_cost':a.get('contest_cost')}
+ return {'kind':a['kind'],'dest':','.join(map(str,a['destination'])),'target':a.get('target'),'faction':a.get('faction'),'district':a.get('district'),'site':a.get('site'),'spend_prestige':a.get('spend_prestige'),'contest_cost':a.get('contest_cost')}
 def snapshot(g):
  pending=g['pending_claim']
  return {'phase':g['phase'],'round':g['round'],'turn':g['turn_id'],'active':g['active_player'],
@@ -82,7 +82,7 @@ function load(caseRules) {
   vm.runInContext(readFileSync(new URL('web/succession-engine.js',root),'utf8'),ctx);
   return {E:ctx.DIOCLET_ENGINE,B};
 }
-function normAction(a){return {kind:a.kind,dest:a.dest,target:a.target??null,faction:a.faction??null,district:a.district??null,spend_prestige:a.spend_prestige??null,contest_cost:a.contest_cost??null};}
+function normAction(a){return {kind:a.kind,dest:a.dest,target:a.target??null,faction:a.faction??null,district:a.district??null,site:a.site??null,spend_prestige:a.spend_prestige??null,contest_cost:a.contest_cost??null};}
 function snapshot(g,E){return plain({phase:g.phase,round:g.round,turn:g.turnSeq,active:E.active(g).id,order:g.order,round_start:g.turnRoundStart,roll:g.currentRoll?.total??null,dice:g.currentRoll?.dice??[],first:g.firstClaimer,trigger:g.triggerRound,
  winner:g.winner,end:g.endReason,draw:g.successionTimeout,status:g.status,
  palace_timeout:g.palaceTimeout,rounds_palace:g.roundsPalace,equip_at_transition:g.equipmentAtTransition,

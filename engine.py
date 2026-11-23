@@ -326,14 +326,15 @@ def validate_rules(rules):
     config = rules["succession"]
     _exact_keys(config, "succession",
                 ("max_rounds", "support_cost", "factions_to_proclaim", "contest_fee",
-                 "claim_window_rounds", "proclaim_cost", "faction_cards",
-                 "gate_assignment", "map"))
+                 "claim_window_rounds", "proclaim_cost", "transition_min_prestige",
+                 "faction_cards", "gate_assignment", "map"))
     _require_int(config["max_rounds"], "succession.max_rounds", 1)
     _require_int(config["support_cost"], "succession.support_cost", 1)
     _require_int(config["factions_to_proclaim"], "succession.factions_to_proclaim", 1, 3)
     _require_int(config["contest_fee"], "succession.contest_fee", 0)
     _require_int(config["claim_window_rounds"], "succession.claim_window_rounds", 0, 6)
     _require_int(config["proclaim_cost"], "succession.proclaim_cost", 0, 3)
+    _require_int(config["transition_min_prestige"], "succession.transition_min_prestige", 0, 3)
     if config["gate_assignment"] != "random":
         _error("invalid_rules", 'succession.gate_assignment must be "random"')
     cards = config["faction_cards"]
@@ -629,18 +630,25 @@ def legal_actions(state):
                 if me["prestige"] < contest_cost:
                     continue
                 add("duel", dest, target=other, spend_prestige=False, contest_cost=contest_cost)
-    # Galea: a stationary, once-per-game public reveal of any unexplored
-    # district. The offer never depends on the hidden item (DECISIONS.md D1).
+    # Helmet (galea): a stationary, once-per-game public reveal of any
+    # hidden treasure entry (phase 1) or hidden faction card space (phase 2).
+    # The offer never depends on the hidden card (DECISIONS.md D1).
     if rules["movement"]["allow_stationary_special_actions"]:
         if _usable_ability(me, rules, "reveal_district")[0]:
-            for name in sorted(rules["palace"]["map"]["treasure_entries"]):
-                if name not in state["revealed"]:
-                    add("inspect", pos, district=name)
+            if state["phase"] == 1:
+                for name in sorted(rules["palace"]["map"]["treasure_entries"]):
+                    if name not in state["revealed"]:
+                        add("inspect", pos, district=name)
+            elif state["phase"] == 2 and state["faction_sites"] is not None:
+                for key in sorted(state["faction_sites"]):
+                    if key not in state["faction_sites_revealed"]:
+                        add("inspect", pos, site=key)
     pending = state["pending_claim"]
     if pending and pending["player"] == pid and pos == b.checkpoint:
         add("maintain_claim", pos)
     actions.sort(key=lambda a: (a["kind"], *a["destination"], a.get("target", ""),
-                                bool(a.get("spend_prestige")), a.get("faction", "")))
+                                bool(a.get("spend_prestige")), a.get("faction", ""),
+                                a.get("district", ""), a.get("site", "")))
     for i, action in enumerate(actions):
         action["action_id"] = f"a{i + 1:04d}"
     return actions
@@ -676,6 +684,7 @@ def observe(state, player):
                 "contest_cost": config["contest_fee"],
                 "claim_window_rounds": config["claim_window_rounds"],
                 "proclaim_cost": config["proclaim_cost"],
+                "transition_min_prestige": config["transition_min_prestige"],
                 "duel_loser_cost": rules["prestige"]["duel_loss_penalty"]}
     if state["first_challenger"] is not None:
         progress["transition_after_round"] = min(state["trigger_round"] + rules["palace"]["rounds_after_checkpoint"], rules["palace"]["max_rounds"])
@@ -779,17 +788,27 @@ def apply_action(state, player, turn_id, action_id, reason=None):
             me["stats"]["explore_no_gain"] += 1
             events.append({"type": "explore_no_gain", "player": player, "district": district})
     elif kind == "inspect":
-        # Galea: turn one hidden district face-up for everyone. Uses the same
-        # reveal mechanic as exploration; no private channel exists.
-        district = action["district"]
+        # Helmet (galea): turn one hidden treasure entry (phase 1) or
+        # hidden faction card space (phase 2) face-up for everyone.
         item, _spec = _usable_ability(me, rules, "reveal_district")
-        state["revealed"][district] = state["district_equipment"][district]
         me["abilities_used"]["reveal_district"] = item
         me["stats"]["galea_reveals"] += 1
-        events.append({"type": "district_revealed", "district": district,
-                       "item": state["district_equipment"][district]})
-        events.append({"type": "ability_used", "player": player,
-                       "ability": item, "district": district})
+        if "site" in action:
+            key = action["site"]
+            faction = state["faction_sites"][key]
+            state["faction_sites_revealed"][key] = faction
+            cell = [int(v) for v in key.split(",")]
+            events.append({"type": "card_space_revealed", "player": player,
+                           "cell": cell, "faction": faction})
+            events.append({"type": "ability_used", "player": player,
+                           "ability": item, "site": key})
+        else:
+            district = action["district"]
+            state["revealed"][district] = state["district_equipment"][district]
+            events.append({"type": "district_revealed", "district": district,
+                           "item": state["district_equipment"][district]})
+            events.append({"type": "ability_used", "player": player,
+                           "ability": item, "district": district})
     elif kind == "guard_post":
         me["stats"]["guard_post_attempts"] += 1
         roll = die()
@@ -977,6 +996,14 @@ def _advance(state):
                 state["phase"] = 2
                 for player in state["players"].values():
                     player["pos"] = _gate_cell(state, player)
+                floor = rules["succession"]["transition_min_prestige"]
+                if floor:
+                    for pid in sorted(state["players"]):
+                        pdata = state["players"][pid]
+                        if pdata["prestige"] < floor:
+                            _award(state, pid, floor - pdata["prestige"],
+                                   "phase_transition",
+                                   state["events"][-1]["events"])
                 state["round"], state["round_start"] = 1, 0
                 # The three faction cards are dealt blind onto the
                 # succession map's card spaces; the rest are blanks.
@@ -1198,9 +1225,10 @@ def choose_policy(policy_name, obs, rng=None):
 
     def duel_key(action):
         other = obs["players"][action["target"]]
-        edge = me.get("attack_bonus", 0) - other.get("defense_bonus", 0)
+        att = me.get("attack_bonus", 0)
         if pending and pending["player"] == action["target"]:
-            edge += me.get("attack_vs_claimant_bonus", 0)
+            att = max(att, me.get("attack_vs_claimant_bonus", 0))
+        edge = att - other.get("defense_bonus", 0)
         wins = sum(1 for a in range(1, 7) for d in range(1, 7) if a + edge >= d)
         return (-wins, bool(action["spend_prestige"]), len(action["path"]), action["action_id"])
 
@@ -1274,12 +1302,18 @@ def choose_policy(policy_name, obs, rng=None):
     if policy_name == "early_support":
         gear_needed = False
     inspects = bykind("inspect")
-    if inspects and gear_needed and not useful:
-        # Spend the galea on the nearest unknown district instead of
+    if inspects and obs["phase"] == 1 and gear_needed and not useful:
+        # Spend the helmet on the nearest unknown district instead of
         # blind-walking toward one.
         district_cells = obs["board"]["districts"]
         pick = min(inspects, key=lambda a: (public_dist[tuple(district_cells[a["district"]])], a["district"]))
-        return select(pick, "privately inspect a district with the galea")
+        return select(pick, "publicly inspect a district with the helmet")
+    if inspects and obs["phase"] == 2 and supports_needed and not factions:
+        # Spend an unused helmet on the nearest unknown card space in
+        # succession instead of blind-walking toward one.
+        pick = min(inspects, key=lambda a: (
+            public_dist[tuple(int(v) for v in a["site"].split(","))], a["site"]))
+        return select(pick, "publicly inspect a card space with the helmet")
     if policy_name == "counterleader" and duels and has_room:
         leader = max((pid for pid in obs["players"] if pid != obs["viewer"]),
                      key=lambda pid: (len(obs["players"][pid]["support"]), obs["players"][pid]["equipment_count"]))

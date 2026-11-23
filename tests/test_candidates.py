@@ -117,8 +117,10 @@ class TestDuelOdds(unittest.TestCase):
     def test_pilum_counts_only_against_the_pending_claimant(self):
         held_back = self._odds(["pilum"], ["pugio"])
         self.assertEqual(held_back["probability"], 15 / 36)
+        # Javelin (pilum) adds +2 against the claimant; defender's lone
+        # pugio wins ties, leaving 26 strict attacker wins out of 36.
         vs_claimant = self._odds(["pilum"], ["pugio"], pending_player="P0")
-        self.assertEqual(vs_claimant["probability"], 21 / 36)
+        self.assertEqual(vs_claimant["probability"], 26 / 36)
         other_claim = self._odds(["pilum"], ["pugio"], pending_player="P2")
         self.assertEqual(other_claim["probability"], 15 / 36)
 

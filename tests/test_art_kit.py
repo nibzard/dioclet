@@ -105,6 +105,7 @@ class LayoutExport(unittest.TestCase):
     def test_cards_match_the_kit_card_list(self):
         items = self.export["cards"]["items"]
         self.assertEqual([i["name"] for i in items], [c[0] for c in kit.CARDS])
+        self.assertEqual([i["latin"] for i in items], [c[1] for c in kit.CARDS])
         self.assertEqual(self.export["cards"]["size_mm"], [kit.CARD_W, kit.CARD_H])
 
 

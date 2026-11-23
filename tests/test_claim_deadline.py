@@ -121,24 +121,26 @@ class TestClaimDeadline(unittest.TestCase):
 
     def test_claim_at_the_first_seat_pins_the_whole_block(self):
         rules = _rules()
+        window = rules["succession"]["claim_window_rounds"]
         state, claimant = _proclaim_at(rules, position=1)
         self.assertEqual(claimant, "P0")
         obs = engine.observe(state, state["active_player"])
         projection = candidate_actions.project_observation(obs, rules)
         self.assertEqual(projection["schema"], "v0102-succession-proj-4")
         block = projection["claim"]
-        # The window closes after the last turn of round 1 + 2.
+        # The window closes after the last turn of round 1 + window.
+        last_turn = 4 * (1 + window)
         self.assertEqual(block["claimant"], "P0")
-        self.assertEqual(block["wins_after_turn"], 12)
+        self.assertEqual(block["wins_after_turn"], last_turn)
         self.assertEqual([t["turn"] for t in block["remaining_turns"]],
-                         list(range(obs["turn_id"], 13)))
+                         list(range(obs["turn_id"], last_turn + 1)))
         self.assertEqual(block["remaining_turns"][0],
                          {"round": 1, "turn": obs["turn_id"],
                           "player": obs["active_player"]})
-        self.assertEqual(block["remaining_turns"][-1]["turn"], 12)
+        self.assertEqual(block["remaining_turns"][-1]["turn"], last_turn)
         self.assertEqual(
             block["cancel_chances"],
-            {pid: 3 for pid in ("P1", "P2", "P3")})
+            {pid: window + 1 for pid in ("P1", "P2", "P3")})
         # The viewer sits on the Peristyle, so a duel at the claimant is legal.
         self.assertTrue(block["can_cancel_this_turn"])
         # The rotation moves the first seat one place each round.
@@ -146,7 +148,6 @@ class TestClaimDeadline(unittest.TestCase):
         for turn in block["remaining_turns"]:
             by_round.setdefault(turn["round"], []).append(turn["player"])
         self.assertEqual(by_round[2], ["P1", "P2", "P3", "P0"])
-        self.assertEqual(by_round[3], ["P2", "P3", "P0", "P1"])
 
     def test_cancel_chances_count_each_rivals_turns_before_the_deadline(self):
         rules = _rules()
@@ -178,7 +179,7 @@ class TestClaimDeadline(unittest.TestCase):
         for turn in block["remaining_turns"]:
             by_round.setdefault(turn["round"], []).append(turn["player"])
         full = [players for players in by_round.values() if len(players) == 4]
-        self.assertGreaterEqual(len(full), 2)
+        self.assertGreaterEqual(len(full), rules["succession"]["claim_window_rounds"])
         for players in full:
             self.assertEqual(players, list(engine.IDS))
 
@@ -255,14 +256,14 @@ class TestClaimDeadline(unittest.TestCase):
         state = _ready_state(rules)
         state["active_player"] = "P1"
         state["turn_index"] = 1
-        state["round"] = max_round - 1
+        state["round"] = max_round
         state["players"]["P0"].update(pos=PERISTYLE[:])
         state["pending_claim"] = {"player": "P0", "claim_id": state["turn_id"],
                                   "responded": [], "round": state["round"]}
         block = _claim_block(rules, state)
         self.assertIsNone(block["wins_after_turn"])
         self.assertEqual(sorted({t["round"] for t in block["remaining_turns"]}),
-                         [max_round - 1, max_round])
+                         [max_round])
         while not engine.is_finished(state):
             obs = engine.observe(state, state["active_player"])
             action = _non_cancelling_action(obs)

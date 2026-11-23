@@ -73,9 +73,11 @@ function drawCard(a, item, index, cw, ch, bleed) {
   M.coin(a, cx, ruleY, coinR, { beads: true, worn: 0.1 });
   text(a, ROMAN[index], cx, ruleY + 1.1, 2.3, { style: "inscribed", medium: "charcoal" });
 
-  // The arch window: a niche with a hatched soffit and a sill.
-  const wcx = cx, sill = y0 + 58.5, topY = y0 + 21.5;
-  const aw = 15.5, springY = sill - 16;
+  // The arch window: a niche with a hatched soffit, a sill, and a carved
+  // stone plinth below the sill bearing the historical Latin name as part
+  // of the archaeological plate artwork.
+  const wcx = cx, sill = y0 + 54.6, topY = y0 + 20.5;
+  const aw = 14.5, springY = sill - 14.5;
   const opening = (c) => {
     c.moveTo(wcx - aw, sill);
     c.lineTo(wcx - aw, springY);
@@ -84,8 +86,9 @@ function drawCard(a, item, index, cw, ch, bleed) {
     c.closePath();
   };
   // Wall around the niche: a light tone, so the object reads on it.
-  a.paint((c) => c.rect(bleed + 6, topY, cw - 12, sill - topY), C.stone, { alpha: 0.9, blur: 0.15 });
-  M.tone(a, (c) => { c.rect(bleed + 6, topY, cw - 12, sill - topY); }, [bleed + 6, topY, cw - 12, sill - topY], 0.16, { angle: PI / 4 });
+  const wallBottom = y0 + 58.6;
+  a.paint((c) => c.rect(bleed + 6, topY, cw - 12, wallBottom - topY), C.stone, { alpha: 0.9, blur: 0.15 });
+  M.tone(a, (c) => { c.rect(bleed + 6, topY, cw - 12, wallBottom - topY); }, [bleed + 6, topY, cw - 12, wallBottom - topY], 0.16, { angle: PI / 4 });
   M.lift(a, opening, 0.92);
   a.paint(opening, C.goldLight, { alpha: 0.5, blur: 0.4, edge: 0.5 });
   // The arch drawn firm, with radiating soffit joints.
@@ -94,13 +97,25 @@ function drawCard(a, item, index, cw, ch, bleed) {
   a.stroke((() => { const pts = []; for (let i = 0; i <= 20; i++) { const t = PI + (i / 20) * PI; pts.push([wcx + Math.cos(t) * aw, springY + Math.sin(t) * aw]); } return pts; })(), w("firm"));
   for (let i = 1; i < 6; i++) {
     const t = PI + (i / 6) * PI;
-    a.line([wcx + Math.cos(t) * (aw - 2.6), springY + Math.sin(t) * (aw - 2.6)], [wcx + Math.cos(t) * aw, springY + Math.sin(t) * aw], w("hair", { bow: 0 }));
+    a.line([wcx + Math.cos(t) * (aw - 2.5), springY + Math.sin(t) * (aw - 2.5)], [wcx + Math.cos(t) * aw, springY + Math.sin(t) * aw], w("hair", { bow: 0 }));
   }
-  a.line([wcx - aw - 1.4, sill], [wcx + aw + 1.4, sill], w("firm", { bow: 0.06 }));
-  a.line([wcx - aw - 0.8, sill - 1.1], [wcx + aw + 0.8, sill - 1.1], w("hair", { bow: 0.06 }));
+
+  // Carved stone plinth beneath the sill carrying the Latin name.
+  const plinthX = wcx - aw - 1.8, plinthW = (aw + 1.8) * 2, plinthH = 3.9;
+  M.lift(a, (c) => c.rect(plinthX, sill, plinthW, plinthH), 0.94);
+  a.paint((c) => c.rect(plinthX, sill, plinthW, plinthH), C.plaque, { alpha: 0.72, blur: 0.1 });
+  a.rect(plinthX, sill, plinthW, plinthH, w("firm", { width: 0.35, overshoot: 0.2 }));
+  a.line([plinthX + 0.8, sill + 0.7], [plinthX + plinthW - 0.8, sill + 0.7], w("hair", { bow: 0.04 }));
+  if (item.latin) {
+    const latin = item.latin.toUpperCase();
+    const maxLatinW = plinthW - 3.0;
+    let lcap = 1.75;
+    while (measure(latin, lcap, { spacing: 0.28 }) > maxLatinW && lcap > 1.2) lcap -= 0.05;
+    text(a, latin, wcx, sill + plinthH / 2 + lcap / 2 + 0.15, lcap, { style: "inscribed", medium: "graphite", track: 0.08 });
+  }
 
   // The device itself, standing on the sill.
-  (DEVICES[item.icon] || DEVICES.dagger)(a, wcx, (topY + sill) / 2 + 4, 30);
+  (DEVICES[item.icon] || DEVICES.dagger)(a, wcx, (topY + sill) / 2 + 3.2, 26.5);
 
   // Ability text on a lifted plate at the foot. The plate reaches up to
   // a millimetre below the niche sill so the longer ability texts (the

@@ -120,6 +120,7 @@ def printed_values(rules):
         "contest_fee": s["contest_fee"],
         "factions_to_proclaim": s["factions_to_proclaim"],
         "window": window,
+        "transition_min_prestige": s["transition_min_prestige"],
         "city_rounds": rules["palace"]["max_rounds"],
         "succession_rounds": s["max_rounds"],
         "grace": rules["palace"]["rounds_after_checkpoint"],
@@ -155,10 +156,12 @@ FACTION_DISPLAY = {"army": "Army", "officials": "Imperial officials",
                    "elites": "City elites"}
 _FACTION_CARDS = {"army": ("ARMY", "shield"), "officials": ("OFFICIALS", "column"),
                   "elites": ("ELITES", "laurel")}
-_TREASURE_CARDS = {"pugio": ("Pugio", "dagger"), "pilum": ("Pilum", "pilum"),
-                   "galea": ("Galea", "helmet"), "scutum": ("Scutum", "scutum"),
-                   "gladius": ("Gladius", "gladius"),
-                   "lorica_segmentata": ("Lorica Segmentata", "armor")}
+_TREASURE_CARDS = {"pugio": ("Dagger", "Pugio", "dagger"),
+                   "pilum": ("Javelin", "Pilum", "pilum"),
+                   "galea": ("Helmet", "Galea", "helmet"),
+                   "scutum": ("Shield", "Scutum", "scutum"),
+                   "gladius": ("Sword", "Gladius", "gladius"),
+                   "lorica_segmentata": ("Armor", "Lorica Segmentata", "armor")}
 
 # Card flavour per rules ability type; {v} is the ability value and
 # {tie} the duels.tie_winner side from the rules JSON.
@@ -168,25 +171,26 @@ _CARD_ABILITY_TEXT = {
     "attack_vs_claimant": "+{v} attack vs the claimant.",
     "win_ties": "You win tied duels if only you hold it. Both or neither: "
                 "the {tie} wins. Always active.",
-    "reveal_district": "Once a game: reveal any district.",
+    "reveal_district": "Once a game (either map): reveal 1 hidden card publicly.",
     "prevent_displacement": "Once: a beaten claimant stays put.",
 }
 
 
 def treasure_card_rows(rules):
-    """Treasure card rows (name, icon, flavour), read from the rules JSON."""
+    """Treasure card rows (english, latin, icon, flavour), read from rules JSON."""
     tie = rules["duels"]["tie_winner"]
     rows = []
     for item in rules["treasures"]["items"]:
         if item not in _TREASURE_CARDS:
             raise SystemExit(f"no printed card design for the treasure item {item}")
-        name, icon = _TREASURE_CARDS[item]
+        name, latin, icon = _TREASURE_CARDS[item]
         ability = rules["treasures"]["abilities"][item]
         template = _CARD_ABILITY_TEXT.get(ability["type"])
         if template is None:
             raise SystemExit(f"no printed card text for the ability type "
                              f"{ability['type']}")
-        rows.append((name, icon, template.format(v=ability["value"], tie=tie)))
+        rows.append((name, latin, icon,
+                     template.format(v=ability["value"], tie=tie)))
     return rows
 
 
@@ -1121,12 +1125,12 @@ def player_mat(c, x, y, w, h, numeral, rules):
     cx, ty = cols[0], y0
     _mat_head(c, cx, ty, colw, "EQUIPMENT - tick what you collect")
     ty -= 6.6
-    groups = [("IN ATTACK", [("Gladius", f"+{gladius_v} when you attack", False),
-                             ("Pilum", f"+{pilum_v} attacking the claimant", False)]),
-              ("IN DEFENSE", [("Scutum", f"+{scutum_v} when you defend", False)]),
-              ("TIE-BREAK - ALWAYS ON", [("Pugio", "you win tied duels", False)]),
-              ("ONCE PER GAME - tick used", [("Galea", "action: reveal a card", True),
-                                             ("Lorica", "segmentata: stay if beaten", True)])]
+    groups = [("IN ATTACK", [("Sword", f"+{gladius_v} when you attack", False),
+                             ("Javelin", f"+{pilum_v} attacking the claimant", False)]),
+              ("IN DEFENSE", [("Shield", f"+{scutum_v} when you defend", False)]),
+              ("TIE-BREAK - ALWAYS ON", [("Dagger", "you win tied duels", False)]),
+              ("ONCE PER GAME - tick used", [("Helmet", "either map: reveal 1 card (public)", True),
+                                             ("Armor", "beaten claimant stays put", True)])]
     for title, items in groups:
         c.setFont("Helvetica-Oblique", 6.4)
         c.drawString(cx * mm, ty * mm, title)
@@ -1164,8 +1168,12 @@ def player_mat(c, x, y, w, h, numeral, rules):
         for k, line in enumerate(notes.get(i, ())):
             _centered(c, bx + box / 2, ty - 3.4 - k * 3.0, line, "Helvetica", 6.3)
     ty -= 13.5
-    rows = [("EARN", [f"+{duel_win}  win any duel",
-                      f"+{guard_reward}  guard post: roll {guard_roll}+"]),
+    trans_min = v["transition_min_prestige"]
+    earn_rows = [f"+{duel_win}  from the bank: win any duel",
+                 f"+{guard_reward}  guard post: roll {guard_roll}+"]
+    if trans_min:
+        earn_rows.append(f"+{trans_min}  Map 2 start if at 0 Prestige")
+    rows = [("EARN", earn_rows),
             ("SPEND", [f"-{support_cost}  a faction's support",
                        f"-{contest_fee}  fee to contest a claim"]),
             ("LOSE", [f"-{duel_loss}  to the bank when you lose a duel"])]
@@ -1198,32 +1206,39 @@ def player_mat(c, x, y, w, h, numeral, rules):
         else:
             _laurel(c, sx * mm, (ty + 1.6) * mm, 2.6 * mm)
         ty -= 6.2
-    ty -= 2.6
+    ty -= 2.2
     # A claim proclaimed in round R wins at the end of round R + window.
     _mat_head(c, cx, ty, colw, "CLAIM WINDOW")
-    ty -= 6.2
+    ty -= 5.8
     for line in ("A claim wins at the END of the",
                  f"{ordinal_word(win)} full round AFTER its proclaim round."):
         c.setFont("Times-Roman", _fit(c, line, "Times-Roman", 8.4, colw))
         c.drawString(cx * mm, ty * mm, line)
-        ty -= 4.2
-    ty -= 2.2
+        ty -= 4.1
+    ty -= 1.8
     c.setFont("Times-Roman", 8.4)
     c.drawString(cx * mm, ty * mm, "Proclaimed round ____  wins ____")
-    ty -= 5.6
-    c.drawString(cx * mm, ty * mm, f"Contest: fee {contest_fee}, within "
-                                   f"{duel_range} circles.")
-    ty -= 5.6
-    c.setFont("Times-Bold", 8.4)
-    c.drawString(cx * mm, ty * mm, f"Your turn: roll {dice} dice, move, one action.")
+    ty -= 4.8
+    contest_line = f"Contest: fee {contest_fee}, within {duel_range} circles."
+    c.setFont("Times-Roman", _fit(c, contest_line, "Times-Roman", 8.4, colw))
+    c.drawString(cx * mm, ty * mm, contest_line)
+    ty -= 4.2
+    disp_line = "Only a beaten claimant returns to gate."
+    c.setFont("Times-Italic", _fit(c, disp_line, "Times-Italic", 8.0, colw))
+    c.drawString(cx * mm, ty * mm, disp_line)
+    ty -= 4.8
+    turn_line = f"Turn: roll {dice} dice, move (pass pawns, stop early), 1 action."
+    c.setFont("Times-Bold", _fit(c, turn_line, "Times-Bold", 8.2, colw))
+    c.drawString(cx * mm, ty * mm, turn_line)
 
     # The road to the throne: the whole game in five steps.
     c.setLineWidth(0.8)
     c.line((x + 4) * mm, (y + 21.5) * mm, (x + w - 4) * mm, (y + 21.5) * mm)
     c.setFont("Helvetica-Bold", 7.8)
     c.drawString((x + 4) * mm, (y + 16.5) * mm, "THE ROAD TO THE THRONE")
+    grace = v["grace"]
     steps = [("PALACE MAP", f"Collect all {count_word(v['items_required'])} items"),
-             ("PALACE MAP", "Claim at the Peristyle"),
+             ("PALACE MAP", f"Claim Peristyle (+{grace} round{'s' if grace != 1 else ''})"),
              ("SUCCESSION MAP", "Search the ? cards"),
              ("SUCCESSION MAP", f"Buy {count_word(req)} different supports"),
              ("SUCCESSION MAP", "Proclaim, then hold the claim")]
@@ -1351,31 +1366,38 @@ def cards_tokens_pdf(path, rules):
     # Page 1: the treasure location cards.
     doc_header(c, "TREASURE LOCATION CARDS", "cut on the outer border - identical backs on the next page")
     x0, y0 = 16.0, PH - 32.5 - CARD_H
-    for i, (name, icon, flavor) in enumerate(cards):
+    for i, (name, latin, icon, flavor) in enumerate(cards):
         cx = x0 + (i % 3) * (CARD_W + 5.5)
         cy = y0 - (i // 3) * (CARD_H + 5.0)
         c.setLineWidth(1.6)
         c.rect(cx * mm, cy * mm, CARD_W * mm, CARD_H * mm)
         c.setLineWidth(0.5)
         c.rect((cx + 2.0) * mm, (cy + 2.0) * mm, (CARD_W - 4.0) * mm, (CARD_H - 4.0) * mm)
-        # An arch frames the larger equipment drawing without a solid fill.
+        # An arch frames the equipment drawing with a carved plinth below
+        # carrying the historical Latin name as part of the artwork.
         c.setLineWidth(0.6)
         mid = cx + CARD_W / 2.0
         frame = c.beginPath()
-        frame.moveTo((mid - 19) * mm, (cy + 28) * mm)
-        frame.lineTo((mid - 19) * mm, (cy + 47) * mm)
-        frame.curveTo((mid - 19) * mm, (cy + 68) * mm,
-                      (mid + 19) * mm, (cy + 68) * mm,
-                      (mid + 19) * mm, (cy + 47) * mm)
-        frame.lineTo((mid + 19) * mm, (cy + 28) * mm)
+        frame.moveTo((mid - 19) * mm, (cy + 31.5) * mm)
+        frame.lineTo((mid - 19) * mm, (cy + 48.0) * mm)
+        frame.curveTo((mid - 19) * mm, (cy + 68.5) * mm,
+                      (mid + 19) * mm, (cy + 68.5) * mm,
+                      (mid + 19) * mm, (cy + 48.0) * mm)
+        frame.lineTo((mid + 19) * mm, (cy + 31.5) * mm)
         frame.close()
         c.drawPath(frame, stroke=1, fill=0)
-        draw_equipment_icon(c, icon, cx + CARD_W / 2.0, cy + 45.0, 31.0)
+        draw_equipment_icon(c, icon, mid, cy + 48.0, 27.5)
+        # Stone plinth under the arch with the Latin inscription.
+        c.setLineWidth(0.5)
+        c.rect((mid - 19) * mm, (cy + 26.8) * mm, 38.0 * mm, 4.7 * mm)
+        ltext = latin.upper()
+        lsize = _fit(c, ltext, "Times-Italic", 6.4, 35.0)
+        _centered(c, mid, cy + 28.2, ltext, "Times-Italic", lsize)
         c.setLineWidth(0.6)
-        c.line((cx + 7) * mm, (cy + 25) * mm,
-               (cx + CARD_W - 7) * mm, (cy + 25) * mm)
-        _centered(c, cx + CARD_W / 2.0, cy + 20.0, name.upper(), "Times-Bold", 10.5)
-        # The ability text may run to several lines (the pugio card spells
+        c.line((cx + 7) * mm, (cy + 24.8) * mm,
+               (cx + CARD_W - 7) * mm, (cy + 24.8) * mm)
+        _centered(c, mid, cy + 19.8, name.upper(), "Times-Bold", 11.0)
+        # The ability text may run to several lines (the dagger card spells
         # out the both-or-neither case); keep it inside the frame above the
         # footer line by stepping the size down before it grows past three
         # lines.
@@ -1386,9 +1408,9 @@ def cards_tokens_pdf(path, rules):
             lines = wrap_lines(c, flavor, CARD_W - 10.0, size=size, font="Times-Italic")
         fy = cy + 13.5 + (len(lines) - 1) * 1.7
         for ln in lines:
-            _centered(c, cx + CARD_W / 2.0, fy, ln, "Times-Italic", size)
+            _centered(c, mid, fy, ln, "Times-Italic", size)
             fy -= 3.4
-        _centered(c, cx + CARD_W / 2.0, cy + 5.5, "PALACE TREASURE - LOCATION CARD",
+        _centered(c, mid, cy + 5.5, "PALACE TREASURE - LOCATION CARD",
                   "Helvetica", 5.2)
     y = y0 - (CARD_H + 5.0) - 9.0
     para(c, f"Shuffle face down and deal one card to each treasure entry "
@@ -1396,7 +1418,7 @@ def cards_tokens_pdf(path, rules):
             f"{count_word(len(cards))} face up at random - everyone sees "
             f"those {count_word(up)} treasures from the start. Each card "
             f"states its ability; in a duel count one best number bonus "
-            f"per side, never a sum - the pugio is a tie-break, not a "
+            f"per side, never a sum - the dagger (pugio) is a tie-break, not a "
             f"number bonus, and it works next to the one you counted.",
          16, y, PW - 32, size=8.4)
     doc_footer(c, 1)
@@ -1671,7 +1693,7 @@ def art_cards_tokens_pdf(path, asset_dir=ART_DIR, label="drawn art"):
     art_asset_here = lambda name: art_asset(name, asset_dir)
     back = art_asset_here("card-back.png")
     cards = [art_asset_here(f"card-{i + 1}-{icon}.png")
-             for i, (_n, icon, _t) in enumerate(CARDS)]
+             for i, (_n, _lat, icon, _t) in enumerate(CARDS)]
 
     # Page 1: the six fronts. The PNGs carry a 2 mm bleed margin, so the
     # image anchor sits 2 mm outside the cut rectangle.
@@ -1754,8 +1776,8 @@ def rulebook_pages(rules):
     n_cards = n_factions + empty
     players = v["players"]
     letters = sorted(rules["palace"]["map"]["treasure_entries"])
-    item_list = ", ".join(n.replace("_", " ") for n in items[:-1]) \
-        + ", or " + items[-1].replace("_", " ")
+    item_names = [_TREASURE_CARDS[n][0].lower() for n in items]
+    item_list = ", ".join(item_names[:-1]) + ", or " + item_names[-1]
     disp = [FACTION_DISPLAY[f] for f in factions]
     faction_list = ", the ".join(disp[:-1]) + " and the " + disp[-1]
     n_guard_posts = len(rules["succession"]["map"]["guard_posts"])
@@ -1806,7 +1828,7 @@ def rulebook_pages(rules):
               "may pass through circles occupied by other pawns."),
         ("n", "Do one action where you stand - or do nothing. Taking treasure, "
               "standing guard, duelling, searching a faction card, gaining "
-              "support, proclaiming and revealing a district (with the galea) "
+              "support, proclaiming and revealing a treasure (with the helmet) "
               "are all actions. You never "
               "do two of these on the same turn."),
         ("h", "What counts as movement"),
@@ -1836,23 +1858,23 @@ def rulebook_pages(rules):
               "waits there."),
         ("h", "What each item does"),
         ("p", "Every item carries one ability that lasts the whole game:"),
-        ("t", [["Item", "Mark", "Ability"],
-               ["Gladius", "sword", f"+{a['gladius']['value']} to your attack in any duel you start"],
-               ["Scutum", "shield", f"+{a['scutum']['value']} to your defense in any duel"],
-               ["Pilum", "javelin", f"+{a['pilum']['value']} to your attack against the standing claimant"],
-               ["Pugio", "dagger", "you win tied duels"],
-               ["Galea", "helmet", "once per game, as your action: reveal any one "
-                "face-down treasure card, wherever it is"],
-               ["Lorica segmentata", "armor", "once per game: when your claim is "
+        ("t", [["Item", "Latin", "Ability"],
+               ["Sword", "gladius", f"+{a['gladius']['value']} to your attack in any duel you start"],
+               ["Shield", "scutum", f"+{a['scutum']['value']} to your defense in any duel"],
+               ["Javelin", "pilum", f"+{a['pilum']['value']} to your attack against the standing claimant"],
+               ["Dagger", "pugio", "you win tied duels (if only you hold it)"],
+               ["Helmet", "galea", "once per game (either map): publicly reveal any "
+                "face-down treasure or faction card"],
+               ["Armor", "lorica segmentata", "once per game: when your claim is "
                 "beaten, keep your square instead of returning to your gate"]]),
         ("p", "In a duel each side adds at most one item bonus - the best one that "
-              "applies, never a sum. The gladius, the pilum and the scutum are "
-              "number bonuses: they never stack. If you hold both the gladius and "
-              f"the pilum and attack the claimant, you still add only +{a['gladius']['value']}."),
-        ("p", "The pugio is not a number bonus. It is a passive tie-break that "
+              "applies, never a sum. The sword, the javelin and the shield are "
+              "number bonuses: they never stack. If you hold both the sword and "
+              f"the javelin and attack the claimant, you add only the best one (+{max(a['gladius']['value'], a['pilum']['value'])})."),
+        ("p", "The dagger is not a number bonus. It is a passive tie-break that "
               "works by itself, next to your chosen number bonus, whenever the two "
-              "final duel totals are equal - gladius and pugio together are legal, "
-              f"gladius and pilum together still add only +{a['gladius']['value']}. Cross an item out on "
+              "final duel totals are equal - sword and dagger together are legal, "
+              f"sword and javelin together against the claimant add only +{max(a['gladius']['value'], a['pilum']['value'])}. Cross an item out on "
               "your sheet when its once-per-game ability is used."),
         ("p", "Collecting happens only while the palace phase lasts. When the "
               "succession begins the palace map leaves the table and your items "
@@ -1863,7 +1885,7 @@ def rulebook_pages(rules):
         ("h", "Earning Prestige"),
         ("b", "Guard post (star, on both maps): end a move there and roll one "
               f"die. A {gr}, {gr + 1} or {gr + 2} earns {gw} Prestige."),
-        ("b", f"Win a duel: the winner of any duel earns {dw} Prestige."),
+        ("b", f"Win a duel: the winner of any duel earns {dw} Prestige from the bank."),
         ("p", f"You can hold at most {cap} Prestige. Any reward above "
               f"{count_word(cap)} is lost - "
               "spend it or waste it."),
@@ -1872,13 +1894,13 @@ def rulebook_pages(rules):
               "them as your action. Resolve the duel in this order:"),
         ("n", "Both players roll one die."),
         ("n", "Each side adds its one best item bonus for that side - never a sum. "
-              "The pugio adds no number; do nothing with it yet."),
+              "The dagger adds no number; do nothing with it yet."),
         ("n", "Compare the final totals. The higher total wins the duel."),
         ("n", "Only if the totals are equal, apply the tie-break: if exactly one "
-              "side holds the pugio, that side wins. If both or neither hold one, "
+              "side holds the dagger, that side wins. If both or neither hold one, "
               f"the tie is ordinary - on a tie the {tie} wins."),
-        ("n", f"The winner earns {dw} Prestige. The loser pays {dl} Prestige to the bank "
-              "as shame, as much as they hold. Nobody loses equipment or support."),
+        ("n", f"The winner earns {dw} Prestige from the bank. The loser pays {dl} Prestige to the bank "
+              "as shame, as much as they hold. Ordinary duel losers stay put; nobody loses items or support."),
         ("h", "Spending Prestige"),
         ("b", f"{sc} Prestige: one faction's support (next page). Searching a "
               "faction card is free."),
@@ -1925,7 +1947,11 @@ def rulebook_pages(rules):
               "over, or set it aside. Deal the faction cards. Every pawn returns "
               "to its gate on the succession map - the same compass gate it started "
               "from - and keeps everything it owns: items, Prestige, and any "
-              "support already gained. From now on all movement, support, duels "
+              "support already gained."
+              + (f" Any player entering with less than {v['transition_min_prestige']} Prestige "
+                 f"rises to {v['transition_min_prestige']}."
+                 if v["transition_min_prestige"] else "")
+              + " From now on all movement, support, duels "
               f"and claims happen on the succession map. Every gate there is "
               f"{count_word(gate_steps)} "
               "steps from the Peristyle. The succession map has the same streets "
@@ -1962,30 +1988,31 @@ def rulebook_pages(rules):
               f"{cf} Prestige fee."),
         ("h", "What happens on each result"),
         ("b", "You win: the claim is canceled. The claimant's pawn returns to their "
-              "gate on the succession map - unless they have not used the lorica "
-              "segmentata, which once per game lets a beaten claimant keep their "
+              "gate on the succession map - unless they have not used the armor, "
+              "which once per game lets a beaten claimant keep their "
               "square (the claim still dies). They keep all equipment, Prestige and "
               "support either way. The next claim may be proclaimed at any time."),
         ("b", "You lose: the claim stands. Your Prestige is spent either way, and "
               f"as in any duel the loser pays {dl} Prestige shame to the bank."),
         ("h", "An example challenge"),
         ("p", "Livia has proclaimed at the Peristyle with the Army and the elites "
-              "behind her. Marcus, holding 2 Prestige, the gladius and the pilum, "
+              "behind her. Marcus, holding 2 Prestige, the sword and the javelin, "
               f"moves next to the Peristyle. He pays the {cf} Prestige fee and duels. "
-              f"His best item bonus is +{a['pilum']['value']} - the pilum also applies against a "
-              "claimant, but one bonus only counts. He rolls 5 + 1 = 6. Livia "
-              "holds the scutum and rolls 4 + 1 = 5. Marcus wins; the claim dies "
-              f"and Livia pays {dl} Prestige shame. She has kept the lorica segmentata "
+              f"His best item bonus is +{a['pilum']['value']} - the javelin beats the sword against a "
+              f"claimant, and only one bonus counts. He rolls 4 + {a['pilum']['value']} = {4 + a['pilum']['value']}. Livia "
+              f"holds the shield and rolls 4 + {a['scutum']['value']} = {4 + a['scutum']['value']}. Marcus wins; the claim dies "
+              f"and Livia pays {dl} Prestige shame. She has kept the armor "
               "unused, so she stays at the Peristyle instead of walking back to her "
               f"gate on the succession map. Marcus earns {dw} Prestige for the duel "
               "win, leaving him with 2."),
         ("h", f"An example with all {count_word(items_req)} items"),
         ("p", f"Marcus challenges Livia's claim. Both players own all {count_word(items_req)} items. "
-              f"Marcus attacks with the gladius (+{a['gladius']['value']}); Livia defends with the scutum "
-              f"(+{a['scutum']['value']}). Both roll a 2, so both finish on 3. Each holds a pugio, so "
+              f"Marcus attacks with the javelin (+{a['pilum']['value']}); Livia defends with the shield "
+              f"(+{a['scutum']['value']}). Marcus rolls 1 (total {1 + a['pilum']['value']}) and Livia rolls 2 "
+              f"(total {2 + a['scutum']['value']}). Each holds a dagger, so "
               "neither has the tie-break alone - the normal tie rule applies and "
               f"Marcus, the {tie}, wins. The claim is canceled, Livia pays {dl} "
-              "Prestige shame, and she may still use the lorica segmentata to stay "
+              "Prestige shame, and she may still use the armor to stay "
               f"at the Peristyle. Marcus earns {dw} Prestige."),
         ("h", "If nobody wins"),
         ("p", f"If no claim survives by the end of round {succ_rounds} of the succession phase, "
@@ -2005,10 +2032,10 @@ def rulebook_pages(rules):
               "claims the claimant is an ordinary rival and duels are free."),
         ("q", "Can I challenge the same claim twice? Yes - a failed challenge does "
               "not lock you out. Each attempt inside the window pays the fee again."),
-        ("q", "What if both duelists hold the pugio? The normal tie rule applies: "
+        ("q", "What if both duelists hold the dagger? The normal tie rule applies: "
               f"the {tie} wins."),
-        ("q", "Does the galea let me name an item? No. You name a district, not an "
-              "item - the reveal turns up whatever card sits there."),
+        ("q", "Does the helmet work on faction cards? Yes - once per game on either "
+              "map, reveal any face-down treasure or faction card for everyone."),
         ("q", f"What if I have {cap} Prestige and win a guard roll? Nothing happens - the cap is "
               f"{cap}. Spend some first."),
         ("q", "Can a faction support two different players? Yes - every faction can "
@@ -2167,16 +2194,16 @@ def quick_reference_pdf(path, rules):
         ("ROLLS", [f"Movement: {count_word(dice)} dice summed.",
                    f"Guard post: one die - {gr}+ earns {gw} Prestige (either map).",
                    "Duel: one die each + your one best item bonus; tie: the lone "
-                   f"pugio holder wins, else the {tie}."]),
+                   f"dagger holder wins, else the {tie}."]),
         ("EQUIPMENT (one best number bonus per side)", [
-            f"Gladius +{av} attack · Scutum +{dv} defense · Pilum +{pv} vs the claimant.",
-            "Pugio: lone holder wins ties (not a number bonus) · Galea once: "
-            "reveal a district · Lorica once: stay when beaten."]),
-        (f"PRESTIGE (cap {cap})", [f"Earn: guard post {gr}+ (either map) · any duel win.",
+            f"Sword +{av} attack · Shield +{dv} defense · Javelin +{pv} vs claimant.",
+            "Dagger: lone holder wins ties · Helmet (either map): reveal 1 card · Armor: stay once."]),
+        (f"PRESTIGE (cap {cap})", [f"Earn: guard post {gr}+ (either map) · any duel win (bank pays)"
+                              + (f" · Map 2 start: 0→{v['transition_min_prestige']}." if v["transition_min_prestige"] else "."),
                               f"Spend: {sc} = faction support · {cf} = fee to contest a claim. "
                               "Searching is free.",
                               "Keep 1 in reserve: with 0 Prestige you cannot contest a claim.",
-                              f"Lose: {dl} to the bank whenever you lose a duel."]),
+                              f"Lose: {dl} to the bank on duel loss (ordinary duels: stay put)."]),
         ("FACTION CARDS (succession map only)", [
             f"{count_word(n_cards).capitalize()} cards face down on the ? spaces: "
             f"{', '.join(factions)}, and "
@@ -2191,7 +2218,7 @@ def quick_reference_pdf(path, rules):
                              "any turn inside the window.", f"Mandatory fee: {cf} Prestige "
                              "before you roll.", "Win: claim "
                              "canceled, claimant returns to their gate on the succession "
-                             "map (lorica: stay put once), keeps everything."]),
+                             "map (armor: stay put once), keeps everything."]),
         ("WINNING", [f"A claim that stands {full_rounds(win)} = emperor.",
                      f"No claim standing by succession round {succ_rounds} = draw."]),
     ]
@@ -2255,7 +2282,7 @@ def teaching_guide_pdf(path, rules):
         ("The goal (30 seconds)", "Diocletian has retired and the throne is empty. "
          "You will collect gear, win friends, and try to crown yourself. The claim "
          f"your {count_word(players - 1)} rivals fail to stop inside "
-         f"{count_word(win)} rounds wins the game."),
+         f"{count_word(win)} round{'s' if win != 1 else ''} wins the game."),
         ("Moving (30 seconds)", f"On your turn, roll {count_word(dice)} dice and move up to the "
          "total along the white circles. Streets only - the hatched blocks are "
          "buildings. Stop anywhere. Then do one thing. That is a whole turn."),
@@ -2263,12 +2290,12 @@ def teaching_guide_pdf(path, rules):
          f"of gear - {count_word(up)} start face up. Stop on one and mark it on your sheet. Each "
          f"piece does one thing forever: the sword adds +{av} to attacks, the shield "
          f"+{dv} to defense, the javelin +{pv} against a claimant, the dagger breaks "
-         "ties for its lone holder, the helmet reveals a district once, the "
-         "armor saves you once. In a duel "
+         "ties for its lone holder, the helmet publicly reveals any hidden card once, the "
+         "armor saves a beaten claimant once. In a duel "
          "you count your one best bonus - never a sum."),
         ("Prestige (60 seconds)", "This coin symbol is Prestige - political clout. "
          f"Earn it at a star space: stop there, roll one die, {gr} or higher pays {gw}. "
-         f"Win a duel: also {dw}. Lose a duel: pay {dl} back to the bank. You can hold "
+         f"Win a duel: also {dw} from the bank. Lose a duel: pay {dl} back to the bank. You can hold "
          f"{count_word(cap)}. You will spend it on friends and on challenges."),
         ("Factions (45 seconds)", f"{count_word(n_factions).capitalize()} groups can back you - the Army, the "
          "officials, the city elites. Nobody knows where they meet. When the "
@@ -2304,7 +2331,7 @@ def teaching_guide_pdf(path, rules):
     y = para(c, "Claim response: a rival proclaims at the Peristyle. On your turn, "
                 f"move next to them, put {cf} Prestige aside (the fee), then each roll "
                 "one die and add your one best item bonus. Higher total wins; on a "
-                f"tie the lone pugio holder wins, else the {tie}.",
+                f"tie the lone dagger holder wins, else the {tie}.",
              19, y, PW - 38, size=9.4) - 1.4
     y = para(c, "Answer everything else when it comes up. Rare cases live in the "
                 "rulebook, not in the introduction.", 19, y, PW - 38, size=9.4,
@@ -2521,7 +2548,7 @@ def combine(paths, out):
 # specific ability line per item.
 PRINTED_ABILITIES = {
     "pugio": ("win_ties", 1),
-    "pilum": ("attack_vs_claimant", 1),
+    "pilum": ("attack_vs_claimant", 2),
     "galea": ("reveal_district", 1),
     "scutum": ("defense_bonus", 1),
     "gladius": ("attack_bonus", 1),
